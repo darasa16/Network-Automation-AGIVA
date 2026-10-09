@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detail Perangkat - Router-Core-01 | AGIVA NOC</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+    <!-- Relative CSS -->
+    <link rel="stylesheet" href="../static/css/style.css">
+</head>
+
+<body>
+    <!-- Top Navigation Bar -->
+    <header class="navbar">
+        <div class="nav-left">
+            <a href="index.html" class="brand-logo">
+                <img src="../static/img/20260203-Agiva-Logo-Rect-1280px.png" alt="Agiva Logo" class="brand-img"
+                    onerror="this.src='/static/img/20260203-Agiva-Logo-Rect-1280px.png'" />
+
+            </a>
+
+            <div class="nav-search">
+                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" placeholder="Cari IP, nama router, site..." />
+            </div>
+        </div>
+
+        <nav class="nav-links">
+            <a href="index.html" class="nav-item active">Monitoring</a>
+            <a href="alerts.html" class="nav-item">Alerts {% if active_alerts_count > 0 %}<span class="nav-badge">{{ active_alerts_count }}</span>{% endif %}</a>
+            <a href="telegram.html" class="nav-item">Telegram Bot</a>
+            <a href="backups.html" class="nav-item">Backups</a>
+        </nav>
+
+        <div class="nav-right">
+            <div class="status-indicator">
+                <span class="pulse-dot"></span>
+                <span class="status-text">LIVE POLLING</span>
+            </div>
+            <div class="clock-display" id="clockDisplay">12:00:00 WIB</div>
+            <div class="user-profile">
+                <div class="avatar">EA</div>
+                <div class="user-info">
+                    <span class="user-name">Engineer Agiva</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="main-container">
+        <div class="detail-container">
+            <div class="page-top-nav">
+                <a href="index.html" class="back-link">&larr; Kembali ke Dashboard</a>
+                <div class="device-actions">
+                    <span class="refresh-indicator">Update otomatis tiap 4 detik</span>
+                    <button class="btn-refresh" onclick="fetchDeviceMetrics()">Refresh Data</button>
+                </div>
+            </div>
+
+            <!-- Device Header Card -->
+            <div class="device-header-card">
+                <div class="device-header-left">
+                    <div class="device-avatar mikrotik">M</div>
+                    <div>
+                        <div class="title-with-badge">
+                            <h2>Router-Core-01</h2>
+                            <span class="status-badge badge-up">
+                                <span class="badge-dot-green"></span> UP
+                            </span>
+                            <span class="vendor-badge badge-mikrotik">MikroTik RouterOS</span>
+                        </div>
+                        <div class="device-meta-row">
+                            <span><strong>IP Address:</strong> <code>192.168.1.1</code></span>
+                            <span><strong>Lokasi / Site:</strong> Data Center HQ</span>
+                            <span><strong>Uptime:</strong> 42 days, 14 hours</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="device-quick-stats">
+                    <div class="quick-stat-box">
+                        <span class="qs-label">CPU Saat Ini</span>
+                        <span class="qs-val text-green" id="currCpuVal">34.5%</span>
+                    </div>
+                    <div class="quick-stat-box">
+                        <span class="qs-label">Memori Saat Ini</span>
+                        <span class="qs-val text-amber" id="currMemVal">48.2%</span>
+                    </div>
+                    <div class="quick-stat-box">
+                        <span class="qs-label">Throughput</span>
+                        <span class="qs-val text-cyan" id="currTrafficVal">145.2 Mbps</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Device Charts Section -->
+            <div class="charts-row">
+                <!-- Chart 1: 12-Hour CPU & Memory History -->
+                <div class="chart-panel">
+                    <div class="panel-header">
+                        <div>
+                            <h3 class="panel-title">Histori Beban CPU & Memori (12 Jam Terakhir)</h3>
+                            <span class="panel-sub">Data polling periodik data collector</span>
+                        </div>
+                        <div class="chart-legend-custom">
+                            <span class="legend-tag tag-cpu"><span class="legend-color bg-green"></span> CPU (%)</span>
+                            <span class="legend-tag tag-mem"><span class="legend-color bg-amber"></span> RAM (%)</span>
+                        </div>
+                    </div>
+                    <div class="chart-body">
+                        <canvas id="deviceCpuMemChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Chart 2: 12-Hour Interface Traffic History -->
+                <div class="chart-panel">
+                    <div class="panel-header">
+                        <div>
+                            <h3 class="panel-title">Histori Bandwidth & Traffic Antarmuka (Mbps)</h3>
+                            <span class="panel-sub">Lalu lintas agregat interface WAN/LAN</span>
+                        </div>
+                        <div class="chart-legend-custom">
+                            <span class="legend-tag tag-traffic"><span class="legend-color bg-cyan"></span> Throughput
+                                (Mbps)</span>
+                        </div>
+                    </div>
+                    <div class="chart-body">
+                        <canvas id="deviceTrafficChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interface Status Table -->
+            <div class="table-panel">
+                <div class="panel-header">
+                    <div>
+                        <h3 class="panel-title">Status Antarmuka Fisik & Logika (Interface Details)</h3>
+                        <span class="panel-sub">Hasil query SNMP / RouterOS-API / SSH Netmiko</span>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Interface</th>
+                                <th>Tipe</th>
+                                <th>MAC Address</th>
+                                <th>Status Operasional</th>
+                                <th>Speed</th>
+                                <th>Tx (Mbps)</th>
+                                <th>Rx (Mbps)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>ether1-gateway</strong></td>
+                                <td>Ethernet (WAN)</td>
+                                <td><code>48:8F:5A:12:34:01</code></td>
+                                <td><span class="status-badge badge-up"><span class="badge-dot-green"></span> UP /
+                                        Running</span></td>
+                                <td>1 Gbps</td>
+                                <td>84.2</td>
+                                <td>126.6</td>
+                            </tr>
+                            <tr>
+                                <td><strong>ether2-lan</strong></td>
+                                <td>Ethernet (LAN)</td>
+                                <td><code>48:8F:5A:12:34:02</code></td>
+                                <td><span class="status-badge badge-up"><span class="badge-dot-green"></span> UP /
+                                        Running</span></td>
+                                <td>1 Gbps</td>
+                                <td>112.5</td>
+                                <td>42.1</td>
+                            </tr>
+                            <tr>
+                                <td><strong>ether3-mgmt</strong></td>
+                                <td>Ethernet (OOBM)</td>
+                                <td><code>48:8F:5A:12:34:03</code></td>
+                                <td><span class="status-badge badge-up"><span class="badge-dot-green"></span> UP /
+                                        Running</span></td>
+                                <td>100 Mbps</td>
+                                <td>0.4</td>
+                                <td>1.2</td>
+                            </tr>
+                            <tr>
+                                <td><strong>sfp-plus1</strong></td>
+                                <td>Fiber SFP+</td>
+                                <td><code>48:8F:5A:12:34:04</code></td>
+                                <td><span class="status-badge badge-down"><span class="badge-dot-red"></span> DOWN / No
+                                        Link</span></td>
+                                <td>10 Gbps</td>
+                                <td>0.0</td>
+                                <td>0.0</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function updateClock() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' WIB';
+            const clockEl = document.getElementById('clockDisplay');
+            if (clockEl) clockEl.textContent = timeStr;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+    </script>
+    <script src="../static/js/device_detail.js"></script>
+</body>
+
+</html>

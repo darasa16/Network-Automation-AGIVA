@@ -1,0 +1,327 @@
+{% extends 'base.html' %}
+
+{% block title %}Telegram Bot Integration - AGIVA NOC{% endblock %}
+
+{% block content %}
+<div class="telegram-page-container">
+
+    <!-- Page Header & Actions -->
+    <div class="page-header-row">
+        <div>
+            <h2>Telegram Bot Integration & Notification</h2>
+            <p class="sub-text">Panel integrasi Bot Telegram untuk eskalasi notifikasi insiden jaringan, kontrol
+                otorisasi teknisi, dan audit riwayat dispatch log</p>
+        </div>
+        <div class="header-tools">
+            <button class="btn-action btn-send-test" onclick="simulateTelegramAlert()">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
+                    style="margin-right:6px;">
+                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+                Test Telegram Connectivity
+            </button>
+        </div>
+    </div>
+
+    <!-- 1. Bot Status Card -->
+    <div class="kpi-grid">
+        <div class="kpi-card">
+            <div class="kpi-info">
+                <span class="kpi-label">Bot Identity</span>
+                <h3 style="color: #38bdf8; margin: 6px 0; word-break: break-all;">{{ bot.username }}</h3>
+                <span class="kpi-sub">{{ bot.bot_name }}</span>
+            </div>
+            <div class="kpi-icon-box icon-blue">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+            </div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-info">
+                <span class="kpi-label">Koneksi Bot API</span>
+                <div id="bot-status-container">
+                    {% if bot.is_online %}
+                    <h3 style="color: #10b981; margin: 6px 0; display:flex; align-items:center; gap:8px;">
+                        <span class="badge-dot-green" style="width:10px; height:10px; flex-shrink:0;"></span>
+                        <span>ONLINE</span>
+                    </h3>
+                    <span class="kpi-sub">Polling Aktif</span>
+                    {% else %}
+                    <h3 style="color: #ef4444; margin: 6px 0; display:flex; align-items:center; gap:8px;">
+                        <span class="badge-dot-red" style="width:10px; height:10px; flex-shrink:0;"></span>
+                        <span>OFFLINE</span>
+                    </h3>
+                    <span class="kpi-sub">Polling Tidak Aktif</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% if bot.is_online %}
+            <div class="kpi-icon-box icon-green" id="bot-icon-box">
+                {% else %}
+                <div class="kpi-icon-box icon-red" id="bot-icon-box">
+                    {% endif %}
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12.55a11 11 0 0 1 14.08 0"></path>
+                        <path d="M1.42 9a16 16 0 0 1 21.16 0"></path>
+                        <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+                        <line x1="12" y1="20" x2="12.01" y2="20"></line>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-info">
+                    <span class="kpi-label">Target Broadcast Grup</span>
+                    <h3 style="color: #cbd5e1; margin: 6px 0;">{{ bot.chat_group }}</h3>
+                    <span class="kpi-sub">Chat ID: <code>{{ bot.chat_id }}</code></span>
+                </div>
+                <div class="kpi-icon-box icon-amber">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-info">
+                    <span class="kpi-label">Total Alert Terkirim</span>
+                    <h3 id="active-alerts-pushed" style="color: #f59e0b; margin: 6px 0;">{{ bot.active_alerts_pushed }} Pesan</h3>
+                    <span class="kpi-sub">Anti-spam Cooldown Aktif</span>
+                </div>
+                <div class="kpi-icon-box icon-red">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Dual Panel: Whitelist & Commands -->
+        <div class="content-layout">
+            <!-- Left: Whitelist Tim NOC -->
+            <div class="table-panel">
+                <div class="panel-header">
+                    <div>
+                        <h3 class="panel-title">Network Engineer Whitelist</h3>
+                        <span class="panel-sub">Daftar akun Telegram resmi yang memiliki keseluruhan akses command
+                            bot</span>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Chat ID</th>
+                                <th>Username</th>
+                                <th>Nama Teknisi</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for w in whitelist %}
+                            <tr>
+                                <td><code>{{ w.chat_id }}</code></td>
+                                <td><strong style="color:#38bdf8;">{{ w.username }}</strong></td>
+                                <td>{{ w.name }}</td>
+                                <td>{{ w.role }}</td>
+                                <td>
+                                    {% if w.is_active %}
+                                    <span class="status-badge badge-up"><span class="badge-dot-green"></span>
+                                        ACTIVE</span>
+                                    {% else %}
+                                    <span class="status-badge badge-down"><span class="badge-dot-red"></span>
+                                        INACTIVE</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Right: Bot Commands Cheat Sheet -->
+            <div class="table-panel">
+                <div class="panel-header">
+                    <div>
+                        <h3 class="panel-title">Daftar Perintah Agiva Network Automation Channel</h3>
+                        <span class="panel-sub">Perintah interaktif yang dapat diketik oleh user</span>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Perintah</th>
+                                <th>Parameter</th>
+                                <th>Fungsi Operasional</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for c in commands %}
+                            <tr>
+                                <td><code style="color:#10b981; font-weight:700;">{{ c.command }}</code></td>
+                                <td><code>{{ c.params }}</code></td>
+                                <td class="col-desc">{{ c.desc }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Telegram Message Dispatch Log -->
+        <div class="table-panel">
+            <div class="panel-header">
+                <div>
+                    <h3 class="panel-title">Riwayat Pengiriman Pesan & Notifikasi Telegram</h3>
+                    <span class="panel-sub">Catatan audit log pengiriman alert anomali dan respon command</span>
+                </div>
+                <button class="btn-refresh" onclick="window.location.reload()">Refresh Log</button>
+            </div>
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Waktu</th>
+                            <th>Tipe Pesan</th>
+                            <th>Target Chat ID</th>
+                            <th>Isi Pesan Notifikasi</th>
+                            <th>Status Pengiriman</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tgLogsBody">
+                        {% for l in logs %}
+                        <tr>
+                            <td class="col-time">{{ l.sent_at }}</td>
+                            <td>
+                                {% if l.type == 'ALERT_NOTIFICATION' %}
+                                <span class="alert-severity-badge badge-warn">ALERT NOTIF</span>
+                                {% else %}
+                                <span class="badge-type">CMD REPLY</span>
+                                {% endif %}
+                            </td>
+                            <td><code>{{ l.chat_id }}</code></td>
+                            <td style="font-family: var(--font-mono); font-size:12px; color:#cbd5e1;">{{ l.content }}
+                            </td>
+                            <td>
+                                <span class="status-badge badge-up">
+                                    <span class="badge-dot-green"></span> {{ l.status }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+    {% endblock %}
+
+    {% block scripts %}
+    <script>
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            if (!container) {
+                alert(message);
+                return;
+            }
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.style.cssText = 'background: #18142c; border: 1px solid #3d346b; color: #f8fafc; padding: 12px 18px; border-radius: 8px; margin-top: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); font-size: 13px; display: flex; align-items: center; gap: 8px; animation: slideIn 0.3s ease;';
+            toast.innerHTML = `<span>${type === 'success' ? '✅' : '⚠️'}</span><span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.4s ease';
+                setTimeout(() => toast.remove(), 400);
+            }, 4000);
+        }
+
+        async function simulateTelegramAlert() {
+            try {
+                const btn = document.querySelector('.btn-send-test');
+                btn.disabled = true;
+                btn.innerHTML = 'Mengirim...';
+
+                const res = await fetch('/api/telegram/test-alert', { method: 'POST' });
+                const data = await res.json();
+
+                if (data.success) {
+                    showToast(data.message || 'Alert simulasi berhasil dikirim ke Telegram!', 'success');
+                    setTimeout(() => window.location.reload(), 1200);
+                } else {
+                    showToast(data.message || 'Gagal mengirim alert', 'error');
+                }
+            } catch (err) {
+                showToast('Error koneksi saat kirim alert', 'error');
+            } finally {
+                const btn = document.querySelector('.btn-send-test');
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = `
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px;">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                    Test Telegram Connectivity
+                `;
+                }
+            }
+        }
+
+        async function fetchTelegramLogs() {
+            try {
+                const res = await fetch('/api/telegram/logs');
+                const data = await res.json();
+                
+                const alertsCountElem = document.getElementById('active-alerts-pushed');
+                if (alertsCountElem && data.active_alerts_pushed !== undefined) {
+                    alertsCountElem.innerText = data.active_alerts_pushed + ' Pesan';
+                }
+
+                const tbody = document.getElementById('tgLogsBody');
+                if (tbody && data.logs) {
+                    let html = '';
+                    for (const l of data.logs) {
+                        let typeBadge = l.type === 'ALERT_NOTIFICATION' 
+                            ? '<span class="alert-severity-badge badge-warn">ALERT NOTIF</span>' 
+                            : '<span class="badge-type">CMD REPLY</span>';
+                            
+                        // Encode html content slightly to prevent parsing issues, though backend sends clean strings
+                        // we can just interpolate as it was doing in Jinja
+                        html += `
+                        <tr>
+                            <td class="col-time">${l.sent_at}</td>
+                            <td>${typeBadge}</td>
+                            <td><code>${l.chat_id}</code></td>
+                            <td style="font-family: var(--font-mono); font-size:12px; color:#cbd5e1;">${l.content}</td>
+                            <td>
+                                <span class="status-badge badge-up">
+                                    <span class="badge-dot-green"></span> ${l.status}
+                                </span>
+                            </td>
+                        </tr>`;
+                    }
+                    tbody.innerHTML = html;
+                }
+            } catch (err) {
+                console.error('Failed to fetch telegram logs', err);
+            }
+        }
+
+        // Auto-refresh telegram logs every 5 seconds
+        setInterval(fetchTelegramLogs, 5000);
+    </script>
+    {% endblock %}

@@ -1,0 +1,21 @@
+# Virtual Environment (Wajib di-ignore, jangan di-push ke GitHub)
+venv/
+env/
+ENV/
+.venv/
+
+# Environment Variables (Berisi secret key / password)
+.env
+
+# Python Cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# SQLite Database lokal (opsional, jika ingin data lokal tidak tertimpa)
+*.db
+*.sqlite3
+
+# IDE / Editor
+.vscode/
+.idea/

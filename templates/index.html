@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AGIVA NOC - Network Monitoring Dashboard</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="../static/css/style.css">
+</head>
+
+<body>
+    <!-- Top Navigation Bar -->
+    <header class="navbar">
+        <div class="nav-left">
+            <a href="index.html" class="brand-logo">
+                <img src="../static/img/20260203-Agiva-Logo-Rect-1280px.png" alt="Agiva Logo" class="brand-img"
+                    onerror="this.src='/static/img/20260203-Agiva-Logo-Rect-1280px.png'" />
+
+            </a>
+
+            <div class="nav-search">
+                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" id="globalSearch" placeholder="Cari IP, nama router, site..." />
+            </div>
+        </div>
+
+        <nav class="nav-links">
+            <a href="index.html" class="nav-item active">Monitoring</a>
+            <a href="alerts.html" class="nav-item">Alerts {% if active_alerts_count > 0 %}<span class="nav-badge" id="navAlertBadge">{{ active_alerts_count }}</span>{% endif %}</a>
+            <a href="telegram.html" class="nav-item">Telegram Bot</a>
+            <a href="backups.html" class="nav-item">Backups</a>
+        </nav>
+
+        <div class="nav-right">
+            <div class="status-indicator" title="Data Collector & Polling Engine Status">
+                <span class="pulse-dot"></span>
+                <span class="status-text">LIVE POLLING</span>
+            </div>
+            <div class="clock-display" id="clockDisplay">12:00:00 WIB</div>
+            <div class="user-profile">
+                <div class="avatar">EA</div>
+                <div class="user-info">
+                    <span class="user-name">Engineer Agiva</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="main-container">
+        <div class="dashboard-wrapper">
+
+            <!-- 1. KPI Summary Cards Row -->
+            <section class="kpi-grid">
+                <div class="kpi-card card-total">
+                    <div class="kpi-info">
+                        <span class="kpi-label">Total Devices</span>
+                        <h2 class="kpi-value" id="kpiTotal">8</h2>
+                        <span class="kpi-sub">Inventaris Jaringan Aktif</span>
+                    </div>
+                    <div class="kpi-icon-box icon-blue">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+                            <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+                            <line x1="6" y1="6" x2="6.01" y2="6"></line>
+                            <line x1="6" y1="18" x2="6.01" y2="18"></line>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="kpi-card card-online">
+                    <div class="kpi-info">
+                        <span class="kpi-label">Devices Online</span>
+                        <h2 class="kpi-value text-success" id="kpiOnline">6</h2>
+                        <span class="kpi-sub text-success-light">Normal Reachable</span>
+                    </div>
+                    <div class="kpi-icon-box icon-green">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="kpi-card card-offline">
+                    <div class="kpi-info">
+                        <span class="kpi-label">Devices Offline</span>
+                        <h2 class="kpi-value text-danger" id="kpiOffline">2</h2>
+                        <span class="kpi-sub text-danger-light">Unreachable / Timeout</span>
+                    </div>
+                    <div class="kpi-icon-box icon-red">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="kpi-card card-alerts">
+                    <div class="kpi-info">
+                        <span class="kpi-label">Active Alerts</span>
+                        <h2 class="kpi-value text-warning" id="kpiAlerts">3</h2>
+                        <span class="kpi-sub text-warning-light">Memerlukan Penanganan</span>
+                    </div>
+                    <div class="kpi-icon-box icon-amber">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path
+                                d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z">
+                            </path>
+                            <line x1="12" y1="9" x2="12" y2="13"></line>
+                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. Main Analytics & Alerts Grid -->
+            <div class="content-layout">
+                <!-- Left Main Column (Charts + Device Table) -->
+                <div class="main-column">
+                    <!-- Charts Section -->
+                    <div class="charts-row">
+                        <!-- Chart 1: Real-time CPU & Memory -->
+                        <div class="chart-panel">
+                            <div class="panel-header">
+                                <div>
+                                    <h3 class="panel-title">Real-time CPU & Memory Utilization (%)</h3>
+                                    <span class="panel-sub">Rata-rata metrik perangkat aktif</span>
+                                </div>
+                                <div class="chart-legend-custom">
+                                    <span class="legend-tag tag-cpu"><span class="legend-color bg-green"></span> CPU
+                                        (%)</span>
+                                    <span class="legend-tag tag-mem"><span class="legend-color bg-amber"></span> Memory
+                                        (%)</span>
+                                </div>
+                            </div>
+                            <div class="chart-body">
+                                <canvas id="cpuMemChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Chart 2: Network Traffic (Mbps) -->
+                        <div class="chart-panel">
+                            <div class="panel-header">
+                                <div>
+                                    <h3 class="panel-title">Network Interface Traffic (Mbps)</h3>
+                                    <span class="panel-sub">Throughput agregat real-time</span>
+                                </div>
+                                <div class="chart-legend-custom">
+                                    <span class="legend-tag tag-traffic"><span class="legend-color bg-cyan"></span>
+                                        Ingress</span>
+                                    <span class="legend-tag tag-egress"><span class="legend-color bg-orange"></span>
+                                        Egress</span>
+                                </div>
+                            </div>
+                            <div class="chart-body">
+                                <canvas id="trafficChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Monitored Devices Table Panel -->
+
+            <div class="table-panel" id="monitored-devices">
+                        <div class="panel-header table-header-flex">
+                            <div>
+                                <h3 class="panel-title">Monitored Devices</h3>
+                                <span class="panel-sub">Daftar router & switch yang terpantau aktif oleh Data
+                                    Collector</span>
+                            </div>
+                            <div class="table-actions">
+                                <span class="badge-filter active" data-filter="all">Semua (8)</span>
+                                <span class="badge-filter" data-filter="UP">Online (6)</span>
+                                <span class="badge-filter" data-filter="DOWN">Offline (2)</span>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="data-table" id="devicesTable">
+                                <thead>
+                                    <tr>
+                                        <th>Device Name</th>
+                                        <th>IP Address</th>
+                                        <th>Vendor</th>
+                                        <th>Site / Location</th>
+                                        <th>Status</th>
+                                        <th>CPU & RAM</th>
+                                        <th>Uptime</th>
+                                        <th class="text-center">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="deviceTableBody">
+                                    <tr class="device-row filter-UP" id="row-dev-1">
+                                        <td class="col-name">
+                                            <div class="device-name-wrap">
+                                                <span class="device-icon-tag mikrotik">M</span>
+                                                <strong>Router-Core-01</strong>
+                                            </div>
+                                        </td>
+                                        <td class="col-ip"><code>192.168.1.1</code></td>
+                                        <td><span class="vendor-badge badge-mikrotik">MikroTik</span></td>
+                                        <td class="col-site">Data Center HQ</td>
+                                        <td><span class="status-badge badge-up"><span class="badge-dot-green"></span>
+                                                UP</span></td>
+                                        <td class="col-metrics">
+                                            <div class="metric-bars">
+                                                <div class="mini-bar-row">
+                                                    <span class="mini-lbl">C:</span>
+                                                    <div class="progress-bar-bg">
+                                                        <div class="progress-bar-fill fill-cpu" style="width: 34.5%">
+                                                        </div>
+                                                    </div>
+                                                    <span class="mini-val">34.5%</span>
+                                                </div>
+                                                <div class="mini-bar-row">
+                                                    <span class="mini-lbl">M:</span>
+                                                    <div class="progress-bar-bg">
+                                                        <div class="progress-bar-fill fill-mem" style="width: 48.2%">
+                                                        </div>
+                                                    </div>
+                                                    <span class="mini-val">48.2%</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="col-uptime">42 days, 14 hours</td>
+                                        <td class="text-center">
+                                            <a href="device_detail.html" class="btn-action btn-detail">Detail</a>
+                                        </td>
+                                    </tr>
+                                    <tr class="device-row filter-UP" id="row-dev-2">
+                                        <td class="col-name">
+                                            <div class="device-name-wrap">
+                                                <span class="device-icon-tag cisco">C</span>
+                                                <strong>Switch-Dist-01</strong>
+                                            </div>
+                                        </td>
+                                        <td class="col-ip"><code>192.168.1.2</code></td>
+                                        <td><span class="vendor-badge badge-cisco">Cisco</span></td>
+                                        <td class="col-site">Data Center HQ</td>
+                                        <td><span class="status-badge badge-up"><span class="badge-dot-green"></span>
+                                                UP</span></td>
+                                        <td class="col-metrics">
+                                            <div class="metric-bars">
+                                                <div class="mini-bar-row">
+                                                    <span class="mini-lbl">C:</span>
+                                                    <div class="progress-bar-bg">
+                                                        <div class="progress-bar-fill fill-cpu" style="width: 22.0%">
+                                                        </div>
+                                                    </div>
+                                                    <span class="mini-val">22.0%</span>
+                                                </div>
+                                                <div class="mini-bar-row">
+                                                    <span class="mini-lbl">M:</span>
+                                                    <div class="progress-bar-bg">
+                                                        <div class="progress-bar-fill fill-mem" style="width: 39.1%">
+                                                        </div>
+                                                    </div>
+                                                    <span class="mini-val">39.1%</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="col-uptime">89 days, 06 hours</td>
+                                        <td class="text-center">
+                                            <a href="device_detail.html" class="btn-action btn-detail">Detail</a>
+                                        </td>
+                                    </tr>
+                                    <tr class="device-row filter-UP" id="row-dev-3">
+                                        <td class="col-name">
+                                            <div class="device-name-wrap">
+                                                <span class="device-icon-tag mikrotik">M</span>
+                                                <strong>Router-Edge-01</strong>
+                                            </div>
+                                        </td>
+                                        <td class="col-ip"><code>192.168.1.3</code></td>
+                                        <td><span class="vendor-badge badge-mikrotik">MikroTik</span></td>
+                                        <td class="col-site">Gateway IDC</td>
+                                        <td><span class="status-badge badge-up"><span class="badge-dot-green"></span>
+                                                UP</span></td>
+                                        <td class="col-metrics">
+                                            <div class="metric-bars">
+                                                <div class="mini-bar-row">
+                                                    <span class="mini-lbl">C:</span>
+                                                    <div class="progress-bar-bg">
+                                                        <div class="progress-bar-fill fill-cpu" style="width: 58.7%">
+                                                        </div>
+                                                    </div>
+                                                    <span class="mini-val">58.7%</span>
+                                                </div>
+                                                <div class="mini-bar-row">
+                                                    <span class="mini-lbl">M:</span>
+                                                    <div class="progress-bar-bg">
+                                                        <div class="progress-bar-fill fill-mem" style="width: 64.3%">
+                                                        </div>
+                                                    </div>
+                                                    <span class="mini-val">64.3%</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="col-uptime">15 days, 02 hours</td>
+                                        <td class="text-center">
+                                            <a href="device_detail.html" class="btn-action btn-detail">Detail</a>
+                                        </td>
+                                    </tr>
+                                    <tr class="device-row filter-UP" id="row-dev-4">
+                                        <td class="col-name">
+                                            <div class="device-name-wrap">
+                                                <span class="device-icon-tag mikrotik">M</span>
+                                                <strong>Router-Branch-Sby</strong>
+                                            </div>
+                                        </td>
+                                        <td class="col-ip"><code>10.10.20.1</code></td>
+                                        <td><span class="vendor-badge badge-mikrotik">MikroTik</span></td>
+                                        <td class="col-site">Surabaya Branch</td>
+                                        <td><span class="status-badge badge-up"><span class="badge-dot-green"></span>
+                                                UP</span></td>
+                                        <td class="col-metrics">
+                                            <div class="metric-bars">
+                                                <div class="mini-bar-row">
+                                                    <span class="mini-lbl">C:</span>
+                                                    <div class="progress-bar-bg">
+                                                        <div class="progress-bar-fill fill-cpu" style="width: 18.2%">
+                                                        </div>
+                                                    </div>
+                                                    <span class="mini-val">18.2%</span>
+                                                </div>
+                                                <div class="mini-bar-row">
+                                                    <span class="mini-lbl">M:</span>
+                                                    <div class="progress-bar-bg">
+                                                        <div class="progress-bar-fill fill-mem" style="width: 31.0%">
+                                                        </div>
+                                                    </div>
+                                                    <span class="mini-val">31.0%</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="col-uptime">4 days, 11 hours</td>
+                                        <td class="text-center">
+                                            <a href="device_detail.html" class="btn-action btn-detail">Detail</a>
+                                        </td>
+                                    </tr>
+                                    <tr class="device-row filter-DOWN" id="row-dev-5">
+                                        <td class="col-name">
+                                            <div class="device-name-wrap">
+                                                <span class="device-icon-tag cisco">C</span>
+                                                <strong>Switch-Access-Bdg</strong>
+                                            </div>
+                                        </td>
+                                        <td class="col-ip"><code>10.20.30.2</code></td>
+                                        <td><span class="vendor-badge badge-cisco">Cisco</span></td>
+                                        <td class="col-site">Bandung Site</td>
+                                        <td><span class="status-badge badge-down"><span class="badge-dot-red"></span>
+                                                DOWN</span></td>
+                                        <td class="col-metrics"><span class="text-muted">-</span></td>
+                                        <td class="col-uptime">Offline</td>
+                                        <td class="text-center">
+                                            <a href="device_detail.html" class="btn-action btn-detail">Detail</a>
+                                        </td>
+                                    </tr>
+                                    <tr class="device-row filter-DOWN" id="row-dev-7">
+                                        <td class="col-name">
+                                            <div class="device-name-wrap">
+                                                <span class="device-icon-tag cisco">C</span>
+                                                <strong>Firewall-Ext-01</strong>
+                                            </div>
+                                        </td>
+                                        <td class="col-ip"><code>192.168.100.1</code></td>
+                                        <td><span class="vendor-badge badge-cisco">Cisco</span></td>
+                                        <td class="col-site">DMZ Gateway</td>
+                                        <td><span class="status-badge badge-down"><span class="badge-dot-red"></span>
+                                                DOWN</span></td>
+                                        <td class="col-metrics"><span class="text-muted">-</span></td>
+                                        <td class="col-uptime">Offline</td>
+                                        <td class="text-center">
+                                            <a href="device_detail.html" class="btn-action btn-detail">Detail</a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <aside class="alerts-sidebar">
+                    <div class="panel-header alerts-sidebar-header">
+                        <div>
+                            <h3 class="panel-title">Active & Recent Alerts</h3>
+                            <span class="panel-sub">Peringatan anomali dari Rule Engine</span>
+                        </div>
+                        <a href="alerts.html" class="link-view-all">Lihat Semua &rarr;</a>
+                    </div>
+
+                    <div class="alerts-stream" id="alertsStream">
+                        <div class="alert-card card-severity-warning" id="alert-card-101">
+                            <div class="alert-card-header">
+                                <div class="alert-title-wrap">
+                                    <span class="alert-severity-badge badge-warn">WARNING</span>
+                                    <span class="alert-time">15:55:49 WIB</span>
+                                </div>
+                                <span class="alert-id">#101</span>
+                            </div>
+                            <div class="alert-device-name">
+                                <strong>Router-Edge-01</strong> (192.168.1.3)
+                            </div>
+                            <p class="alert-message">High CPU utilization detected (> 85%) on Core CPU 0.</p>
+                            <div class="alert-footer">
+                                <span class="badge-ack-state text-warning">● Pending Action</span>
+                                <button class="btn-ack" onclick="acknowledgeAlert(101)">ACK</button>
+                            </div>
+                        </div>
+
+                        <div class="alert-card card-severity-critical" id="alert-card-102">
+                            <div class="alert-card-header">
+                                <div class="alert-title-wrap">
+                                    <span class="alert-severity-badge badge-crit">CRITICAL</span>
+                                    <span class="alert-time">15:42:10 WIB</span>
+                                </div>
+                                <span class="alert-id">#102</span>
+                            </div>
+                            <div class="alert-device-name">
+                                <strong>Switch-Access-Bdg</strong> (10.20.30.2)
+                            </div>
+                            <p class="alert-message">Device unreachable after 2 consecutive polling attempts (ICMP/SSH
+                                Timeout).</p>
+                            <div class="alert-footer">
+                                <span class="badge-ack-state text-warning">● Pending Action</span>
+                                <button class="btn-ack" onclick="acknowledgeAlert(102)">ACK</button>
+                            </div>
+                        </div>
+
+                        <div class="alert-card card-severity-critical is-ack" id="alert-card-103">
+                            <div class="alert-card-header">
+                                <div class="alert-title-wrap">
+                                    <span class="alert-severity-badge badge-crit">CRITICAL</span>
+                                    <span class="alert-time">15:10:05 WIB</span>
+                                </div>
+                                <span class="alert-id">#103</span>
+                            </div>
+                            <div class="alert-device-name">
+                                <strong>Firewall-Ext-01</strong> (192.168.100.1)
+                            </div>
+                            <p class="alert-message">Interface GigabitEthernet0/1 changed state to administratively
+                                down.</p>
+                            <div class="alert-footer">
+                                <span class="badge-ack-state text-success">✓ Acknowledged</span>
+                                <span class="text-muted-xs">Terkonfirmasi</span>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </div>
+    </main>
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Live Clock Script -->
+    <script>
+        function updateClock() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' WIB';
+            const clockEl = document.getElementById('clockDisplay');
+            if (clockEl) clockEl.textContent = timeStr;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+    </script>
+    <!-- Relative JS -->
+    <script src="../static/js/dashboard.js"></script>
+</body>
+
+</html>

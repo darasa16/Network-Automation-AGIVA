@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}AGIVA NOC - Network Automation Dashboard{% endblock %}</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+    <!-- Top Navigation Bar -->
+    <header class="navbar">
+        <div class="nav-left">
+            <a href="{{ url_for('dashboard') }}" class="brand-logo">
+                <img src="{{ url_for('static', filename='img/20260203-Agiva-Logo-Rect-1280px.png') }}" alt="Agiva Logo"
+                    class="brand-img" />
+            </a>
+
+            <div class="nav-search">
+                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" id="globalSearch" placeholder="Cari IP, nama router, site..." />
+            </div>
+        </div>
+
+        <nav class="nav-links">
+            <a href="{{ url_for('dashboard') }}"
+                class="nav-item {% if request.path in ['/', '/index.html'] or request.path.startswith('/device') %}active{% endif %}">
+                Monitoring
+            </a>
+            <a href="{{ url_for('alerts_page') }}" class="nav-item {% if 'alert' in request.path %}active{% endif %}">
+                Alerts
+                {% if active_alerts_count > 0 %}<span class="nav-badge" id="navAlertBadge">{{ active_alerts_count }}</span>{% endif %}
+            </a>
+            <a href="{{ url_for('telegram_page') }}"
+                class="nav-item {% if 'telegram' in request.path %}active{% endif %}">
+                Telegram Bot
+            </a>
+            <a href="{{ url_for('backups_page') }}" class="nav-item {% if 'backup' in request.path %}active{% endif %}">
+                Backups
+            </a>
+        </nav>
+
+        <div class="nav-right">
+            <div class="status-indicator" title="Data Collector & Polling Engine Status">
+                <span class="pulse-dot"></span>
+                <span class="status-text">LIVE POLLING</span>
+            </div>
+            <div class="clock-display" id="clockDisplay">11:35:40 WIB</div>
+            <div class="user-profile">
+                <div class="avatar">EA</div>
+                <div class="user-info">
+                    <span class="user-name">Engineer Agiva</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main View Content -->
+    <main class="main-container">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Toast Notification Container for Real-time Alerts -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Base Scripts -->
+    <script>
+        // Update live clock display
+        function updateClock() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' WIB';
+            const clockEl = document.getElementById('clockDisplay');
+            if (clockEl) clockEl.textContent = timeStr;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+
+</html>

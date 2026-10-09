@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alerts & Incidents Management - AGIVA NOC</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <!-- Relative CSS -->
+    <link rel="stylesheet" href="../static/css/style.css">
+</head>
+
+<body>
+    <!-- Top Navigation Bar -->
+    <header class="navbar">
+        <div class="nav-left">
+            <a href="index.html" class="brand-logo">
+                <img src="../static/img/20260203-Agiva-Logo-Rect-1280px.png" alt="Agiva Logo" class="brand-img"
+                    onerror="this.src='/static/img/20260203-Agiva-Logo-Rect-1280px.png'" />
+
+            </a>
+
+            <div class="nav-search">
+                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" placeholder="Cari IP, nama router, site..." />
+            </div>
+        </div>
+
+        <nav class="nav-links">
+            <a href="index.html" class="nav-item">Monitoring</a>
+            <a href="alerts.html" class="nav-item active">Alerts {% if active_alerts_count > 0 %}<span class="nav-badge">{{ active_alerts_count }}</span>{% endif %}</a>
+            <a href="telegram.html" class="nav-item">Telegram Bot</a>
+            <a href="backups.html" class="nav-item">Backups</a>
+        </nav>
+
+        <div class="nav-right">
+            <div class="status-indicator">
+                <span class="pulse-dot"></span>
+                <span class="status-text">LIVE POLLING</span>
+            </div>
+            <div class="clock-display" id="clockDisplay">12:00:00 WIB</div>
+            <div class="user-profile">
+                <div class="avatar">EA</div>
+                <div class="user-info">
+                    <span class="user-name">Engineer Agiva</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="main-container">
+        <div class="alerts-page-container">
+            <div class="page-header-row">
+                <div>
+                    <h2>Alerts & Incident Log</h2>
+                    <p class="sub-text">Peringatan real-time yang dievaluasi oleh Rule Engine dan dikirim ke Telegram
+                        Agiva Network Automation Channel.</p>
+                </div>
+                <div class="header-tools">
+                    <button class="btn-refresh" onclick="window.location.reload()">Refresh Log</button>
+                </div>
+            </div>
+
+            <!-- Alert Filters -->
+            <div class="filter-bar">
+                <button class="filter-tab active" data-filter="all">Semua Alert ({{ total_alerts }})</button>
+                <button class="filter-tab" data-filter="pending">Belum Di-ACK ({{ pending_alerts }})</button>
+                <button class="filter-tab" data-filter="acked">Sudah Di-ACK ({{ acked_alerts }})</button>
+            </div>
+
+            <!-- Alerts Table Panel -->
+            <div class="table-panel">
+                <div class="table-responsive">
+                    <table class="data-table" id="alertsTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Severity</th>
+                                <th>Perangkat</th>
+                                <th>IP Address</th>
+                                <th>Tipe Anomali</th>
+                                <th>Deskripsi Masalah</th>
+                                <th>Waktu Kejadian</th>
+                                <th>Status ACK</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if alerts %}
+                            {% for a in alerts %}
+                            <tr class="alert-row {% if a.acknowledged %}filter-row-acked{% else %}filter-row-pending{% endif %}"
+                                id="alert-row-{{ a.id }}">
+                                <td><code>#{{ a.id }}</code></td>
+                                <td>
+                                    {% if a.severity == 'CRITICAL' %}
+                                    <span class="alert-severity-badge badge-crit">CRITICAL</span>
+                                    {% else %}
+                                    <span class="alert-severity-badge badge-warn">{{ a.severity }}</span>
+                                    {% endif %}
+                                </td>
+                                <td><strong>{{ a.device_name }}</strong></td>
+                                <td><code>{{ a.ip }}</code></td>
+                                <td><span class="badge-type">{{ a.type }}</span></td>
+                                <td class="col-desc">{{ a.message }}</td>
+                                <td class="col-time">{{ a.triggered_at }}</td>
+                                <td>
+                                    {% if a.acknowledged %}
+                                    <span class="badge-ack-state text-success">✓ Acknowledged</span>
+                                    {% else %}
+                                    <span class="badge-ack-state text-warning">● Menunggu ACK</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            {% else %}
+                            <tr class="empty-state-row">
+                                <td colspan="8" class="text-center py-4" style="padding: 3rem; color: #6b7280;">
+                                    <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                                            stroke-linejoin="round" style="color: #10b981;">
+                                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                        </svg>
+                                        <h3 style="margin: 0; font-size: 1.1rem; color: #6b7280;">Tidak Ada Alert</h3>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script>
+        function updateClock() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' WIB';
+            const clockEl = document.getElementById('clockDisplay');
+            if (clockEl) clockEl.textContent = timeStr;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Tab filter handler
+        document.querySelectorAll('.filter-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                const filter = tab.getAttribute('data-filter');
+
+                document.querySelectorAll('.alert-row').forEach(row => {
+                    if (filter === 'all') {
+                        row.style.display = '';
+                    } else if (filter === 'pending') {
+                        row.style.display = row.classList.contains('filter-row-pending') ? '' : 'none';
+                    } else if (filter === 'acked') {
+                        row.style.display = row.classList.contains('filter-row-acked') ? '' : 'none';
+                    }
+                });
+            });
+        });
+
+        function showToast(message) {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.style.borderLeft = '4px solid #10b981';
+            toast.innerHTML = `<span>✅</span><span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+    </script>
+</body>
+
+</html>

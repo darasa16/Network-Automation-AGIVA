@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Configuration Backups - AGIVA NOC</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <!-- Relative CSS -->
+    <link rel="stylesheet" href="../static/css/style.css">
+</head>
+
+<body>
+    <!-- Top Navigation Bar -->
+    <header class="navbar">
+        <div class="nav-left">
+            <a href="index.html" class="brand-logo">
+                <img src="../static/img/20260203-Agiva-Logo-Rect-1280px.png" alt="Agiva Logo" class="brand-img"
+                    onerror="this.src='/static/img/20260203-Agiva-Logo-Rect-1280px.png'" />
+
+            </a>
+
+            <div class="nav-search">
+                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" id="backupSearch" placeholder="Cari file, router, site..." />
+            </div>
+        </div>
+
+        <nav class="nav-links">
+            <a href="index.html" class="nav-item">Monitoring</a>
+            <a href="alerts.html" class="nav-item">Alerts {% if active_alerts_count > 0 %}<span class="nav-badge">{{ active_alerts_count }}</span>{% endif %}</a>
+            <a href="telegram.html" class="nav-item">Telegram Bot</a>
+            <a href="backups.html" class="nav-item active">Backups</a>
+        </nav>
+
+        <div class="nav-right">
+            <div class="status-indicator">
+                <span class="pulse-dot"></span>
+                <span class="status-text">LIVE POLLING</span>
+            </div>
+            <div class="clock-display" id="clockDisplay">12:00:00 WIB</div>
+            <div class="user-profile">
+                <div class="avatar">EA</div>
+                <div class="user-info">
+                    <span class="user-name">Engineer Agiva</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="main-container">
+        <div class="backups-page-container">
+            <div class="page-header-row">
+                <div>
+                    <h2>Network Configuration Backups</h2>
+                    <p class="sub-text">Pencadangan file konfigurasi harian otomatis via APScheduler dan Netmiko /
+                        RouterOS-API.</p>
+                </div>
+                <div class="header-tools" style="display:flex; align-items:center; gap:12px;">
+                    <span class="cron-badge">Penjadwalan Harian: Pukul 02:00 WIB</span>
+                    <button class="btn-action" onclick="triggerManualBackup()">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        Backup Manual Sekarang
+                    </button>
+                </div>
+            </div>
+
+            <!-- Backup Info KPI Cards -->
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-info">
+                        <span class="kpi-label">Penyimpanan Terstruktur</span>
+                        <h3
+                            style="color: #38bdf8; margin: 6px 0; font-family: 'JetBrains Mono', monospace; word-break: break-all;">
+                            /backups/{site}/{device}/</h3>
+                        <span class="kpi-sub">Format File: YYYY-MM-DD_config.txt</span>
+                    </div>
+                    <div class="kpi-icon-box icon-blue">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z">
+                            </path>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-info">
+                        <span class="kpi-label">Kebijakan Retensi</span>
+                        <h3 style="color: #10b981; margin: 6px 0;">30 Hari Terakhir</h3>
+                        <span class="kpi-sub">Penghapusan file lawas otomatis</span>
+                    </div>
+                    <div class="kpi-icon-box icon-green">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-info">
+                        <span class="kpi-label">Status Siklus Terakhir</span>
+                        <h3 style="color: #E8A576; margin: 6px 0;">3 Sukses / 1 Gagal</h3>
+                        <span class="kpi-sub">Notifikasi dikirim ke Telegram tim NOC</span>
+                    </div>
+                    <div class="kpi-icon-box icon-amber">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-info">
+                        <span class="kpi-label">Integrasi Git Repository</span>
+                        <h3 style="color: #38bdf8; margin: 6px 0;">Version Controlled</h3>
+                        <span class="kpi-sub">Auto commit diff perubahan config</span>
+                    </div>
+                    <div class="kpi-icon-box icon-blue">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="18" cy="18" r="3"></circle>
+                            <circle cx="6" cy="6" r="3"></circle>
+                            <path d="M13 6h3a2 2 0 0 1 2 2v7"></path>
+                            <line x1="6" y1="9" x2="6" y2="21"></line>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Backups Table Panel -->
+            <div class="table-panel">
+                <div class="panel-header">
+                    <div>
+                        <h3 class="panel-title">Riwayat Backup Konfigurasi Terkini</h3>
+                        <span class="panel-sub">Hasil eksekusi harian dan trigger manual bot Telegram (/backup)</span>
+                    </div>
+                    <div class="table-actions">
+                        <button class="btn-refresh" onclick="window.location.reload()">Refresh Data</button>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="data-table" id="backupsTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Device Name</th>
+                                <th>Site / Lokasi</th>
+                                <th>Waktu Pencadangan</th>
+                                <th>File Konfigurasi</th>
+                                <th>Ukuran</th>
+                                <th>Status</th>
+                                <th class="text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="backupsTableBody">
+                            {% if backups %}
+                            {% for b in backups %}
+                            <tr>
+                                <td><code>#{{ b.id }}</code></td>
+                                <td><strong>{{ b.device }}</strong></td>
+                                <td>{{ b.site }}</td>
+                                <td>{{ b.date }}</td>
+                                <td><code>{{ b.file }}</code></td>
+                                <td>{{ b.size }}</td>
+                                <td>
+                                    {% if b.status == 'SUCCESS' %}
+                                    <span class="status-badge badge-up">
+                                        <span class="badge-dot-green"></span> SUCCESS
+                                    </span>
+                                    {% else %}
+                                    <span class="status-badge badge-down">
+                                        <span class="badge-dot-red"></span> FAILED
+                                    </span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    <button class="btn-action"
+                                        style="padding: 4px 12px !important; font-size: 11px !important;"
+                                        onclick="viewConfig('{{ b.device }}')">Lihat Config</button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            {% else %}
+                            <tr>
+                                <td><code>#1</code></td>
+                                <td><strong>Router-Core-01</strong></td>
+                                <td>Data Center HQ</td>
+                                <td>2026-09-28 02:00:15 WIB</td>
+                                <td><code>2026-09-28_config.txt</code></td>
+                                <td>45.2 KB</td>
+                                <td>
+                                    <span class="status-badge badge-up">
+                                        <span class="badge-dot-green"></span> SUCCESS
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <button class="btn-action"
+                                        style="padding: 4px 12px !important; font-size: 11px !important;"
+                                        onclick="viewConfig('Router-Core-01')">Lihat Config</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><code>#2</code></td>
+                                <td><strong>Switch-Dist-01</strong></td>
+                                <td>Data Center HQ</td>
+                                <td>2026-09-28 02:02:40 WIB</td>
+                                <td><code>2026-09-28_config.txt</code></td>
+                                <td>128.6 KB</td>
+                                <td>
+                                    <span class="status-badge badge-up">
+                                        <span class="badge-dot-green"></span> SUCCESS
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <button class="btn-action"
+                                        style="padding: 4px 12px !important; font-size: 11px !important;"
+                                        onclick="viewConfig('Switch-Dist-01')">Lihat Config</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><code>#3</code></td>
+                                <td><strong>Router-Edge-01</strong></td>
+                                <td>Gateway IDC</td>
+                                <td>2026-09-28 02:04:11 WIB</td>
+                                <td><code>2026-09-28_config.txt</code></td>
+                                <td>56.8 KB</td>
+                                <td>
+                                    <span class="status-badge badge-up">
+                                        <span class="badge-dot-green"></span> SUCCESS
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <button class="btn-action"
+                                        style="padding: 4px 12px !important; font-size: 11px !important;"
+                                        onclick="viewConfig('Router-Edge-01')">Lihat Config</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><code>#4</code></td>
+                                <td><strong>Switch-Access-Bdg</strong></td>
+                                <td>Bandung Site</td>
+                                <td>2026-09-28 02:05:30 WIB</td>
+                                <td><code>-</code></td>
+                                <td>0 KB</td>
+                                <td>
+                                    <span class="status-badge badge-down">
+                                        <span class="badge-dot-red"></span> FAILED
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="text-muted-xs">Gagal Backup</span>
+                                </td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script>
+        function updateClock() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' WIB';
+            const clockEl = document.getElementById('clockDisplay');
+            if (clockEl) clockEl.textContent = timeStr;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        function triggerManualBackup() {
+            showToast('Pencadangan konfigurasi manual dipicu via SSH/API. Menghubungi perangkat...');
+            setTimeout(() => {
+                showToast('Pencadangan berhasil disimpan dan ringkasan dikirim ke Telegram!');
+            }, 1800);
+        }
+
+        function viewConfig(devName) {
+            showToast(`Membuka berkas konfigurasi terbaru untuk ${devName}...`);
+        }
+
+        function retryBackup(devName) {
+            showToast(`Mencoba ulang koneksi SSH ke ${devName}...`);
+        }
+
+        function showToast(message) {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.style.borderLeft = '4px solid #E8A576';
+            toast.innerHTML = `<span>💾</span><span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3500);
+        }
+
+        // Search filter
+        document.getElementById('backupSearch').addEventListener('input', function (e) {
+            const q = e.target.value.toLowerCase();
+            document.querySelectorAll('#backupsTableBody tr').forEach(row => {
+                row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+            });
+        });
+    </script>
+</body>
+
+</html>
