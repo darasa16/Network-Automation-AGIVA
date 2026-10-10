@@ -1,7 +1,8 @@
-﻿import time
+import time
 import os
 import re
 import logging
+import yaml
 from datetime import datetime
 from dotenv import load_dotenv
 
@@ -24,11 +25,37 @@ load_dotenv()
 # ==========================================
 def load_inventory():
     """
-    Sesuai LLD: baca daftar perangkat dari devices.yaml (atau DB)
-    Karena kita pakai DB PostgreSQL sebagai sumber utama (single source of truth),
-    kita langsung ambil dari DB. Jika mau di-sinkron dari YAML, bisa ditambahkan di sini.
+    Sesuai LLD: baca daftar perangkat dari devices.yaml (atau DB).
+    Melakukan sinkronisasi awal dari devices.yaml ke database jika ada perangkat baru.
     """
     session = db_session()
+    
+    # 1. Sync dari devices.yaml
+    yaml_path = os.path.join(os.path.dirname(__file__), 'devices.yaml')
+    if os.path.exists(yaml_path):
+        try:
+            with open(yaml_path, 'r') as file:
+                data = yaml.safe_load(file)
+                if data and 'devices' in data:
+                    for d_info in data['devices']:
+                        # Cek apakah device sudah ada di DB berdasarkan IP
+                        existing = session.query(Device).filter_by(ip_address=d_info.get('ip_address')).first()
+                        if not existing:
+                            logger.info(f"Syncing perangkat baru dari YAML: {d_info.get('name')} ({d_info.get('ip_address')})")
+                            new_dev = Device(
+                                name=d_info.get('name'),
+                                ip_address=d_info.get('ip_address'),
+                                vendor=d_info.get('vendor'),
+                                site=d_info.get('site', 'Unknown'),
+                                credential_ref=d_info.get('credential_ref', 'env_vault')
+                            )
+                            session.add(new_dev)
+            session.commit()
+        except Exception as e:
+            logger.error(f"Gagal memproses devices.yaml: {e}")
+            session.rollback()
+
+    # 2. Ambil dari DB sebagai single source of truth
     devices = session.query(Device).all()
     session.close()
     return devices

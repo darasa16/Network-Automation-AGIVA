@@ -299,8 +299,8 @@ def api_test_telegram_alert():
     tg_chat_id = os.getenv('NOC_TELEGRAM_CHAT_ID', '-1004429503436')
     
     msg_content = (
-        "✅ *TEST CONNECTIVITY*\n\n"
-        "Ini adalah pesan diagnostik uji coba (Ping) dari NOC Dashboard.\n"
+        "*TEST CONNECTIVITY*\n\n"
+        "Ini adalah pesan diagnostik uji coba Ping dari Dashboard.\n"
         "Jalur komunikasi Telegram Bot berfungsi dengan sangat baik.\n"
         f"Waktu: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} WIB"
     )

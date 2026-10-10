@@ -1,0 +1,11 @@
+devices:
+  - name: Router_HQ
+    ip_address: 192.168.88.1
+    vendor: MikroTik
+    site: HQ
+    credential_ref: env_vault
+  - name: Core_Switch
+    ip_address: 192.168.88.2
+    vendor: Cisco
+    site: HQ
+    credential_ref: env_vault
