@@ -140,21 +140,30 @@ def is_whitelisted(user_id: int) -> bool:
     """Mengecek otorisasi pengguna dalam Whitelist NOC (memory + database)"""
     if user_id in WHITELIST_USERS:
         return True
+    session = None
     try:
         session = db_session()
         entry = session.query(TelegramWhitelist).filter(
             TelegramWhitelist.chat_id == str(user_id),
             TelegramWhitelist.is_active == True
         ).first()
-        session.close()
         if entry:
             if user_id not in WHITELIST_USERS:
                 WHITELIST_USERS.append(user_id)
             return True
         return False
     except Exception as e:
+        if session:
+            try:
+                session.rollback()
+            except Exception:
+                pass
         logger.error(f"Error checking whitelist DB: {e}")
         return False
+    finally:
+        if session:
+            session.close()
+        db_session.remove()
 
 def render_access_denied_view(user_id: int, action_name: str) -> str:
     """Pesan keamanan standar enterprise saat akses tidak sah terjadi"""
@@ -170,6 +179,7 @@ def render_access_denied_view(user_id: int, action_name: str) -> str:
 
 def log_telegram_message(chat_id: str, message_type: str, content: str, status: str = 'SENT', alert_id: int = None):
     """Mencatat setiap pesan / dispatch bot Telegram ke basis data (tabel telegram_message_logs)"""
+    session = None
     try:
         session = db_session()
         log_entry = TelegramMessageLog(
@@ -182,9 +192,17 @@ def log_telegram_message(chat_id: str, message_type: str, content: str, status: 
         )
         session.add(log_entry)
         session.commit()
-        session.close()
     except Exception as e:
+        if session:
+            try:
+                session.rollback()
+            except Exception:
+                pass
         logger.error(f"Error logging telegram message to DB: {e}")
+    finally:
+        if session:
+            session.close()
+        db_session.remove()
 
 
 # ==================== VIEW BUILDERS (FORMAL CORPORATE TEMPLATES) ====================
@@ -680,10 +698,15 @@ async def user_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(reply_msg, parse_mode=ParseMode.HTML)
 
     except Exception as e:
+        try:
+            session.rollback()
+        except Exception:
+            pass
         logger.error(f"Error handling /user command: {e}")
         await update.message.reply_text(f"Gagal memuat profil: {e}")
     finally:
         session.close()
+        db_session.remove()
 
 
 async def approve_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -709,25 +732,31 @@ async def approve_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
 
-    # Ambil parameter target (@username) dan custom role (opsional)
+    # Ambil parameter target (@username) dan custom role
     target = None
     custom_role = None
-    if context.args:
+
+    if update.message.reply_to_message and update.message.reply_to_message.from_user:
+        replied_user = update.message.reply_to_message.from_user
+        if not replied_user.username:
+            await update.message.reply_text(
+                "Registrasi ditolak. Wajib menggunakan username dan role.\n\n"
+                "Gunakan format: /approve @username [role].",
+                parse_mode=ParseMode.HTML
+            )
+            return
+        target = f"@{replied_user.username}"
+        if context.args:
+            custom_role = " ".join(context.args).strip()
+    elif context.args:
         target = context.args[0].strip()
         if len(context.args) > 1:
             custom_role = " ".join(context.args[1:]).strip()
-    elif update.message.reply_to_message and update.message.reply_to_message.from_user:
-        replied_user = update.message.reply_to_message.from_user
-        target = f"@{replied_user.username}" if replied_user.username else replied_user.first_name
-        if context.args:
-            custom_role = " ".join(context.args).strip()
 
-    if not target:
+    if not target or not target.startswith("@") or target.lstrip("@").strip().isdigit():
         await update.message.reply_text(
-            "<b>PARAMETER USERNAME DIPERLUKAN</b>\n\n"
-            "Gunakan format: <code>/approve @username [role]</code>\n\n"
-            "Contoh:\n"
-            "• <code>/approve @bintang Network Intern</code>",
+            "Registrasi ditolak. Wajib menggunakan username dan role.\n\n"
+            "Gunakan format: /approve @username [role].",
             parse_mode=ParseMode.HTML
         )
         return
@@ -762,9 +791,9 @@ async def approve_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text(msg)
             return
 
-        # Jika username belum ada di database, buat record baru
+        # Jika belum ada di database, buat record baru dengan placeholder pending
         new_entry = TelegramWhitelist(
-            chat_id="-",
+            chat_id=f"Pending_{clean_target[:35]}",
             telegram_username=username_tag,
             engineer_name=eng_name,
             role=eng_role,
@@ -775,13 +804,18 @@ async def approve_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         msg = f"Akun {html.escape(username_tag)} berhasil di-approve sebagai {html.escape(eng_role)}."
         await update.message.reply_text(msg)
-        log_telegram_message(update.effective_chat.id, "COMMAND_REPLY", f"Respon /approve: Akun {username_tag} di-approve sebagai {eng_role} oleh Lead Admin")
+        log_telegram_message(update.effective_chat.id, "COMMAND_REPLY", f"Respon /approve: Akun {username_tag} di-approve sebagai {eng_role} oleh Admin")
 
     except Exception as e:
+        try:
+            session.rollback()
+        except Exception:
+            pass
         logger.error(f"Error handling /approve: {e}")
         await update.message.reply_text(f"Gagal melakukan approval: {e}")
     finally:
         session.close()
+        db_session.remove()
 
 
 async def fallback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
