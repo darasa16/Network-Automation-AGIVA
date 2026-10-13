@@ -12,15 +12,15 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
         rel="stylesheet">
     <!-- Relative CSS -->
-    <link rel="stylesheet" href="../static/css/style.css">
+    <link rel="stylesheet" href="/static/css/style.css">
 </head>
 
 <body>
     <!-- Top Navigation Bar -->
     <header class="navbar">
         <div class="nav-left">
-            <a href="index.html" class="brand-logo">
-                <img src="../static/img/20260203-Agiva-Logo-Rect-1280px.png" alt="Agiva Logo" class="brand-img"
+            <a href="/" class="brand-logo">
+                <img src="/static/img/20260203-Agiva-Logo-Rect-1280px.png" alt="Agiva Logo" class="brand-img"
                     onerror="this.src='/static/img/20260203-Agiva-Logo-Rect-1280px.png'" />
 
             </a>
@@ -35,10 +35,10 @@
         </div>
 
         <nav class="nav-links">
-            <a href="index.html" class="nav-item">Monitoring</a>
-            <a href="alerts.html" class="nav-item">Alerts {% if active_alerts_count > 0 %}<span class="nav-badge">{{ active_alerts_count }}</span>{% endif %}</a>
-            <a href="telegram.html" class="nav-item">Telegram Bot</a>
-            <a href="backups.html" class="nav-item active">Backups</a>
+            <a href="/" class="nav-item">Monitoring</a>
+            <a href="/alerts" class="nav-item">Alerts {% if active_alerts_count > 0 %}<span class="nav-badge">{{ active_alerts_count }}</span>{% endif %}</a>
+            <a href="/telegram" class="nav-item">Telegram Bot</a>
+            <a href="/backups" class="nav-item active">Backups</a>
         </nav>
 
         <div class="nav-right">

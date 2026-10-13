@@ -5,7 +5,7 @@ import random
 import json
 import urllib.request
 from datetime import datetime, timedelta
-from flask import Flask, render_template, jsonify, request
+from flask import Flask, render_template, jsonify, request, redirect
 from database import db_session, init_db
 from models import Device, DeviceStatusLog, Alert, TelegramWhitelist, TelegramMessageLog, BackupHistory
 
@@ -96,6 +96,22 @@ def device_detail(device_id=1):
     alerts_data = [a.to_dict() for a in device_alerts]
 
     return render_template('device_detail.html', device=device.to_dict(), alerts=alerts_data)
+
+@app.route('/device/index.html')
+def redirect_device_index():
+    return redirect('/')
+
+@app.route('/device/alerts.html')
+def redirect_device_alerts():
+    return redirect('/alerts')
+
+@app.route('/device/telegram.html')
+def redirect_device_telegram():
+    return redirect('/telegram')
+
+@app.route('/device/backups.html')
+def redirect_device_backups():
+    return redirect('/backups')
 
 # 2. ALERTS ROUTES
 
