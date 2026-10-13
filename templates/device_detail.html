@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detail Perangkat - Router-Core-01 | AGIVA NOC</title>
+    <title>Detail Perangkat - {{ device.name }} | AGIVA NOC</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -72,35 +72,40 @@
             <!-- Device Header Card -->
             <div class="device-header-card">
                 <div class="device-header-left">
-                    <div class="device-avatar mikrotik">M</div>
+                    <div class="device-avatar {{ device.vendor.lower() }}">{{ device.vendor[0].upper() }}</div>
                     <div>
                         <div class="title-with-badge">
-                            <h2>Router-Core-01</h2>
+                            <h2>{{ device.name }}</h2>
+                            {% if device.status == 'UP' %}
                             <span class="status-badge badge-up">
                                 <span class="badge-dot-green"></span> UP
                             </span>
-                            <span class="vendor-badge badge-mikrotik">MikroTik RouterOS</span>
+                            {% else %}
+                            <span class="status-badge badge-down">
+                                <span class="badge-dot-red"></span> DOWN
+                            </span>
+                            {% endif %}
+                            <span class="vendor-badge badge-{{ device.vendor.lower() }}">{{ device.vendor }}</span>
                         </div>
                         <div class="device-meta-row">
-                            <span><strong>IP Address:</strong> <code>192.168.1.1</code></span>
-                            <span><strong>Lokasi / Site:</strong> Data Center HQ</span>
-                            <span><strong>Uptime:</strong> 42 days, 14 hours</span>
+                            <span><strong>IP Address:</strong> <code>{{ device.ip }}</code></span>
+                            <span><strong>Lokasi / Site:</strong> {{ device.site }}</span>
+                            <span><strong>Uptime:</strong> {{ device.uptime }}</span>
                         </div>
-                    </div>
-                </div>
+                    </div></div>
 
                 <div class="device-quick-stats">
                     <div class="quick-stat-box">
                         <span class="qs-label">CPU Saat Ini</span>
-                        <span class="qs-val text-green" id="currCpuVal">34.5%</span>
+                        <span class="qs-val text-green" id="currCpuVal">{{ device.cpu }}%</span>
                     </div>
                     <div class="quick-stat-box">
                         <span class="qs-label">Memori Saat Ini</span>
-                        <span class="qs-val text-amber" id="currMemVal">48.2%</span>
+                        <span class="qs-val text-amber" id="currMemVal">{{ device.mem }}%</span>
                     </div>
                     <div class="quick-stat-box">
                         <span class="qs-label">Throughput</span>
-                        <span class="qs-val text-cyan" id="currTrafficVal">145.2 Mbps</span>
+                        <span class="qs-val text-cyan" id="currTrafficVal">{{ device.traffic }} Mbps</span>
                     </div>
                 </div>
             </div>

@@ -66,7 +66,7 @@
                 <div class="kpi-card card-total">
                     <div class="kpi-info">
                         <span class="kpi-label">Total Devices</span>
-                        <h2 class="kpi-value" id="kpiTotal">8</h2>
+                        <h2 class="kpi-value" id="kpiTotal">{{ total_devices }}</h2>
                         <span class="kpi-sub">Inventaris Jaringan Aktif</span>
                     </div>
                     <div class="kpi-icon-box icon-blue">
@@ -82,7 +82,7 @@
                 <div class="kpi-card card-online">
                     <div class="kpi-info">
                         <span class="kpi-label">Devices Online</span>
-                        <h2 class="kpi-value text-success" id="kpiOnline">6</h2>
+                        <h2 class="kpi-value text-success" id="kpiOnline">{{ devices_online }}</h2>
                         <span class="kpi-sub text-success-light">Normal Reachable</span>
                     </div>
                     <div class="kpi-icon-box icon-green">
@@ -95,7 +95,7 @@
                 <div class="kpi-card card-offline">
                     <div class="kpi-info">
                         <span class="kpi-label">Devices Offline</span>
-                        <h2 class="kpi-value text-danger" id="kpiOffline">2</h2>
+                        <h2 class="kpi-value text-danger" id="kpiOffline">{{ devices_offline }}</h2>
                         <span class="kpi-sub text-danger-light">Unreachable / Timeout</span>
                     </div>
                     <div class="kpi-icon-box icon-red">
@@ -109,7 +109,7 @@
                 <div class="kpi-card card-alerts">
                     <div class="kpi-info">
                         <span class="kpi-label">Active Alerts</span>
-                        <h2 class="kpi-value text-warning" id="kpiAlerts">3</h2>
+                        <h2 class="kpi-value text-warning" id="kpiAlerts">{{ active_alerts_count }}</h2>
                         <span class="kpi-sub text-warning-light">Memerlukan Penanganan</span>
                     </div>
                     <div class="kpi-icon-box icon-amber">
@@ -179,9 +179,9 @@
                                     Collector</span>
                             </div>
                             <div class="table-actions">
-                                <span class="badge-filter active" data-filter="all">Semua (8)</span>
-                                <span class="badge-filter" data-filter="UP">Online (6)</span>
-                                <span class="badge-filter" data-filter="DOWN">Offline (2)</span>
+                                <span class="badge-filter active" data-filter="all">Semua ({{ total_devices }})</span>
+                                <span class="badge-filter" data-filter="UP">Online ({{ devices_online }})</span>
+                                <span class="badge-filter" data-filter="DOWN">Offline ({{ devices_offline }})</span>
                             </div>
                         </div>
 
@@ -200,190 +200,58 @@
                                     </tr>
                                 </thead>
                                 <tbody id="deviceTableBody">
-                                    <tr class="device-row filter-UP" id="row-dev-1">
+                                    {% for dev in devices %}
+                                    <tr class="device-row filter-{{ dev.status }}" id="row-dev-{{ dev.id }}">
                                         <td class="col-name">
                                             <div class="device-name-wrap">
-                                                <span class="device-icon-tag mikrotik">M</span>
-                                                <strong>Router-Core-01</strong>
+                                                <span class="device-icon-tag {{ dev.vendor.lower() }}">{{ dev.vendor[0].upper() }}</span>
+                                                <strong>{{ dev.name }}</strong>
                                             </div>
                                         </td>
-                                        <td class="col-ip"><code>192.168.1.1</code></td>
-                                        <td><span class="vendor-badge badge-mikrotik">MikroTik</span></td>
-                                        <td class="col-site">Data Center HQ</td>
-                                        <td><span class="status-badge badge-up"><span class="badge-dot-green"></span>
-                                                UP</span></td>
+                                        <td class="col-ip"><code>{{ dev.ip }}</code></td>
+                                        <td><span class="vendor-badge badge-{{ dev.vendor.lower() }}">{{ dev.vendor }}</span></td>
+                                        <td class="col-site">{{ dev.site }}</td>
+                                        <td>
+                                            {% if dev.status == 'UP' %}
+                                            <span class="status-badge badge-up"><span class="badge-dot-green"></span> UP</span>
+                                            {% else %}
+                                            <span class="status-badge badge-down"><span class="badge-dot-red"></span> DOWN</span>
+                                            {% endif %}
+                                        </td>
                                         <td class="col-metrics">
+                                            {% if dev.status == 'UP' %}
                                             <div class="metric-bars">
                                                 <div class="mini-bar-row">
                                                     <span class="mini-lbl">C:</span>
                                                     <div class="progress-bar-bg">
-                                                        <div class="progress-bar-fill fill-cpu" style="width: 34.5%">
-                                                        </div>
+                                                        <div class="progress-bar-fill fill-cpu" style="width: {{ dev.cpu }}%"></div>
                                                     </div>
-                                                    <span class="mini-val">34.5%</span>
+                                                    <span class="mini-val">{{ dev.cpu }}%</span>
                                                 </div>
                                                 <div class="mini-bar-row">
                                                     <span class="mini-lbl">M:</span>
                                                     <div class="progress-bar-bg">
-                                                        <div class="progress-bar-fill fill-mem" style="width: 48.2%">
-                                                        </div>
+                                                        <div class="progress-bar-fill fill-mem" style="width: {{ dev.mem }}%"></div>
                                                     </div>
-                                                    <span class="mini-val">48.2%</span>
+                                                    <span class="mini-val">{{ dev.mem }}%</span>
                                                 </div>
                                             </div>
+                                            {% else %}
+                                            <span class="text-muted">-</span>
+                                            {% endif %}
                                         </td>
-                                        <td class="col-uptime">42 days, 14 hours</td>
+                                        <td class="col-uptime">{{ dev.uptime }}</td>
                                         <td class="text-center">
-                                            <a href="device_detail.html" class="btn-action btn-detail">Detail</a>
+                                            <a href="/device/{{ dev.id }}" class="btn-action btn-detail">Detail</a>
                                         </td>
                                     </tr>
-                                    <tr class="device-row filter-UP" id="row-dev-2">
-                                        <td class="col-name">
-                                            <div class="device-name-wrap">
-                                                <span class="device-icon-tag cisco">C</span>
-                                                <strong>Switch-Dist-01</strong>
-                                            </div>
-                                        </td>
-                                        <td class="col-ip"><code>192.168.1.2</code></td>
-                                        <td><span class="vendor-badge badge-cisco">Cisco</span></td>
-                                        <td class="col-site">Data Center HQ</td>
-                                        <td><span class="status-badge badge-up"><span class="badge-dot-green"></span>
-                                                UP</span></td>
-                                        <td class="col-metrics">
-                                            <div class="metric-bars">
-                                                <div class="mini-bar-row">
-                                                    <span class="mini-lbl">C:</span>
-                                                    <div class="progress-bar-bg">
-                                                        <div class="progress-bar-fill fill-cpu" style="width: 22.0%">
-                                                        </div>
-                                                    </div>
-                                                    <span class="mini-val">22.0%</span>
-                                                </div>
-                                                <div class="mini-bar-row">
-                                                    <span class="mini-lbl">M:</span>
-                                                    <div class="progress-bar-bg">
-                                                        <div class="progress-bar-fill fill-mem" style="width: 39.1%">
-                                                        </div>
-                                                    </div>
-                                                    <span class="mini-val">39.1%</span>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="col-uptime">89 days, 06 hours</td>
-                                        <td class="text-center">
-                                            <a href="device_detail.html" class="btn-action btn-detail">Detail</a>
+                                    {% else %}
+                                    <tr>
+                                        <td colspan="8" class="text-center text-muted" style="padding: 30px;">
+                                            Belum ada perangkat yang terdaftar di database.
                                         </td>
                                     </tr>
-                                    <tr class="device-row filter-UP" id="row-dev-3">
-                                        <td class="col-name">
-                                            <div class="device-name-wrap">
-                                                <span class="device-icon-tag mikrotik">M</span>
-                                                <strong>Router-Edge-01</strong>
-                                            </div>
-                                        </td>
-                                        <td class="col-ip"><code>192.168.1.3</code></td>
-                                        <td><span class="vendor-badge badge-mikrotik">MikroTik</span></td>
-                                        <td class="col-site">Gateway IDC</td>
-                                        <td><span class="status-badge badge-up"><span class="badge-dot-green"></span>
-                                                UP</span></td>
-                                        <td class="col-metrics">
-                                            <div class="metric-bars">
-                                                <div class="mini-bar-row">
-                                                    <span class="mini-lbl">C:</span>
-                                                    <div class="progress-bar-bg">
-                                                        <div class="progress-bar-fill fill-cpu" style="width: 58.7%">
-                                                        </div>
-                                                    </div>
-                                                    <span class="mini-val">58.7%</span>
-                                                </div>
-                                                <div class="mini-bar-row">
-                                                    <span class="mini-lbl">M:</span>
-                                                    <div class="progress-bar-bg">
-                                                        <div class="progress-bar-fill fill-mem" style="width: 64.3%">
-                                                        </div>
-                                                    </div>
-                                                    <span class="mini-val">64.3%</span>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="col-uptime">15 days, 02 hours</td>
-                                        <td class="text-center">
-                                            <a href="device_detail.html" class="btn-action btn-detail">Detail</a>
-                                        </td>
-                                    </tr>
-                                    <tr class="device-row filter-UP" id="row-dev-4">
-                                        <td class="col-name">
-                                            <div class="device-name-wrap">
-                                                <span class="device-icon-tag mikrotik">M</span>
-                                                <strong>Router-Branch-Sby</strong>
-                                            </div>
-                                        </td>
-                                        <td class="col-ip"><code>10.10.20.1</code></td>
-                                        <td><span class="vendor-badge badge-mikrotik">MikroTik</span></td>
-                                        <td class="col-site">Surabaya Branch</td>
-                                        <td><span class="status-badge badge-up"><span class="badge-dot-green"></span>
-                                                UP</span></td>
-                                        <td class="col-metrics">
-                                            <div class="metric-bars">
-                                                <div class="mini-bar-row">
-                                                    <span class="mini-lbl">C:</span>
-                                                    <div class="progress-bar-bg">
-                                                        <div class="progress-bar-fill fill-cpu" style="width: 18.2%">
-                                                        </div>
-                                                    </div>
-                                                    <span class="mini-val">18.2%</span>
-                                                </div>
-                                                <div class="mini-bar-row">
-                                                    <span class="mini-lbl">M:</span>
-                                                    <div class="progress-bar-bg">
-                                                        <div class="progress-bar-fill fill-mem" style="width: 31.0%">
-                                                        </div>
-                                                    </div>
-                                                    <span class="mini-val">31.0%</span>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="col-uptime">4 days, 11 hours</td>
-                                        <td class="text-center">
-                                            <a href="device_detail.html" class="btn-action btn-detail">Detail</a>
-                                        </td>
-                                    </tr>
-                                    <tr class="device-row filter-DOWN" id="row-dev-5">
-                                        <td class="col-name">
-                                            <div class="device-name-wrap">
-                                                <span class="device-icon-tag cisco">C</span>
-                                                <strong>Switch-Access-Bdg</strong>
-                                            </div>
-                                        </td>
-                                        <td class="col-ip"><code>10.20.30.2</code></td>
-                                        <td><span class="vendor-badge badge-cisco">Cisco</span></td>
-                                        <td class="col-site">Bandung Site</td>
-                                        <td><span class="status-badge badge-down"><span class="badge-dot-red"></span>
-                                                DOWN</span></td>
-                                        <td class="col-metrics"><span class="text-muted">-</span></td>
-                                        <td class="col-uptime">Offline</td>
-                                        <td class="text-center">
-                                            <a href="device_detail.html" class="btn-action btn-detail">Detail</a>
-                                        </td>
-                                    </tr>
-                                    <tr class="device-row filter-DOWN" id="row-dev-7">
-                                        <td class="col-name">
-                                            <div class="device-name-wrap">
-                                                <span class="device-icon-tag cisco">C</span>
-                                                <strong>Firewall-Ext-01</strong>
-                                            </div>
-                                        </td>
-                                        <td class="col-ip"><code>192.168.100.1</code></td>
-                                        <td><span class="vendor-badge badge-cisco">Cisco</span></td>
-                                        <td class="col-site">DMZ Gateway</td>
-                                        <td><span class="status-badge badge-down"><span class="badge-dot-red"></span>
-                                                DOWN</span></td>
-                                        <td class="col-metrics"><span class="text-muted">-</span></td>
-                                        <td class="col-uptime">Offline</td>
-                                        <td class="text-center">
-                                            <a href="device_detail.html" class="btn-action btn-detail">Detail</a>
-                                        </td>
-                                    </tr>
+                                    {% endfor %}
                                 </tbody>
                             </table>
                         </div>
@@ -399,61 +267,39 @@
                     </div>
 
                     <div class="alerts-stream" id="alertsStream">
-                        <div class="alert-card card-severity-warning" id="alert-card-101">
+                        {% for alert in alerts %}
+                        <div class="alert-card card-severity-{{ alert.severity.lower() }} {% if alert.acknowledged %}is-ack{% endif %}" id="alert-card-{{ alert.id }}">
                             <div class="alert-card-header">
                                 <div class="alert-title-wrap">
-                                    <span class="alert-severity-badge badge-warn">WARNING</span>
-                                    <span class="alert-time">15:55:49 WIB</span>
+                                    <span class="alert-severity-badge {% if alert.severity == 'CRITICAL' %}badge-crit{% else %}badge-warn{% endif %}">{{ alert.severity }}</span>
+                                    <span class="alert-time">{{ alert.triggered_at }}</span>
                                 </div>
-                                <span class="alert-id">#101</span>
+                                <span class="alert-id">#{{ alert.id }}</span>
                             </div>
                             <div class="alert-device-name">
-                                <strong>Router-Edge-01</strong> (192.168.1.3)
+                                <strong>{{ alert.device_name }}</strong> ({{ alert.ip }})
                             </div>
-                            <p class="alert-message">High CPU utilization detected (> 85%) on Core CPU 0.</p>
+                            <p class="alert-message">{{ alert.message }}</p>
                             <div class="alert-footer">
-                                <span class="badge-ack-state text-warning">● Pending Action</span>
-                                <button class="btn-ack" onclick="acknowledgeAlert(101)">ACK</button>
-                            </div>
-                        </div>
-
-                        <div class="alert-card card-severity-critical" id="alert-card-102">
-                            <div class="alert-card-header">
-                                <div class="alert-title-wrap">
-                                    <span class="alert-severity-badge badge-crit">CRITICAL</span>
-                                    <span class="alert-time">15:42:10 WIB</span>
-                                </div>
-                                <span class="alert-id">#102</span>
-                            </div>
-                            <div class="alert-device-name">
-                                <strong>Switch-Access-Bdg</strong> (10.20.30.2)
-                            </div>
-                            <p class="alert-message">Device unreachable after 2 consecutive polling attempts (ICMP/SSH
-                                Timeout).</p>
-                            <div class="alert-footer">
-                                <span class="badge-ack-state text-warning">● Pending Action</span>
-                                <button class="btn-ack" onclick="acknowledgeAlert(102)">ACK</button>
-                            </div>
-                        </div>
-
-                        <div class="alert-card card-severity-critical is-ack" id="alert-card-103">
-                            <div class="alert-card-header">
-                                <div class="alert-title-wrap">
-                                    <span class="alert-severity-badge badge-crit">CRITICAL</span>
-                                    <span class="alert-time">15:10:05 WIB</span>
-                                </div>
-                                <span class="alert-id">#103</span>
-                            </div>
-                            <div class="alert-device-name">
-                                <strong>Firewall-Ext-01</strong> (192.168.100.1)
-                            </div>
-                            <p class="alert-message">Interface GigabitEthernet0/1 changed state to administratively
-                                down.</p>
-                            <div class="alert-footer">
+                                {% if alert.acknowledged %}
                                 <span class="badge-ack-state text-success">✓ Acknowledged</span>
-                                <span class="text-muted-xs">Terkonfirmasi</span>
+                                <span class="text-muted-xs">{{ alert.acknowledged_by or 'Terkonfirmasi' }}</span>
+                                {% else %}
+                                <span class="badge-ack-state text-warning">● Pending Action</span>
+                                <button class="btn-ack" onclick="acknowledgeAlert({{ alert.id }})">ACK</button>
+                                {% endif %}
                             </div>
                         </div>
+                        {% else %}
+                        <div style="text-align: center; padding: 40px 10px; color: #64748b;">
+                            <svg style="width: 40px; height: 40px; stroke: #10b981; fill: none; margin: 0 auto 8px auto; display: block;" viewBox="0 0 24 24">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <polyline points="22 4 12 14.01 9 11.01" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <p style="font-size: 0.9rem; font-weight: 500; color: #94a3b8; margin: 0 0 4px 0;">Semua Sistem Normal</p>
+                            <span style="font-size: 0.75rem; color: #64748b;">Tidak ada alert aktif yang memerlukan mitigasi</span>
+                        </div>
+                        {% endfor %}
                     </div>
                 </aside>
             </div>

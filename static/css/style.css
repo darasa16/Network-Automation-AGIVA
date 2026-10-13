@@ -649,6 +649,18 @@ body {
     border: 1px solid rgba(232, 165, 118, 0.3);
 }
 
+.device-icon-tag.huawei {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.device-icon-tag.aruba {
+    background: rgba(249, 115, 22, 0.15);
+    color: #f97316;
+    border: 1px solid rgba(249, 115, 22, 0.3);
+}
+
 code {
     font-family: var(--font-mono);
     color: #e2e8f0;
@@ -676,6 +688,18 @@ code {
     background: rgba(232, 165, 118, 0.12);
     color: var(--color-copper);
     border: 1px solid rgba(232, 165, 118, 0.25);
+}
+
+.badge-huawei {
+    background: rgba(239, 68, 68, 0.12);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+.badge-aruba {
+    background: rgba(249, 115, 22, 0.12);
+    color: #f97316;
+    border: 1px solid rgba(249, 115, 22, 0.25);
 }
 
 .status-badge {

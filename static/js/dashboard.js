@@ -230,6 +230,14 @@ function updateDashboardView(data) {
         if (kpiOn) kpiOn.textContent = data.summary.devices_online;
         if (kpiOff) kpiOff.textContent = data.summary.devices_offline;
         if (kpiAlt) kpiAlt.textContent = data.summary.active_alerts;
+
+        // Update filter badge counts
+        const filterAll = document.querySelector('.badge-filter[data-filter="all"]');
+        const filterUp = document.querySelector('.badge-filter[data-filter="UP"]');
+        const filterDown = document.querySelector('.badge-filter[data-filter="DOWN"]');
+        if (filterAll) filterAll.textContent = `Semua (${data.summary.total_devices})`;
+        if (filterUp) filterUp.textContent = `Online (${data.summary.devices_online})`;
+        if (filterDown) filterDown.textContent = `Offline (${data.summary.devices_offline})`;
     }
 
     if (data.metrics) {
@@ -237,6 +245,65 @@ function updateDashboardView(data) {
         pushChartData(cpuMemChart, timeLabel, [data.metrics.avg_cpu, data.metrics.avg_mem]);
         pushChartData(trafficChart, timeLabel, [data.metrics.total_traffic, Math.round(data.metrics.total_traffic * 0.58)]);
     }
+
+    // Dynamic real-time update of monitored devices table
+    if (data.devices && data.devices.length > 0) {
+        renderDeviceTable(data.devices);
+    }
+}
+
+function renderDeviceTable(devices) {
+    const tbody = document.getElementById('deviceTableBody');
+    if (!tbody) return;
+
+    let html = '';
+    devices.forEach(dev => {
+        const vendorClass = (dev.vendor || '').toLowerCase();
+        const vendorInitial = (dev.vendor || 'D')[0].toUpperCase();
+        const isUp = dev.status === 'UP';
+        const statusBadge = isUp 
+            ? `<span class="status-badge badge-up"><span class="badge-dot-green"></span> UP</span>`
+            : `<span class="status-badge badge-down"><span class="badge-dot-red"></span> DOWN</span>`;
+        
+        const metricContent = isUp
+            ? `<div class="metric-bars">
+                <div class="mini-bar-row">
+                    <span class="mini-lbl">C:</span>
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill fill-cpu" style="width: ${dev.cpu}%"></div>
+                    </div>
+                    <span class="mini-val">${dev.cpu}%</span>
+                </div>
+                <div class="mini-bar-row">
+                    <span class="mini-lbl">M:</span>
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill fill-mem" style="width: ${dev.mem}%"></div>
+                    </div>
+                    <span class="mini-val">${dev.mem}%</span>
+                </div>
+               </div>`
+            : `<span class="text-muted">-</span>`;
+
+        html += `
+        <tr class="device-row filter-${dev.status}" id="row-dev-${dev.id}">
+            <td class="col-name">
+                <div class="device-name-wrap">
+                    <span class="device-icon-tag ${vendorClass}">${vendorInitial}</span>
+                    <strong>${dev.name}</strong>
+                </div>
+            </td>
+            <td class="col-ip"><code>${dev.ip}</code></td>
+            <td><span class="vendor-badge badge-${vendorClass}">${dev.vendor}</span></td>
+            <td class="col-site">${dev.site}</td>
+            <td>${statusBadge}</td>
+            <td class="col-metrics">${metricContent}</td>
+            <td class="col-uptime">${dev.uptime || 'Unknown'}</td>
+            <td class="text-center">
+                <a href="/device/${dev.id}" class="btn-action btn-detail">Detail</a>
+            </td>
+        </tr>`;
+    });
+    tbody.innerHTML = html;
 }
 
 /* --------------------------------------------------------------------------
