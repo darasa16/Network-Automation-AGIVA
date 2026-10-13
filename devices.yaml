@@ -1,11 +1,12 @@
 devices:
-  - name: Router_HQ
-    ip_address: 192.168.88.1
-    vendor: MikroTik
-    site: HQ
-    credential_ref: env_vault
-  - name: Core_Switch
-    ip_address: 192.168.88.2
-    vendor: Cisco
-    site: HQ
-    credential_ref: env_vault
+  - name: SW-2930F-HO
+    ip_address: 192.168.1.10
+    vendor: Aruba
+    site: HO
+    credential_ref: ho_vault
+  - name: SW-S5735-CORNER
+    ip_address: 192.168.1.155
+    vendor: Huawei
+    site: Corner
+    credential_ref: corner_vault
+
