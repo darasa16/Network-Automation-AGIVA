@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detail Perangkat - {{ device.name }} | AGIVA NOC</title>
+    <title>Detail Perangkat - {{ device.name }}</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,9 +13,8 @@
         rel="stylesheet">
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
     <!-- Relative CSS -->
-    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/style.css?v=3.3">
 </head>
 
 <body>
@@ -33,19 +32,23 @@
                     <circle cx="11" cy="11" r="8"></circle>
                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                 </svg>
-                <input type="text" placeholder="Cari IP, nama router, site..." />
+                <input type="text" id="globalSearch" placeholder="Cari vendor, site" autocomplete="off" />
+                <button type="button" id="clearSearchBtn" class="search-clear-btn"
+                    title="Reset pencarian">&times;</button>
+                <div id="searchResultsDropdown" class="search-results-dropdown" style="display: none;"></div>
             </div>
         </div>
 
         <nav class="nav-links">
             <a href="/" class="nav-item active">Monitoring</a>
-            <a href="/alerts" class="nav-item">Alerts {% if active_alerts_count > 0 %}<span class="nav-badge">{{ active_alerts_count }}</span>{% endif %}</a>
+            <a href="/alerts" class="nav-item">Alerts {% if active_alerts_count > 0 %}<span class="nav-badge">{{
+                    active_alerts_count }}</span>{% endif %}</a>
             <a href="/telegram" class="nav-item">Telegram Bot</a>
             <a href="/backups" class="nav-item">Backups</a>
         </nav>
 
         <div class="nav-right">
-            <div class="status-indicator">
+            <div class="status-indicator" title="Data Collector & Polling Engine Status">
                 <span class="pulse-dot"></span>
                 <span class="status-text">LIVE POLLING</span>
             </div>
@@ -65,15 +68,21 @@
             <div class="page-top-nav">
                 <a href="/" class="back-link">&larr; Kembali ke Dashboard</a>
                 <div class="device-actions">
-                    <span class="refresh-indicator">Update otomatis tiap 4 detik</span>
-                    <button class="btn-refresh" onclick="fetchDeviceMetrics()">Refresh Data</button>
+                    <button class="btn-refresh" id="btnRefreshDevice" onclick="fetchDeviceMetrics(true)">
+                        <svg class="refresh-icon" viewBox="0 0 24 24" width="14" height="14" fill="none"
+                            stroke="currentColor" stroke-width="2.5"
+                            style="display:inline-block; vertical-align:middle; margin-right:4px;">
+                            <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+                        </svg>
+                        <span>Refresh Data</span>
+                    </button>
                 </div>
             </div>
 
             <!-- Device Header Card -->
             <div class="device-header-card">
                 <div class="device-header-left">
-                    <div class="device-avatar {{ device.vendor.lower() }}">{{ device.vendor[0].upper() }}</div>
+                    <div class="device-avatar {{ device.vendor.lower().replace(' ', '-') }}">{{ device.vendor[0].upper() }}</div>
                     <div>
                         <div class="title-with-badge">
                             <h2>{{ device.name }}</h2>
@@ -86,136 +95,405 @@
                                 <span class="badge-dot-red"></span> DOWN
                             </span>
                             {% endif %}
-                            <span class="vendor-badge badge-{{ device.vendor.lower() }}">{{ device.vendor }}</span>
+                            <span class="vendor-badge badge-{{ device.vendor.lower().replace(' ', '-') }}">{{ device.vendor }}</span>
                         </div>
                         <div class="device-meta-row">
-                            <span><strong>IP Address:</strong> <code>{{ device.ip }}</code></span>
-                            <span><strong>Lokasi / Site:</strong> {{ device.site }}</span>
-                            <span><strong>Uptime:</strong> {{ device.uptime }}</span>
+                            <div class="device-meta-col">
+                                <span class="device-meta-label">IP Address</span>
+                                <span class="device-meta-val"><code>{{ device.ip }}</code></span>
+                            </div>
+                            <div class="device-meta-col">
+                                <span class="device-meta-label">Site</span>
+                                <span class="device-meta-val">{{ device.site }}</span>
+                            </div>
+                            <div class="device-meta-col">
+                                <span class="device-meta-label">MAC Address</span>
+                                <span class="device-meta-val"><code>{{ specs.mac_address or '-' }}</code></span>
+                            </div>
+                            <div class="device-meta-col">
+                                <span class="device-meta-label">Uptime</span>
+                                <span class="device-meta-val" id="currUptimeVal">{{ device.uptime }}</span>
+                            </div>
                         </div>
-                    </div></div>
+                    </div>
+                </div>
 
-                <div class="device-quick-stats">
-                    <div class="quick-stat-box">
-                        <span class="qs-label">CPU Saat Ini</span>
-                        <span class="qs-val text-green" id="currCpuVal">{{ device.cpu }}%</span>
+            </div>
+
+            <!-- Switch Hardware & System Specifications -->
+            <div class="specs-panel">
+                <div class="panel-header">
+                    <div>
+                        <h3 class="panel-title">Spesifikasi Sistem & Perangkat Keras Switch</h3>
+                        <span class="panel-sub">Informasi identitas hardware, firmware, dan operasional perangkat
+                            fisik</span>
                     </div>
-                    <div class="quick-stat-box">
-                        <span class="qs-label">Memori Saat Ini</span>
-                        <span class="qs-val text-amber" id="currMemVal">{{ device.mem }}%</span>
+                </div>
+                <div class="specs-grid">
+                    <div class="spec-item">
+                        <span class="spec-label">Model Perangkat</span>
+                        <span class="spec-value" id="specModel">{{ specs.model or '-' }}</span>
                     </div>
-                    <div class="quick-stat-box">
-                        <span class="qs-label">Throughput</span>
-                        <span class="qs-val text-cyan" id="currTrafficVal">{{ device.traffic }} Mbps</span>
+                    <div class="spec-item">
+                        <span class="spec-label">Nomor Seri (Serial No.)</span>
+                        <span class="spec-value" id="specSerial"><code>{{ specs.serial or '-' }}</code></span>
+                    </div>
+                    <div class="spec-item">
+                        <span class="spec-label">Versi Firmware / OS</span>
+                        <span class="spec-value" id="specFirmware">{{ specs.firmware or '-' }}</span>
+                    </div>
+                    <div class="spec-item">
+                        <span class="spec-label">Hardware Revision</span>
+                        <span class="spec-value" id="specHwRev">{{ specs.hardware_rev or '-' }}</span>
+                    </div>
+                    <div class="spec-item">
+                        <span class="spec-label">Base MAC Address</span>
+                        <span class="spec-value" id="specMac"><code>{{ specs.mac_address or '-' }}</code></span>
+                    </div>
+                    <div class="spec-item">
+                        <span class="spec-label">IP Management</span>
+                        <span class="spec-value" id="specIp"><code>{{ specs.ip_address or device.ip }}</code></span>
+                    </div>
+                    <div class="spec-item">
+                        <span class="spec-label">Total RAM Sistem</span>
+                        <span class="spec-value" id="specRam">{{ specs.total_ram or '-' }}</span>
+                    </div>
+                    <div class="spec-item">
+                        <span class="spec-label">Total Konsumsi PoE</span>
+                        <span class="spec-value text-amber" id="specPoe">{{ specs.poe_consumption or '-' }}</span>
+                    </div>
+                    <div class="spec-item">
+                        <span class="spec-label">Status Pendingin / Fan</span>
+                        <span class="spec-value text-green" id="specFan">{{ specs.fan_status or 'Normal (OK)' }}</span>
+                    </div>
+                    <div class="spec-item">
+                        <span class="spec-label">Port Uplink Utama</span>
+                        <span class="spec-value" id="specUplink">{{ specs.uplink_port or '-' }}</span>
+                    </div>
+                    <div class="spec-item">
+                        <span class="spec-label">Server DNS</span>
+                        <span class="spec-value" id="specDns">{{ specs.dns_servers or '-' }}</span>
+                    </div>
+                    <div class="spec-item">
+                        <span class="spec-label">Mode Konfigurasi DNS</span>
+                        <span class="spec-value" id="specDnsMode">{{ specs.dns_mode or 'DHCP' }}</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Device Charts Section -->
-            <div class="charts-row">
-                <!-- Chart 1: 12-Hour CPU & Memory History -->
-                <div class="chart-panel">
-                    <div class="panel-header">
-                        <div>
-                            <h3 class="panel-title">Histori Beban CPU & Memori (12 Jam Terakhir)</h3>
-                            <span class="panel-sub">Data polling periodik data collector</span>
-                        </div>
-                        <div class="chart-legend-custom">
-                            <span class="legend-tag tag-cpu"><span class="legend-color bg-green"></span> CPU (%)</span>
-                            <span class="legend-tag tag-mem"><span class="legend-color bg-amber"></span> RAM (%)</span>
+            <!-- VLANs Configuration Panel -->
+            {% if vlans %}
+            <div class="specs-panel">
+                <div class="panel-header">
+                    <div>
+                        <h3 class="panel-title">Konfigurasi Virtual LAN (VLANs)</h3>
+                        <span class="panel-sub">Daftar segmen jaringan VLAN aktif pada switch</span>
+                    </div>
+                </div>
+                <div class="vlans-grid">
+                    {% for v in vlans %}
+                    <div class="vlan-card">
+                        <div class="vlan-info">
+                            <div class="vlan-title">
+                                <span class="badge-vlan-id">VLAN {{ v.vlan_id }}</span>
+                                <span>{{ v.name }}</span>
+                                {% if v.is_primary %}
+                                <span class="badge-vlan-primary">PRIMARY</span>
+                                {% endif %}
+                            </div>
+                            <div class="vlan-meta">
+                                <span>Tipe: {{ v.type }}</span> &bull;
+                                <span>Status: {{ v.status }}</span>
+                            </div>
                         </div>
                     </div>
-                    <div class="chart-body">
-                        <canvas id="deviceCpuMemChart"></canvas>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Switch Resource Utilization Graphs (6 Metrics matching Aruba 2930F Web GUI) -->
+            <div class="resource-graphs-section">
+                <div class="panel-header"
+                    style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                    <div>
+                        <h3 class="panel-title">Grafik Pemantauan Sumber Daya Switch (System Resource Monitors)</h3>
+                    </div>
+                    <div class="time-range-selector" id="deviceTimeRange">
+                        <span class="time-range-label">Rentang:</span>
+                        <button class="time-range-btn active" data-range="live"
+                            title="Real-time live stream tiap 5 detik">
+                            <span class="live-dot"></span> Live (5s)
+                        </button>
+                        <button class="time-range-btn" data-range="1h"
+                            title="Riwayat tren 1 jam kebelakang (interval 5 menit)">1 Jam</button>
+                        <button class="time-range-btn" data-range="12h"
+                            title="Riwayat tren 12 jam kebelakang (interval 1 jam)">12 Jam</button>
+                        <button class="time-range-btn" data-range="24h"
+                            title="Riwayat tren 24 jam kebelakang (interval 2 jam)">24 Jam</button>
                     </div>
                 </div>
 
-                <!-- Chart 2: 12-Hour Interface Traffic History -->
-                <div class="chart-panel">
+                <div class="resource-graphs-grid">
+                    <!-- 1. CPU Utilization -->
+                    <div class="resource-card">
+                        <div class="resource-card-header">
+                            <span class="resource-card-title">
+                                <span class="badge-dot-green"></span> CPU Utilization
+                            </span>
+                            <span class="resource-card-badge badge-res-green" id="badgeCpu">Normal</span>
+                        </div>
+                        <div class="resource-card-stat">
+                            <span class="resource-card-val text-green" id="valCpu">{{ device.cpu }}%</span>
+                            <span class="text-muted" style="font-size: 11px;">Max: 100%</span>
+                        </div>
+                        <div class="resource-chart-canvas-wrapper">
+                            <canvas id="chartCpu"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- 2. Memory Utilization -->
+                    <div class="resource-card">
+                        <div class="resource-card-header">
+                            <span class="resource-card-title">
+                                <span class="badge-dot-green"></span> Memory Utilization
+                            </span>
+                            <span class="resource-card-badge badge-res-amber" id="badgeMemory">Normal</span>
+                        </div>
+                        <div class="resource-card-stat">
+                            <span class="resource-card-val text-amber" id="valMemory">{{ device.mem }}%</span>
+                            <span class="text-muted" style="font-size: 11px;">{{ specs.total_ram or '318 MB' }}</span>
+                        </div>
+                        <div class="resource-chart-canvas-wrapper">
+                            <canvas id="chartMemory"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- 3. Packet Buffers -->
+                    <div class="resource-card">
+                        <div class="resource-card-header">
+                            <span class="resource-card-title">
+                                <span class="badge-dot-green"></span> Packet Buffers
+                            </span>
+                            <span class="resource-card-badge badge-res-cyan" id="badgePacketBuffers">Optimal</span>
+                        </div>
+                        <div class="resource-card-stat">
+                            <span class="resource-card-val text-cyan" id="valPacketBuffers">{{
+                                resources.packet_buffers_pct or '31.0' }}%</span>
+                            <span class="text-muted" style="font-size: 11px;">Hardware ASIC Buffer</span>
+                        </div>
+                        <div class="resource-chart-canvas-wrapper">
+                            <canvas id="chartPacketBuffers"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- 4. TX Drops -->
+                    <div class="resource-card">
+                        <div class="resource-card-header">
+                            <span class="resource-card-title">
+                                <span class="badge-dot-green"></span> TX Drops
+                            </span>
+                            <span class="resource-card-badge badge-res-green" id="badgeTxDrops">No Congestion</span>
+                        </div>
+                        <div class="resource-card-stat">
+                            <span class="resource-card-val text-green" id="valTxDrops">{{ resources.tx_drops or 0 }}
+                                Drops</span>
+                            <span class="text-muted" style="font-size: 11px;">0% Drop Rate</span>
+                        </div>
+                        <div class="resource-chart-canvas-wrapper">
+                            <canvas id="chartTxDrops"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- 5. Message Buffers -->
+                    <div class="resource-card">
+                        <div class="resource-card-header">
+                            <span class="resource-card-title">
+                                <span class="badge-dot-green"></span> Message Buffers
+                            </span>
+                            <span class="resource-card-badge badge-res-purple" id="badgeMessageBuffers">Normal</span>
+                        </div>
+                        <div class="resource-card-stat">
+                            <span class="resource-card-val" style="color: #c084fc;" id="valMessageBuffers">{{
+                                resources.message_buffers_pct or '22.0' }}%</span>
+                            <span class="text-muted" style="font-size: 11px;">IPC & Control Plane</span>
+                        </div>
+                        <div class="resource-chart-canvas-wrapper">
+                            <canvas id="chartMessageBuffers"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- 6. RX Errors -->
+                    <div class="resource-card">
+                        <div class="resource-card-header">
+                            <span class="resource-card-title">
+                                <span class="badge-dot-green"></span> RX Errors
+                            </span>
+                            <span class="resource-card-badge badge-res-green" id="badgeRxErrors">Clean Link</span>
+                        </div>
+                        <div class="resource-card-stat">
+                            <span class="resource-card-val text-green" id="valRxErrors">{{ resources.rx_errors or 0 }}
+                                Errors</span>
+                            <span class="text-muted" style="font-size: 11px;">Physical Layer (CRC/FCS)</span>
+                        </div>
+                        <div class="resource-chart-canvas-wrapper">
+                            <canvas id="chartRxErrors"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Aggregated Throughput & Traffic History -->
+                <div class="chart-panel" style="margin-top: 6px;">
                     <div class="panel-header">
                         <div>
-                            <h3 class="panel-title">Histori Bandwidth & Traffic Antarmuka (Mbps)</h3>
-                            <span class="panel-sub">Lalu lintas agregat interface WAN/LAN</span>
+                            <h3 class="panel-title">Histori Bandwidth & Lalu Lintas Antarmuka (Throughput Mbps)</h3>
+                            <span class="panel-sub">Lalu lintas agregat 28 port antarmuka switch</span>
                         </div>
                         <div class="chart-legend-custom">
                             <span class="legend-tag tag-traffic"><span class="legend-color bg-cyan"></span> Throughput
                                 (Mbps)</span>
                         </div>
                     </div>
-                    <div class="chart-body">
+                    <div class="chart-body" style="height: 180px;">
                         <canvas id="deviceTrafficChart"></canvas>
                     </div>
                 </div>
             </div>
 
-            <!-- Interface Status Table -->
+            <!-- Complete Interface Status Table (ALL 28 Ports) -->
             <div class="table-panel">
-                <div class="panel-header">
-                    <div>
-                        <h3 class="panel-title">Status Antarmuka Fisik & Logika (Interface Details)</h3>
-                        <span class="panel-sub">Hasil query SNMP / RouterOS-API / SSH Netmiko</span>
+                <div class="panel-header" style="flex-direction: column; align-items: flex-start; gap: 4px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                        <div>
+                            <h3 class="panel-title">Status Seluruh Antarmuka Fisik & Logika ({{ summary.total_ports or
+                                28 }} Ports)</h3>
+                            <span class="panel-sub">Telemetri live dari switch fisik {{ device.name }} ({{ device.ip }})
+                                - Menampilkan semua port tanpa sortir</span>
+                        </div>
+                    </div>
+
+                    <!-- Port Filter Tabs & Search Controls -->
+                    <div class="table-controls-row" style="width: 100%;">
+                        <div class="port-filter-tabs" id="portFilterTabs">
+                            <button class="port-filter-btn active" data-filter="all">Semua Port ({{ summary.total_ports
+                                or 28 }})</button>
+                            <button class="port-filter-btn" data-filter="UP">Port Aktif / UP ({{ summary.up_ports or 22
+                                }})</button>
+                            <button class="port-filter-btn" data-filter="DOWN">Port Down ({{ summary.down_ports or 6
+                                }})</button>
+                            <button class="port-filter-btn" data-filter="sfp">Fiber 10G SFP+ ({{ summary.sfp_ports or 4
+                                }})</button>
+                            <button class="port-filter-btn" data-filter="poe">10/100/1000T PoE+ ({{ (summary.total_ports
+                                or 28) - (summary.sfp_ports or 4) }})</button>
+                        </div>
+                        <div class="port-search-wrapper">
+                            <svg class="port-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg>
+                            <input type="text" id="portSearchInput" placeholder="Cari port, LLDP neighbor, speed..."
+                                autocomplete="off" />
+                        </div>
                     </div>
                 </div>
+
                 <div class="table-responsive">
-                    <table class="data-table">
+                    <table class="data-table" id="portsTable">
                         <thead>
                             <tr>
-                                <th>Interface</th>
-                                <th>Tipe</th>
-                                <th>MAC Address</th>
+                                <th>Port / Interface</th>
+                                <th>Tipe / Media</th>
                                 <th>Status Operasional</th>
+                                <th>Perangkat Terhubung (LLDP Neighbor)</th>
                                 <th>Speed</th>
                                 <th>Tx (Mbps)</th>
                                 <th>Rx (Mbps)</th>
+                                <th>Total Transfer (Tx / Rx)</th>
+                                <th>PoE Power</th>
+                                <th>Errors / Drops</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr>
-                                <td><strong>ether1-gateway</strong></td>
-                                <td>Ethernet (WAN)</td>
-                                <td><code>48:8F:5A:12:34:01</code></td>
-                                <td><span class="status-badge badge-up"><span class="badge-dot-green"></span> UP /
-                                        Running</span></td>
-                                <td>1 Gbps</td>
-                                <td>84.2</td>
-                                <td>126.6</td>
+                        <tbody id="portsTableBody">
+                            {% for p in ports %}
+                            <tr class="port-row" data-status="{{ p.status }}"
+                                data-type="{% if p.is_sfp %}sfp{% else %}poe{% endif %}"
+                                data-search="{{ p.port_name | lower }} {{ p.speed | lower }} {% if p.neighbor %}{{ p.neighbor.name | lower }} {{ p.neighbor.desc | lower }}{% endif %}">
+                                <td>
+                                    <strong>{{ p.port_name }}</strong>
+                                    {% if p.is_sfp %}
+                                    <span class="badge-media-sfp">10G SFP+</span>
+                                    {% else %}
+                                    <span class="badge-media-poe">PoE+</span>
+                                    {% endif %}
+                                    {% if p.port_id == '1' and '2930' in device.name %}
+                                    <span class="badge-uplink">UPLINK</span>
+                                    {% elif '10GE1/0/1' in p.port_name %}
+                                    <span class="badge-uplink">TRUNK UPLINK</span>
+                                    {% endif %}
+                                </td>
+                                <td><span class="text-secondary">{{ p.port_type }}</span></td>
+                                <td>
+                                    {% if p.status == 'UP' %}
+                                    <span class="status-badge badge-up">
+                                        <span class="badge-dot-green"></span> UP / Running
+                                    </span>
+                                    {% else %}
+                                    <span class="status-badge badge-down">
+                                        <span class="badge-dot-red"></span> DOWN / No Link
+                                    </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if p.neighbor %}
+                                    <div class="neighbor-name">{{ p.neighbor.name }} <code
+                                            style="font-size: 11px;">({{ p.neighbor.remote_port }})</code></div>
+                                    <div class="neighbor-desc">{{ p.neighbor.desc }}</div>
+                                    {% else %}
+                                    <span class="text-muted" style="font-size: 12px;">-</span>
+                                    {% endif %}
+                                </td>
+                                <td><code style="font-size: 11.5px;">{{ p.speed }}</code></td>
+                                <td>
+                                    <strong class="{% if p.tx_mbps > 0 %}text-cyan{% else %}text-muted{% endif %}">{{
+                                        p.tx_mbps }}</strong>
+                                </td>
+                                <td>
+                                    <strong class="{% if p.rx_mbps > 0 %}text-green{% else %}text-muted{% endif %}">{{
+                                        p.rx_mbps }}</strong>
+                                </td>
+                                <td>
+                                    <span style="font-size: 11.5px; font-family: var(--font-mono); color: #cbd5e1;">
+                                        {{ p.bytes_tx_fmt }} / {{ p.bytes_rx_fmt }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if p.poe and p.status == 'UP' %}
+                                    <span class="badge-media-poe" style="font-family: var(--font-mono);">{{
+                                        p.poe.power_watts }} W</span>
+                                    {% elif p.is_sfp %}
+                                    <span class="text-muted" style="font-size: 11px;">N/A (Fiber)</span>
+                                    {% else %}
+                                    <span class="text-muted" style="font-size: 11px;">0 W</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span
+                                        style="font-family: var(--font-mono); font-size: 11.5px; {% if p.errors_rx > 0 or p.errors_tx > 0 %}color: #f87171;{% else %}color: var(--text-muted);{% endif %}">
+                                        {{ p.errors_tx + p.errors_rx }} / {{ p.drops_tx }}
+                                    </span>
+                                </td>
                             </tr>
-                            <tr>
-                                <td><strong>ether2-lan</strong></td>
-                                <td>Ethernet (LAN)</td>
-                                <td><code>48:8F:5A:12:34:02</code></td>
-                                <td><span class="status-badge badge-up"><span class="badge-dot-green"></span> UP /
-                                        Running</span></td>
-                                <td>1 Gbps</td>
-                                <td>112.5</td>
-                                <td>42.1</td>
-                            </tr>
-                            <tr>
-                                <td><strong>ether3-mgmt</strong></td>
-                                <td>Ethernet (OOBM)</td>
-                                <td><code>48:8F:5A:12:34:03</code></td>
-                                <td><span class="status-badge badge-up"><span class="badge-dot-green"></span> UP /
-                                        Running</span></td>
-                                <td>100 Mbps</td>
-                                <td>0.4</td>
-                                <td>1.2</td>
-                            </tr>
-                            <tr>
-                                <td><strong>sfp-plus1</strong></td>
-                                <td>Fiber SFP+</td>
-                                <td><code>48:8F:5A:12:34:04</code></td>
-                                <td><span class="status-badge badge-down"><span class="badge-dot-red"></span> DOWN / No
-                                        Link</span></td>
-                                <td>10 Gbps</td>
-                                <td>0.0</td>
-                                <td>0.0</td>
-                            </tr>
+                            {% endfor %}
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
     </main>
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="toast-container"></div>
 
     <script>
         function updateClock() {
@@ -228,7 +506,9 @@
         updateClock();
     </script>
     <script>const CURRENT_DEVICE_ID = {{ device.id }};</script>
-    <script src="/static/js/device_detail.js"></script>
+    <script>window.NAV_DEVICES = {{ nav_devices | tojson }};</script>
+    <script src="/static/js/global_nav.js?v=1.0"></script>
+    <script src="/static/js/device_detail.js?v=2.1"></script>
 </body>
 
 </html>

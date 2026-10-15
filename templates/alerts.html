@@ -11,7 +11,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
         rel="stylesheet">
     <!-- Relative CSS -->
-    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/style.css?v=3.3">
 </head>
 
 <body>
@@ -29,13 +29,17 @@
                     <circle cx="11" cy="11" r="8"></circle>
                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                 </svg>
-                <input type="text" placeholder="Cari IP, nama router, site..." />
+                <input type="text" id="globalSearch" placeholder="Cari vendor, site" autocomplete="off" />
+                <button type="button" id="clearSearchBtn" class="search-clear-btn"
+                    title="Reset pencarian">&times;</button>
+                <div id="searchResultsDropdown" class="search-results-dropdown" style="display: none;"></div>
             </div>
         </div>
 
         <nav class="nav-links">
             <a href="/" class="nav-item">Monitoring</a>
-            <a href="/alerts" class="nav-item active">Alerts {% if active_alerts_count > 0 %}<span class="nav-badge">{{ active_alerts_count }}</span>{% endif %}</a>
+            <a href="/alerts" class="nav-item active">Alerts {% if active_alerts_count > 0 %}<span class="nav-badge">{{
+                    active_alerts_count }}</span>{% endif %}</a>
             <a href="/telegram" class="nav-item">Telegram Bot</a>
             <a href="/backups" class="nav-item">Backups</a>
         </nav>
@@ -129,7 +133,9 @@
                                             <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
                                             <polyline points="22 4 12 14.01 9 11.01"></polyline>
                                         </svg>
-                                        <h3 style="margin: 0; font-size: 1.1rem; color: #6b7280;">Tidak Ada Alert</h3>
+                                        <p style="margin: 0; font-size: 1.1rem; color: #6b7280;">Semua Sistem Normal
+                                        </p>
+                                        <span>Tidak ada alert aktif yang memerlukan mitigasi</span>
                                     </div>
                                 </td>
                             </tr>
@@ -184,6 +190,8 @@
             setTimeout(() => toast.remove(), 3000);
         }
     </script>
+    <script>window.NAV_DEVICES = {{ nav_devices | tojson }};</script>
+    <script src="/static/js/global_nav.js?v=1.0"></script>
 </body>
 
 </html>

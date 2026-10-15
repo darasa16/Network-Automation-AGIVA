@@ -9,4 +9,9 @@ devices:
     vendor: Huawei
     site: Corner
     credential_ref: corner_vault
+  - name: FW-PA220-1
+    ip_address: 192.168.1.11
+    vendor: Palo Alto
+    site: HO Gateway
+    credential_ref: pa_vault
 

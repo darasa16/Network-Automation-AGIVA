@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AGIVA NOC - Network Monitoring Dashboard</title>
+    <title>AGIVA - Network Monitoring Dashboard</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,7 +13,7 @@
         rel="stylesheet">
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
-    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/style.css?v=3.0">
 </head>
 
 <body>
@@ -31,13 +31,17 @@
                     <circle cx="11" cy="11" r="8"></circle>
                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                 </svg>
-                <input type="text" id="globalSearch" placeholder="Cari IP, nama router, site..." />
+                <input type="text" id="globalSearch" placeholder="Cari vendor, site" autocomplete="off" />
+                <button type="button" id="clearSearchBtn" class="search-clear-btn"
+                    title="Reset pencarian">&times;</button>
+                <div id="searchResultsDropdown" class="search-results-dropdown" style="display: none;"></div>
             </div>
         </div>
 
         <nav class="nav-links">
             <a href="/" class="nav-item active">Monitoring</a>
-            <a href="/alerts" class="nav-item">Alerts {% if active_alerts_count > 0 %}<span class="nav-badge" id="navAlertBadge">{{ active_alerts_count }}</span>{% endif %}</a>
+            <a href="/alerts" class="nav-item">Alerts {% if active_alerts_count > 0 %}<span class="nav-badge"
+                    id="navAlertBadge">{{ active_alerts_count }}</span>{% endif %}</a>
             <a href="/telegram" class="nav-item">Telegram Bot</a>
             <a href="/backups" class="nav-item">Backups</a>
         </nav>
@@ -83,7 +87,7 @@
                     <div class="kpi-info">
                         <span class="kpi-label">Devices Online</span>
                         <h2 class="kpi-value text-success" id="kpiOnline">{{ devices_online }}</h2>
-                        <span class="kpi-sub text-success-light">Normal Reachable</span>
+                        <span class="kpi-sub text-success-light">Reachable</span>
                     </div>
                     <div class="kpi-icon-box icon-green">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -96,7 +100,7 @@
                     <div class="kpi-info">
                         <span class="kpi-label">Devices Offline</span>
                         <h2 class="kpi-value text-danger" id="kpiOffline">{{ devices_offline }}</h2>
-                        <span class="kpi-sub text-danger-light">Unreachable / Timeout</span>
+                        <span class="kpi-sub text-danger-light">Unreachable</span>
                     </div>
                     <div class="kpi-icon-box icon-red">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -128,6 +132,28 @@
             <div class="content-layout">
                 <!-- Left Main Column (Charts + Device Table) -->
                 <div class="main-column">
+                    <!-- Charts Header Bar with Time-Range Selector -->
+                    <div class="charts-header-bar">
+                        <div class="charts-header-info">
+                            <span class="charts-header-badge">Performa Jaringan</span>
+                            <span class="charts-header-desc">Pemantauan performa real-time & riwayat tren beban
+                                perangkat</span>
+                        </div>
+                        <div class="time-range-selector" id="dashboardTimeRange">
+                            <span class="time-range-label">Rentang:</span>
+                            <button class="time-range-btn active" data-range="live"
+                                title="Real-time live stream tiap 5 detik">
+                                <span class="live-dot"></span> Live (5s)
+                            </button>
+                            <button class="time-range-btn" data-range="1h"
+                                title="Riwayat tren 1 jam kebelakang (interval 5 menit)">1 Jam</button>
+                            <button class="time-range-btn" data-range="12h"
+                                title="Riwayat tren 12 jam kebelakang (interval 1 jam)">12 Jam</button>
+                            <button class="time-range-btn" data-range="24h"
+                                title="Riwayat tren 24 jam kebelakang (interval 2 jam)">24 Jam</button>
+                        </div>
+                    </div>
+
                     <!-- Charts Section -->
                     <div class="charts-row">
                         <!-- Chart 1: Real-time CPU & Memory -->
@@ -171,12 +197,11 @@
 
                     <!-- Monitored Devices Table Panel -->
 
-            <div class="table-panel" id="monitored-devices">
+                    <div class="table-panel" id="monitored-devices">
                         <div class="panel-header table-header-flex">
                             <div>
                                 <h3 class="panel-title">Monitored Devices</h3>
-                                <span class="panel-sub">Daftar router & switch yang terpantau aktif oleh Data
-                                    Collector</span>
+                                <span class="panel-sub">Daftar perangkat yang terpantau</span>
                             </div>
                             <div class="table-actions">
                                 <span class="badge-filter active" data-filter="all">Semua ({{ total_devices }})</span>
@@ -201,21 +226,28 @@
                                 </thead>
                                 <tbody id="deviceTableBody">
                                     {% for dev in devices %}
-                                    <tr class="device-row filter-{{ dev.status }}" id="row-dev-{{ dev.id }}">
+                                    <tr class="device-row filter-{{ dev.status }}" id="row-dev-{{ dev.id }}"
+                                        data-id="{{ dev.id }}" data-name="{{ dev.name }}" data-ip="{{ dev.ip }}"
+                                        data-vendor="{{ dev.vendor }}" data-site="{{ dev.site }}"
+                                        data-status="{{ dev.status }}">
                                         <td class="col-name">
                                             <div class="device-name-wrap">
-                                                <span class="device-icon-tag {{ dev.vendor.lower() }}">{{ dev.vendor[0].upper() }}</span>
+                                                <span class="device-icon-tag {{ dev.vendor.lower() }}">{{
+                                                    dev.vendor[0].upper() }}</span>
                                                 <strong>{{ dev.name }}</strong>
                                             </div>
                                         </td>
                                         <td class="col-ip"><code>{{ dev.ip }}</code></td>
-                                        <td><span class="vendor-badge badge-{{ dev.vendor.lower() }}">{{ dev.vendor }}</span></td>
+                                        <td><span class="vendor-badge badge-{{ dev.vendor.lower() }}">{{ dev.vendor
+                                                }}</span></td>
                                         <td class="col-site">{{ dev.site }}</td>
                                         <td>
                                             {% if dev.status == 'UP' %}
-                                            <span class="status-badge badge-up"><span class="badge-dot-green"></span> UP</span>
+                                            <span class="status-badge badge-up"><span class="badge-dot-green"></span>
+                                                UP</span>
                                             {% else %}
-                                            <span class="status-badge badge-down"><span class="badge-dot-red"></span> DOWN</span>
+                                            <span class="status-badge badge-down"><span class="badge-dot-red"></span>
+                                                DOWN</span>
                                             {% endif %}
                                         </td>
                                         <td class="col-metrics">
@@ -224,14 +256,16 @@
                                                 <div class="mini-bar-row">
                                                     <span class="mini-lbl">C:</span>
                                                     <div class="progress-bar-bg">
-                                                        <div class="progress-bar-fill fill-cpu" style="width: {{ dev.cpu }}%"></div>
+                                                        <div class="progress-bar-fill fill-cpu"
+                                                            style="width: {{ dev.cpu }}%"></div>
                                                     </div>
                                                     <span class="mini-val">{{ dev.cpu }}%</span>
                                                 </div>
                                                 <div class="mini-bar-row">
                                                     <span class="mini-lbl">M:</span>
                                                     <div class="progress-bar-bg">
-                                                        <div class="progress-bar-fill fill-mem" style="width: {{ dev.mem }}%"></div>
+                                                        <div class="progress-bar-fill fill-mem"
+                                                            style="width: {{ dev.mem }}%"></div>
                                                     </div>
                                                     <span class="mini-val">{{ dev.mem }}%</span>
                                                 </div>
@@ -261,17 +295,20 @@
                     <div class="panel-header alerts-sidebar-header">
                         <div>
                             <h3 class="panel-title">Active & Recent Alerts</h3>
-                            <span class="panel-sub">Peringatan anomali dari Rule Engine</span>
+                            <span class="panel-sub">Peringatan anomali perangkat</span>
                         </div>
                         <a href="alerts.html" class="link-view-all">Lihat Semua &rarr;</a>
                     </div>
 
                     <div class="alerts-stream" id="alertsStream">
                         {% for alert in alerts %}
-                        <div class="alert-card card-severity-{{ alert.severity.lower() }} {% if alert.acknowledged %}is-ack{% endif %}" id="alert-card-{{ alert.id }}">
+                        <div class="alert-card card-severity-{{ alert.severity.lower() }} {% if alert.acknowledged %}is-ack{% endif %}"
+                            id="alert-card-{{ alert.id }}">
                             <div class="alert-card-header">
                                 <div class="alert-title-wrap">
-                                    <span class="alert-severity-badge {% if alert.severity == 'CRITICAL' %}badge-crit{% else %}badge-warn{% endif %}">{{ alert.severity }}</span>
+                                    <span
+                                        class="alert-severity-badge {% if alert.severity == 'CRITICAL' %}badge-crit{% else %}badge-warn{% endif %}">{{
+                                        alert.severity }}</span>
                                     <span class="alert-time">{{ alert.triggered_at }}</span>
                                 </div>
                                 <span class="alert-id">#{{ alert.id }}</span>
@@ -285,19 +322,24 @@
                                 <span class="badge-ack-state text-success">✓ Acknowledged</span>
                                 <span class="text-muted-xs">{{ alert.acknowledged_by or 'Terkonfirmasi' }}</span>
                                 {% else %}
-                                <span class="badge-ack-state text-warning">● Pending Action</span>
-                                <button class="btn-ack" onclick="acknowledgeAlert({{ alert.id }})">ACK</button>
+                                <span class="badge-ack-state text-warning">● Menunggu ACK</span>
+                                <span class="text-muted-xs">via Bot Telegram</span>
                                 {% endif %}
                             </div>
                         </div>
                         {% else %}
                         <div style="text-align: center; padding: 40px 10px; color: #64748b;">
-                            <svg style="width: 40px; height: 40px; stroke: #10b981; fill: none; margin: 0 auto 8px auto; display: block;" viewBox="0 0 24 24">
-                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                <polyline points="22 4 12 14.01 9 11.01" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <svg style="width: 40px; height: 40px; stroke: #10b981; fill: none; margin: 0 auto 8px auto; display: block;"
+                                viewBox="0 0 24 24">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" />
+                                <polyline points="22 4 12 14.01 9 11.01" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" />
                             </svg>
-                            <p style="font-size: 0.9rem; font-weight: 500; color: #94a3b8; margin: 0 0 4px 0;">Semua Sistem Normal</p>
-                            <span style="font-size: 0.75rem; color: #64748b;">Tidak ada alert aktif yang memerlukan mitigasi</span>
+                            <p style="font-size: 0.9rem; font-weight: 500; color: #94a3b8; margin: 0 0 4px 0;">Semua
+                                Sistem Normal</p>
+                            <span style="font-size: 0.75rem; color: #64748b;">Tidak ada alert aktif yang memerlukan
+                                mitigasi</span>
                         </div>
                         {% endfor %}
                     </div>
@@ -320,8 +362,12 @@
         setInterval(updateClock, 1000);
         updateClock();
     </script>
+    <!-- Initial Real Chart Data from Database -->
+    <script>
+        window.INITIAL_CHART_DATA = {{ initial_chart_history | tojson }};
+    </script>
     <!-- Relative JS -->
-    <script src="/static/js/dashboard.js"></script>
+    <script src="/static/js/dashboard.js?v=3.4"></script>
 </body>
 
 </html>
