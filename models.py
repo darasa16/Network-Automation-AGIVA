@@ -124,7 +124,7 @@ class TelegramMessageLog(Base):
     chat_id = Column(String(50), nullable=False)
     message_type = Column(String(50), nullable=False) # 'ALERT_NOTIFICATION', 'COMMAND_REPLY', 'BACKUP_SUMMARY'
     content = Column(Text, nullable=False)
-    status = Column(String(20), default='SENT')       # 'SENT', 'FAILED', 'PENDING'
+    status = Column(String(100), default='SENT')      # 'SENT', 'FAILED', 'PENDING'
     sent_at = Column(DateTime, default=datetime.now)
 
     alert = relationship("Alert", back_populates="telegram_logs")

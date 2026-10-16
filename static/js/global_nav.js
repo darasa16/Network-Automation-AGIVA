@@ -58,7 +58,7 @@
         if (matches.length > 0) {
             let itemsHtml = '';
             matches.forEach(dev => {
-                const vendorClass = (dev.vendor || '').toLowerCase();
+                const vendorClass = (dev.vendor || '').toLowerCase().replace(/\s+/g, '-');
                 const vendorInitial = (dev.vendor || 'D')[0].toUpperCase();
 
                 itemsHtml += `

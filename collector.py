@@ -281,16 +281,21 @@ def save_metrics(device_id, metrics):
     )
     session.add(log_entry)
     
-    # Eksekusi Rule Engine & Anti-spam
-    if device.status == "DOWN":
-        trigger_alert_with_antispam(session, device, "HOST_DOWN", "CRITICAL", f"Perangkat {device.name} tidak dapat dijangkau via SSH/API.")
-    elif device.cpu_usage > 85.0:
-        trigger_alert_with_antispam(session, device, "CPU_OVERLOAD", "WARNING", f"Penggunaan CPU mencapai {device.cpu_usage:.1f}%")
-    elif device.mem_usage > 85.0:
-        trigger_alert_with_antispam(session, device, "MEMORY_OVERLOAD", "WARNING", f"Penggunaan Memory mencapai {device.mem_usage:.1f}%")
-        
-    session.commit()
-    session.close()
+    try:
+        # Eksekusi Rule Engine & Anti-spam
+        if device.status == "DOWN":
+            trigger_alert_with_antispam(session, device, "HOST_DOWN", "CRITICAL", f"Perangkat {device.name} tidak dapat dijangkau via SSH/API.")
+        elif device.cpu_usage > 85.0:
+            trigger_alert_with_antispam(session, device, "CPU_OVERLOAD", "WARNING", f"Penggunaan CPU mencapai {device.cpu_usage:.1f}%")
+        elif device.mem_usage > 85.0:
+            trigger_alert_with_antispam(session, device, "MEMORY_OVERLOAD", "WARNING", f"Penggunaan Memory mencapai {device.mem_usage:.1f}%")
+            
+        session.commit()
+    except Exception as e:
+        logger.error(f"Gagal commit metrik/alert untuk {device.name}: {e}")
+        session.rollback()
+    finally:
+        session.close()
 
 # ==========================================
 # 4. run_polling_cycle()

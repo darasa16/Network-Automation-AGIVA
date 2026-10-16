@@ -242,9 +242,25 @@ function renderMiniResourceChart(canvasId, existingChart, labels, dataPoints, co
     const canvas = document.getElementById(canvasId);
     if (!canvas) return null;
 
+    const maxVal = dataPoints.length > 0 ? Math.max(...dataPoints) : 0;
+    const computedMax = isInteger
+        ? Math.max(Math.ceil(maxVal * 1.25), 5)
+        : Math.min(Math.max(Math.ceil(maxVal * 1.25), 10), 100);
+
     if (existingChart) {
         existingChart.data.labels = labels;
         existingChart.data.datasets[0].data = dataPoints;
+        if (existingChart.data.datasets[0].borderColor !== colorHex) {
+            existingChart.data.datasets[0].borderColor = colorHex;
+            const ctx = canvas.getContext('2d');
+            const gradient = ctx.createLinearGradient(0, 0, 0, 90);
+            gradient.addColorStop(0, colorHex + '40');
+            gradient.addColorStop(1, colorHex + '00');
+            existingChart.data.datasets[0].backgroundColor = gradient;
+        }
+        if (existingChart.options.scales && existingChart.options.scales.y) {
+            existingChart.options.scales.y.suggestedMax = computedMax;
+        }
         existingChart.update('none');
         return existingChart;
     }
@@ -288,7 +304,7 @@ function renderMiniResourceChart(canvasId, existingChart, labels, dataPoints, co
                 },
                 y: {
                     min: 0,
-                    suggestedMax: isInteger ? 5 : (Math.max(...dataPoints, 10) * 1.2),
+                    suggestedMax: computedMax,
                     grid: { color: 'rgba(255, 255, 255, 0.04)' },
                     ticks: {
                         color: '#64748b',
@@ -325,45 +341,116 @@ function renderDeviceCharts(data) {
     // 5. Message Buffers (Purple #a855f7)
     chartMessageBuffersInstance = renderMiniResourceChart('chartMessageBuffers', chartMessageBuffersInstance, labels, mbVals, '#a855f7', '%');
 
-    // 6. RX Errors (Green #10b981)
-    chartRxErrorsInstance = renderMiniResourceChart('chartRxErrors', chartRxErrorsInstance, labels, reVals, '#10b981', ' errors', true);
+    // 6. RX Errors (Vivid Orange #f97316)
+    chartRxErrorsInstance = renderMiniResourceChart('chartRxErrors', chartRxErrorsInstance, labels, reVals, '#f97316', ' errors', true);
 
-    // 7. Aggregated Throughput Chart
+    // 7. Aggregated Throughput Chart (IN & OUT) - Diagram Batang (Bar Chart)
     const ctxTraffic = document.getElementById('deviceTrafficChart');
     if (ctxTraffic) {
+        const trafficIn = data.traffic_in || data.traffic || [];
+        const trafficOut = data.traffic_out || [];
+
+        // Recreate if existing instance is not a bar chart
+        if (deviceTrafficChart && deviceTrafficChart.config.type !== 'bar') {
+            deviceTrafficChart.destroy();
+            deviceTrafficChart = null;
+        }
+
+        const allVals = [...trafficIn, ...trafficOut];
+        const maxVal = allVals.length > 0 ? Math.max(...allVals) : 50;
+        const suggestedYMax = Math.max(Math.ceil(maxVal * 1.25), 50);
+
         if (deviceTrafficChart) {
             deviceTrafficChart.data.labels = labels;
-            deviceTrafficChart.data.datasets[0].data = data.traffic || [];
+            if (deviceTrafficChart.data.datasets.length > 0) {
+                deviceTrafficChart.data.datasets[0].data = trafficIn;
+            }
+            if (deviceTrafficChart.data.datasets.length > 1) {
+                deviceTrafficChart.data.datasets[1].data = trafficOut;
+            }
+            if (deviceTrafficChart.options.scales.y) {
+                deviceTrafficChart.options.scales.y.suggestedMax = suggestedYMax;
+            }
             deviceTrafficChart.update('none');
         } else {
             const gradientCyan = ctxTraffic.getContext('2d').createLinearGradient(0, 0, 0, 180);
-            gradientCyan.addColorStop(0, 'rgba(6, 182, 212, 0.4)');
-            gradientCyan.addColorStop(1, 'rgba(6, 182, 212, 0.0)');
+            gradientCyan.addColorStop(0, 'rgba(6, 182, 212, 0.85)');
+            gradientCyan.addColorStop(1, 'rgba(6, 182, 212, 0.2)');
+
+            const gradientGreen = ctxTraffic.getContext('2d').createLinearGradient(0, 0, 0, 180);
+            gradientGreen.addColorStop(0, 'rgba(16, 185, 129, 0.85)');
+            gradientGreen.addColorStop(1, 'rgba(16, 185, 129, 0.2)');
+
+            const datasets = [
+                {
+                    label: 'Rx',
+                    data: trafficIn,
+                    borderColor: '#06b6d4',
+                    backgroundColor: gradientCyan,
+                    borderWidth: 1.5,
+                    borderRadius: 4,
+                    borderSkipped: false,
+                    hoverBackgroundColor: '#06b6d4'
+                },
+                {
+                    label: 'Tx',
+                    data: trafficOut,
+                    borderColor: '#10b981',
+                    backgroundColor: gradientGreen,
+                    borderWidth: 1.5,
+                    borderRadius: 4,
+                    borderSkipped: false,
+                    hoverBackgroundColor: '#10b981'
+                }
+            ];
 
             deviceTrafficChart = new Chart(ctxTraffic, {
-                type: 'line',
+                type: 'bar',
                 data: {
                     labels: labels,
-                    datasets: [
-                        {
-                            label: 'Throughput (Mbps)',
-                            data: data.traffic || [],
-                            borderColor: '#06b6d4',
-                            backgroundColor: gradientCyan,
-                            borderWidth: 2,
-                            fill: true,
-                            tension: 0.3,
-                            pointRadius: 3
-                        }
-                    ]
+                    datasets: datasets
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: '#18142c',
+                            titleColor: '#cbd5e1',
+                            bodyColor: '#cbd5e1',
+                            borderColor: 'rgba(232, 165, 118, 0.3)',
+                            borderWidth: 1,
+                            padding: 10,
+                            cornerRadius: 6,
+                            callbacks: {
+                                label: (ctx) => ` ${ctx.dataset.label}: ${ctx.parsed.y} Mbps`
+                            }
+                        }
+                    },
                     scales: {
-                        x: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#64748b' } },
-                        y: { min: 0, max: 250, grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#64748b', stepSize: 50, callback: v => `${v}M` } }
+                        x: {
+                            grid: { color: 'rgba(255, 255, 255, 0.04)' },
+                            ticks: { color: '#64748b', font: { size: 10 } },
+                            categoryPercentage: 0.65,
+                            barPercentage: 0.85
+                        },
+                        y: {
+                            min: 0,
+                            suggestedMax: suggestedYMax,
+                            grid: { color: 'rgba(255, 255, 255, 0.04)' },
+                            ticks: {
+                                color: '#64748b',
+                                font: { size: 10 },
+                                callback: v => `${v}M`
+                            }
+                        }
                     }
                 }
             });

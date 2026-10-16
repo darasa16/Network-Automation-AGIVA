@@ -11,7 +11,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
         rel="stylesheet">
     <!-- Relative CSS -->
-    <link rel="stylesheet" href="/static/css/style.css?v=3.3">
+    <link rel="stylesheet" href="/static/css/style.css?v=4.9">
 </head>
 
 <body>
@@ -76,8 +76,8 @@
             <!-- Alert Filters -->
             <div class="filter-bar">
                 <button class="filter-tab active" data-filter="all">Semua Alert ({{ total_alerts }})</button>
-                <button class="filter-tab" data-filter="pending">Belum Di-ACK ({{ pending_alerts }})</button>
-                <button class="filter-tab" data-filter="acked">Sudah Di-ACK ({{ acked_alerts }})</button>
+                <button class="filter-tab" data-filter="pending">Belum ACK ({{ pending_alerts }})</button>
+                <button class="filter-tab" data-filter="acked">Sudah ACK ({{ acked_alerts }})</button>
             </div>
 
             <!-- Alerts Table Panel -->
@@ -116,9 +116,9 @@
                                 <td class="col-time">{{ a.triggered_at }}</td>
                                 <td>
                                     {% if a.acknowledged %}
-                                    <span class="badge-ack-state text-success">✓ Acknowledged</span>
+                                    <span class="badge-ack-state text-warning">Acknowledged</span>
                                     {% else %}
-                                    <span class="badge-ack-state text-warning">● Menunggu ACK</span>
+                                    <span class="badge-ack-state text-warning">Menunggu ACK</span>
                                     {% endif %}
                                 </td>
                             </tr>

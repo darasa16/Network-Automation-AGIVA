@@ -13,7 +13,7 @@
         rel="stylesheet">
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
-    <link rel="stylesheet" href="/static/css/style.css?v=3.0">
+    <link rel="stylesheet" href="/static/css/style.css?v=4.9">
 </head>
 
 <body>
@@ -73,7 +73,7 @@
                         <h2 class="kpi-value" id="kpiTotal">{{ total_devices }}</h2>
                         <span class="kpi-sub">Inventaris Jaringan Aktif</span>
                     </div>
-                    <div class="kpi-icon-box icon-blue">
+                    <div class="kpi-icon-box icon-magenta">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
                             <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
@@ -86,8 +86,8 @@
                 <div class="kpi-card card-online">
                     <div class="kpi-info">
                         <span class="kpi-label">Devices Online</span>
-                        <h2 class="kpi-value text-success" id="kpiOnline">{{ devices_online }}</h2>
-                        <span class="kpi-sub text-success-light">Reachable</span>
+                        <h2 class="kpi-value" id="kpiOnline">{{ devices_online }}</h2>
+                        <span class="kpi-sub">Reachable</span>
                     </div>
                     <div class="kpi-icon-box icon-green">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -99,8 +99,8 @@
                 <div class="kpi-card card-offline">
                     <div class="kpi-info">
                         <span class="kpi-label">Devices Offline</span>
-                        <h2 class="kpi-value text-danger" id="kpiOffline">{{ devices_offline }}</h2>
-                        <span class="kpi-sub text-danger-light">Unreachable</span>
+                        <h2 class="kpi-value" id="kpiOffline">{{ devices_offline }}</h2>
+                        <span class="kpi-sub">Unreachable</span>
                     </div>
                     <div class="kpi-icon-box icon-red">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -113,16 +113,17 @@
                 <div class="kpi-card card-alerts">
                     <div class="kpi-info">
                         <span class="kpi-label">Active Alerts</span>
-                        <h2 class="kpi-value text-warning" id="kpiAlerts">{{ active_alerts_count }}</h2>
-                        <span class="kpi-sub text-warning-light">Memerlukan Penanganan</span>
+                        <h2 class="kpi-value" id="kpiAlerts">{{ active_alerts_count }}</h2>
+                        <span class="kpi-sub">Memerlukan Penanganan</span>
                     </div>
                     <div class="kpi-icon-box icon-amber">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
                             <path
                                 d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z">
                             </path>
-                            <line x1="12" y1="9" x2="12" y2="13"></line>
-                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                            <line x1="12" y1="8.5" x2="12" y2="12.5"></line>
+                            <circle cx="12" cy="16.5" r="0.65" fill="currentColor"></circle>
                         </svg>
                     </div>
                 </div>
@@ -160,13 +161,13 @@
                         <div class="chart-panel">
                             <div class="panel-header">
                                 <div>
-                                    <h3 class="panel-title">Real-time CPU & Memory Utilization (%)</h3>
+                                    <h3 class="panel-title">CPU & Memory Utilization (%)</h3>
                                     <span class="panel-sub">Rata-rata metrik perangkat aktif</span>
                                 </div>
                                 <div class="chart-legend-custom">
-                                    <span class="legend-tag tag-cpu"><span class="legend-color bg-green"></span> CPU
+                                    <span class="legend-tag tag-cpu"><span class="legend-color bg-cyan"></span> CPU
                                         (%)</span>
-                                    <span class="legend-tag tag-mem"><span class="legend-color bg-amber"></span> Memory
+                                    <span class="legend-tag tag-mem"><span class="legend-color bg-orange"></span> Memory
                                         (%)</span>
                                 </div>
                             </div>
@@ -180,7 +181,7 @@
                             <div class="panel-header">
                                 <div>
                                     <h3 class="panel-title">Network Interface Traffic (Mbps)</h3>
-                                    <span class="panel-sub">Throughput agregat real-time</span>
+                                    <span class="panel-sub">Rata-rata throughput perangkat aktif</span>
                                 </div>
                                 <div class="chart-legend-custom">
                                     <span class="legend-tag tag-traffic"><span class="legend-color bg-cyan"></span>
@@ -214,14 +215,14 @@
                             <table class="data-table" id="devicesTable">
                                 <thead>
                                     <tr>
-                                        <th>Device Name</th>
-                                        <th>IP Address</th>
-                                        <th>Vendor</th>
-                                        <th>Site / Location</th>
-                                        <th>Status</th>
-                                        <th>CPU & RAM</th>
-                                        <th>Uptime</th>
-                                        <th class="text-center">Aksi</th>
+                                        <th class="col-name">Device Name</th>
+                                        <th class="col-ip">IP Address</th>
+                                        <th class="col-vendor">Vendor</th>
+                                        <th class="col-site">Site</th>
+                                        <th class="col-status">Status</th>
+                                        <th class="col-metrics">CPU &amp; RAM</th>
+                                        <th class="col-uptime">Uptime</th>
+                                        <th class="col-action text-center">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody id="deviceTableBody">
@@ -231,17 +232,14 @@
                                         data-vendor="{{ dev.vendor }}" data-site="{{ dev.site }}"
                                         data-status="{{ dev.status }}">
                                         <td class="col-name">
-                                            <div class="device-name-wrap">
-                                                <span class="device-icon-tag {{ dev.vendor.lower() }}">{{
-                                                    dev.vendor[0].upper() }}</span>
-                                                <strong>{{ dev.name }}</strong>
-                                            </div>
+                                            <strong>{{ dev.name }}</strong>
                                         </td>
                                         <td class="col-ip"><code>{{ dev.ip }}</code></td>
-                                        <td><span class="vendor-badge badge-{{ dev.vendor.lower() }}">{{ dev.vendor
-                                                }}</span></td>
+                                        <td class="col-vendor"><span
+                                                class="vendor-badge badge-{{ dev.vendor.lower().replace(' ', '-') }}">{{
+                                                dev.vendor }}</span></td>
                                         <td class="col-site">{{ dev.site }}</td>
-                                        <td>
+                                        <td class="col-status">
                                             {% if dev.status == 'UP' %}
                                             <span class="status-badge badge-up"><span class="badge-dot-green"></span>
                                                 UP</span>
@@ -275,7 +273,7 @@
                                             {% endif %}
                                         </td>
                                         <td class="col-uptime">{{ dev.uptime }}</td>
-                                        <td class="text-center">
+                                        <td class="col-action text-center">
                                             <a href="/device/{{ dev.id }}" class="btn-action btn-detail">Detail</a>
                                         </td>
                                     </tr>
@@ -322,8 +320,7 @@
                                 <span class="badge-ack-state text-success">✓ Acknowledged</span>
                                 <span class="text-muted-xs">{{ alert.acknowledged_by or 'Terkonfirmasi' }}</span>
                                 {% else %}
-                                <span class="badge-ack-state text-warning">● Menunggu ACK</span>
-                                <span class="text-muted-xs">via Bot Telegram</span>
+                                <span class="badge-ack-state text-warning">Menunggu ACK</span>
                                 {% endif %}
                             </div>
                         </div>
@@ -367,7 +364,7 @@
         window.INITIAL_CHART_DATA = {{ initial_chart_history | tojson }};
     </script>
     <!-- Relative JS -->
-    <script src="/static/js/dashboard.js?v=3.4"></script>
+    <script src="/static/js/dashboard.js?v=3.5"></script>
 </body>
 
 </html>

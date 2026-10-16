@@ -16,7 +16,7 @@ app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'agiva-noc-secret-key-2026')
 init_db()
 
 
-def send_telegram_broadcast(message_text):
+def send_telegram_broadcast(message_text, parse_mode='HTML'):
     load_dotenv(override=True)
     """Mengirim pesan broadcast langsung ke grup Telegram NOC resmi."""
     tg_token = os.getenv('TELEGRAM_BOT_TOKEN')
@@ -29,7 +29,7 @@ def send_telegram_broadcast(message_text):
         payload = {
             'chat_id': tg_chat_id,
             'text': message_text,
-            'parse_mode': 'Markdown'
+            'parse_mode': parse_mode
         }
         req = urllib.request.Request(
             url,
@@ -39,7 +39,7 @@ def send_telegram_broadcast(message_text):
         with urllib.request.urlopen(req, timeout=5) as resp:
             return True, 'SENT'
     except Exception as e:
-        return False, f'FAILED: {str(e)[:40]}'
+        return False, f'FAILED: {str(e)[:90]}'
 
 @app.teardown_appcontext
 def shutdown_session(exception=None):
@@ -344,26 +344,27 @@ def trigger_alert_with_antispam(session, device, alert_type, severity, message):
 
     target_chat_id = os.getenv('NOC_TELEGRAM_CHAT_ID', '-1004429503436')
     
-    # Pesan dengan emoji yang aman
+    # Pesan dengan format HTML yang aman untuk karakter underscore dll
     msg_content = (
-        f"🚨 *[NOC AGIVA - {severity} ALERT]* 🚨\n\n"
-        f"📌 *Alert ID:* #{new_alert.alert_id}\n"
-        f"📌 *Perangkat:* {device.name} ({device.ip_address})\n"
-        f"📌 *Tipe Error:* {alert_type}\n"
-        f"📌 *Pesan:* {new_alert.message}\n"
-        f"📌 *Waktu:* {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} WIB\n\n"
+        f"🚨 <b>[NOC AGIVA - {severity} ALERT]</b> 🚨\n\n"
+        f"📌 <b>Alert ID:</b> #{new_alert.alert_id}\n"
+        f"📌 <b>Perangkat:</b> {device.name} ({device.ip_address})\n"
+        f"📌 <b>Tipe Error:</b> {alert_type}\n"
+        f"📌 <b>Pesan:</b> {new_alert.message}\n"
+        f"📌 <b>Waktu:</b> {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} WIB\n\n"
         f"💡 Ketik /ack {new_alert.alert_id} di bot untuk konfirmasi penanganan."
     )
     
-    ok, delivery_status = send_telegram_broadcast(msg_content)
+    ok, delivery_status = send_telegram_broadcast(msg_content, parse_mode='HTML')
 
     # Log dispatch ke bot telegram
+    status_str = "SENT" if ok else str(delivery_status)[:90]
     log_entry = TelegramMessageLog(
         alert_id=new_alert.alert_id,
         chat_id=target_chat_id,
         message_type="ALERT_NOTIFICATION",
         content=msg_content,
-        status="SENT" if ok else delivery_status,
+        status=status_str,
         sent_at=datetime.now()
     )
     session.add(log_entry)
@@ -552,6 +553,8 @@ def api_device_metrics(device_id):
     cpu_vals = make_series(device.cpu_usage, var_scale, 0, 100)
     mem_vals = make_series(device.mem_usage, var_scale * 0.3, 0, 100)
     trf_vals = make_series(device.traffic_mbps, var_scale * 1.5, 0, 10000)
+    trf_in_vals = make_series(round(device.traffic_mbps * 0.72, 2), var_scale * 1.0, 0, 10000)
+    trf_out_vals = make_series(round(device.traffic_mbps * 0.28, 2), var_scale * 0.5, 0, 10000)
     packet_buffers_vals = make_series(pb_base, var_scale * 0.2, 0, 100)
     tx_drops_vals = [td_val for _ in labels]
     message_buffers_vals = make_series(mb_base, var_scale * 0.2, 0, 100)
@@ -566,6 +569,8 @@ def api_device_metrics(device_id):
         "current_cpu": device.cpu_usage,
         "current_memory": device.mem_usage,
         "current_traffic": device.traffic_mbps,
+        "current_traffic_in": round(device.traffic_mbps * 0.72, 2),
+        "current_traffic_out": round(device.traffic_mbps * 0.28, 2),
         "current_packet_buffers": pb_base,
         "current_tx_drops": td_val,
         "current_message_buffers": mb_base,
@@ -574,6 +579,8 @@ def api_device_metrics(device_id):
         "cpu": cpu_vals,
         "memory": mem_vals,
         "traffic": trf_vals,
+        "traffic_in": trf_in_vals,
+        "traffic_out": trf_out_vals,
         "packet_buffers": packet_buffers_vals,
         "tx_drops": tx_drops_vals,
         "message_buffers": message_buffers_vals,

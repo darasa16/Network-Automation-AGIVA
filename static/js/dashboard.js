@@ -34,12 +34,12 @@ function initCharts() {
     const ctxCpuMem = document.getElementById('cpuMemChart');
     if (ctxCpuMem) {
         const gradientCpu = ctxCpuMem.getContext('2d').createLinearGradient(0, 0, 0, 220);
-        gradientCpu.addColorStop(0, 'rgba(16, 185, 129, 0.4)');
-        gradientCpu.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
+        gradientCpu.addColorStop(0, 'rgba(6, 182, 212, 0.35)');
+        gradientCpu.addColorStop(1, 'rgba(6, 182, 212, 0.0)');
 
         const gradientMem = ctxCpuMem.getContext('2d').createLinearGradient(0, 0, 0, 220);
-        gradientMem.addColorStop(0, 'rgba(245, 158, 11, 0.3)');
-        gradientMem.addColorStop(1, 'rgba(245, 158, 11, 0.0)');
+        gradientMem.addColorStop(0, 'rgba(249, 115, 22, 0.25)');
+        gradientMem.addColorStop(1, 'rgba(249, 115, 22, 0.0)');
 
         cpuMemChart = new Chart(ctxCpuMem, {
             type: 'line',
@@ -49,7 +49,7 @@ function initCharts() {
                     {
                         label: 'CPU (%)',
                         data: [...(initData.cpu || [])],
-                        borderColor: '#10b981',
+                        borderColor: '#06b6d4',
                         backgroundColor: gradientCpu,
                         borderWidth: 2,
                         fill: true,
@@ -60,7 +60,7 @@ function initCharts() {
                     {
                         label: 'Memory (%)',
                         data: [...(initData.mem || [])],
-                        borderColor: '#f59e0b',
+                        borderColor: '#f97316',
                         backgroundColor: gradientMem,
                         borderWidth: 2,
                         fill: true,
@@ -317,8 +317,7 @@ function renderDeviceTable(devices) {
 
     let html = '';
     devices.forEach(dev => {
-        const vendorClass = (dev.vendor || '').toLowerCase();
-        const vendorInitial = (dev.vendor || 'D')[0].toUpperCase();
+        const vendorClass = (dev.vendor || '').toLowerCase().replace(/\s+/g, '-');
         const isUp = dev.status === 'UP';
         const statusBadge = isUp
             ? `<span class="status-badge badge-up"><span class="badge-dot-green"></span> UP</span>`
@@ -352,18 +351,15 @@ function renderDeviceTable(devices) {
             data-site="${dev.site}"
             data-status="${dev.status}">
             <td class="col-name">
-                <div class="device-name-wrap">
-                    <span class="device-icon-tag ${vendorClass}">${vendorInitial}</span>
-                    <strong>${dev.name}</strong>
-                </div>
+                <strong>${dev.name}</strong>
             </td>
             <td class="col-ip"><code>${dev.ip}</code></td>
-            <td><span class="vendor-badge badge-${vendorClass}">${dev.vendor}</span></td>
+            <td class="col-vendor"><span class="vendor-badge badge-${vendorClass}">${dev.vendor}</span></td>
             <td class="col-site">${dev.site}</td>
-            <td>${statusBadge}</td>
+            <td class="col-status">${statusBadge}</td>
             <td class="col-metrics">${metricContent}</td>
             <td class="col-uptime">${dev.uptime || 'Unknown'}</td>
-            <td class="text-center">
+            <td class="col-action text-center">
                 <a href="/device/${dev.id}" class="btn-action btn-detail">Detail</a>
             </td>
         </tr>`;
@@ -417,8 +413,7 @@ function renderAlertsStream(alerts) {
                     <span class="badge-ack-state text-success">✓ Acknowledged</span>
                     <span class="text-muted-xs">${escapeHtml(alert.acknowledged_by || 'Terkonfirmasi')}</span>
                 ` : `
-                    <span class="badge-ack-state text-warning">● Menunggu ACK</span>
-                    <span class="text-muted-xs" style="font-size: 11px;">via Bot Telegram</span>
+                    <span class="badge-ack-state text-warning">Menunggu ACK</span>
                 `}
             </div>
         </div>`;
@@ -506,7 +501,7 @@ function updateSearchDropdown(query) {
     if (matches.length > 0) {
         let itemsHtml = '';
         matches.forEach(dev => {
-            const vendorClass = (dev.vendor || '').toLowerCase();
+            const vendorClass = (dev.vendor || '').toLowerCase().replace(/\s+/g, '-');
             const vendorInitial = (dev.vendor || 'D')[0].toUpperCase();
 
             // Status UP atau DOWN dihilangkan pada search bar dropdown

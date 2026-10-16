@@ -26,8 +26,8 @@
     --shadow-agiva-hover: 0 6px 20px rgba(232, 165, 118, 0.45);
 
     /* Status & Severity Accents */
-    --color-green: #10b981;
-    --color-red: #ef4444;
+    --color-green: #08C58F;
+    --color-red: #FF454A;
     --color-amber: #f59e0b;
     --color-cyan: #38bdf8;
     --color-blue: #6366f1;
@@ -53,6 +53,7 @@ body {
     font-size: 14px;
     line-height: 1.5;
     min-height: 100vh;
+    overflow-x: hidden;
 }
 
 /* Custom Scrollbar */
@@ -494,12 +495,6 @@ body {
     align-items: center;
     gap: 12px;
     height: 124px;
-    transition: transform 0.2s, border-color 0.2s;
-}
-
-.kpi-card:hover {
-    transform: translateY(-2px);
-    border-color: var(--border-color-light);
 }
 
 .kpi-info {
@@ -562,8 +557,9 @@ body {
 }
 
 .icon-blue { background: rgba(99, 102, 241, 0.15); color: var(--color-blue); }
-.icon-green { background: rgba(16, 185, 129, 0.15); color: var(--color-green); }
-.icon-red { background: rgba(239, 68, 68, 0.15); color: var(--color-red); }
+.icon-magenta { background: rgba(248, 36, 255, 0.15); color: #F824FF; }
+.icon-green { background: rgba(8, 197, 143, 0.15); color: #08C58F; }
+.icon-red { background: rgba(255, 69, 74, 0.15); color: #FF454A; }
 .icon-amber { background: rgba(232, 165, 118, 0.15); color: var(--color-copper); }
 
 /* Telegram Page Layout & Dual Panel */
@@ -627,17 +623,18 @@ body {
 }
 
 .badge-type {
-    background: #1e293b;
-    padding: 2px 6px;
-    border-radius: 4px;
+    background: transparent;
+    padding: 0;
+    border: none;
     font-family: var(--font-mono);
-    font-size: 11px;
-    color: #e2e8f0;
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-weight: 500;
 }
 
 .badge-warn {
-    background: rgba(245, 158, 11, 0.2);
-    color: var(--color-amber);
+    background: rgba(245, 158, 11, 0.18);
+    color: #FBBF24;
 }
 
 .text-success { color: var(--color-green); }
@@ -652,7 +649,7 @@ body {
    -------------------------------------------------------------------------- */
 .content-layout {
     display: grid;
-    grid-template-columns: 1fr 350px;
+    grid-template-columns: minmax(0, 1fr) 350px;
     gap: 28px;
 }
 
@@ -660,6 +657,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: 28px;
+    min-width: 0;
 }
 
 /* --------------------------------------------------------------------------
@@ -714,12 +712,16 @@ body {
     width: 8px;
     height: 8px;
     border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
 }
 
 .bg-copper { background-color: var(--color-copper); }
 .bg-sand { background-color: var(--color-sand); }
 .bg-cyan { background-color: var(--color-cyan); }
 .bg-orange { background-color: #f97316; }
+.bg-green { background-color: var(--color-green); }
+.bg-amber { background-color: var(--color-amber); }
 
 .chart-body {
     height: 220px;
@@ -734,6 +736,8 @@ body {
     border: 1px solid var(--border-color);
     border-radius: var(--radius-lg);
     padding: 22px;
+    min-width: 0;
+    max-width: 100%;
 }
 
 .table-header-flex {
@@ -770,14 +774,40 @@ body {
 }
 
 .table-responsive {
+    width: 100%;
+    max-width: 100%;
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
     margin-top: 14px;
+    padding-bottom: 8px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(232, 165, 118, 0.6) rgba(255, 255, 255, 0.06);
+}
+
+.table-responsive::-webkit-scrollbar {
+    height: 8px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 4px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+    background: rgba(232, 165, 118, 0.6);
+    border-radius: 4px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb:hover {
+    background: rgba(232, 165, 118, 0.9);
 }
 
 .data-table {
     width: 100%;
+    min-width: 1050px;
     border-collapse: collapse;
     text-align: left;
+    font-family: var(--font-sans);
 }
 
 .data-table th {
@@ -853,35 +883,53 @@ code {
 }
 
 .vendor-badge {
+    display: inline-block !important;
+    white-space: nowrap !important;
+    vertical-align: middle;
     font-size: 11px;
-    font-weight: 600;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
     padding: 3px 10px;
     border-radius: var(--radius-pill);
+    background: rgba(232, 165, 118, 0.12) !important;
+    color: var(--color-copper) !important;
+    border: 1px solid rgba(232, 165, 118, 0.3) !important;
 }
 
-.badge-mikrotik {
-    background: rgba(56, 189, 248, 0.12);
-    color: #38bdf8;
-    border: 1px solid rgba(56, 189, 248, 0.25);
+.vendor-badge.badge-mikrotik,
+.vendor-badge.badge-cisco,
+.vendor-badge.badge-huawei,
+.vendor-badge.badge-aruba,
+.vendor-badge.badge-palo-alto,
+.vendor-badge.badge-palo,
+.badge-mikrotik,
+.badge-cisco,
+.badge-huawei,
+.badge-aruba,
+.badge-palo-alto,
+.badge-palo {
+    display: inline-block !important;
+    white-space: nowrap !important;
+    vertical-align: middle;
+    background: rgba(232, 165, 118, 0.12) !important;
+    color: var(--color-copper) !important;
+    border: 1px solid rgba(232, 165, 118, 0.3) !important;
 }
 
-.badge-cisco {
-    background: rgba(232, 165, 118, 0.12);
-    color: var(--color-copper);
-    border: 1px solid rgba(232, 165, 118, 0.25);
+.data-table th,
+.data-table td {
+    white-space: nowrap;
 }
 
-.badge-huawei {
-    background: rgba(239, 68, 68, 0.12);
-    color: #ef4444;
-    border: 1px solid rgba(239, 68, 68, 0.25);
-}
-
-.badge-aruba {
-    background: rgba(249, 115, 22, 0.12);
-    color: #f97316;
-    border: 1px solid rgba(249, 115, 22, 0.25);
-}
+.data-table .col-name { min-width: 170px; }
+.data-table .col-ip { min-width: 130px; }
+.data-table .col-vendor { min-width: 120px; }
+.data-table .col-site { min-width: 120px; }
+.data-table .col-status { min-width: 95px; }
+.data-table .col-metrics { min-width: 180px; }
+.data-table .col-uptime { min-width: 150px; }
+.data-table .col-action { min-width: 85px; }
 
 .status-badge {
     display: inline-flex;
@@ -1049,17 +1097,8 @@ code {
     transition: all 0.2s;
 }
 
-.card-severity-warning {
-    border-left: 4px solid var(--color-copper);
-}
-
-.card-severity-critical {
-    border-left: 4px solid var(--color-red);
-}
-
 .alert-card.is-ack {
     opacity: 0.6;
-    border-left-color: var(--text-muted);
 }
 
 .alert-card-header {
@@ -1084,7 +1123,7 @@ code {
 }
 
 .badge-crit { background: rgba(239, 68, 68, 0.2); color: var(--color-red); }
-.badge-warn { background: rgba(232, 165, 118, 0.2); color: var(--color-copper); }
+.badge-warn { background: rgba(245, 158, 11, 0.18); color: #FBBF24; }
 
 .alert-time {
     font-size: 11px;
@@ -1195,62 +1234,35 @@ code {
     flex-shrink: 0;
 }
 
-.device-avatar.mikrotik {
-    background: rgba(56, 189, 248, 0.15);
-    color: #38bdf8;
-    border: 2px solid rgba(56, 189, 248, 0.35);
-}
-
+.device-avatar.mikrotik,
 .device-avatar.cisco,
-.device-avatar.aruba {
+.device-avatar.aruba,
+.device-avatar.huawei,
+.device-avatar.palo-alto,
+.device-avatar.palo {
     background: rgba(232, 165, 118, 0.15);
     color: var(--color-copper);
     border: 2px solid rgba(232, 165, 118, 0.35);
 }
 
-.device-avatar.huawei {
-    background: rgba(239, 68, 68, 0.15);
-    color: #ef4444;
-    border: 2px solid rgba(239, 68, 68, 0.35);
-}
-
-.device-avatar.palo-alto,
-.device-avatar.palo {
-    background: rgba(249, 115, 22, 0.15);
-    color: #f97316;
-    border: 2px solid rgba(249, 115, 22, 0.35);
-}
-
-.vendor-badge {
+.vendor-badge,
+.vendor-badge.badge-aruba,
+.vendor-badge.badge-cisco,
+.vendor-badge.badge-huawei,
+.vendor-badge.badge-palo-alto,
+.vendor-badge.badge-palo,
+.vendor-badge.badge-mikrotik {
+    display: inline-block;
+    white-space: nowrap;
     padding: 3px 10px;
     border-radius: var(--radius-pill);
     font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    background: rgba(255, 255, 255, 0.06);
-    color: var(--text-secondary);
-    border: 1px solid var(--border-color);
-}
-
-.vendor-badge.badge-aruba,
-.vendor-badge.badge-cisco {
     background: rgba(232, 165, 118, 0.12);
     color: var(--color-copper);
-    border-color: rgba(232, 165, 118, 0.3);
-}
-
-.vendor-badge.badge-huawei {
-    background: rgba(239, 68, 68, 0.12);
-    color: #ef4444;
-    border-color: rgba(239, 68, 68, 0.3);
-}
-
-.vendor-badge.badge-palo-alto,
-.vendor-badge.badge-palo {
-    background: rgba(249, 115, 22, 0.12);
-    color: #f97316;
-    border-color: rgba(249, 115, 22, 0.3);
+    border: 1px solid rgba(232, 165, 118, 0.3);
 }
 
 .title-with-badge {
@@ -1344,12 +1356,7 @@ code {
     display: flex;
     flex-direction: column;
     gap: 4px;
-    transition: all 0.2s;
-}
-
-.spec-item:hover {
-    border-color: rgba(232, 165, 118, 0.35);
-    background: rgba(255, 255, 255, 0.03);
+    min-width: 0;
 }
 
 .spec-label {
@@ -1364,91 +1371,167 @@ code {
     font-size: 13px;
     font-weight: 600;
     color: var(--text-primary);
-    word-break: break-all;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
     font-family: var(--font-sans);
+    line-height: 1.4;
 }
 
 .spec-value code {
-    font-family: var(--font-mono);
+    font-family: var(--font-sans);
     color: var(--text-primary);
     background: transparent;
     padding: 0;
     border: none;
     font-size: 13px;
+    font-weight: 600;
 }
 
 /* --------------------------------------------------------------------------
-   VLANs Cards & Table
+   VLANs Compact Chips Bar (Datadog / Cisco Meraki style - Aligned Grid)
    -------------------------------------------------------------------------- */
-.vlans-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 14px;
-    margin-top: 8px;
-}
-
-.vlan-card {
-    background: var(--bg-card-secondary);
+.vlan-chips-container {
+    background: var(--bg-card);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
     padding: 14px 18px;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-left: 3px solid var(--color-copper);
-    transition: all 0.2s ease;
-}
-
-.vlan-card:hover {
-    transform: translateY(-2px);
-    border-color: rgba(255, 255, 255, 0.2);
-    border-left: 3px solid var(--color-copper);
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
-}
-
-.vlan-info {
-    display: flex;
     flex-direction: column;
-    gap: 3px;
+    gap: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
-.vlan-title {
-    font-size: 13.5px;
-    font-weight: 700;
-    color: var(--text-primary);
+.vlan-chips-header {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.vlan-header-left {
     display: flex;
     align-items: center;
     gap: 8px;
 }
 
-.vlan-meta {
-    font-size: 11px;
-    color: var(--text-muted);
+.vlan-header-icon {
+    width: 15px;
+    height: 15px;
+    color: var(--color-copper);
+    flex-shrink: 0;
 }
 
-.badge-vlan-id {
-    background: rgba(232, 165, 118, 0.15);
+.vlan-header-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.2px;
+}
+
+.vlan-chips-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    width: 100%;
+}
+
+@media (max-width: 1100px) {
+    .vlan-chips-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 700px) {
+    .vlan-chips-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.vlan-chip {
+    background: var(--bg-card-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px 14px;
+    flex-wrap: wrap;
+    min-width: 0;
+}
+
+.vlan-chip-top,
+.vlan-chip-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    flex-shrink: 1;
+}
+
+.vlan-chip-id {
+    background: rgba(232, 165, 118, 0.16);
     color: var(--color-copper);
     border: 1px solid rgba(232, 165, 118, 0.3);
     font-family: var(--font-mono);
     font-size: 11px;
-    padding: 2px 8px;
-    border-radius: var(--radius-pill);
     font-weight: 700;
+    padding: 2px 7px;
+    border-radius: var(--radius-pill);
+    letter-spacing: -0.2px;
+    flex-shrink: 0;
+    white-space: nowrap;
 }
 
-.badge-vlan-primary {
-    background: rgba(232, 165, 118, 0.12);
-    color: var(--color-copper);
-    border: 1px solid rgba(232, 165, 118, 0.3);
-    font-size: 10px;
-    padding: 3px 9px;
-    border-radius: var(--radius-pill);
+.vlan-chip-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    line-height: 1.3;
+}
+
+.vlan-chip-bottom,
+.vlan-chip-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+}
+
+.vlan-chip-pill,
+.pill-primary,
+.pill-wan,
+.pill-guest,
+.pill-static,
+.pill-security,
+.pill-voice,
+.pill-server {
+    font-size: 9.5px;
     font-weight: 700;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.4px;
+    padding: 2px 7px;
+    border-radius: var(--radius-pill);
     text-transform: uppercase;
+    background: rgba(6, 182, 212, 0.15);
+    color: #38bdf8;
+    border: 1px solid rgba(6, 182, 212, 0.3);
+    flex-shrink: 0;
     white-space: nowrap;
-    align-self: center;
+}
+
+.vlan-chip-status {
+    font-size: 11px;
+    color: var(--text-muted);
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-family: var(--font-mono);
+    white-space: nowrap;
 }
 
 /* --------------------------------------------------------------------------
@@ -1486,14 +1569,8 @@ code {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    transition: all 0.2s ease;
     position: relative;
     overflow: hidden;
-}
-
-.resource-card:hover {
-    border-color: rgba(232, 165, 118, 0.35);
-    background: rgba(255, 255, 255, 0.02);
 }
 
 .resource-card-header {
@@ -1521,6 +1598,30 @@ code {
     font-size: 20px;
     font-weight: 800;
     font-family: var(--font-mono);
+}
+
+#valCpu {
+    color: #10b981 !important;
+}
+
+#valMemory {
+    color: #f59e0b !important;
+}
+
+#valPacketBuffers {
+    color: #06b6d4 !important;
+}
+
+#valTxDrops {
+    color: #f43f5e !important;
+}
+
+#valMessageBuffers {
+    color: #a855f7 !important;
+}
+
+#valRxErrors {
+    color: #f97316 !important;
 }
 
 .resource-card-badge {
@@ -1674,10 +1775,31 @@ code {
     color: #f1f5f9;
 }
 
+.neighbor-remote-port,
+.neighbor-name code {
+    font-family: var(--font-mono) !important;
+    font-size: 11px;
+    color: var(--color-copper);
+    background: rgba(232, 165, 118, 0.1);
+    padding: 1px 6px;
+    border-radius: 4px;
+    border: 1px solid rgba(232, 165, 118, 0.25);
+    font-weight: 500;
+    margin-left: 4px;
+    display: inline-block;
+}
+
 .neighbor-desc {
     font-size: 11px;
     color: var(--text-muted);
     margin-top: 2px;
+}
+
+#portsTable th,
+#portsTable td,
+#portsTable strong,
+#portsTable span {
+    font-family: var(--font-sans);
 }
 
 /* --------------------------------------------------------------------------
@@ -1726,13 +1848,21 @@ code {
 }
 
 .badge-type {
-    background: rgba(0, 0, 0, 0.4);
-    padding: 3px 8px;
-    border-radius: 4px;
+    background: transparent;
+    padding: 0;
+    border: none;
     font-family: var(--font-mono);
-    font-size: 11px;
-    color: #e2e8f0;
-    border: 1px solid var(--border-color);
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.data-table code {
+    background: transparent;
+    border: none;
+    padding: 0;
+    font-family: var(--font-mono);
+    color: var(--text-secondary);
 }
 
 .cron-badge {
