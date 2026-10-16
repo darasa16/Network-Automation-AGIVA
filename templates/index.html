@@ -255,7 +255,7 @@
                                                     <span class="mini-lbl">C:</span>
                                                     <div class="progress-bar-bg">
                                                         <div class="progress-bar-fill fill-cpu"
-                                                            style="width: {{ dev.cpu }}%"></div>
+                                                            {{ ('style="width: ' ~ dev.cpu ~ '%"') | safe }}></div>
                                                     </div>
                                                     <span class="mini-val">{{ dev.cpu }}%</span>
                                                 </div>
@@ -263,7 +263,7 @@
                                                     <span class="mini-lbl">M:</span>
                                                     <div class="progress-bar-bg">
                                                         <div class="progress-bar-fill fill-mem"
-                                                            style="width: {{ dev.mem }}%"></div>
+                                                            {{ ('style="width: ' ~ dev.mem ~ '%"') | safe }}></div>
                                                     </div>
                                                     <span class="mini-val">{{ dev.mem }}%</span>
                                                 </div>
@@ -360,8 +360,9 @@
         updateClock();
     </script>
     <!-- Initial Real Chart Data from Database -->
+    <script id="initial-chart-data" type="application/json">{{ initial_chart_history | tojson }}</script>
     <script>
-        window.INITIAL_CHART_DATA = {{ initial_chart_history | tojson }};
+        window.INITIAL_CHART_DATA = JSON.parse(document.getElementById('initial-chart-data').textContent || '{}');
     </script>
     <!-- Relative JS -->
     <script src="/static/js/dashboard.js?v=3.5"></script>

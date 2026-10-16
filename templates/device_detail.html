@@ -500,8 +500,12 @@
         setInterval(updateClock, 1000);
         updateClock();
     </script>
-    <script>const CURRENT_DEVICE_ID = {{ device.id }};</script>
-    <script>window.NAV_DEVICES = {{ nav_devices | tojson }};</script>
+    <script id="device-id-data" type="application/json">{{ device.id }}</script>
+    <script id="nav-devices-data" type="application/json">{{ nav_devices | tojson }}</script>
+    <script>
+        const CURRENT_DEVICE_ID = Number(document.getElementById('device-id-data').textContent);
+        window.NAV_DEVICES = JSON.parse(document.getElementById('nav-devices-data').textContent || '[]');
+    </script>
     <script src="/static/js/global_nav.js?v=1.0"></script>
     <script src="/static/js/device_detail.js?v=2.8"></script>
 </body>
