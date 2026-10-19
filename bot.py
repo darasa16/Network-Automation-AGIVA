@@ -1,10 +1,10 @@
-﻿import os
+import os
 import sys
 import html
 import random
 import hashlib
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 from dotenv import load_dotenv
 
@@ -182,6 +182,13 @@ def log_telegram_message(chat_id: str, message_type: str, content: str, status: 
     session = None
     try:
         session = db_session()
+        # 30-Day Auto Retention: Hapus log berumur lebih dari 30 hari
+        cutoff_date = datetime.now() - timedelta(days=30)
+        try:
+            session.query(TelegramMessageLog).filter(TelegramMessageLog.sent_at < cutoff_date).delete()
+        except Exception:
+            pass
+
         log_entry = TelegramMessageLog(
             alert_id=alert_id,
             chat_id=str(chat_id),
@@ -239,14 +246,15 @@ def build_status_view() -> str:
 
     msg += (
         "Perintah yang tersedia:\n"
+        "/start - Panduan operasional bot\n"
         "/devices - Daftar seluruh perangkat\n"
         "/device [nama_perangkat] - Rincian telemetri perangkat\n"
         "/alerts - Daftar gangguan aktif\n"
         "/ack [id_alert] - Konfirmasi penanganan alert\n"
+        "/resolve [id_alert] - Selesaikan dan pulihkan gangguan\n"
         "/backup [nama_perangkat] - Backup konfigurasi manual\n"
         "/user - Profil & status hak akses akun\n"
-        "/help - Panduan operasional lengkap\n"
-        "/approve [nama_admin] [role_admin] - (Khusus Admin) Menyetujui akses teknisi baru dengan role pilihan."
+        "/approve @username [role] - (Khusus Admin) Menyetujui akses teknisi baru."
     )
     return msg
 
@@ -369,8 +377,8 @@ def build_backup_report(device_name: str, operator_name: str) -> str:
         "• Status Akhir: Sukses (Waktu eksekusi: 2.18 detik)"
     )
 
-def build_help_view() -> str:
-    """Bantuan & Dokumentasi Operasional NOC"""
+def build_start_view() -> str:
+    """Panduan & Dokumentasi Operasional NOC saat /start"""
     return (
         "<b>PANDUAN OPERASIONAL BOT NETWORK AUTOMATION</b>\n"
         "Sistem automasi pemantauan jaringan, pelaporan gangguan, dan backup konfigurasi terpusat.\n\n"
@@ -403,20 +411,12 @@ def build_help_view() -> str:
 # ==================== TELEGRAM COMMAND HANDLERS ====================
 
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Command /start: Menampilkan Dashboard Utama"""
+    """Command /start: Menampilkan Panduan Operasional Bot"""
     ACTIVE_CHATS.add(update.effective_chat.id)
-    text = build_status_view()
+    text = build_start_view()
     await update.message.reply_text(text, parse_mode=ParseMode.HTML)
     u_name = update.effective_user.username or update.effective_user.first_name if update.effective_user else "User"
-    log_telegram_message(update.effective_chat.id, "COMMAND_REPLY", f"Respon /start: Dashboard utama dibuka oleh @{u_name}")
-
-async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Command /help: Menampilkan Panduan Operasional"""
-    ACTIVE_CHATS.add(update.effective_chat.id)
-    text = build_help_view()
-    await update.message.reply_text(text, parse_mode=ParseMode.HTML)
-    u_name = update.effective_user.username or update.effective_user.first_name if update.effective_user else "User"
-    log_telegram_message(update.effective_chat.id, "COMMAND_REPLY", f"Respon /help: Panduan bot dikirim ke @{u_name}")
+    log_telegram_message(update.effective_chat.id, "COMMAND_REPLY", f"Respon /start: Panduan operasional bot dikirim ke @{u_name}")
 
 async def status_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Command /status: Ringkasan Telemetri Kesehatan Jaringan"""
@@ -674,7 +674,7 @@ async def user_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 f"Role: <code>{html.escape(entry.role)}</code>\n"
                 f"Status: {status_str}\n\n"
                 "Hak Akses:\n"
-                "• Diizinkan: /status, /devices, /device, /alerts, /user, /help, /ack, /backup\n"
+                "• Diizinkan: /status, /devices, /device, /alerts, /user, /start, /ack, /backup\n"
                 "• Ditolak: -\n\n"
                 f"Terdaftar sejak: <code>{entry.registered_at.strftime('%Y-%m-%d')}</code>"
             )
@@ -691,7 +691,7 @@ async def user_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "Role: <i>Guest</i>\n"
             "Status: Inactive\n\n"
             "Hak Akses:\n"
-            "• Diizinkan: /status, /devices, /device, /alerts, /user, /help\n"
+            "• Diizinkan: /status, /devices, /device, /alerts, /user, /start\n"
             "• Ditolak: /ack, /backup\n\n"
             "Untuk mendaftarkan akun ke Whitelist, hubungi admin untuk di-approve via username Telegram Anda."
         )
@@ -818,15 +818,6 @@ async def approve_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         db_session.remove()
 
 
-async def fallback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Catch-all handler: tampilkan ringkasan status untuk pesan teks apa pun yang bukan command"""
-    ACTIVE_CHATS.add(update.effective_chat.id)
-    text = build_status_view()
-    await update.message.reply_text(text, parse_mode=ParseMode.HTML)
-    u_name = update.effective_user.username or update.effective_user.first_name if update.effective_user else "User"
-    log_telegram_message(update.effective_chat.id, "FALLBACK_REPLY", f"Pesan bebas dari @{u_name} → ringkasan status dikirim")
-
-
 # ==================== MAIN APPLICATION INITIALIZATION ====================
 
 async def global_error_handler(update: object, context: ContextTypes.DEFAULT_TYPE):
@@ -851,7 +842,6 @@ def main():
 
     # Command Handlers
     app.add_handler(CommandHandler("start", start_command))
-    app.add_handler(CommandHandler("help", help_command))
     app.add_handler(CommandHandler("status", status_command))
     app.add_handler(CommandHandler("devices", devices_command))
     app.add_handler(CommandHandler("device", device_command))
@@ -861,9 +851,6 @@ def main():
     app.add_handler(CommandHandler("backup", backup_command))
     app.add_handler(CommandHandler("user", user_command))
     app.add_handler(CommandHandler("approve", approve_command))
-
-    # Fallback: pesan teks bebas (bukan command) → tampilkan ringkasan status
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, fallback_handler))
 
     # Automated Background Data Collector Scheduler dinonaktifkan (Manual Resolve Only)
     # if app.job_queue:

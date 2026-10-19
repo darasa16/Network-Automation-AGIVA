@@ -14,7 +14,7 @@
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=4.9">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=5.2">
 </head>
 
 <body>
@@ -94,7 +94,7 @@
     <script>
         window.NAV_DEVICES = JSON.parse(document.getElementById('nav-devices-data').textContent || '[]');
     </script>
-    <script src="{{ url_for('static', filename='js/global_nav.js') }}?v=1.0"></script>
+    <script src="{{ url_for('static', filename='js/global_nav.js') }}?v=1.1"></script>
     {% block scripts %}{% endblock %}
 </body>
 

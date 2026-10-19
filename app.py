@@ -266,8 +266,18 @@ def telegram_page():
     Menampilkan status bot, daftar command NOC, whitelist engineer, dan log pesan terkirim.
     """
     session = db_session()
+    # 30-Day Auto Retention: Hapus log berumur lebih dari 30 hari
+    cutoff_date = datetime.now() - timedelta(days=30)
+    try:
+        session.query(TelegramMessageLog).filter(TelegramMessageLog.sent_at < cutoff_date).delete()
+        session.commit()
+    except Exception:
+        session.rollback()
+
     whitelist = session.query(TelegramWhitelist).order_by(TelegramWhitelist.id.asc()).all()
-    msg_logs = session.query(TelegramMessageLog).order_by(TelegramMessageLog.id.desc()).limit(20).all()
+    msg_logs = session.query(TelegramMessageLog).filter(
+        TelegramMessageLog.sent_at >= cutoff_date
+    ).order_by(TelegramMessageLog.sent_at.desc(), TelegramMessageLog.id.desc()).all()
 
     # Cek apakah proses bot.py sedang berjalan di sistem lokal
     bot_is_online = False
@@ -293,16 +303,16 @@ def telegram_page():
     }
 
     commands = [
-        {"command": "/status", "params": "-", "desc": "Melihat ringkasan status kesehatan seluruh perangkat jaringan (UP/DOWN) & alert aktif."},
-        {"command": "/devices", "params": "-", "desc": "Menampilkan tabel inventaris seluruh perangkat jaringan (Node, IP, Vendor, Site)."},
-        {"command": "/device", "params": "<nama_device>", "desc": "Melihat metrik real-time CPU, RAM, & Uptime satu router/switch (Contoh: /device RTR-Core-01)."},
+        {"command": "/start", "params": "-", "desc": "Memulai interaksi bot dan menampilkan panduan operasional perintah."},
+        {"command": "/status", "params": "-", "desc": "Melihat ringkasan status kesehatan seluruh perangkat jaringan dan alert aktif."},
+        {"command": "/devices", "params": "-", "desc": "Menampilkan tabel inventaris seluruh perangkat jaringan."},
+        {"command": "/device", "params": "<nama_device>", "desc": "Melihat metrik real-time CPU, RAM, & Uptime suatu device tertentu."},
         {"command": "/alerts", "params": "-", "desc": "Menampilkan daftar gangguan dan anomali jaringan aktif yang memerlukan mitigasi."},
-        {"command": "/ack", "params": "<alert_id>", "desc": "Melakukan konfirmasi (Acknowledge) penanganan alert anomali oleh teknisi bertugas."},
-        {"command": "/resolve", "params": "<alert_id>", "desc": "Menandai bahwa gangguan jaringan telah dipulihkan (Resolved)."},
-        {"command": "/backup", "params": "<nama_device>", "desc": "Memicu backup running-config manual seketika lewat SSH/API ke Git repo."},
-        {"command": "/user", "params": "-", "desc": "Melihat profil teknisi, Chat ID Telegram, dan verifikasi status otorisasi Whitelist tim NOC."},
-        {"command": "/approve", "params": "<username> [role]", "desc": "(Khusus Admin) Menyetujui akses teknisi baru dengan role pilihan (default: Network Engineer (Member))."},
-        {"command": "/help", "params": "-", "desc": "Menampilkan panduan operasional perintah bot tim NOC."}
+        {"command": "/ack", "params": "<alert_id>", "desc": "Melakukan konfirmasi penanganan alert anomali oleh teknisi bertugas."},
+        {"command": "/resolve", "params": "<alert_id>", "desc": "Menandai bahwa gangguan jaringan telah selesai ditangani."},
+        {"command": "/backup", "params": "<nama_device>", "desc": "Memicu backup running-config manual device tertentu."},
+        {"command": "/user", "params": "-", "desc": "Melihat profil teknisi, Chat ID Telegram, dan verifikasi status otorisasi Whitelist."},
+        {"command": "/approve", "params": "<username> [role]", "desc": "(Khusus Admin) Menyetujui akses teknisi baru dengan role pilihan."}
     ]
 
     return render_template(
@@ -374,15 +384,28 @@ def trigger_alert_with_antispam(session, device, alert_type, severity, message):
 
 @app.route('/api/telegram/logs', methods=['GET'])
 def api_telegram_logs():
-    """Endpoint untuk mengecek riwayat log Telegram (Auto-refresh)"""
+    """Endpoint untuk mengecek riwayat log Telegram (Auto-refresh & 30-day retention)"""
     session = db_session()
-    msg_logs = session.query(TelegramMessageLog).order_by(TelegramMessageLog.id.desc()).limit(20).all()
-    active_alerts_pushed = session.query(TelegramMessageLog).filter(TelegramMessageLog.message_type == 'ALERT_NOTIFICATION').count()
+    cutoff_date = datetime.now() - timedelta(days=30)
+    try:
+        session.query(TelegramMessageLog).filter(TelegramMessageLog.sent_at < cutoff_date).delete()
+        session.commit()
+    except Exception:
+        session.rollback()
+
+    msg_logs = session.query(TelegramMessageLog).filter(
+        TelegramMessageLog.sent_at >= cutoff_date
+    ).order_by(TelegramMessageLog.sent_at.desc(), TelegramMessageLog.id.desc()).all()
+    active_alerts_pushed = session.query(TelegramMessageLog).filter(
+        TelegramMessageLog.message_type == 'ALERT_NOTIFICATION',
+        TelegramMessageLog.sent_at >= cutoff_date
+    ).count()
     
     # Format the logs so it's easier to consume on the frontend
     logs_data = []
     for l in msg_logs:
         logs_data.append({
+            "id": l.id,
             "sent_at": l.sent_at.strftime("%Y-%m-%d %H:%M:%S") if l.sent_at else "",
             "type": l.message_type,
             "chat_id": l.chat_id,

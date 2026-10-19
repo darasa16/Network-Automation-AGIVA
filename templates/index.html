@@ -137,8 +137,6 @@
                     <div class="charts-header-bar">
                         <div class="charts-header-info">
                             <span class="charts-header-badge">Performa Jaringan</span>
-                            <span class="charts-header-desc">Pemantauan performa real-time & riwayat tren beban
-                                perangkat</span>
                         </div>
                         <div class="time-range-selector" id="dashboardTimeRange">
                             <span class="time-range-label">Rentang:</span>
@@ -254,16 +252,14 @@
                                                 <div class="mini-bar-row">
                                                     <span class="mini-lbl">C:</span>
                                                     <div class="progress-bar-bg">
-                                                        <div class="progress-bar-fill fill-cpu"
-                                                            {{ ('style="width: ' ~ dev.cpu ~ '%"') | safe }}></div>
+                                                        <div class="progress-bar-fill fill-cpu" {{ ('style="width: ' ~ dev.cpu ~ '%;"') | safe }}></div>
                                                     </div>
                                                     <span class="mini-val">{{ dev.cpu }}%</span>
                                                 </div>
                                                 <div class="mini-bar-row">
                                                     <span class="mini-lbl">M:</span>
                                                     <div class="progress-bar-bg">
-                                                        <div class="progress-bar-fill fill-mem"
-                                                            {{ ('style="width: ' ~ dev.mem ~ '%"') | safe }}></div>
+                                                        <div class="progress-bar-fill fill-mem" {{ ('style="width: ' ~ dev.mem ~ '%;"') | safe }}></div>
                                                     </div>
                                                     <span class="mini-val">{{ dev.mem }}%</span>
                                                 </div>
@@ -304,9 +300,7 @@
                             id="alert-card-{{ alert.id }}">
                             <div class="alert-card-header">
                                 <div class="alert-title-wrap">
-                                    <span
-                                        class="alert-severity-badge {% if alert.severity == 'CRITICAL' %}badge-crit{% else %}badge-warn{% endif %}">{{
-                                        alert.severity }}</span>
+                                    <span class="alert-severity-badge {% if alert.severity == 'CRITICAL' %}badge-crit{% else %}badge-warn{% endif %}">{{ alert.severity }}</span>
                                     <span class="alert-time">{{ alert.triggered_at }}</span>
                                 </div>
                                 <span class="alert-id">#{{ alert.id }}</span>
@@ -333,10 +327,8 @@
                                 <polyline points="22 4 12 14.01 9 11.01" stroke-width="2" stroke-linecap="round"
                                     stroke-linejoin="round" />
                             </svg>
-                            <p style="font-size: 0.9rem; font-weight: 500; color: #94a3b8; margin: 0 0 4px 0;">Semua
-                                Sistem Normal</p>
-                            <span style="font-size: 0.75rem; color: #64748b;">Tidak ada alert aktif yang memerlukan
-                                mitigasi</span>
+                            <p style="font-size: 0.9rem; font-weight: 500; color: #94a3b8; margin: 0 0 4px 0;">Semua Sistem Normal</p>
+                            <span style="font-size: 0.75rem; color: #64748b;">Tidak ada alert aktif yang memerlukan mitigasi</span>
                         </div>
                         {% endfor %}
                     </div>
@@ -365,7 +357,7 @@
         window.INITIAL_CHART_DATA = JSON.parse(document.getElementById('initial-chart-data').textContent || '{}');
     </script>
     <!-- Relative JS -->
-    <script src="/static/js/dashboard.js?v=3.5"></script>
+    <script src="/static/js/dashboard.js?v=3.6"></script>
 </body>
 
 </html>

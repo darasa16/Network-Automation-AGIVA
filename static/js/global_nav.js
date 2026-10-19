@@ -64,7 +64,6 @@
                 itemsHtml += `
                 <li class="search-dropdown-item" onclick="window.location.href='/device/${dev.id}'">
                     <div class="search-item-info">
-                        <span class="device-icon-tag ${vendorClass}">${vendorInitial}</span>
                         <div>
                             <div class="search-item-name">${escapeHtml(dev.name)}</div>
                             <div class="search-item-meta">

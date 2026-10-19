@@ -137,7 +137,7 @@ class TelegramMessageLog(Base):
             "type": self.message_type,
             "content": self.content,
             "status": self.status,
-            "sent_at": self.sent_at.strftime("%H:%M:%S WIB")
+            "sent_at": self.sent_at.strftime("%Y-%m-%d %H:%M:%S") if self.sent_at else "-"
         }
 
 # 4. BACKUP HISTORY MODEL

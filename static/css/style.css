@@ -570,6 +570,84 @@ body {
     align-items: stretch;
 }
 
+/* Telegram Page: Commands & Logs Tables - Auto-fit tanpa scroll */
+.table-responsive.table-no-scroll {
+    overflow-x: visible;
+    margin-top: 14px;
+    padding-bottom: 0;
+}
+
+#tgCommandsTable,
+#tgLogsTable {
+    min-width: 0 !important;
+    width: 100% !important;
+    table-layout: auto;
+}
+
+#tgCommandsTable th,
+#tgCommandsTable td,
+#tgLogsTable th,
+#tgLogsTable td {
+    white-space: normal;
+    padding: 12px 14px;
+    vertical-align: middle;
+}
+
+/* 1. Commands Cheat Sheet Table (Daftar Perintah) */
+#tgCommandsTable th:nth-child(1),
+#tgCommandsTable td:nth-child(1) {
+    white-space: nowrap;
+    width: 105px;
+}
+#tgCommandsTable th:nth-child(2),
+#tgCommandsTable td:nth-child(2) {
+    white-space: nowrap;
+    width: 110px;
+}
+#tgCommandsTable .col-desc {
+    white-space: normal !important;
+    line-height: 1.45;
+    color: var(--text-secondary);
+    font-size: 12.5px;
+}
+
+/* 2. Message Dispatch Log Table (Riwayat Pengiriman) */
+#tgLogsTable th:nth-child(1),
+#tgLogsTable td:nth-child(1) {
+    white-space: nowrap;
+    width: 145px;
+}
+#tgLogsTable th:nth-child(2),
+#tgLogsTable td:nth-child(2) {
+    white-space: nowrap;
+    width: 115px;
+}
+#tgLogsTable th:nth-child(3),
+#tgLogsTable td:nth-child(3) {
+    white-space: nowrap;
+    width: 135px;
+}
+#tgLogsTable .col-msg-content {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: #cbd5e1;
+    white-space: normal !important;
+    word-break: break-word;
+    line-height: 1.45;
+}
+#tgLogsTable th:nth-child(5),
+#tgLogsTable td:nth-child(5) {
+    white-space: nowrap;
+    width: 120px;
+    text-align: left;
+}
+
+@media (max-width: 768px) {
+    .table-responsive.table-no-scroll {
+        overflow-x: auto;
+    }
+}
+
 .btn-send-test {
     background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
     color: #fff;

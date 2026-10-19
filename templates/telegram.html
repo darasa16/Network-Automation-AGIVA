@@ -29,7 +29,7 @@
         <div class="kpi-card">
             <div class="kpi-info">
                 <span class="kpi-label">Bot Identity</span>
-                <h3 style="color: #38bdf8; margin: 6px 0; word-break: break-all;">{{ bot.username }}</h3>
+                <h3 style="color: #fff; margin: 6px 0; word-break: break-all;">{{ bot.username }}</h3>
                 <span class="kpi-sub">{{ bot.bot_name }}</span>
             </div>
             <div class="kpi-icon-box icon-blue">
@@ -45,16 +45,10 @@
                 <span class="kpi-label">Koneksi Bot API</span>
                 <div id="bot-status-container">
                     {% if bot.is_online %}
-                    <h3 style="color: #10b981; margin: 6px 0; display:flex; align-items:center; gap:8px;">
-                        <span class="badge-dot-green" style="width:10px; height:10px; flex-shrink:0;"></span>
-                        <span>ONLINE</span>
-                    </h3>
+                    <h3 style="color: #fff; margin: 6px 0;">Online</h3>
                     <span class="kpi-sub">Polling Aktif</span>
                     {% else %}
-                    <h3 style="color: #ef4444; margin: 6px 0; display:flex; align-items:center; gap:8px;">
-                        <span class="badge-dot-red" style="width:10px; height:10px; flex-shrink:0;"></span>
-                        <span>OFFLINE</span>
-                    </h3>
+                    <h3 style="color: #fff; margin: 6px 0;">Offline</h3>
                     <span class="kpi-sub">Polling Tidak Aktif</span>
                     {% endif %}
                 </div>
@@ -76,7 +70,7 @@
             <div class="kpi-card">
                 <div class="kpi-info">
                     <span class="kpi-label">Target Broadcast Grup</span>
-                    <h3 style="color: #cbd5e1; margin: 6px 0;">{{ bot.chat_group }}</h3>
+                    <h3 style="color: #fff; margin: 6px 0;">{{ bot.chat_group }}</h3>
                     <span class="kpi-sub">Chat ID: <code>{{ bot.chat_id }}</code></span>
                 </div>
                 <div class="kpi-icon-box icon-amber">
@@ -92,7 +86,8 @@
             <div class="kpi-card">
                 <div class="kpi-info">
                     <span class="kpi-label">Total Alert Terkirim</span>
-                    <h3 id="active-alerts-pushed" style="color: #f59e0b; margin: 6px 0;">{{ bot.active_alerts_pushed }} Pesan</h3>
+                    <h3 id="active-alerts-pushed" style="color: #fff; margin: 6px 0;">{{ bot.active_alerts_pushed }}
+                        Pesan</h3>
                     <span class="kpi-sub">Anti-spam Cooldown Aktif</span>
                 </div>
                 <div class="kpi-icon-box icon-red">
@@ -129,7 +124,7 @@
                         <tbody>
                             {% for w in whitelist %}
                             <tr>
-                                <td><code>{{ w.chat_id }}</code></td>
+                                <td>{{ w.chat_id }}</td>
                                 <td><strong style="color:#38bdf8;">{{ w.username }}</strong></td>
                                 <td>{{ w.name }}</td>
                                 <td>{{ w.role }}</td>
@@ -157,8 +152,8 @@
                         <span class="panel-sub">Perintah interaktif yang dapat diketik oleh user</span>
                     </div>
                 </div>
-                <div class="table-responsive">
-                    <table class="data-table">
+                <div class="table-responsive table-no-scroll">
+                    <table class="data-table" id="tgCommandsTable">
                         <thead>
                             <tr>
                                 <th>Perintah</th>
@@ -189,8 +184,8 @@
                 </div>
                 <button class="btn-refresh" onclick="window.location.reload()">Refresh Log</button>
             </div>
-            <div class="table-responsive">
-                <table class="data-table">
+            <div class="table-responsive table-no-scroll">
+                <table class="data-table" id="tgLogsTable">
                     <thead>
                         <tr>
                             <th>Waktu</th>
@@ -201,36 +196,282 @@
                         </tr>
                     </thead>
                     <tbody id="tgLogsBody">
-                        {% for l in logs %}
-                        <tr>
-                            <td class="col-time">{{ l.sent_at }}</td>
-                            <td>
-                                {% if l.type == 'ALERT_NOTIFICATION' %}
-                                <span class="alert-severity-badge badge-warn">ALERT NOTIF</span>
-                                {% else %}
-                                <span class="badge-type">CMD REPLY</span>
-                                {% endif %}
-                            </td>
-                            <td><code>{{ l.chat_id }}</code></td>
-                            <td style="font-family: var(--font-mono); font-size:12px; color:#cbd5e1;">{{ l.content }}
-                            </td>
-                            <td>
-                                <span class="status-badge badge-up">
-                                    <span class="badge-dot-green"></span> {{ l.status }}
-                                </span>
-                            </td>
-                        </tr>
-                        {% endfor %}
+                        <!-- Dimuat otomatis via JavaScript dengan Paginasi 20 baris/halaman -->
                     </tbody>
                 </table>
+            </div>
+
+            <!-- Pagination Bar -->
+            <div class="pagination-container" id="tgPaginationContainer">
+                <div id="tgPageInfo" class="pagination-info">Menampilkan 0 log</div>
+                <div class="pagination-controls" id="tgPaginationControls"></div>
             </div>
         </div>
 
     </div>
+
+    <style>
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(15, 12, 34, 0.35);
+            font-size: 13px;
+            color: #94a3b8;
+            flex-wrap: wrap;
+            gap: 14px;
+        }
+        .pagination-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .pagination-nav-btn {
+            background: transparent;
+            border: none;
+            color: #818cf8;
+            padding: 4px 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+        .pagination-nav-btn:hover:not(.disabled) {
+            color: #ffffff;
+            transform: translateY(-1px);
+        }
+        .pagination-nav-btn.disabled {
+            opacity: 0.25;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+        .pagination-num-btn {
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            min-width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 4px;
+            transition: all 0.2s ease;
+        }
+        .pagination-num-btn:hover:not(.active) {
+            color: #ffffff;
+            background: rgba(99, 102, 241, 0.15);
+        }
+        .pagination-num-btn.active {
+            background: #6366f1;
+            color: #ffffff;
+            font-weight: 700;
+            box-shadow: 0 0 12px rgba(99, 102, 241, 0.45);
+        }
+        .pagination-dots {
+            color: #64748b;
+            padding: 0 2px;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            user-select: none;
+        }
+        .pagination-info {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        /* Standarisasi Font Inter (Sans-serif) untuk Kolom Tabel Riwayat Telegram */
+        #tgLogsTable,
+        #tgLogsTable th,
+        #tgLogsTable td,
+        #tgLogsTable .col-time,
+        #tgLogsTable .col-msg-content,
+        #tgLogsTable code,
+        #tgLogsTable span {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+        }
+
+        #tgLogsTable code {
+            font-size: 13px;
+            font-weight: 500;
+            background: rgba(255, 255, 255, 0.06);
+            padding: 2px 7px;
+            border-radius: 4px;
+            color: #e2e8f0;
+        }
+
+        #tgLogsTable .col-time {
+            font-size: 13px;
+            color: #cbd5e1;
+            white-space: nowrap;
+        }
+
+        #tgLogsTable .col-type {
+            font-size: 13px;
+            color: #cbd5e1;
+            font-weight: 500;
+        }
+
+        #tgLogsTable .col-msg-content {
+            font-size: 13px;
+            line-height: 1.5;
+            color: #e2e8f0;
+        }
+    </style>
     {% endblock %}
 
     {% block scripts %}
+    <script id="tgLogsData" type="application/json">{{ logs | tojson }}</script>
     <script>
+        let allLogs = [];
+        try {
+            const rawEl = document.getElementById('tgLogsData');
+            allLogs = rawEl ? JSON.parse(rawEl.textContent || '[]') : [];
+        } catch (e) {
+            allLogs = [];
+        }
+        let currentLogPage = 1;
+        const logsPerPage = 20;
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            return String(text)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function renderLogsTable() {
+            const tbody = document.getElementById('tgLogsBody');
+            const paginationContainer = document.getElementById('tgPaginationContainer');
+            const pageInfo = document.getElementById('tgPageInfo');
+            if (!tbody) return;
+
+            const totalLogs = allLogs.length;
+
+            if (totalLogs === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 25px; color: #94a3b8;">Belum ada riwayat pengiriman pesan dalam 30 hari terakhir.</td></tr>`;
+                if (paginationContainer) paginationContainer.style.display = 'none';
+                return;
+            }
+
+            if (paginationContainer) paginationContainer.style.display = 'flex';
+
+            const totalPages = Math.ceil(totalLogs / logsPerPage) || 1;
+            if (currentLogPage > totalPages) currentLogPage = totalPages;
+            if (currentLogPage < 1) currentLogPage = 1;
+
+            const startIndex = (currentLogPage - 1) * logsPerPage;
+            const endIndex = Math.min(startIndex + logsPerPage, totalLogs);
+            const pageData = allLogs.slice(startIndex, endIndex);
+
+            let html = '';
+            for (const l of pageData) {
+                let typeLabel = l.type === 'ALERT_NOTIFICATION'
+                    ? 'ALERT NOTIF'
+                    : (l.type === 'DIAGNOSTIC_TEST'
+                        ? 'TEST PING'
+                        : 'CMD REPLY');
+
+                html += `
+                <tr>
+                    <td class="col-time">${escapeHtml(l.sent_at || '')}</td>
+                    <td class="col-type">${typeLabel}</td>
+                    <td><code>${escapeHtml(l.chat_id || '')}</code></td>
+                    <td class="col-msg-content">${escapeHtml(l.content || '')}</td>
+                    <td>
+                        <span class="status-badge badge-up">
+                            <span class="badge-dot-green"></span> ${escapeHtml(l.status || 'SENT')}
+                        </span>
+                    </td>
+                </tr>`;
+            }
+            tbody.innerHTML = html;
+
+            if (pageInfo) {
+                pageInfo.innerText = `Menampilkan ${startIndex + 1} - ${endIndex} dari ${totalLogs} log (Halaman ${currentLogPage} dari ${totalPages})`;
+            }
+
+            renderPaginationButtons(totalPages);
+        }
+
+        function renderPaginationButtons(totalPages) {
+            const controls = document.getElementById('tgPaginationControls');
+            if (!controls) return;
+
+            let btnHtml = '';
+
+            // Tombol Prev (‹ Prev)
+            btnHtml += `<button class="pagination-nav-btn ${currentLogPage === 1 ? 'disabled' : ''}" 
+                         onclick="gotoLogPage(${currentLogPage - 1})" ${currentLogPage === 1 ? 'disabled' : ''}>
+                         <span>&#8249;</span> <span>Prev</span>
+                        </button>`;
+
+            // Penomoran Halaman dengan format cerdas (1 ... 9 [10] 11 ... 20)
+            if (totalPages <= 7) {
+                for (let p = 1; p <= totalPages; p++) {
+                    btnHtml += `<button class="pagination-num-btn ${p === currentLogPage ? 'active' : ''}" 
+                                 onclick="gotoLogPage(${p})">${p}</button>`;
+                }
+            } else {
+                // Selalu tampilkan halaman 1
+                btnHtml += `<button class="pagination-num-btn ${currentLogPage === 1 ? 'active' : ''}" 
+                             onclick="gotoLogPage(1)">1</button>`;
+
+                if (currentLogPage > 3) {
+                    btnHtml += `<span class="pagination-dots">...</span>`;
+                }
+
+                let start = Math.max(2, currentLogPage - 1);
+                let end = Math.min(totalPages - 1, currentLogPage + 1);
+
+                if (currentLogPage <= 3) {
+                    start = 2;
+                    end = 4;
+                } else if (currentLogPage >= totalPages - 2) {
+                    start = totalPages - 3;
+                    end = totalPages - 1;
+                }
+
+                for (let p = start; p <= end; p++) {
+                    btnHtml += `<button class="pagination-num-btn ${p === currentLogPage ? 'active' : ''}" 
+                                 onclick="gotoLogPage(${p})">${p}</button>`;
+                }
+
+                if (currentLogPage < totalPages - 2) {
+                    btnHtml += `<span class="pagination-dots">...</span>`;
+                }
+
+                // Selalu tampilkan halaman terakhir
+                btnHtml += `<button class="pagination-num-btn ${currentLogPage === totalPages ? 'active' : ''}" 
+                             onclick="gotoLogPage(${totalPages})">${totalPages}</button>`;
+            }
+
+            // Tombol Next (Next ›)
+            btnHtml += `<button class="pagination-nav-btn ${currentLogPage === totalPages ? 'disabled' : ''}" 
+                         onclick="gotoLogPage(${currentLogPage + 1})" ${currentLogPage === totalPages ? 'disabled' : ''}>
+                         <span>Next</span> <span>&#8250;</span>
+                        </button>`;
+
+            controls.innerHTML = btnHtml;
+        }
+
+        function gotoLogPage(page) {
+            currentLogPage = page;
+            renderLogsTable();
+        }
+
         function showToast(message, type = 'success') {
             const container = document.getElementById('toastContainer');
             if (!container) {
@@ -260,7 +501,7 @@
 
                 if (data.success) {
                     showToast(data.message || 'Alert simulasi berhasil dikirim ke Telegram!', 'success');
-                    setTimeout(() => window.location.reload(), 1200);
+                    setTimeout(() => fetchTelegramLogs(), 800);
                 } else {
                     showToast(data.message || 'Gagal mengirim alert', 'error');
                 }
@@ -285,43 +526,27 @@
             try {
                 const res = await fetch('/api/telegram/logs');
                 const data = await res.json();
-                
+
                 const alertsCountElem = document.getElementById('active-alerts-pushed');
                 if (alertsCountElem && data.active_alerts_pushed !== undefined) {
                     alertsCountElem.innerText = data.active_alerts_pushed + ' Pesan';
                 }
 
-                const tbody = document.getElementById('tgLogsBody');
-                if (tbody && data.logs) {
-                    let html = '';
-                    for (const l of data.logs) {
-                        let typeBadge = l.type === 'ALERT_NOTIFICATION' 
-                            ? '<span class="alert-severity-badge badge-warn">ALERT NOTIF</span>' 
-                            : '<span class="badge-type">CMD REPLY</span>';
-                            
-                        // Encode html content slightly to prevent parsing issues, though backend sends clean strings
-                        // we can just interpolate as it was doing in Jinja
-                        html += `
-                        <tr>
-                            <td class="col-time">${l.sent_at}</td>
-                            <td>${typeBadge}</td>
-                            <td><code>${l.chat_id}</code></td>
-                            <td style="font-family: var(--font-mono); font-size:12px; color:#cbd5e1;">${l.content}</td>
-                            <td>
-                                <span class="status-badge badge-up">
-                                    <span class="badge-dot-green"></span> ${l.status}
-                                </span>
-                            </td>
-                        </tr>`;
-                    }
-                    tbody.innerHTML = html;
+                if (data.logs) {
+                    allLogs = data.logs;
+                    renderLogsTable();
                 }
             } catch (err) {
                 console.error('Failed to fetch telegram logs', err);
             }
         }
 
-        // Auto-refresh telegram logs every 5 seconds
+        // Jalankan render tabel pertama kali saat DOM selesai dimuat
+        document.addEventListener('DOMContentLoaded', () => {
+            renderLogsTable();
+        });
+
+        // Auto-refresh telegram logs setiap 5 detik
         setInterval(fetchTelegramLogs, 5000);
     </script>
     {% endblock %}
