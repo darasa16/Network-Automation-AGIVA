@@ -13,7 +13,7 @@
         rel="stylesheet">
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
-    <link rel="stylesheet" href="/static/css/style.css?v=4.9">
+    <link rel="stylesheet" href="/static/css/style.css?v=8.1">
 </head>
 
 <body>
@@ -31,7 +31,7 @@
                     <circle cx="11" cy="11" r="8"></circle>
                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                 </svg>
-                <input type="text" id="globalSearch" placeholder="Cari vendor, site" autocomplete="off" />
+                <input type="text" id="globalSearch" placeholder="Cari perangkat, alert, data" autocomplete="off" />
                 <button type="button" id="clearSearchBtn" class="search-clear-btn"
                     title="Reset pencarian">&times;</button>
                 <div id="searchResultsDropdown" class="search-results-dropdown" style="display: none;"></div>
@@ -141,15 +141,15 @@
                         <div class="time-range-selector" id="dashboardTimeRange">
                             <span class="time-range-label">Rentang:</span>
                             <button class="time-range-btn active" data-range="live"
-                                title="Real-time live stream tiap 5 detik">
-                                <span class="live-dot"></span> Live (5s)
+                                title="Real-time live stream sinkron database per 2 menit">
+                                <span class="live-dot"></span> Live (2m)
                             </button>
                             <button class="time-range-btn" data-range="1h"
-                                title="Riwayat tren 1 jam kebelakang (interval 5 menit)">1 Jam</button>
+                                title="Riwayat tren 1 jam kebelakang (tiap 2 menit)">1 Jam</button>
                             <button class="time-range-btn" data-range="12h"
-                                title="Riwayat tren 12 jam kebelakang (interval 1 jam)">12 Jam</button>
+                                title="Riwayat tren 12 jam kebelakang (tiap 2 menit)">12 Jam</button>
                             <button class="time-range-btn" data-range="24h"
-                                title="Riwayat tren 24 jam kebelakang (interval 2 jam)">24 Jam</button>
+                                title="Riwayat tren 24 jam kebelakang (tiap 2 menit)">24 Jam</button>
                         </div>
                     </div>
 
@@ -252,14 +252,16 @@
                                                 <div class="mini-bar-row">
                                                     <span class="mini-lbl">C:</span>
                                                     <div class="progress-bar-bg">
-                                                        <div class="progress-bar-fill fill-cpu" {{ ('style="width: ' ~ dev.cpu ~ '%;"') | safe }}></div>
+                                                        <div class="progress-bar-fill fill-cpu" {{
+                                                            ('style="width: ' ~ dev.cpu ~ '%;"') | safe }}></div>
                                                     </div>
                                                     <span class="mini-val">{{ dev.cpu }}%</span>
                                                 </div>
                                                 <div class="mini-bar-row">
                                                     <span class="mini-lbl">M:</span>
                                                     <div class="progress-bar-bg">
-                                                        <div class="progress-bar-fill fill-mem" {{ ('style="width: ' ~ dev.mem ~ '%;"') | safe }}></div>
+                                                        <div class="progress-bar-fill fill-mem" {{ ('
+                                                            style="width: ' ~ dev.mem ~ '%;"') | safe }}></div>
                                                     </div>
                                                     <span class="mini-val">{{ dev.mem }}%</span>
                                                 </div>
@@ -300,41 +302,47 @@
                             id="alert-card-{{ alert.id }}">
                             <div class="alert-card-header">
                                 <div class="alert-title-wrap">
-                                    <span class="alert-severity-badge {% if alert.severity == 'CRITICAL' %}badge-crit{% else %}badge-warn{% endif %}">{{ alert.severity }}</span>
-                                    <span class="alert-time">{{ alert.triggered_at }}</span>
-                                </div>
-                                <span class="alert-id">#{{ alert.id }}</span>
-                            </div>
-                            <div class="alert-device-name">
-                                <strong>{{ alert.device_name }}</strong> ({{ alert.ip }})
-                            </div>
-                            <p class="alert-message">{{ alert.message }}</p>
-                            <div class="alert-footer">
-                                {% if alert.acknowledged %}
-                                <span class="badge-ack-state text-success">✓ Acknowledged</span>
-                                <span class="text-muted-xs">{{ alert.acknowledged_by or 'Terkonfirmasi' }}</span>
-                                {% else %}
-                                <span class="badge-ack-state text-warning">Menunggu ACK</span>
-                                {% endif %}
-                            </div>
+                                    <span class="alert-severity-badge {% if alert.severity == ' CRITICAL'
+                                                            %}badge-crit{% else %}badge-warn{% endif %}">{{
+                                                            alert.severity }}</span>
+                                                            <span class="alert-time">{{ alert.triggered_at }}</span>
+                                                        </div>
+                                                        <span class="alert-id">#{{ alert.id }}</span>
+                                                    </div>
+                                                    <div class="alert-device-name">
+                                                        <strong>{{ alert.device_name }}</strong> ({{ alert.ip }})
+                                                    </div>
+                                                    <p class="alert-message">{{ alert.message }}</p>
+                                                    <div class="alert-footer">
+                                                        {% if alert.acknowledged %}
+                                                        <span class="badge-ack-state text-success">✓ Acknowledged</span>
+                                                        <span class="text-muted-xs">{{ alert.acknowledged_by or
+                                                            'Terkonfirmasi' }}</span>
+                                                        {% else %}
+                                                        <span class="badge-ack-state text-warning">Menunggu ACK</span>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                                {% else %}
+                                                <div style="text-align: center; padding: 40px 10px; color: #64748b;">
+                                                    <svg style="width: 40px; height: 40px; stroke: #10b981; fill: none; margin: 0 auto 8px auto; display: block;"
+                                                        viewBox="0 0 24 24">
+                                                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" stroke-width="2"
+                                                            stroke-linecap="round" stroke-linejoin="round" />
+                                                        <polyline points="22 4 12 14.01 9 11.01" stroke-width="2"
+                                                            stroke-linecap="round" stroke-linejoin="round" />
+                                                    </svg>
+                                                    <p
+                                                        style="font-size: 0.9rem; font-weight: 500; color: #94a3b8; margin: 0 0 4px 0;">
+                                                        Semua Sistem Normal</p>
+                                                    <span style="font-size: 0.75rem; color: #64748b;">Tidak ada alert
+                                                        aktif yang memerlukan mitigasi</span>
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                            </aside>
                         </div>
-                        {% else %}
-                        <div style="text-align: center; padding: 40px 10px; color: #64748b;">
-                            <svg style="width: 40px; height: 40px; stroke: #10b981; fill: none; margin: 0 auto 8px auto; display: block;"
-                                viewBox="0 0 24 24">
-                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" stroke-width="2" stroke-linecap="round"
-                                    stroke-linejoin="round" />
-                                <polyline points="22 4 12 14.01 9 11.01" stroke-width="2" stroke-linecap="round"
-                                    stroke-linejoin="round" />
-                            </svg>
-                            <p style="font-size: 0.9rem; font-weight: 500; color: #94a3b8; margin: 0 0 4px 0;">Semua Sistem Normal</p>
-                            <span style="font-size: 0.75rem; color: #64748b;">Tidak ada alert aktif yang memerlukan mitigasi</span>
-                        </div>
-                        {% endfor %}
                     </div>
-                </aside>
-            </div>
-        </div>
     </main>
 
     <!-- Toast Notification Container -->
@@ -357,7 +365,8 @@
         window.INITIAL_CHART_DATA = JSON.parse(document.getElementById('initial-chart-data').textContent || '{}');
     </script>
     <!-- Relative JS -->
-    <script src="/static/js/dashboard.js?v=3.6"></script>
+    <script src="/static/js/dashboard.js?v=4.0"></script>
+    <script src="/static/js/global_nav.js?v=4.1"></script>
 </body>
 
 </html>

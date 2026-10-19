@@ -3,7 +3,9 @@ load_dotenv(override=True)
 import os
 import random
 import json
+import re
 import urllib.request
+from collections import defaultdict
 from datetime import datetime, timedelta
 from flask import Flask, render_template, jsonify, request, redirect
 from database import db_session, init_db
@@ -56,66 +58,95 @@ def inject_global_vars():
         nav_devices=nav_devices
     )
 
-def get_aggregated_chart_history(range_mode='live'):
+def get_aggregated_chart_history(range_mode='live', session=None):
     """
-    Mengambil data histori metrik agregat riil dari database.
-    Mendukung rentang waktu interaktif:
-    - 'live': 10 titik waktu dengan jeda 5 detik (%H:%M:%S)
-    - '1h': 12 titik waktu dengan jeda 5 menit (%H:%M)
-    - '12h': 12 titik waktu dengan jeda 1 jam (%H:%M)
-    - '24h': 13 titik waktu dengan jeda 2 jam (%H:%M)
+    Mengambil data histori metrik agregat riil dari database (DeviceStatusLog).
+    Mendukung rentang waktu:
+    - 'live': 10-12 siklus terakhir (~20-24 menit) dengan jeda 2 menit (%H:%M:%S)
+    - '1h': Seluruh data 1 jam kebelakang (%H:%M)
+    - '12h': Seluruh data 12 jam kebelakang (%H:%M)
+    - '24h': Seluruh data 24 jam kebelakang (%d/%m %H:%M atau %H:%M)
     """
-    import math
-    session = db_session()
-    online_devs = session.query(Device).filter(Device.status == 'UP').all()
-    avg_cpu = round(sum(d.cpu_usage for d in online_devs) / len(online_devs), 1) if online_devs else 0.0
-    avg_mem = round(sum(d.mem_usage for d in online_devs) / len(online_devs), 1) if online_devs else 0.0
-    total_trf = round(sum(d.traffic_mbps for d in online_devs), 1)
-    ingress_cur = round(total_trf * 0.65, 1)
-    egress_cur = round(total_trf * 0.35, 1)
+    close_session = False
+    if session is None:
+        session = db_session()
+        close_session = True
 
     now = datetime.now()
-    labels = []
 
     if range_mode == '1h':
-        count = 12
-        for i in range(count - 1, -1, -1):
-            labels.append((now - timedelta(minutes=i * 5)).strftime('%H:%M'))
-        var_scale = 2.0
+        cutoff = now - timedelta(hours=1)
     elif range_mode == '12h':
-        count = 12
-        for i in range(count - 1, -1, -1):
-            labels.append((now - timedelta(hours=i * 1)).strftime('%H:%M'))
-        var_scale = 4.0
+        cutoff = now - timedelta(hours=12)
     elif range_mode == '24h':
-        count = 13
-        for i in range(count - 1, -1, -1):
-            t_dt = now - timedelta(hours=i * 2)
-            lbl = t_dt.strftime('%d/%m %H:%M') if t_dt.day != now.day else t_dt.strftime('%H:%M')
-            labels.append(lbl)
-        var_scale = 6.0
+        cutoff = now - timedelta(hours=24)
     else:  # 'live'
-        count = 10
-        for i in range(count - 1, -1, -1):
-            labels.append((now - timedelta(seconds=i * 5)).strftime('%H:%M:%S'))
-        var_scale = 0.5
+        cutoff = now - timedelta(minutes=24)
 
-    def make_series(val, var, min_v=0.0, max_v=100.0):
-        series = []
-        for idx in range(count):
-            if idx == count - 1:
-                series.append(val)
-            else:
-                dist = count - 1 - idx
-                offset = math.sin(dist * 0.6) * var + random.uniform(-var * 0.25, var * 0.25)
-                series.append(round(max(min_v, min(max_v, val + offset)), 1))
-        return series
+    logs = session.query(DeviceStatusLog).filter(
+        DeviceStatusLog.timestamp >= cutoff
+    ).order_by(DeviceStatusLog.timestamp.asc()).all()
 
-    cpu_vals = make_series(avg_cpu, var_scale, 0, 100)
-    mem_vals = make_series(avg_mem, var_scale * 0.4, 0, 100)
-    ing_vals = make_series(ingress_cur, var_scale * 2.5, 0, 10000)
-    eg_vals = make_series(egress_cur, var_scale * 1.5, 0, 10000)
+    if len(logs) < 6:
+        # Fallback to latest 36 rows if database has fewer historical rows in cutoff
+        logs = session.query(DeviceStatusLog).order_by(
+            DeviceStatusLog.timestamp.desc()
+        ).limit(36).all()
+        logs.reverse()
 
+    if not logs:
+        if close_session:
+            session.close()
+        return {
+            "range": range_mode,
+            "labels": [now.strftime('%H:%M:%S')],
+            "cpu": [0.0],
+            "mem": [0.0],
+            "ingress": [0.0],
+            "egress": [0.0]
+        }
+
+    # Group into 2-minute cycle buckets (120 seconds)
+    buckets = defaultdict(list)
+    for l in logs:
+        cycle_key = int(l.timestamp.timestamp()) // 120
+        buckets[cycle_key].append(l)
+
+    labels = []
+    cpu_vals = []
+    mem_vals = []
+    ing_vals = []
+    eg_vals = []
+
+    for key in sorted(buckets.keys()):
+        cycle_logs = buckets[key]
+        dt = datetime.fromtimestamp(key * 120)
+        if range_mode == '24h':
+            lbl = dt.strftime('%d/%m %H:%M') if dt.date() != now.date() else dt.strftime('%H:%M')
+        elif range_mode in ['1h', '12h']:
+            lbl = dt.strftime('%H:%M')
+        else: # 'live'
+            lbl = dt.strftime('%H:%M:%S')
+
+        labels.append(lbl)
+        avg_cpu = round(sum(x.cpu_usage for x in cycle_logs) / len(cycle_logs), 1)
+        avg_mem = round(sum(x.mem_usage for x in cycle_logs) / len(cycle_logs), 1)
+        tot_trf = round(sum(x.traffic_mbps for x in cycle_logs), 1)
+
+        cpu_vals.append(avg_cpu)
+        mem_vals.append(avg_mem)
+        ing_vals.append(round(tot_trf * 0.65, 1))
+        eg_vals.append(round(tot_trf * 0.35, 1))
+
+    if range_mode == 'live' and len(labels) > 12:
+        labels = labels[-12:]
+        cpu_vals = cpu_vals[-12:]
+        mem_vals = mem_vals[-12:]
+        ing_vals = ing_vals[-12:]
+        eg_vals = eg_vals[-12:]
+
+    if close_session:
+        session.close()
     return {
         "range": range_mode,
         "labels": labels,
@@ -477,7 +508,216 @@ def backups_page():
         })
     return render_template('backups.html', backups=backups_data)
 
-# 5. REAL-TIME JSON APIS FOR DASHBOARD POLLING
+# 5. REAL-TIME JSON APIS FOR DASHBOARD POLLING & OMNI-SEARCH
+
+@app.route('/api/search')
+def api_search():
+    """
+    Pattern 3: Omni-Search / Command Palette API
+    Mencari secara serentak ke:
+    1. Perangkat Jaringan (Devices)
+    2. Alerts & Anomali (Alerts)
+    3. File Backup Konfigurasi (Backup History)
+    4. Navigasi Cepat (Pages & Menus)
+    """
+    q = request.args.get('q', '').strip()
+    if not q or len(q) < 1:
+        return jsonify({
+            "query": "",
+            "total_results": 0,
+            "categories": {
+                "devices": [],
+                "alerts": [],
+                "backups": [],
+                "telegram": [],
+                "navigation": []
+            }
+        })
+
+    session = db_session()
+    ql = q.lower()
+    
+    # 1. Devices matching name, IP, vendor, site, or status
+    all_devs = session.query(Device).all()
+    matched_devices = []
+    for d in all_devs:
+        if (ql in d.name.lower() or 
+            ql in d.ip_address.lower() or 
+            ql in d.vendor.lower() or 
+            ql in d.site.lower() or
+            ql == d.status.lower()):
+            matched_devices.append({
+                "id": d.device_id,
+                "name": d.name,
+                "ip": d.ip_address,
+                "vendor": d.vendor,
+                "site": d.site,
+                "status": d.status,
+                "url": f"/device/{d.device_id}#deviceHeaderCard"
+            })
+
+    # 2. Alerts matching type, message, severity, or device name
+    all_alerts = session.query(Alert).order_by(Alert.alert_id.desc()).limit(50).all()
+    matched_alerts = []
+    for a in all_alerts:
+        dev_name = a.device.name.lower() if a.device else ""
+        if (ql in a.type.lower() or 
+            ql in a.message.lower() or 
+            ql in a.severity.lower() or 
+            ql in dev_name):
+            matched_alerts.append({
+                "id": a.alert_id,
+                "type": a.type,
+                "severity": a.severity,
+                "message": a.message[:75] + ("..." if len(a.message) > 75 else ""),
+                "device_name": a.device.name if a.device else "Unknown Device",
+                "triggered_at": a.triggered_at.strftime("%d/%m %H:%M") if a.triggered_at else "-",
+                "acknowledged": a.acknowledged,
+                "url": f"/alerts#alert-row-{a.alert_id}"
+            })
+            if len(matched_alerts) >= 5:
+                break
+
+    # 3. Backups matching file_path, status, device name, or site
+    all_backups = session.query(BackupHistory).order_by(BackupHistory.backup_id.desc()).limit(50).all()
+    matched_backups = []
+    for b in all_backups:
+        dev_name = b.device.name.lower() if b.device else ""
+        dev_site = b.device.site.lower() if b.device and b.device.site else ""
+        file_name = os.path.basename(b.file_path)
+        if (ql in file_name.lower() or 
+            ql in dev_name or 
+            ql in dev_site or
+            ql in b.status.lower()):
+            matched_backups.append({
+                "id": b.backup_id,
+                "file_name": file_name,
+                "device_name": b.device.name if b.device else "Unknown Device",
+                "site": b.device.site if b.device and b.device.site else "-",
+                "date": b.timestamp.strftime("%d/%m %H:%M") if b.timestamp else "-",
+                "size": b.file_size,
+                "status": b.status,
+                "url": f"/backups#backup-row-{b.backup_id}"
+            })
+            if len(matched_backups) >= 5:
+                break
+
+    # 4. Telegram Whitelist & Bot Commands matching engineer, username, role, or command
+    all_tg_users = session.query(TelegramWhitelist).all()
+    matched_telegram = []
+    for u in all_tg_users:
+        if (ql in u.engineer_name.lower() or 
+            ql in u.telegram_username.lower() or 
+            ql in u.role.lower() or
+            ql in str(u.chat_id)):
+            matched_telegram.append({
+                "id": u.id,
+                "title": f"{u.engineer_name} ({u.telegram_username})",
+                "desc": f"Role: {u.role} • Chat ID: {u.chat_id}",
+                "status": "ACTIVE" if u.is_active else "INACTIVE",
+                "url": f"/telegram#whitelist-row-{u.id}"
+            })
+            if len(matched_telegram) >= 4:
+                break
+
+    tg_commands = [
+        {"cmd": "/start", "desc": "Memulai interaksi bot & panduan operasional"},
+        {"cmd": "/status", "desc": "Ringkasan status kesehatan seluruh perangkat"},
+        {"cmd": "/devices", "desc": "Tabel inventaris seluruh perangkat jaringan"},
+        {"cmd": "/device", "desc": "Metrik real-time CPU, RAM, & Uptime suatu device"},
+        {"cmd": "/alerts", "desc": "Daftar gangguan & anomali jaringan aktif"},
+        {"cmd": "/ack", "desc": "Konfirmasi penanganan alert oleh teknisi"},
+        {"cmd": "/resolve", "desc": "Tandai gangguan jaringan telah selesai"},
+        {"cmd": "/backup", "desc": "Memicu backup running-config manual"},
+        {"cmd": "/user", "desc": "Profil teknisi & verifikasi Whitelist"},
+        {"cmd": "/approve", "desc": "Menyetujui akses teknisi baru"}
+    ]
+    for c in tg_commands:
+        if len(matched_telegram) >= 6:
+            break
+        if (ql in c["cmd"].lower() or 
+            ql in c["desc"].lower() or 
+            (ql.startswith('/') and ql in c["cmd"].lower())):
+            clean_cmd = c["cmd"].replace('/', '')
+            matched_telegram.append({
+                "id": c["cmd"],
+                "title": f"Perintah Bot: {c['cmd']}",
+                "desc": c["desc"],
+                "status": "COMMAND",
+                "url": f"/telegram#cmd-row-{clean_cmd}"
+            })
+
+    # c. Message Dispatch Logs (Riwayat Pengiriman Pesan & Notifikasi Telegram)
+    msg_logs = session.query(TelegramMessageLog).order_by(TelegramMessageLog.sent_at.desc(), TelegramMessageLog.id.desc()).limit(100).all()
+    for m in msg_logs:
+        if len(matched_telegram) >= 8:
+            break
+        if (ql in m.content.lower() or 
+            ql in m.message_type.lower() or 
+            ql in str(m.chat_id)):
+            clean_content = re.sub(r'<[^>]+>', '', m.content).strip()
+            clean_content = ' '.join(clean_content.split())
+            snippet = clean_content[:65] + ("..." if len(clean_content) > 65 else "")
+            time_str = m.sent_at.strftime("%d/%m %H:%M") if m.sent_at else "-"
+            matched_telegram.append({
+                "id": m.id,
+                "title": f"Log: {snippet}",
+                "desc": f"{m.message_type} • Chat ID: {m.chat_id} • {time_str}",
+                "status": m.status or "SENT",
+                "url": f"/telegram#msglog-row-{m.id}"
+            })
+
+    # 5. Quick Navigation Menus
+    navigation_items = [
+        {
+            "title": "Dashboard Monitoring",
+            "desc": "Grafik metrik real-time dan inventaris seluruh perangkat",
+            "category": "Menu Navigasi",
+            "keywords": ["dashboard", "monitoring", "home", "beranda", "grafik", "metrik", "switch", "traffic", "cpu"],
+            "url": "/"
+        },
+        {
+            "title": "Pusat Alert & Insiden",
+            "desc": "Daftar alarm gangguan dan konfirmasi penanganan",
+            "category": "Menu Navigasi",
+            "keywords": ["alert", "alerts", "insiden", "incident", "alarm", "anomali", "ack", "notif", "peringatan"],
+            "url": "/alerts"
+        },
+        {
+            "title": "Backup Konfigurasi",
+            "desc": "Manajemen riwayat file backup running-config perangkat",
+            "category": "Menu Navigasi",
+            "keywords": ["backup", "backups", "cadangan", "config", "konfigurasi", "file", "download", "diff"],
+            "url": "/backups"
+        },
+        {
+            "title": "Integrasi Bot Telegram",
+            "desc": "Panel kontrol bot, whitelist teknisi, dan audit log dispatch",
+            "category": "Menu Navigasi",
+            "keywords": ["telegram", "bot", "whitelist", "chat", "command", "perintah", "teknisi", "noc"],
+            "url": "/telegram"
+        }
+    ]
+    matched_nav = []
+    for nav in navigation_items:
+        if (ql in nav["title"].lower() or 
+            ql in nav["desc"].lower() or 
+            any(ql in k for k in nav["keywords"])):
+            matched_nav.append(nav)
+
+    total_count = len(matched_devices) + len(matched_alerts) + len(matched_backups) + len(matched_telegram) + len(matched_nav)
+
+    return jsonify({
+        "query": q,
+        "total_results": total_count,
+        "categories": {
+            "devices": matched_devices,
+            "alerts": matched_alerts,
+            "backups": matched_backups,
+            "telegram": matched_telegram,
+            "navigation": matched_nav
+        }
+    })
 
 @app.route('/api/status')
 def api_status():
@@ -497,6 +737,11 @@ def api_status():
     ingress_trf = round(total_trf * 0.65, 1)
     egress_trf = round(total_trf * 0.35, 1)
 
+    devices_data = [d.to_dict() for d in devices]
+    alerts_data = [a.to_dict() for a in active_alerts]
+    history_data = get_aggregated_chart_history(range_mode, session=session)
+    session.close()
+
     return jsonify({
         "timestamp": datetime.now().strftime("%H:%M:%S"),
         "range": range_mode,
@@ -513,46 +758,70 @@ def api_status():
             "ingress_traffic": ingress_trf,
             "egress_traffic": egress_trf
         },
-        "history": get_aggregated_chart_history(range_mode),
-        "devices": [d.to_dict() for d in devices],
-        "alerts": [a.to_dict() for a in active_alerts]
+        "history": history_data,
+        "devices": devices_data,
+        "alerts": alerts_data
     })
 
 @app.route('/api/device/<int:device_id>/metrics')
 def api_device_metrics(device_id):
     """Data histori time-series (live, 1h, 12h, 24h) untuk Chart.js di halaman detail perangkat."""
-    import math
     session = db_session()
     device = session.query(Device).filter(Device.device_id == device_id).first()
     if not device:
+        session.close()
         return jsonify({"error": "Device not found"}), 404
 
     range_mode = request.args.get('range', 'live')
     now = datetime.now()
-    labels = []
 
     if range_mode == '1h':
-        count = 12
-        for i in range(count - 1, -1, -1):
-            labels.append((now - timedelta(minutes=i * 5)).strftime("%H:%M"))
-        var_scale = 2.0
+        cutoff = now - timedelta(hours=1)
     elif range_mode == '12h':
-        count = 12
-        for i in range(count - 1, -1, -1):
-            labels.append((now - timedelta(hours=i * 1)).strftime("%H:%M"))
-        var_scale = 4.0
+        cutoff = now - timedelta(hours=12)
     elif range_mode == '24h':
-        count = 13
-        for i in range(count - 1, -1, -1):
-            t_dt = now - timedelta(hours=i * 2)
-            lbl = t_dt.strftime('%d/%m %H:%M') if t_dt.day != now.day else t_dt.strftime('%H:%M')
-            labels.append(lbl)
-        var_scale = 6.0
+        cutoff = now - timedelta(hours=24)
     else:  # 'live'
-        count = 10
-        for i in range(count - 1, -1, -1):
-            labels.append((now - timedelta(seconds=i * 5)).strftime("%H:%M:%S"))
-        var_scale = 0.4
+        cutoff = now - timedelta(minutes=24)
+
+    logs = session.query(DeviceStatusLog).filter(
+        DeviceStatusLog.device_id == device_id,
+        DeviceStatusLog.timestamp >= cutoff
+    ).order_by(DeviceStatusLog.timestamp.asc()).all()
+
+    if len(logs) < 6:
+        # Fallback to latest available logs for this device
+        logs = session.query(DeviceStatusLog).filter(
+            DeviceStatusLog.device_id == device_id
+        ).order_by(DeviceStatusLog.timestamp.desc()).limit(12).all()
+        logs.reverse()
+
+    if not logs:
+        labels = [now.strftime("%H:%M:%S")]
+        cpu_vals = [round(device.cpu_usage, 1)]
+        mem_vals = [round(device.mem_usage, 1)]
+        trf_vals = [round(device.traffic_mbps, 2)]
+    else:
+        if range_mode == 'live' and len(logs) > 12:
+            logs = logs[-12:]
+        labels = []
+        cpu_vals = []
+        mem_vals = []
+        trf_vals = []
+        for l in logs:
+            if range_mode == '24h':
+                lbl = l.timestamp.strftime('%d/%m %H:%M') if l.timestamp.date() != now.date() else l.timestamp.strftime('%H:%M')
+            elif range_mode in ['1h', '12h']:
+                lbl = l.timestamp.strftime('%H:%M')
+            else:  # live
+                lbl = l.timestamp.strftime('%H:%M:%S')
+            labels.append(lbl)
+            cpu_vals.append(round(l.cpu_usage, 1))
+            mem_vals.append(round(l.mem_usage, 1))
+            trf_vals.append(round(l.traffic_mbps, 2))
+
+    trf_in_vals = [round(v * 0.72, 2) for v in trf_vals]
+    trf_out_vals = [round(v * 0.28, 2) for v in trf_vals]
 
     telemetry = get_device_full_telemetry(device)
     res = telemetry.get("resources", {})
@@ -561,29 +830,12 @@ def api_device_metrics(device_id):
     td_val = int(res.get("tx_drops", 0))
     re_val = int(res.get("rx_errors", 0))
 
-    def make_series(val, var, min_v=0.0, max_v=100.0, is_int=False):
-        series = []
-        for idx in range(count):
-            if idx == count - 1:
-                series.append(round(val, 1) if not is_int else int(round(val)))
-            else:
-                dist = count - 1 - idx
-                offset = math.sin(dist * 0.6) * var + random.uniform(-var * 0.25, var * 0.25)
-                v = max(min_v, min(max_v, val + offset))
-                series.append(round(v, 1) if not is_int else int(round(v)))
-        return series
-
-    cpu_vals = make_series(device.cpu_usage, var_scale, 0, 100)
-    mem_vals = make_series(device.mem_usage, var_scale * 0.3, 0, 100)
-    trf_vals = make_series(device.traffic_mbps, var_scale * 1.5, 0, 10000)
-    trf_in_vals = make_series(round(device.traffic_mbps * 0.72, 2), var_scale * 1.0, 0, 10000)
-    trf_out_vals = make_series(round(device.traffic_mbps * 0.28, 2), var_scale * 0.5, 0, 10000)
-    packet_buffers_vals = make_series(pb_base, var_scale * 0.2, 0, 100)
+    packet_buffers_vals = [pb_base for _ in labels]
     tx_drops_vals = [td_val for _ in labels]
-    message_buffers_vals = make_series(mb_base, var_scale * 0.2, 0, 100)
+    message_buffers_vals = [mb_base for _ in labels]
     rx_errors_vals = [re_val for _ in labels]
 
-    return jsonify({
+    result = {
         "device_id": device_id,
         "name": device.name,
         "status": device.status,
@@ -612,7 +864,9 @@ def api_device_metrics(device_id):
         "specs": telemetry.get("hardware", {}),
         "vlans": telemetry.get("vlans", []),
         "ports": telemetry.get("ports", []),
-    })
+    }
+    session.close()
+    return jsonify(result)
 
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5000))

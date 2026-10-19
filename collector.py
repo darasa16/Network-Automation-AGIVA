@@ -3,7 +3,7 @@ import os
 import re
 import logging
 import yaml
-from datetime import datetime
+from datetime import datetime, timedelta
 from dotenv import load_dotenv
 
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -314,13 +314,50 @@ def run_polling_cycle():
         
     logger.info("=== END POLLING CYCLE ===")
 
+# ==========================================
+# 5. Data Retention Policy (Housekeeping)
+# ==========================================
+def cleanup_old_device_logs(retention_days=None):
+    """
+    Data Retention Policy (Auto-Pruning / Housekeeping):
+    Menghapus riwayat data metrik lama dari tabel public.device_status_logs
+    yang berumur lebih dari `retention_days` hari (default 30 hari).
+    
+    Ekivalen dengan query SQL:
+    DELETE FROM device_status_logs WHERE timestamp < NOW() - INTERVAL '30 days';
+    """
+    if retention_days is None:
+        retention_days = int(os.getenv("LOG_RETENTION_DAYS", "30"))
+        
+    session = db_session()
+    cutoff_date = datetime.now() - timedelta(days=retention_days)
+    try:
+        deleted_count = session.query(DeviceStatusLog).filter(DeviceStatusLog.timestamp < cutoff_date).delete()
+        session.commit()
+        if deleted_count > 0:
+            logger.info(f"[Housekeeping] Berhasil menghapus {deleted_count} baris log lama (> {retention_days} hari) dari device_status_logs.")
+        else:
+            logger.info(f"[Housekeeping] Retensi data bersih. Tidak ada data device_status_logs yang berumur lebih dari {retention_days} hari.")
+    except Exception as e:
+        logger.error(f"[Housekeeping] Gagal menjalankan data retention cleanup: {e}")
+        session.rollback()
+    finally:
+        session.close()
+
 def start_scheduler():
     scheduler = BackgroundScheduler()
-    # LLD: dijadwalkan tiap 1-5 menit. Kita set 2 menit sebagai default
+    # LLD: Polling dijadwalkan tiap 1-5 menit. Kita set 2 menit sebagai default
     scheduler.add_job(run_polling_cycle, 'interval', minutes=2)
+    
+    # Data Retention Policy: Dijadwalkan otomatis setiap tengah malam (jam 00:00)
+    scheduler.add_job(cleanup_old_device_logs, 'cron', hour=0, minute=0, id='cleanup_device_logs_job')
+    
     scheduler.start()
     
-    logger.info("Scheduler berjalan. Menunggu jadwal polling...")
+    # Jalankan pemeriksaan awal retensi data saat collector pertama kali start
+    cleanup_old_device_logs()
+    
+    logger.info("Scheduler berjalan. Menunggu jadwal polling (tiap 2 mnt) & housekeeping (tiap 00:00)...")
     try:
         while True:
             time.sleep(2)
@@ -330,3 +367,4 @@ def start_scheduler():
 
 if __name__ == "__main__":
     start_scheduler()
+

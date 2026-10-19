@@ -14,7 +14,7 @@
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
     <!-- Relative CSS -->
-    <link rel="stylesheet" href="/static/css/style.css?v=6.2">
+    <link rel="stylesheet" href="/static/css/style.css?v=8.1">
 </head>
 
 <body>
@@ -32,7 +32,7 @@
                     <circle cx="11" cy="11" r="8"></circle>
                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                 </svg>
-                <input type="text" id="globalSearch" placeholder="Cari vendor, site" autocomplete="off" />
+                <input type="text" id="globalSearch" placeholder="Cari perangkat, alert, data" autocomplete="off" />
                 <button type="button" id="clearSearchBtn" class="search-clear-btn"
                     title="Reset pencarian">&times;</button>
                 <div id="searchResultsDropdown" class="search-results-dropdown" style="display: none;"></div>
@@ -80,7 +80,7 @@
             </div>
 
             <!-- Device Header Card -->
-            <div class="device-header-card">
+            <div class="device-header-card" id="deviceHeaderCard">
                 <div class="device-header-left">
                     <div class="device-avatar {{ device.vendor.lower().replace(' ', '-') }}">{{ device.vendor[0].upper()
                         }}</div>
@@ -239,15 +239,15 @@
                     <div class="time-range-selector" id="deviceTimeRange">
                         <span class="time-range-label">Rentang:</span>
                         <button class="time-range-btn active" data-range="live"
-                            title="Real-time live stream tiap 5 detik">
-                            <span class="live-dot"></span> Live (5s)
+                            title="Real-time live stream sinkron database per 2 menit">
+                            <span class="live-dot"></span> Live (2m)
                         </button>
                         <button class="time-range-btn" data-range="1h"
-                            title="Riwayat tren 1 jam kebelakang (interval 5 menit)">1 Jam</button>
+                            title="Riwayat tren 1 jam kebelakang (tiap 2 menit)">1 Jam</button>
                         <button class="time-range-btn" data-range="12h"
-                            title="Riwayat tren 12 jam kebelakang (interval 1 jam)">12 Jam</button>
+                            title="Riwayat tren 12 jam kebelakang (tiap 2 menit)">12 Jam</button>
                         <button class="time-range-btn" data-range="24h"
-                            title="Riwayat tren 24 jam kebelakang (interval 2 jam)">24 Jam</button>
+                            title="Riwayat tren 24 jam kebelakang (tiap 2 menit)">24 Jam</button>
                     </div>
                 </div>
 
@@ -506,8 +506,8 @@
         const CURRENT_DEVICE_ID = Number(document.getElementById('device-id-data').textContent);
         window.NAV_DEVICES = JSON.parse(document.getElementById('nav-devices-data').textContent || '[]');
     </script>
-    <script src="/static/js/global_nav.js?v=1.1"></script>
-    <script src="/static/js/device_detail.js?v=2.8"></script>
+    <script src="/static/js/global_nav.js?v=4.1"></script>
+    <script src="/static/js/device_detail.js?v=3.0"></script>
 </body>
 
 </html>

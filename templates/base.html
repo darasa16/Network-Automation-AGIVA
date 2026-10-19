@@ -14,7 +14,7 @@
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=5.2">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=8.1">
 </head>
 
 <body>
@@ -31,7 +31,7 @@
                     <circle cx="11" cy="11" r="8"></circle>
                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                 </svg>
-                <input type="text" id="globalSearch" placeholder="Cari vendor, site" autocomplete="off" />
+                <input type="text" id="globalSearch" placeholder="Cari perangkat, alert, data" autocomplete="off" />
                 <button type="button" id="clearSearchBtn" class="search-clear-btn" title="Reset pencarian">&times;</button>
                 <div id="searchResultsDropdown" class="search-results-dropdown" style="display: none;"></div>
             </div>
@@ -94,7 +94,7 @@
     <script>
         window.NAV_DEVICES = JSON.parse(document.getElementById('nav-devices-data').textContent || '[]');
     </script>
-    <script src="{{ url_for('static', filename='js/global_nav.js') }}?v=1.1"></script>
+    <script src="{{ url_for('static', filename='js/global_nav.js') }}?v=4.1"></script>
     {% block scripts %}{% endblock %}
 </body>
 

@@ -12,7 +12,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
         rel="stylesheet">
     <!-- Relative CSS -->
-    <link rel="stylesheet" href="/static/css/style.css?v=3.3">
+    <link rel="stylesheet" href="/static/css/style.css?v=8.1">
 </head>
 
 <body>
@@ -30,7 +30,9 @@
                     <circle cx="11" cy="11" r="8"></circle>
                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                 </svg>
-                <input type="text" id="backupSearch" placeholder="Cari file, router, site..." />
+                <input type="text" id="globalSearch" placeholder="Cari perangkat, alert, data" autocomplete="off" />
+                <button type="button" id="clearSearchBtn" class="search-clear-btn" title="Reset pencarian">&times;</button>
+                <div id="searchResultsDropdown" class="search-results-dropdown" style="display: none;"></div>
             </div>
         </div>
 
@@ -149,7 +151,8 @@
                         <h3 class="panel-title">Riwayat Backup Konfigurasi Terkini</h3>
                         <span class="panel-sub">Hasil eksekusi harian dan trigger manual bot Telegram (/backup)</span>
                     </div>
-                    <div class="table-actions">
+                    <div class="table-actions" style="display: flex; align-items: center; gap: 10px;">
+                        <input type="text" id="backupTableSearch" placeholder="Saring file backup..." style="background: var(--bg-card); border: 1px solid var(--border-color); color: #fff; padding: 6px 12px; border-radius: var(--radius-sm); font-size: 12px; outline: none; width: 180px;" />
                         <button class="btn-refresh" onclick="window.location.reload()">Refresh Data</button>
                     </div>
                 </div>
@@ -170,7 +173,7 @@
                         <tbody id="backupsTableBody">
                             {% if backups %}
                             {% for b in backups %}
-                            <tr>
+                            <tr id="backup-row-{{ b.id }}">
                                 <td><code>#{{ b.id }}</code></td>
                                 <td><strong>{{ b.device }}</strong></td>
                                 <td>{{ b.site }}</td>
@@ -313,14 +316,18 @@
             setTimeout(() => toast.remove(), 3500);
         }
 
-        // Search filter
-        document.getElementById('backupSearch').addEventListener('input', function (e) {
-            const q = e.target.value.toLowerCase();
-            document.querySelectorAll('#backupsTableBody tr').forEach(row => {
-                row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+        // Local Backup Table filter
+        const tblSearch = document.getElementById('backupTableSearch');
+        if (tblSearch) {
+            tblSearch.addEventListener('input', function (e) {
+                const q = e.target.value.toLowerCase().trim();
+                document.querySelectorAll('#backupsTableBody tr').forEach(row => {
+                    row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+                });
             });
-        });
+        }
     </script>
+    <script src="/static/js/global_nav.js?v=4.1"></script>
 </body>
 
 </html>

@@ -123,7 +123,7 @@
                         </thead>
                         <tbody>
                             {% for w in whitelist %}
-                            <tr>
+                            <tr id="whitelist-row-{{ w.id }}">
                                 <td>{{ w.chat_id }}</td>
                                 <td><strong style="color:#38bdf8;">{{ w.username }}</strong></td>
                                 <td>{{ w.name }}</td>
@@ -163,7 +163,7 @@
                         </thead>
                         <tbody>
                             {% for c in commands %}
-                            <tr>
+                            <tr id="cmd-row-{{ c.command.replace('/', '') }}">
                                 <td><code style="color:#10b981; font-weight:700;">{{ c.command }}</code></td>
                                 <td><code>{{ c.params }}</code></td>
                                 <td class="col-desc">{{ c.desc }}</td>
@@ -180,7 +180,8 @@
             <div class="panel-header">
                 <div>
                     <h3 class="panel-title">Riwayat Pengiriman Pesan & Notifikasi Telegram</h3>
-                    <span class="panel-sub">Catatan audit log pengiriman alert anomali dan respon command</span>
+                    <span class="panel-sub">Catatan audit log pengiriman alert anomali dan respon command selama 30
+                        hari</span>
                 </div>
                 <button class="btn-refresh" onclick="window.location.reload()">Refresh Log</button>
             </div>
@@ -223,11 +224,13 @@
             flex-wrap: wrap;
             gap: 14px;
         }
+
         .pagination-controls {
             display: flex;
             align-items: center;
             gap: 12px;
         }
+
         .pagination-nav-btn {
             background: transparent;
             border: none;
@@ -241,15 +244,18 @@
             gap: 6px;
             transition: all 0.2s ease;
         }
+
         .pagination-nav-btn:hover:not(.disabled) {
             color: #ffffff;
             transform: translateY(-1px);
         }
+
         .pagination-nav-btn.disabled {
             opacity: 0.25;
             cursor: not-allowed;
             pointer-events: none;
         }
+
         .pagination-num-btn {
             background: transparent;
             border: none;
@@ -266,16 +272,19 @@
             padding: 0 4px;
             transition: all 0.2s ease;
         }
+
         .pagination-num-btn:hover:not(.active) {
             color: #ffffff;
             background: rgba(99, 102, 241, 0.15);
         }
+
         .pagination-num-btn.active {
             background: #6366f1;
             color: #ffffff;
             font-weight: 700;
             box-shadow: 0 0 12px rgba(99, 102, 241, 0.45);
         }
+
         .pagination-dots {
             color: #64748b;
             padding: 0 2px;
@@ -284,6 +293,7 @@
             letter-spacing: 2px;
             user-select: none;
         }
+
         .pagination-info {
             font-size: 12px;
             color: #94a3b8;
@@ -352,7 +362,29 @@
                 .replace(/'/g, "&#039;");
         }
 
-        function renderLogsTable() {
+        function checkTargetLogPage(targetRowId) {
+            let rowId = targetRowId;
+            if (!rowId && window.location.hash) {
+                rowId = window.location.hash.replace('#', '');
+            }
+            if (rowId && rowId.startsWith('msglog-row-')) {
+                const targetId = parseInt(rowId.replace('msglog-row-', ''), 10);
+                if (!isNaN(targetId) && allLogs && allLogs.length > 0) {
+                    const idx = allLogs.findIndex(l => Number(l.id) === targetId);
+                    if (idx !== -1) {
+                        currentLogPage = Math.floor(idx / logsPerPage) + 1;
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        window.checkTargetLogPage = checkTargetLogPage;
+
+        function renderLogsTable(targetRowId) {
+            if (targetRowId) {
+                checkTargetLogPage(targetRowId);
+            }
             const tbody = document.getElementById('tgLogsBody');
             const paginationContainer = document.getElementById('tgPaginationContainer');
             const pageInfo = document.getElementById('tgPageInfo');
@@ -385,7 +417,7 @@
                         : 'CMD REPLY');
 
                 html += `
-                <tr>
+                <tr id="msglog-row-${l.id}">
                     <td class="col-time">${escapeHtml(l.sent_at || '')}</td>
                     <td class="col-type">${typeLabel}</td>
                     <td><code>${escapeHtml(l.chat_id || '')}</code></td>
@@ -405,6 +437,7 @@
 
             renderPaginationButtons(totalPages);
         }
+        window.renderLogsTable = renderLogsTable;
 
         function renderPaginationButtons(totalPages) {
             const controls = document.getElementById('tgPaginationControls');
@@ -468,9 +501,16 @@
         }
 
         function gotoLogPage(page) {
+            const totalPages = Math.ceil(allLogs.length / logsPerPage) || 1;
+            if (page < 1 || page > totalPages) return;
             currentLogPage = page;
+            // Clear anchor hash if present so pagination is not locked to a search target
+            if (window.location.hash && window.location.hash.startsWith('#msglog-row-')) {
+                history.replaceState(null, '', window.location.pathname + window.location.search);
+            }
             renderLogsTable();
         }
+        window.gotoLogPage = gotoLogPage;
 
         function showToast(message, type = 'success') {
             const container = document.getElementById('toastContainer');
@@ -543,6 +583,13 @@
 
         // Jalankan render tabel pertama kali saat DOM selesai dimuat
         document.addEventListener('DOMContentLoaded', () => {
+            checkTargetLogPage();
+            renderLogsTable();
+        });
+
+        // Re-render jika hash berubah ke log di halaman berbeda
+        window.addEventListener('hashchange', () => {
+            checkTargetLogPage();
             renderLogsTable();
         });
 

@@ -243,9 +243,22 @@ function renderMiniResourceChart(canvasId, existingChart, labels, dataPoints, co
     if (!canvas) return null;
 
     const maxVal = dataPoints.length > 0 ? Math.max(...dataPoints) : 0;
-    const computedMax = isInteger
-        ? Math.max(Math.ceil(maxVal * 1.25), 5)
-        : Math.min(Math.max(Math.ceil(maxVal * 1.25), 10), 100);
+    
+    // Skala sumbu Y dinamis untuk semua perangkat (Aruba, Huawei, Palo Alto):
+    // Jika integer (Drops/Errors): headroom 25%, min ceiling 5
+    // Jika persentase (%): dinamis proporsional terhadap data riil (min ceiling 5% agar CPU 1%-2% tetap terlihat jelas)
+    let yMaxVal;
+    if (isInteger) {
+        yMaxVal = Math.max(Math.ceil(maxVal * 1.25), 5);
+    } else {
+        if (maxVal <= 0) {
+            yMaxVal = 5;
+        } else if (maxVal <= 4) {
+            yMaxVal = 5; // e.g. 1.0% - 2.0% CPU pada Aruba/Huawei berskala 0%-5% sehingga garis terangkat jelas
+        } else {
+            yMaxVal = Math.max(5, Math.ceil((maxVal * 1.2) / 5) * 5);
+        }
+    }
 
     if (existingChart) {
         existingChart.data.labels = labels;
@@ -259,7 +272,8 @@ function renderMiniResourceChart(canvasId, existingChart, labels, dataPoints, co
             existingChart.data.datasets[0].backgroundColor = gradient;
         }
         if (existingChart.options.scales && existingChart.options.scales.y) {
-            existingChart.options.scales.y.suggestedMax = computedMax;
+            existingChart.options.scales.y.suggestedMax = yMaxVal;
+            existingChart.options.scales.y.max = yMaxVal;
         }
         existingChart.update('none');
         return existingChart;
@@ -304,11 +318,13 @@ function renderMiniResourceChart(canvasId, existingChart, labels, dataPoints, co
                 },
                 y: {
                     min: 0,
-                    suggestedMax: computedMax,
+                    suggestedMax: yMaxVal,
+                    max: yMaxVal,
                     grid: { color: 'rgba(255, 255, 255, 0.04)' },
                     ticks: {
                         color: '#64748b',
                         font: { size: 9.5 },
+                        maxTicksLimit: 5,
                         callback: (v) => isInteger ? v : `${v}${unit}`
                     }
                 }

@@ -15,7 +15,6 @@ document.addEventListener('DOMContentLoaded', () => {
     initCharts();
     initTimeRangeSelector();
     setupTableFilters();
-    setupSearchFilter();
 
     // Poll immediately on page load
     pollRealtimeStatus();
@@ -114,12 +113,17 @@ function initCharts() {
                     }
                 ]
             },
-            options: getCommonChartOptions(' Mbps', 0, 250, 50)
+            options: getCommonChartOptions(' Mbps', 0, 50)
         });
+    }
+
+    // Terapkan data awal langsung dengan skala dinamis identik dengan device_detail.js
+    if (initData && (initData.labels || []).length > 0) {
+        applyChartHistory(initData);
     }
 }
 
-function getCommonChartOptions(unit, minVal, maxVal, stepSize = null) {
+function getCommonChartOptions(unit, minVal = 0, initialMax = 50) {
     return {
         responsive: true,
         maintainAspectRatio: false,
@@ -131,26 +135,29 @@ function getCommonChartOptions(unit, minVal, maxVal, stepSize = null) {
                 bodyColor: '#cbd5e1',
                 borderColor: '#334155',
                 borderWidth: 1,
+                padding: 10,
                 callbacks: {
                     label: function (context) {
-                        return `${context.dataset.label}: ${context.parsed.y}${unit}`;
+                        return ` ${context.dataset.label}: ${context.parsed.y}${unit}`;
                     }
                 }
             }
         },
         scales: {
             x: {
-                grid: { color: 'rgba(255, 255, 255, 0.05)' },
-                ticks: { color: '#64748b', font: { family: "'JetBrains Mono', monospace", size: 10 } }
+                display: true,
+                grid: { color: 'rgba(255, 255, 255, 0.04)' },
+                ticks: { color: '#64748b', font: { size: 9.5 }, maxTicksLimit: 6 }
             },
             y: {
                 min: minVal,
-                max: maxVal,
-                grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                suggestedMax: initialMax,
+                max: initialMax,
+                grid: { color: 'rgba(255, 255, 255, 0.04)' },
                 ticks: {
                     color: '#64748b',
-                    stepSize: stepSize || undefined,
-                    font: { family: "'JetBrains Mono', monospace", size: 10 },
+                    font: { size: 9.5 },
+                    maxTicksLimit: 5,
                     callback: (val) => `${val}${unit}`
                 }
             }
@@ -180,16 +187,59 @@ function initTimeRangeSelector() {
 
 function applyChartHistory(history) {
     if (!history) return;
+    const labels = history.labels || [];
+    const cpuVals = history.cpu || [];
+    const memVals = history.mem || [];
+    const inVals = history.ingress || [];
+    const outVals = history.egress || [];
+
+    // 1. CPU & Memory Chart (Disamakan 100% logikanya dengan device_detail.js)
     if (cpuMemChart) {
-        cpuMemChart.data.labels = [...(history.labels || [])];
-        cpuMemChart.data.datasets[0].data = [...(history.cpu || [])];
-        cpuMemChart.data.datasets[1].data = [...(history.mem || [])];
+        cpuMemChart.data.labels = labels;
+        cpuMemChart.data.datasets[0].data = cpuVals;
+        cpuMemChart.data.datasets[1].data = memVals;
+
+        const allVals = [...cpuVals, ...memVals];
+        const maxVal = allVals.length > 0 ? Math.max(...allVals) : 0;
+        let yMaxVal;
+        if (maxVal <= 0) {
+            yMaxVal = 5;
+        } else if (maxVal <= 4) {
+            yMaxVal = 5; // e.g. beban 1% - 2% berskala 0%-5% agar terangkat jelas
+        } else {
+            yMaxVal = Math.max(5, Math.ceil((maxVal * 1.2) / 5) * 5);
+        }
+
+        if (cpuMemChart.options.scales && cpuMemChart.options.scales.y) {
+            cpuMemChart.options.scales.y.suggestedMax = yMaxVal;
+            cpuMemChart.options.scales.y.max = yMaxVal;
+        }
         cpuMemChart.update('none');
     }
+
+    // 2. Network Interface Traffic Chart (Disamakan 100% logikanya dengan device_detail.js)
     if (trafficChart) {
-        trafficChart.data.labels = [...(history.labels || [])];
-        trafficChart.data.datasets[0].data = [...(history.ingress || [])];
-        trafficChart.data.datasets[1].data = [...(history.egress || [])];
+        trafficChart.data.labels = labels;
+        trafficChart.data.datasets[0].data = inVals;
+        trafficChart.data.datasets[1].data = outVals;
+
+        const allTraffic = [...inVals, ...outVals];
+        const maxTrf = allTraffic.length > 0 ? Math.max(...allTraffic) : 0;
+        let dynamicTrfMax;
+        if (maxTrf <= 0) {
+            dynamicTrfMax = 10;
+        } else if (maxTrf <= 10) {
+            dynamicTrfMax = 15;
+        } else if (maxTrf <= 30) {
+            dynamicTrfMax = 40;
+        } else {
+            dynamicTrfMax = Math.max(20, Math.ceil((maxTrf * 1.25) / 10) * 10);
+        }
+
+        if (trafficChart.options.scales && trafficChart.options.scales.y) {
+            trafficChart.options.scales.y.suggestedMax = dynamicTrfMax;
+            trafficChart.options.scales.y.max = dynamicTrfMax;
+        }
         trafficChart.update('none');
     }
 }
@@ -252,6 +302,15 @@ function pushChartData(chart, label, values) {
         chart.data.labels.shift();
         chart.data.datasets.forEach(ds => ds.data.shift());
     }
+
+    if (chart.options.scales && chart.options.scales.y && chart === cpuMemChart) {
+        const allVals = chart.data.datasets.flatMap(ds => ds.data);
+        const maxV = allVals.length > 0 ? Math.max(...allVals) : 10;
+        const dynamicMax = maxV <= 4 ? 5 : Math.max(5, Math.ceil((maxV * 1.2) / 5) * 5);
+        chart.options.scales.y.max = dynamicMax;
+        chart.options.scales.y.suggestedMax = dynamicMax;
+    }
+
     chart.update('none');
 }
 
@@ -277,27 +336,11 @@ function updateDashboardView(data) {
     }
 
     if (data.metrics) {
-        const timeLabel = data.timestamp;
-        const ingress = data.metrics.ingress_traffic !== undefined ? data.metrics.ingress_traffic : data.metrics.total_traffic;
-        const egress = data.metrics.egress_traffic !== undefined ? data.metrics.egress_traffic : Math.round(data.metrics.total_traffic * 0.35);
-
-        if (currentDashboardRange === 'live') {
-            if (isRangeJustChanged || (cpuMemChart && cpuMemChart.data.labels.length === 0)) {
-                if (data.history) {
-                    applyChartHistory(data.history);
-                }
-                isRangeJustChanged = false;
-            } else {
-                pushChartData(cpuMemChart, timeLabel, [data.metrics.avg_cpu, data.metrics.avg_mem]);
-                pushChartData(trafficChart, timeLabel, [ingress, egress]);
-            }
-        } else {
-            // Historical range (1h, 12h, 24h)
-            if (data.history) {
-                applyChartHistory(data.history);
-            }
-            isRangeJustChanged = false;
+        // Terapkan seluruh histori riil langsung dari database (seperti di device_detail.js)
+        if (data.history) {
+            applyChartHistory(data.history);
         }
+        isRangeJustChanged = false;
     }
 
     // Dynamic real-time update of monitored devices table
@@ -554,31 +597,17 @@ function scrollToDevicesTable() {
 }
 
 function applyTableFilters() {
-    const searchInput = document.getElementById('globalSearch');
-    const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
-
     const activeFilterBtn = document.querySelector('.badge-filter.active');
     const statusFilter = activeFilterBtn ? activeFilterBtn.getAttribute('data-filter') : 'all';
-
-    const clearBtn = document.getElementById('clearSearchBtn');
-    if (clearBtn) {
-        clearBtn.style.display = query !== '' ? 'flex' : 'none';
-    }
 
     const rows = document.querySelectorAll('#deviceTableBody .device-row');
     let visibleCount = 0;
 
     rows.forEach(row => {
-        const vendor = (row.getAttribute('data-vendor') || '').toLowerCase();
-        const site = (row.getAttribute('data-site') || '').toLowerCase();
-
-        // Pencarian khusus kriteria Vendor dan Site saja
-        const matchesVendorOrSite = !query || vendor.includes(query) || site.includes(query);
-
         const rowStatus = row.getAttribute('data-status') || (row.classList.contains('filter-UP') ? 'UP' : 'DOWN');
         const matchesStatus = statusFilter === 'all' || rowStatus === statusFilter;
 
-        if (matchesVendorOrSite && matchesStatus) {
+        if (matchesStatus) {
             row.style.display = '';
             visibleCount++;
         } else {
@@ -590,19 +619,9 @@ function applyTableFilters() {
     const tbody = document.getElementById('deviceTableBody');
     let emptyRow = document.getElementById('noResultsRow');
     if (visibleCount === 0 && rows.length > 0) {
-        let emptyMessage = '';
-        if (query && statusFilter !== 'all') {
-            const statusText = statusFilter === 'UP' ? 'online' : 'offline';
-            emptyMessage = `Tidak ada perangkat ${statusText} dengan vendor atau site yang cocok dengan ${escapeHtml(query)}.`;
-        } else if (query) {
-            emptyMessage = `Tidak ada perangkat dengan vendor atau site yang cocok dengan ${escapeHtml(query)}.`;
-        } else if (statusFilter === 'DOWN') {
-            emptyMessage = `Tidak ada perangkat yang sedang offline.`;
-        } else if (statusFilter === 'UP') {
-            emptyMessage = `Tidak ada perangkat yang sedang online.`;
-        } else {
-            emptyMessage = `Tidak ada perangkat yang tersedia.`;
-        }
+        let emptyMessage = statusFilter === 'DOWN' ? 'Tidak ada perangkat yang sedang offline.' :
+                           statusFilter === 'UP' ? 'Tidak ada perangkat yang sedang online.' :
+                           'Tidak ada perangkat yang tersedia.';
 
         if (!emptyRow && tbody) {
             emptyRow = document.createElement('tr');
@@ -635,54 +654,7 @@ function setupTableFilters() {
     });
 }
 
-function setupSearchFilter() {
-    const searchInput = document.getElementById('globalSearch');
-    const clearBtn = document.getElementById('clearSearchBtn');
-    const dropdown = document.getElementById('searchResultsDropdown');
-    if (!searchInput) return;
 
-    searchInput.addEventListener('input', () => {
-        const query = searchInput.value.toLowerCase().trim();
-        applyTableFilters();
-        updateSearchDropdown(query);
-    });
-
-    searchInput.addEventListener('focus', () => {
-        const query = searchInput.value.toLowerCase().trim();
-        if (query) {
-            updateSearchDropdown(query);
-        }
-    });
-
-    if (clearBtn) {
-        clearBtn.addEventListener('click', () => {
-            searchInput.value = '';
-            clearBtn.style.display = 'none';
-            if (dropdown) dropdown.style.display = 'none';
-            applyTableFilters();
-            searchInput.focus();
-        });
-    }
-
-    // Close dropdown on click outside
-    document.addEventListener('click', (e) => {
-        if (!e.target.closest('.nav-search')) {
-            if (dropdown) dropdown.style.display = 'none';
-        }
-    });
-
-    // Enter key: scroll to table and hide dropdown
-    searchInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            scrollToDevicesTable();
-            if (dropdown) dropdown.style.display = 'none';
-        } else if (e.key === 'Escape') {
-            if (dropdown) dropdown.style.display = 'none';
-            searchInput.blur();
-        }
-    });
-}
 
 
 /* --------------------------------------------------------------------------
