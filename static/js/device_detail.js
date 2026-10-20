@@ -10,6 +10,8 @@ let chartTxDropsInstance = null;
 let chartMessageBuffersInstance = null;
 let chartRxErrorsInstance = null;
 let deviceTrafficChart = null;
+let deviceTimelineNavigator = null;
+let lastDeviceRawData = null;
 let currentFilter = 'all';
 let currentSearch = '';
 let currentDeviceRange = 'live';
@@ -238,7 +240,7 @@ async function fetchDeviceMetrics(isManual = false) {
     }
 }
 
-function renderMiniResourceChart(canvasId, existingChart, labels, dataPoints, colorHex, unit = '%', isInteger = false) {
+function renderMiniResourceChart(canvasId, existingChart, labels, dataPoints, colorHex, unit = '%', isInteger = false, pointRadius = 2.5) {
     const canvas = document.getElementById(canvasId);
     if (!canvas) return null;
 
@@ -251,18 +253,17 @@ function renderMiniResourceChart(canvasId, existingChart, labels, dataPoints, co
     if (isInteger) {
         yMaxVal = Math.max(Math.ceil(maxVal * 1.25), 5);
     } else {
-        if (maxVal <= 0) {
-            yMaxVal = 5;
-        } else if (maxVal <= 4) {
-            yMaxVal = 5; // e.g. 1.0% - 2.0% CPU pada Aruba/Huawei berskala 0%-5% sehingga garis terangkat jelas
-        } else {
-            yMaxVal = Math.max(5, Math.ceil((maxVal * 1.2) / 5) * 5);
+        yMaxVal = 100; // Standar baku umum: 100%
+        if (maxVal > 100) {
+            yMaxVal = Math.ceil((maxVal * 1.2) / 10) * 10;
         }
     }
 
     if (existingChart) {
         existingChart.data.labels = labels;
         existingChart.data.datasets[0].data = dataPoints;
+        existingChart.data.datasets[0].pointRadius = pointRadius;
+        existingChart.data.datasets[0].pointHoverRadius = pointRadius > 0 ? pointRadius + 3 : 5;
         if (existingChart.data.datasets[0].borderColor !== colorHex) {
             existingChart.data.datasets[0].borderColor = colorHex;
             const ctx = canvas.getContext('2d');
@@ -295,8 +296,8 @@ function renderMiniResourceChart(canvasId, existingChart, labels, dataPoints, co
                 borderWidth: 2,
                 fill: true,
                 tension: 0.35,
-                pointRadius: 2.5,
-                pointHoverRadius: 4
+                pointRadius: pointRadius,
+                pointHoverRadius: pointRadius > 0 ? pointRadius + 3 : 5
             }]
         },
         options: {
@@ -334,54 +335,105 @@ function renderMiniResourceChart(canvasId, existingChart, labels, dataPoints, co
 }
 
 function renderDeviceCharts(data) {
-    const labels = data.labels || [];
-    const cpuVals = data.cpu || [];
-    const memVals = data.memory || [];
-    const pbVals = data.packet_buffers || cpuVals.map(() => 31.0);
-    const tdVals = data.tx_drops || cpuVals.map(() => 0);
-    const mbVals = data.message_buffers || cpuVals.map(() => 22.0);
-    const reVals = data.rx_errors || cpuVals.map(() => 0);
+    if (!data) return;
+    lastDeviceRawData = data;
 
-    // 1. CPU Utilization (Emerald #10b981)
-    chartCpuInstance = renderMiniResourceChart('chartCpu', chartCpuInstance, labels, cpuVals, '#10b981', '%');
+    const navContainer = document.getElementById('deviceTimelineNav');
 
-    // 2. Memory Utilization (Amber #f59e0b)
-    chartMemoryInstance = renderMiniResourceChart('chartMemory', chartMemoryInstance, labels, memVals, '#f59e0b', '%');
+    // Jika mode live: sembunyikan navigator, tampilkan seluruh titik live (~12 titik)
+    if (currentDeviceRange === 'live') {
+        if (navContainer) navContainer.style.display = 'none';
+        renderDeviceChartsSlice(data, 0, (data.labels || []).length - 1);
+        return;
+    }
 
-    // 3. Packet Buffers (Cyan #06b6d4)
-    chartPacketBuffersInstance = renderMiniResourceChart('chartPacketBuffers', chartPacketBuffersInstance, labels, pbVals, '#06b6d4', '%');
+    // Mode histori: 1h, 12h, 24h -> Tampilkan Timeline Navigator Slider
+    if (!deviceTimelineNavigator && typeof TimelineNavigator !== 'undefined') {
+        deviceTimelineNavigator = new TimelineNavigator({
+            containerId: 'deviceTimelineNav',
+            color: '#06b6d4',
+            secondaryColor: '#10b981',
+            unit: ' Mbps',
+            onWindowChange: (startIdx, endIdx) => {
+                if (lastDeviceRawData) {
+                    renderDeviceChartsSlice(lastDeviceRawData, startIdx, endIdx);
+                }
+            }
+        });
+    }
 
-    // 4. TX Drops (Rose #f43f5e)
-    chartTxDropsInstance = renderMiniResourceChart('chartTxDrops', chartTxDropsInstance, labels, tdVals, '#f43f5e', ' drops', true);
+    if (deviceTimelineNavigator) {
+        // Jangan reset posisi slider jika user sedang aktif dragging
+        const preserveFractions = (deviceTimelineNavigator.isDragging || (deviceTimelineNavigator.fullLabels && deviceTimelineNavigator.fullLabels.length > 0))
+            ? { start: deviceTimelineNavigator.startFrac, end: deviceTimelineNavigator.endFrac }
+            : null;
 
-    // 5. Message Buffers (Purple #a855f7)
-    chartMessageBuffersInstance = renderMiniResourceChart('chartMessageBuffers', chartMessageBuffersInstance, labels, mbVals, '#a855f7', '%');
-
-    // 6. RX Errors (Vivid Orange #f97316)
-    chartRxErrorsInstance = renderMiniResourceChart('chartRxErrors', chartRxErrorsInstance, labels, reVals, '#f97316', ' errors', true);
-
-    // 7. Aggregated Throughput Chart (IN & OUT) - Diagram Batang (Bar Chart)
-    const ctxTraffic = document.getElementById('deviceTrafficChart');
-    if (ctxTraffic) {
         const trafficIn = data.traffic_in || data.traffic || [];
         const trafficOut = data.traffic_out || [];
+        deviceTimelineNavigator.setData(data.labels, trafficIn, trafficOut, preserveFractions);
+    } else {
+        renderDeviceChartsSlice(data, 0, (data.labels || []).length - 1);
+    }
+}
 
-        // Recreate if existing instance is not a bar chart
+function renderDeviceChartsSlice(data, startIdx, endIdx) {
+    const allLabels = data.labels || [];
+    if (allLabels.length === 0) return;
+
+    const s = Math.max(0, startIdx);
+    const e = Math.min(allLabels.length - 1, endIdx);
+
+    const labels = allLabels.slice(s, e + 1);
+    const cpuVals = (data.cpu || []).slice(s, e + 1);
+    const memVals = (data.memory || []).slice(s, e + 1);
+    const pbVals = (data.packet_buffers || (data.cpu || []).map(() => 31.0)).slice(s, e + 1);
+    const tdVals = (data.tx_drops || (data.cpu || []).map(() => 0)).slice(s, e + 1);
+    const mbVals = (data.message_buffers || (data.cpu || []).map(() => 22.0)).slice(s, e + 1);
+    const reVals = (data.rx_errors || (data.cpu || []).map(() => 0)).slice(s, e + 1);
+    const trafficIn = (data.traffic_in || data.traffic || []).slice(s, e + 1);
+    const trafficOut = (data.traffic_out || []).slice(s, e + 1);
+
+    // Titik adaptif: jika titik <= 45 titik (saat zoom), titik tampak jelas & renggang (pointRadius: 3).
+    // Jika rentang diperlebar banyak, titik disembunyikan agar garis mulus dan tidak bertumpuk.
+    const visibleCount = labels.length;
+    const dynamicPointRadius = visibleCount <= 45 ? 3 : (visibleCount <= 85 ? 1.5 : 0);
+
+    // 1. CPU Utilization (Emerald #10b981)
+    chartCpuInstance = renderMiniResourceChart('chartCpu', chartCpuInstance, labels, cpuVals, '#10b981', '%', false, dynamicPointRadius);
+
+    // 2. Memory Utilization (Amber #f59e0b)
+    chartMemoryInstance = renderMiniResourceChart('chartMemory', chartMemoryInstance, labels, memVals, '#f59e0b', '%', false, dynamicPointRadius);
+
+    // 3. Packet Buffers (Cyan #06b6d4)
+    chartPacketBuffersInstance = renderMiniResourceChart('chartPacketBuffers', chartPacketBuffersInstance, labels, pbVals, '#06b6d4', '%', false, dynamicPointRadius);
+
+    // 4. TX Drops (Rose #f43f5e)
+    chartTxDropsInstance = renderMiniResourceChart('chartTxDrops', chartTxDropsInstance, labels, tdVals, '#f43f5e', ' drops', true, dynamicPointRadius);
+
+    // 5. Message Buffers (Purple #a855f7)
+    chartMessageBuffersInstance = renderMiniResourceChart('chartMessageBuffers', chartMessageBuffersInstance, labels, mbVals, '#a855f7', '%', false, dynamicPointRadius);
+
+    // 6. RX Errors (Vivid Orange #f97316)
+    chartRxErrorsInstance = renderMiniResourceChart('chartRxErrors', chartRxErrorsInstance, labels, reVals, '#f97316', ' errors', true, dynamicPointRadius);
+
+    // 7. Aggregated Throughput Chart (IN & OUT)
+    const ctxTraffic = document.getElementById('deviceTrafficChart');
+    if (ctxTraffic) {
         if (deviceTrafficChart && deviceTrafficChart.config.type !== 'bar') {
             deviceTrafficChart.destroy();
             deviceTrafficChart = null;
         }
 
         const allVals = [...trafficIn, ...trafficOut];
-        const maxVal = allVals.length > 0 ? Math.max(...allVals) : 50;
-        const suggestedYMax = Math.max(Math.ceil(maxVal * 1.25), 50);
+        const maxVal = allVals.length > 0 ? Math.max(...allVals) : 0;
+        const suggestedYMax = maxVal > 100 ? Math.ceil((maxVal * 1.25) / 10) * 10 : 100;
 
         if (deviceTrafficChart) {
             deviceTrafficChart.data.labels = labels;
             if (deviceTrafficChart.data.datasets.length > 0) {
                 deviceTrafficChart.data.datasets[0].data = trafficIn;
             }
-            if (deviceTrafficChart.data.datasets.length > 1) {
+            if (deviceTrafficChart.data.datasets[1]) {
                 deviceTrafficChart.data.datasets[1].data = trafficOut;
             }
             if (deviceTrafficChart.options.scales.y) {

@@ -2222,6 +2222,197 @@ code {
     }
 }
 
+/* --------------------------------------------------------------------------
+   Timeline Navigator (Mini-Map / Range Slider / Brush) Styles
+   -------------------------------------------------------------------------- */
+.timeline-nav-wrapper {
+    display: none;
+    flex-direction: column;
+    margin-top: 14px;
+    padding: 10px 12px;
+    background: rgba(18, 14, 34, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius-md);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4);
+    user-select: none;
+    position: relative;
+    backdrop-filter: blur(8px);
+}
 
+.timeline-nav-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
 
+.timeline-nav-title {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+}
 
+.timeline-nav-quick-actions {
+    display: flex;
+    gap: 4px;
+}
+
+.nav-zoom-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.nav-zoom-btn:hover {
+    background: rgba(232, 165, 118, 0.2);
+    color: #ffffff;
+    border-color: rgba(232, 165, 118, 0.4);
+}
+
+.timeline-nav-track {
+    position: relative;
+    width: 100%;
+    height: 34px;
+    background: rgba(10, 8, 20, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    overflow: hidden;
+    cursor: crosshair;
+}
+
+.timeline-nav-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    pointer-events: none;
+}
+
+.timeline-nav-curtain {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    background: rgba(8, 6, 16, 0.65);
+    pointer-events: none;
+    z-index: 2;
+    transition: background 0.1s ease;
+}
+
+.curtain-left {
+    left: 0;
+}
+
+.curtain-right {
+    right: 0;
+}
+
+.timeline-nav-brush {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    z-index: 4;
+    display: flex;
+    align-items: stretch;
+    box-shadow: 0 0 12px rgba(6, 182, 212, 0.35);
+}
+
+.timeline-nav-window {
+    flex: 1;
+    height: 100%;
+    background: rgba(6, 182, 212, 0.12);
+    border-top: 2px solid #06b6d4;
+    border-bottom: 2px solid #06b6d4;
+    cursor: grab;
+    pointer-events: auto;
+}
+
+.timeline-nav-window:active {
+    cursor: grabbing;
+    background: rgba(6, 182, 212, 0.22);
+}
+
+.timeline-nav-handle {
+    width: 12px;
+    height: 100%;
+    background: #06b6d4;
+    cursor: ew-resize;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: auto;
+    position: relative;
+    z-index: 5;
+    transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.timeline-nav-handle:hover,
+.timeline-nav-handle:active {
+    background: #38bdf8;
+    box-shadow: 0 0 8px #38bdf8;
+}
+
+.timeline-nav-handle.handle-left {
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
+}
+
+.timeline-nav-handle.handle-right {
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
+
+.handle-bar {
+    width: 2px;
+    height: 14px;
+    background: #ffffff;
+    border-radius: 1px;
+    opacity: 0.9;
+}
+
+.timeline-nav-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 6px;
+    font-size: 10.5px;
+    font-family: var(--font-mono);
+    color: var(--text-muted);
+}
+
+.timeline-nav-time {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.timeline-nav-info {
+    color: #cbd5e1;
+    font-size: 11px;
+}
+
+.timeline-nav-info strong {
+    color: #38bdf8;
+    font-weight: 600;
+}
+
+.nav-pt-count {
+    color: var(--color-copper);
+    font-size: 10px;
+    margin-left: 4px;
+}
+
+body.nav-dragging-active,
+body.nav-dragging-active * {
+    user-select: none !important;
+}

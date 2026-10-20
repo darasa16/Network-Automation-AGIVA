@@ -76,22 +76,27 @@ def get_aggregated_chart_history(range_mode='live', session=None):
 
     if range_mode == '1h':
         cutoff = now - timedelta(hours=1)
+        bucket_seconds = 120   # 2 menit data mentah (~30 titik)
     elif range_mode == '12h':
         cutoff = now - timedelta(hours=12)
+        bucket_seconds = 120   # 2 menit data mentah (~360 titik)
     elif range_mode == '24h':
         cutoff = now - timedelta(hours=24)
+        bucket_seconds = 120   # 2 menit data mentah (~720 titik)
     else:  # 'live'
         cutoff = now - timedelta(minutes=24)
+        bucket_seconds = 120   # 2 menit (max 12 titik)
 
     logs = session.query(DeviceStatusLog).filter(
         DeviceStatusLog.timestamp >= cutoff
     ).order_by(DeviceStatusLog.timestamp.asc()).all()
 
+    limit_fallback = 720 if range_mode == '24h' else (360 if range_mode == '12h' else (60 if range_mode == '1h' else 36))
     if len(logs) < 6:
-        # Fallback to latest 36 rows if database has fewer historical rows in cutoff
+        # Fallback to latest rows if database has fewer historical rows in cutoff
         logs = session.query(DeviceStatusLog).order_by(
             DeviceStatusLog.timestamp.desc()
-        ).limit(36).all()
+        ).limit(limit_fallback).all()
         logs.reverse()
 
     if not logs:
@@ -106,10 +111,10 @@ def get_aggregated_chart_history(range_mode='live', session=None):
             "egress": [0.0]
         }
 
-    # Group into 2-minute cycle buckets (120 seconds)
+    # Group into exact 2-minute cycle keys (tanpa perataan waktu multi-siklus)
     buckets = defaultdict(list)
     for l in logs:
-        cycle_key = int(l.timestamp.timestamp()) // 120
+        cycle_key = int(l.timestamp.timestamp()) // bucket_seconds
         buckets[cycle_key].append(l)
 
     labels = []
@@ -120,7 +125,7 @@ def get_aggregated_chart_history(range_mode='live', session=None):
 
     for key in sorted(buckets.keys()):
         cycle_logs = buckets[key]
-        dt = datetime.fromtimestamp(key * 120)
+        dt = datetime.fromtimestamp(key * bucket_seconds)
         if range_mode == '24h':
             lbl = dt.strftime('%d/%m %H:%M') if dt.date() != now.date() else dt.strftime('%H:%M')
         elif range_mode in ['1h', '12h']:
@@ -129,14 +134,18 @@ def get_aggregated_chart_history(range_mode='live', session=None):
             lbl = dt.strftime('%H:%M:%S')
 
         labels.append(lbl)
-        avg_cpu = round(sum(x.cpu_usage for x in cycle_logs) / len(cycle_logs), 1)
-        avg_mem = round(sum(x.mem_usage for x in cycle_logs) / len(cycle_logs), 1)
-        tot_trf = round(sum(x.traffic_mbps for x in cycle_logs), 1)
+        up_logs = [x for x in cycle_logs if x.status == 'UP']
+        avg_cpu = round(sum(x.cpu_usage for x in up_logs) / len(up_logs), 1) if up_logs else 0.0
+        avg_mem = round(sum(x.mem_usage for x in up_logs) / len(up_logs), 1) if up_logs else 0.0
+
+        # Nilai throughput murni siklus 2-menit tersebut (total perangkat)
+        tot_ing = round(sum(x.ingress_mbps or 0.0 for x in cycle_logs), 1)
+        tot_eg = round(sum(x.egress_mbps or 0.0 for x in cycle_logs), 1)
 
         cpu_vals.append(avg_cpu)
         mem_vals.append(avg_mem)
-        ing_vals.append(round(tot_trf * 0.65, 1))
-        eg_vals.append(round(tot_trf * 0.35, 1))
+        ing_vals.append(tot_ing)
+        eg_vals.append(tot_eg)
 
     if range_mode == 'live' and len(labels) > 12:
         labels = labels[-12:]
@@ -734,8 +743,8 @@ def api_status():
     avg_cpu = round(sum(d.cpu_usage for d in online_devs) / len(online_devs), 1) if online_devs else 0
     avg_mem = round(sum(d.mem_usage for d in online_devs) / len(online_devs), 1) if online_devs else 0
     total_trf = round(sum(d.traffic_mbps for d in online_devs), 1)
-    ingress_trf = round(total_trf * 0.65, 1)
-    egress_trf = round(total_trf * 0.35, 1)
+    ingress_trf = round(sum((getattr(d, 'ingress_mbps', None) if getattr(d, 'ingress_mbps', None) is not None and getattr(d, 'ingress_mbps', None) > 0 else (d.traffic_mbps * 0.65)) for d in online_devs), 1)
+    egress_trf = round(sum((getattr(d, 'egress_mbps', None) if getattr(d, 'egress_mbps', None) is not None and getattr(d, 'egress_mbps', None) > 0 else (d.traffic_mbps * 0.35)) for d in online_devs), 1)
 
     devices_data = [d.to_dict() for d in devices]
     alerts_data = [a.to_dict() for a in active_alerts]
@@ -777,51 +786,75 @@ def api_device_metrics(device_id):
 
     if range_mode == '1h':
         cutoff = now - timedelta(hours=1)
+        bucket_seconds = 120   # 2 menit data mentah (~30 titik)
     elif range_mode == '12h':
         cutoff = now - timedelta(hours=12)
+        bucket_seconds = 120   # 2 menit data mentah (~360 titik)
     elif range_mode == '24h':
         cutoff = now - timedelta(hours=24)
+        bucket_seconds = 120   # 2 menit data mentah (~720 titik)
     else:  # 'live'
         cutoff = now - timedelta(minutes=24)
+        bucket_seconds = 120   # 2 menit (max 12 titik)
 
     logs = session.query(DeviceStatusLog).filter(
         DeviceStatusLog.device_id == device_id,
         DeviceStatusLog.timestamp >= cutoff
     ).order_by(DeviceStatusLog.timestamp.asc()).all()
 
+    limit_fallback = 720 if range_mode == '24h' else (360 if range_mode == '12h' else (60 if range_mode == '1h' else 12))
     if len(logs) < 6:
         # Fallback to latest available logs for this device
         logs = session.query(DeviceStatusLog).filter(
             DeviceStatusLog.device_id == device_id
-        ).order_by(DeviceStatusLog.timestamp.desc()).limit(12).all()
+        ).order_by(DeviceStatusLog.timestamp.desc()).limit(limit_fallback).all()
         logs.reverse()
 
     if not logs:
         labels = [now.strftime("%H:%M:%S")]
-        cpu_vals = [round(device.cpu_usage, 1)]
-        mem_vals = [round(device.mem_usage, 1)]
-        trf_vals = [round(device.traffic_mbps, 2)]
+        cpu_vals = [round(device.cpu_usage or 0.0, 1)]
+        mem_vals = [round(device.mem_usage or 0.0, 1)]
+        trf_vals = [round(device.traffic_mbps or 0.0, 2)]
+        trf_in_vals = [round(device.ingress_mbps or 0.0, 2)]
+        trf_out_vals = [round(device.egress_mbps or 0.0, 2)]
     else:
-        if range_mode == 'live' and len(logs) > 12:
-            logs = logs[-12:]
+        # Group into exact 2-minute cycle keys (data mentah asli tanpa perataan)
+        buckets = defaultdict(list)
+        for l in logs:
+            cycle_key = int(l.timestamp.timestamp()) // bucket_seconds
+            buckets[cycle_key].append(l)
+
         labels = []
         cpu_vals = []
         mem_vals = []
         trf_vals = []
-        for l in logs:
+        trf_in_vals = []
+        trf_out_vals = []
+        for key in sorted(buckets.keys()):
+            b_logs = buckets[key]
+            dt = datetime.fromtimestamp(key * bucket_seconds)
             if range_mode == '24h':
-                lbl = l.timestamp.strftime('%d/%m %H:%M') if l.timestamp.date() != now.date() else l.timestamp.strftime('%H:%M')
+                lbl = dt.strftime('%d/%m %H:%M') if dt.date() != now.date() else dt.strftime('%H:%M')
             elif range_mode in ['1h', '12h']:
-                lbl = l.timestamp.strftime('%H:%M')
+                lbl = dt.strftime('%H:%M')
             else:  # live
-                lbl = l.timestamp.strftime('%H:%M:%S')
+                lbl = dt.strftime('%H:%M:%S')
             labels.append(lbl)
-            cpu_vals.append(round(l.cpu_usage, 1))
-            mem_vals.append(round(l.mem_usage, 1))
-            trf_vals.append(round(l.traffic_mbps, 2))
+            # Ambil data mentah riil siklus tersebut
+            b = b_logs[-1]
+            cpu_vals.append(round(b.cpu_usage or 0.0, 1))
+            mem_vals.append(round(b.mem_usage or 0.0, 1))
+            trf_vals.append(round(b.traffic_mbps or 0.0, 2))
+            trf_in_vals.append(round(b.ingress_mbps or 0.0, 2))
+            trf_out_vals.append(round(b.egress_mbps or 0.0, 2))
 
-    trf_in_vals = [round(v * 0.72, 2) for v in trf_vals]
-    trf_out_vals = [round(v * 0.28, 2) for v in trf_vals]
+        if range_mode == 'live' and len(labels) > 12:
+            labels = labels[-12:]
+            cpu_vals = cpu_vals[-12:]
+            mem_vals = mem_vals[-12:]
+            trf_vals = trf_vals[-12:]
+            trf_in_vals = trf_in_vals[-12:]
+            trf_out_vals = trf_out_vals[-12:]
 
     telemetry = get_device_full_telemetry(device)
     res = telemetry.get("resources", {})

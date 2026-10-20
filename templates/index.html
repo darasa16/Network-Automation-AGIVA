@@ -172,6 +172,7 @@
                             <div class="chart-body">
                                 <canvas id="cpuMemChart"></canvas>
                             </div>
+                            <div id="cpuMemTimelineNav" class="timeline-nav-wrapper"></div>
                         </div>
 
                         <!-- Chart 2: Network Traffic (Mbps) -->
@@ -191,6 +192,7 @@
                             <div class="chart-body">
                                 <canvas id="trafficChart"></canvas>
                             </div>
+                            <div id="trafficTimelineNav" class="timeline-nav-wrapper"></div>
                         </div>
                     </div>
 
@@ -365,7 +367,8 @@
         window.INITIAL_CHART_DATA = JSON.parse(document.getElementById('initial-chart-data').textContent || '{}');
     </script>
     <!-- Relative JS -->
-    <script src="/static/js/dashboard.js?v=4.0"></script>
+    <script src="/static/js/timeline_navigator.js?v=1.0"></script>
+    <script src="/static/js/dashboard.js?v=4.2"></script>
     <script src="/static/js/global_nav.js?v=4.1"></script>
 </body>
 

@@ -7,6 +7,9 @@
 
 let cpuMemChart = null;
 let trafficChart = null;
+let cpuMemTimelineNav = null;
+let trafficTimelineNav = null;
+let lastDashboardHistory = null;
 let currentDashboardRange = 'live';
 let isRangeJustChanged = false;
 const MAX_CHART_POINTS = 14;
@@ -113,7 +116,7 @@ function initCharts() {
                     }
                 ]
             },
-            options: getCommonChartOptions(' Mbps', 0, 50)
+            options: getCommonChartOptions(' Mbps', 0, 100)
         });
     }
 
@@ -187,27 +190,102 @@ function initTimeRangeSelector() {
 
 function applyChartHistory(history) {
     if (!history) return;
-    const labels = history.labels || [];
-    const cpuVals = history.cpu || [];
-    const memVals = history.mem || [];
-    const inVals = history.ingress || [];
-    const outVals = history.egress || [];
+    lastDashboardHistory = history;
 
-    // 1. CPU & Memory Chart (Disamakan 100% logikanya dengan device_detail.js)
+    const navCpuEl = document.getElementById('cpuMemTimelineNav');
+    const navTrfEl = document.getElementById('trafficTimelineNav');
+
+    // Jika mode live: sembunyikan navigator, render seluruh data live
+    if (currentDashboardRange === 'live') {
+        if (navCpuEl) navCpuEl.style.display = 'none';
+        if (navTrfEl) navTrfEl.style.display = 'none';
+        renderDashboardChartsSlice(history, 0, (history.labels || []).length - 1);
+        return;
+    }
+
+    // Mode histori: 1h, 12h, 24h -> Inisialisasi Timeline Navigator Slider
+    if (!cpuMemTimelineNav && typeof TimelineNavigator !== 'undefined') {
+        cpuMemTimelineNav = new TimelineNavigator({
+            containerId: 'cpuMemTimelineNav',
+            color: '#06b6d4',
+            secondaryColor: '#f97316',
+            unit: '%',
+            onWindowChange: (startIdx, endIdx) => {
+                if (lastDashboardHistory) {
+                    renderDashboardChartsSlice(lastDashboardHistory, startIdx, endIdx);
+                    // Sinkronisasi dengan slider traffic
+                    if (trafficTimelineNav && !trafficTimelineNav.isDragging) {
+                        trafficTimelineNav.updateWindowDOM(cpuMemTimelineNav.startFrac, cpuMemTimelineNav.endFrac);
+                    }
+                }
+            }
+        });
+    }
+
+    if (!trafficTimelineNav && typeof TimelineNavigator !== 'undefined') {
+        trafficTimelineNav = new TimelineNavigator({
+            containerId: 'trafficTimelineNav',
+            color: '#06b6d4',
+            secondaryColor: '#f97316',
+            unit: ' Mbps',
+            onWindowChange: (startIdx, endIdx) => {
+                if (lastDashboardHistory) {
+                    renderDashboardChartsSlice(lastDashboardHistory, startIdx, endIdx);
+                    // Sinkronisasi dengan slider CPU
+                    if (cpuMemTimelineNav && !cpuMemTimelineNav.isDragging) {
+                        cpuMemTimelineNav.updateWindowDOM(trafficTimelineNav.startFrac, trafficTimelineNav.endFrac);
+                    }
+                }
+            }
+        });
+    }
+
+    if (cpuMemTimelineNav && trafficTimelineNav) {
+        const preserveFractions = (cpuMemTimelineNav.isDragging || (cpuMemTimelineNav.fullLabels && cpuMemTimelineNav.fullLabels.length > 0))
+            ? { start: cpuMemTimelineNav.startFrac, end: cpuMemTimelineNav.endFrac }
+            : null;
+
+        cpuMemTimelineNav.setData(history.labels, history.cpu, history.mem, preserveFractions);
+        trafficTimelineNav.setData(history.labels, history.ingress, history.egress, preserveFractions);
+    } else {
+        renderDashboardChartsSlice(history, 0, (history.labels || []).length - 1);
+    }
+}
+
+function renderDashboardChartsSlice(history, startIdx, endIdx) {
+    const allLabels = history.labels || [];
+    if (allLabels.length === 0) return;
+
+    const s = Math.max(0, startIdx);
+    const e = Math.min(allLabels.length - 1, endIdx);
+
+    const labels = allLabels.slice(s, e + 1);
+    const cpuVals = (history.cpu || []).slice(s, e + 1);
+    const memVals = (history.mem || []).slice(s, e + 1);
+    const inVals = (history.ingress || []).slice(s, e + 1);
+    const outVals = (history.egress || []).slice(s, e + 1);
+
+    const visibleCount = labels.length;
+    // Titik adaptif: saat zoom in <= 45 titik, titik tampil bulat jelas (pointRadius: 3).
+    // Saat rentang penuh lebar > 85 titik, titik dinonaktifkan agar garis tipis dan rapi.
+    const dynamicPointRadius = visibleCount <= 45 ? 3 : (visibleCount <= 85 ? 1.5 : 0);
+    const hoverPointRadius = dynamicPointRadius > 0 ? dynamicPointRadius + 3 : 5;
+
+    // 1. CPU & Memory Chart (Standar Baku 100%, Dinamis jika tembus > 100%)
     if (cpuMemChart) {
         cpuMemChart.data.labels = labels;
         cpuMemChart.data.datasets[0].data = cpuVals;
         cpuMemChart.data.datasets[1].data = memVals;
+        cpuMemChart.data.datasets[0].pointRadius = dynamicPointRadius;
+        cpuMemChart.data.datasets[1].pointRadius = dynamicPointRadius;
+        cpuMemChart.data.datasets[0].pointHoverRadius = hoverPointRadius;
+        cpuMemChart.data.datasets[1].pointHoverRadius = hoverPointRadius;
 
         const allVals = [...cpuVals, ...memVals];
         const maxVal = allVals.length > 0 ? Math.max(...allVals) : 0;
-        let yMaxVal;
-        if (maxVal <= 0) {
-            yMaxVal = 5;
-        } else if (maxVal <= 4) {
-            yMaxVal = 5; // e.g. beban 1% - 2% berskala 0%-5% agar terangkat jelas
-        } else {
-            yMaxVal = Math.max(5, Math.ceil((maxVal * 1.2) / 5) * 5);
+        let yMaxVal = 100;
+        if (maxVal > 100) {
+            yMaxVal = Math.ceil((maxVal * 1.2) / 10) * 10;
         }
 
         if (cpuMemChart.options.scales && cpuMemChart.options.scales.y) {
@@ -217,23 +295,21 @@ function applyChartHistory(history) {
         cpuMemChart.update('none');
     }
 
-    // 2. Network Interface Traffic Chart (Disamakan 100% logikanya dengan device_detail.js)
+    // 2. Network Interface Traffic Chart (Standar Baku 100 Mbps, Dinamis jika tembus > 100 Mbps)
     if (trafficChart) {
         trafficChart.data.labels = labels;
         trafficChart.data.datasets[0].data = inVals;
         trafficChart.data.datasets[1].data = outVals;
+        trafficChart.data.datasets[0].pointRadius = dynamicPointRadius;
+        trafficChart.data.datasets[1].pointRadius = dynamicPointRadius;
+        trafficChart.data.datasets[0].pointHoverRadius = hoverPointRadius;
+        trafficChart.data.datasets[1].pointHoverRadius = hoverPointRadius;
 
         const allTraffic = [...inVals, ...outVals];
         const maxTrf = allTraffic.length > 0 ? Math.max(...allTraffic) : 0;
-        let dynamicTrfMax;
-        if (maxTrf <= 0) {
-            dynamicTrfMax = 10;
-        } else if (maxTrf <= 10) {
-            dynamicTrfMax = 15;
-        } else if (maxTrf <= 30) {
-            dynamicTrfMax = 40;
-        } else {
-            dynamicTrfMax = Math.max(20, Math.ceil((maxTrf * 1.25) / 10) * 10);
+        let dynamicTrfMax = 100;
+        if (maxTrf > 100) {
+            dynamicTrfMax = Math.ceil((maxTrf * 1.25) / 10) * 10;
         }
 
         if (trafficChart.options.scales && trafficChart.options.scales.y) {
@@ -305,8 +381,8 @@ function pushChartData(chart, label, values) {
 
     if (chart.options.scales && chart.options.scales.y && chart === cpuMemChart) {
         const allVals = chart.data.datasets.flatMap(ds => ds.data);
-        const maxV = allVals.length > 0 ? Math.max(...allVals) : 10;
-        const dynamicMax = maxV <= 4 ? 5 : Math.max(5, Math.ceil((maxV * 1.2) / 5) * 5);
+        const maxV = allVals.length > 0 ? Math.max(...allVals) : 0;
+        const dynamicMax = maxV > 100 ? Math.ceil((maxV * 1.2) / 10) * 10 : 100;
         chart.options.scales.y.max = dynamicMax;
         chart.options.scales.y.suggestedMax = dynamicMax;
     }

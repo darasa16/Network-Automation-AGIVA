@@ -18,6 +18,8 @@ class Device(Base):
     cpu_usage = Column(Float, default=0.0)
     mem_usage = Column(Float, default=0.0)
     traffic_mbps = Column(Float, default=0.0)
+    ingress_mbps = Column(Float, default=0.0)
+    egress_mbps = Column(Float, default=0.0)
     uptime = Column(String(100), default='Unknown')
     credential_ref = Column(String(100), default='env_vault')
     last_polled = Column(DateTime, default=datetime.now)
@@ -35,9 +37,11 @@ class Device(Base):
             "vendor": self.vendor,
             "site": self.site,
             "status": self.status,
-            "cpu": round(self.cpu_usage, 1),
-            "mem": round(self.mem_usage, 1),
-            "traffic": round(self.traffic_mbps, 1),
+            "cpu": round(self.cpu_usage or 0.0, 1),
+            "mem": round(self.mem_usage or 0.0, 1),
+            "traffic": round(self.traffic_mbps or 0.0, 1),
+            "ingress": round(self.ingress_mbps or 0.0, 1),
+            "egress": round(self.egress_mbps or 0.0, 1),
             "uptime": self.uptime,
             "last_polled": self.last_polled.strftime("%H:%M:%S") if self.last_polled else "-"
         }
@@ -54,6 +58,8 @@ class DeviceStatusLog(Base):
     cpu_usage = Column(Float, default=0.0)
     mem_usage = Column(Float, default=0.0)
     traffic_mbps = Column(Float, default=0.0)
+    ingress_mbps = Column(Float, default=0.0)
+    egress_mbps = Column(Float, default=0.0)
 
     device = relationship("Device", back_populates="logs")
 
