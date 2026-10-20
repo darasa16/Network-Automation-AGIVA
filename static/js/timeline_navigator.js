@@ -50,20 +50,6 @@ class TimelineNavigator {
 
         this.container.classList.add('timeline-nav-wrapper');
         this.container.innerHTML = `
-            <div class="timeline-nav-header">
-                <span class="timeline-nav-title">
-                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" style="display:inline-block; vertical-align:middle; margin-right:4px;">
-                        <circle cx="11" cy="11" r="8"></circle>
-                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                    </svg>
-                    Timeline Navigator (Mini-Map Riil)
-                </span>
-                <div class="timeline-nav-quick-actions">
-                    <button type="button" class="nav-zoom-btn btn-zoom-all" title="Tampilkan seluruh rentang 100%">100%</button>
-                    <button type="button" class="nav-zoom-btn btn-zoom-50" title="Zoom 50% rentang">50%</button>
-                    <button type="button" class="nav-zoom-btn btn-zoom-25" title="Fokus 25% rentang">25%</button>
-                </div>
-            </div>
             <div class="timeline-nav-track">
                 <canvas class="timeline-nav-canvas"></canvas>
                 <div class="timeline-nav-curtain curtain-left"></div>
@@ -80,7 +66,6 @@ class TimelineNavigator {
             </div>
             <div class="timeline-nav-footer">
                 <span class="timeline-nav-time label-start">--:--</span>
-                <span class="timeline-nav-info label-info">Geser slider untuk zoom detail kejadian mentah</span>
                 <span class="timeline-nav-time label-end">--:--</span>
             </div>
         `;
@@ -95,17 +80,7 @@ class TimelineNavigator {
         this.handleRight = this.container.querySelector('.handle-right');
 
         this.labelStart = this.container.querySelector('.label-start');
-        this.labelInfo = this.container.querySelector('.label-info');
         this.labelEnd = this.container.querySelector('.label-end');
-
-        // Quick zoom buttons
-        const btnAll = this.container.querySelector('.btn-zoom-all');
-        const btn50 = this.container.querySelector('.btn-zoom-50');
-        const btn25 = this.container.querySelector('.btn-zoom-25');
-
-        if (btnAll) btnAll.addEventListener('click', () => this.setWindow(0, 1));
-        if (btn50) btn50.addEventListener('click', () => this.setWindow(Math.max(0, this.endFrac - 0.5), this.endFrac));
-        if (btn25) btn25.addEventListener('click', () => this.setWindow(Math.max(0, this.endFrac - 0.25), this.endFrac));
     }
 
     bindEvents() {
@@ -273,11 +248,6 @@ class TimelineNavigator {
 
             if (this.labelStart) this.labelStart.textContent = this.fullLabels[0] || '';
             if (this.labelEnd) this.labelEnd.textContent = this.fullLabels[total - 1] || '';
-            if (this.labelInfo) {
-                const startLbl = this.fullLabels[startIdx];
-                const endLbl = this.fullLabels[endIdx];
-                this.labelInfo.innerHTML = `Menampilkan: <strong>${startLbl} – ${endLbl}</strong> <span class="nav-pt-count">(${count} titik mentah)</span>`;
-            }
         }
     }
 

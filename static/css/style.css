@@ -2228,8 +2228,8 @@ code {
 .timeline-nav-wrapper {
     display: none;
     flex-direction: column;
-    margin-top: 14px;
-    padding: 10px 12px;
+    margin-top: 8px;
+    padding: 6px 10px;
     background: rgba(18, 14, 34, 0.85);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: var(--radius-md);
@@ -2239,50 +2239,10 @@ code {
     backdrop-filter: blur(8px);
 }
 
-.timeline-nav-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 6px;
-}
-
-.timeline-nav-title {
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: var(--text-muted);
-    display: flex;
-    align-items: center;
-}
-
-.timeline-nav-quick-actions {
-    display: flex;
-    gap: 4px;
-}
-
-.nav-zoom-btn {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: var(--text-secondary);
-    font-size: 10px;
-    font-weight: 600;
-    padding: 2px 7px;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.15s ease;
-}
-
-.nav-zoom-btn:hover {
-    background: rgba(232, 165, 118, 0.2);
-    color: #ffffff;
-    border-color: rgba(232, 165, 118, 0.4);
-}
-
 .timeline-nav-track {
     position: relative;
     width: 100%;
-    height: 34px;
+    height: 32px;
     background: rgba(10, 8, 20, 0.85);
     border: 1px solid rgba(255, 255, 255, 0.05);
     border-radius: 6px;
@@ -2385,7 +2345,7 @@ code {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 6px;
+    margin-top: 5px;
     font-size: 10.5px;
     font-family: var(--font-mono);
     color: var(--text-muted);
@@ -2394,22 +2354,6 @@ code {
 .timeline-nav-time {
     color: var(--text-secondary);
     font-weight: 500;
-}
-
-.timeline-nav-info {
-    color: #cbd5e1;
-    font-size: 11px;
-}
-
-.timeline-nav-info strong {
-    color: #38bdf8;
-    font-weight: 600;
-}
-
-.nav-pt-count {
-    color: var(--color-copper);
-    font-size: 10px;
-    margin-left: 4px;
 }
 
 body.nav-dragging-active,
