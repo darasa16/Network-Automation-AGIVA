@@ -22,6 +22,9 @@ logger = logging.getLogger("DataCollector")
 
 load_dotenv()
 
+# Cache counter byte fisik Palo Alto untuk menghitung laju throughput Mbps riil
+_PA_PREV_COUNTERS = {}
+
 # ==========================================
 # 1. load_inventory()
 # ==========================================
@@ -133,8 +136,8 @@ def poll_device(device):
                 metrics["mem"] = 50.0
 
             # Real interface rate (Rx = Ingress, Tx = Egress)
-            in_match = re.search(r'input rate\s+(\d+)\s+bits/sec', output)
-            out_match = re.search(r'output rate\s+(\d+)\s+bits/sec', output)
+            in_match = re.search(r'input rate:?\s*(\d+)\s+bits/sec', output, re.IGNORECASE)
+            out_match = re.search(r'output rate:?\s*(\d+)\s+bits/sec', output, re.IGNORECASE)
             if in_match and out_match:
                 rx_bps = float(in_match.group(1))
                 tx_bps = float(out_match.group(1))
@@ -142,32 +145,85 @@ def poll_device(device):
                 metrics["egress"] = round(tx_bps / 1000000, 2)
                 metrics["traffic"] = round(metrics["ingress"] + metrics["egress"], 2)
             else:
-                metrics["ingress"] = 8.43
-                metrics["egress"] = 6.38
-                metrics["traffic"] = 14.81
+                metrics["ingress"] = 0.0
+                metrics["egress"] = 0.0
+                metrics["traffic"] = 0.0
 
         elif vendor_clean in ['aruba', 'hpe', 'hp', 'ruijie']:
-            # KONEKSI REST API ARUBA 2930F
-            resp = requests.get(f"http://{device.ip_address}/rest/v4/system/status", timeout=5)
-            if resp.status_code == 200:
-                metrics["status"] = "UP"
-                metrics["uptime"] = "Online (Aruba Central)"
-                metrics["cpu"] = 1.0
-                metrics["mem"] = 36.0
+            # KONEKSI ARUBA 2930F (REAL DYNAMIC METRICS: SSH NETMIKO + REST API)
+            # 1. Metrik Hardware Riil via SSH CLI (CPU, Memory, Uptime)
+            ssh_success = False
+            # Coba password kosong terlebih dahulu (switch Aruba 2930F tanpa password SSH), fallback ke env password
+            pw_candidates = ["", password] if password else [""]
 
+            for pw in pw_candidates:
                 try:
-                    p_resp = requests.get(f"http://{device.ip_address}/rest/v4/port-statistics/1", timeout=3)
-                    if p_resp.status_code == 200:
-                        p_data = p_resp.json()
-                        tx = float(p_data.get('throughput_tx_bps', 0))
-                        rx = float(p_data.get('throughput_rx_bps', 0))
-                        metrics["ingress"] = round(rx / 1000000, 2)  # Rx = Ingress
-                        metrics["egress"] = round(tx / 1000000, 2)   # Tx = Egress
-                        metrics["traffic"] = round(metrics["ingress"] + metrics["egress"], 2)
+                    aruba_ssh = {
+                        'device_type': 'aruba_osswitch',
+                        'host': device.ip_address,
+                        'username': username,
+                        'password': pw,
+                        'timeout': 5,
+                        'fast_cli': False
+                    }
+                    with ConnectHandler(**aruba_ssh) as net_connect:
+                        sys_out = net_connect.send_command('show system')
+                        metrics["status"] = "UP"
+
+                        # Dynamic CPU Util (%)
+                        cpu_match = re.search(r'CPU Util \(%\)\s*:\s*(\d+)', sys_out)
+                        if cpu_match:
+                            metrics["cpu"] = float(cpu_match.group(1))
+                        else:
+                            cpu_out = net_connect.send_command('show cpu')
+                            c1_match = re.search(r'(\d+)\s+percent busy', cpu_out) or re.search(r'1 sec ave:\s*(\d+)\s+percent', cpu_out)
+                            if c1_match:
+                                metrics["cpu"] = float(c1_match.group(1))
+
+                        # Dynamic Memory Util (%)
+                        mem_tot_m = re.search(r'Memory\s*-\s*Total\s*:\s*([\d,]+)', sys_out)
+                        mem_free_m = re.search(r'Free\s*:\s*([\d,]+)', sys_out)
+                        if mem_tot_m and mem_free_m:
+                            total_bytes = int(mem_tot_m.group(1).replace(',', ''))
+                            free_bytes = int(mem_free_m.group(1).replace(',', ''))
+                            if total_bytes > 0:
+                                used_bytes = total_bytes - free_bytes
+                                metrics["mem"] = round((used_bytes / total_bytes) * 100, 1)
+
+                        # Dynamic Uptime
+                        up_m = re.search(r'Up Time\s*:\s*([^\n\r]+?)(?=\s{2,}|\n|\r|$)', sys_out)
+                        if up_m:
+                            metrics["uptime"] = up_m.group(1).strip()
+
+                        ssh_success = True
+                        break
+                except Exception as e:
+                    logger.debug(f"Percobaan SSH Aruba ({device.ip_address}) gagal: {e}")
+                    continue
+
+            # Fallback reachability via REST API jika SSH tidak merespons
+            if not ssh_success:
+                try:
+                    resp = requests.get(f"http://{device.ip_address}/rest/v4/system/status", timeout=3)
+                    if resp.status_code == 200:
+                        metrics["status"] = "UP"
+                        metrics["uptime"] = "Online (Aruba REST)"
                 except Exception:
-                    metrics["ingress"] = 23.27
-                    metrics["egress"] = 12.53
-                    metrics["traffic"] = 35.8
+                    pass
+
+            # 2. Metrik Real Throughput (Port 1 Uplink to FW-PA220-1) via REST API
+            try:
+                p_resp = requests.get(f"http://{device.ip_address}/rest/v4/port-statistics/1", timeout=3)
+                if p_resp.status_code == 200:
+                    metrics["status"] = "UP"
+                    p_data = p_resp.json()
+                    tx = float(p_data.get('throughput_tx_bps', 0))
+                    rx = float(p_data.get('throughput_rx_bps', 0))
+                    metrics["ingress"] = round(rx / 1000000, 2)  # Rx = Ingress
+                    metrics["egress"] = round(tx / 1000000, 2)   # Tx = Egress
+                    metrics["traffic"] = round(metrics["ingress"] + metrics["egress"], 2)
+            except Exception as e:
+                logger.warning(f"Gagal mengambil port-statistics Aruba via REST: {e}")
 
         elif any(k in vendor_clean for k in ['palo', 'pan']) or '11' in device.ip_address:
             # KONEKSI PAN-OS XML API PALO ALTO PA-220
@@ -200,27 +256,47 @@ def poll_device(device):
                         metrics["cpu"] = 32.5
                         metrics["mem"] = 60.5
 
-                    # 3. Interface & Session Info (Traffic throughput Ingress & Egress)
+                    # 3. Metrik Traffic Riil Port Fisik ethernet1/2 (Uplink LAN ke SW-2930F-HO Port 1)
                     try:
-                        r_if = requests.get(f"https://{device.ip_address}/api/?type=op&cmd=<show><interface>ethernet1/1</interface></show>&key={api_key}", verify=False, timeout=4)
+                        r_if = requests.get(f"https://{device.ip_address}/api/?type=op&cmd=<show><interface>ethernet1/2</interface></show>&key={api_key}", verify=False, timeout=4)
                         if r_if.status_code == 200:
-                            m_ibps = re.search(r'<ibps>(\d+)</ibps>', r_if.text)
-                            m_obps = re.search(r'<obps>(\d+)</obps>', r_if.text)
-                            if m_ibps and m_obps:
-                                metrics["ingress"] = round(float(m_ibps.group(1)) / 1000000, 2)
-                                metrics["egress"] = round(float(m_obps.group(1)) / 1000000, 2)
-                                metrics["traffic"] = round(metrics["ingress"] + metrics["egress"], 2)
-                        if metrics["traffic"] == 0.0:
-                            r_sess = requests.get(f"https://{device.ip_address}/api/?type=op&cmd=<show><session><info></info></session></show>&key={api_key}", verify=False, timeout=4)
-                            if r_sess.status_code == 200:
-                                m_kbps = re.search(r'<kbps>(\d+)</kbps>', r_sess.text)
-                                if m_kbps:
-                                    tot = round(float(m_kbps.group(1)) / 1000, 2)
-                                    metrics["traffic"] = tot
-                                    metrics["ingress"] = round(tot * 0.65, 2)
-                                    metrics["egress"] = round(tot * 0.35, 2)
-                    except Exception:
-                        pass
+                            m_ibytes = re.search(r'<ibytes>(\d+)</ibytes>', r_if.text) or re.search(r'<rx-bytes>(\d+)</rx-bytes>', r_if.text)
+                            m_obytes = re.search(r'<obytes>(\d+)</obytes>', r_if.text) or re.search(r'<tx-bytes>(\d+)</tx-bytes>', r_if.text)
+                            if m_ibytes and m_obytes:
+                                curr_rx = int(m_ibytes.group(1))
+                                curr_tx = int(m_obytes.group(1))
+                                now_ts = time.time()
+                                dev_key = device.device_id
+
+                                if dev_key in _PA_PREV_COUNTERS:
+                                    prev_ts, prev_rx, prev_tx = _PA_PREV_COUNTERS[dev_key]
+                                    dt = now_ts - prev_ts
+                                    if dt > 0 and curr_rx >= prev_rx and curr_tx >= prev_tx:
+                                        rx_bps = ((curr_rx - prev_rx) * 8) / dt
+                                        tx_bps = ((curr_tx - prev_tx) * 8) / dt
+                                        metrics["ingress"] = round(rx_bps / 1000000, 2)
+                                        metrics["egress"] = round(tx_bps / 1000000, 2)
+                                        metrics["traffic"] = round(metrics["ingress"] + metrics["egress"], 2)
+                                    _PA_PREV_COUNTERS[dev_key] = (now_ts, curr_rx, curr_tx)
+                                else:
+                                    # Pengambilan awal: ukur delta singkat 1.5 detik agar langsung dapat angka riil
+                                    time.sleep(1.5)
+                                    r_if2 = requests.get(f"https://{device.ip_address}/api/?type=op&cmd=<show><interface>ethernet1/2</interface></show>&key={api_key}", verify=False, timeout=4)
+                                    m_ib2 = re.search(r'<ibytes>(\d+)</ibytes>', r_if2.text) or re.search(r'<rx-bytes>(\d+)</rx-bytes>', r_if2.text)
+                                    m_ob2 = re.search(r'<obytes>(\d+)</obytes>', r_if2.text) or re.search(r'<tx-bytes>(\d+)</tx-bytes>', r_if2.text)
+                                    if m_ib2 and m_ob2:
+                                        curr_rx2 = int(m_ib2.group(1))
+                                        curr_tx2 = int(m_ob2.group(1))
+                                        dt = time.time() - now_ts
+                                        if dt > 0:
+                                            metrics["ingress"] = round((((curr_rx2 - curr_rx) * 8) / dt) / 1000000, 2)
+                                            metrics["egress"] = round((((curr_tx2 - curr_tx) * 8) / dt) / 1000000, 2)
+                                            metrics["traffic"] = round(metrics["ingress"] + metrics["egress"], 2)
+                                        _PA_PREV_COUNTERS[dev_key] = (time.time(), curr_rx2, curr_tx2)
+                                    else:
+                                        _PA_PREV_COUNTERS[dev_key] = (now_ts, curr_rx, curr_tx)
+                    except Exception as e:
+                        logger.warning(f"Gagal mengambil traffic ethernet1/2 Palo Alto: {e}")
                 else:
                     metrics["status"] = "DOWN"
             except Exception:
@@ -397,6 +473,9 @@ def start_scheduler():
     
     # Jalankan pemeriksaan awal retensi data saat collector pertama kali start
     cleanup_old_device_logs()
+    
+    # Langsung jalankan 1 siklus polling awal agar metrik riil terisi seketika tanpa harus menunggu 2 menit
+    run_polling_cycle()
     
     logger.info("Scheduler berjalan. Menunggu jadwal polling (tiap 2 mnt) & housekeeping (tiap 00:00)...")
     try:

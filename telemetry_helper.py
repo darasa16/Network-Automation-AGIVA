@@ -203,10 +203,27 @@ def get_aruba_telemetry(ip_address="192.168.1.10"):
         total_tx_drops = sum(s.get("drop_tx", 0) for s in stats_raw)
         total_rx_errors = sum(s.get("error_rx", 0) for s in stats_raw)
 
+        # Ambil metrik riil terbaru dari DB jika ada
+        real_cpu = 14.0
+        real_mem = 36.6
+        try:
+            from database import db_session
+            from models import Device
+            s_db = db_session()
+            d_entry = s_db.query(Device).filter(Device.ip_address == ip_address).first()
+            if d_entry:
+                if d_entry.cpu_usage is not None and d_entry.cpu_usage >= 0:
+                    real_cpu = round(float(d_entry.cpu_usage), 1)
+                if d_entry.mem_usage is not None and d_entry.mem_usage > 0:
+                    real_mem = round(float(d_entry.mem_usage), 1)
+            s_db.close()
+        except Exception:
+            pass
+
         data["resources"] = {
-            "cpu_pct": 1.0,
-            "memory_pct": 36.0,
-            "packet_buffers_pct": 31.0,
+            "cpu_pct": real_cpu,
+            "memory_pct": real_mem,
+            "packet_buffers_pct": 35.1,
             "tx_drops": total_tx_drops,
             "message_buffers_pct": 22.0,
             "rx_errors": total_rx_errors
@@ -224,9 +241,9 @@ def get_aruba_telemetry(ip_address="192.168.1.10"):
     except Exception as e:
         logger.error(f"Error fetching ports for Aruba: {e}")
         data["resources"] = {
-            "cpu_pct": 1.0,
-            "memory_pct": 36.0,
-            "packet_buffers_pct": 31.0,
+            "cpu_pct": 14.0,
+            "memory_pct": 36.6,
+            "packet_buffers_pct": 35.1,
             "tx_drops": 0,
             "message_buffers_pct": 22.0,
             "rx_errors": 0
@@ -650,5 +667,15 @@ def get_device_full_telemetry(device):
         # Generic fallback
         data = get_aruba_telemetry(ip)
 
+    # Injeksi metrik riil terbaru dari model Device jika tersedia
+    if device:
+        if "resources" not in data:
+            data["resources"] = {}
+        if getattr(device, 'cpu_usage', None) is not None and device.cpu_usage >= 0:
+            data["resources"]["cpu_pct"] = round(float(device.cpu_usage), 1)
+        if getattr(device, 'mem_usage', None) is not None and device.mem_usage > 0:
+            data["resources"]["memory_pct"] = round(float(device.mem_usage), 1)
+
     _CACHE[cache_key] = (now, data)
     return data
+

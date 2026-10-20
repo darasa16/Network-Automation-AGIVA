@@ -142,7 +142,7 @@
                             <span class="time-range-label">Rentang:</span>
                             <button class="time-range-btn active" data-range="live"
                                 title="Real-time live stream sinkron database per 2 menit">
-                                <span class="live-dot"></span> Live (2m)
+                                <span class="live-dot"></span> Live
                             </button>
                             <button class="time-range-btn" data-range="1h"
                                 title="Riwayat tren 1 jam kebelakang (tiap 2 menit)">1 Jam</button>
@@ -180,7 +180,7 @@
                             <div class="panel-header">
                                 <div>
                                     <h3 class="panel-title">Network Interface Traffic (Mbps)</h3>
-                                    <span class="panel-sub">Rata-rata throughput perangkat aktif</span>
+                                    <span class="panel-sub">Total throughput perangkat aktif</span>
                                 </div>
                                 <div class="chart-legend-custom">
                                     <span class="legend-tag tag-traffic"><span class="legend-color bg-cyan"></span>
@@ -254,16 +254,14 @@
                                                 <div class="mini-bar-row">
                                                     <span class="mini-lbl">C:</span>
                                                     <div class="progress-bar-bg">
-                                                        <div class="progress-bar-fill fill-cpu" {{
-                                                            ('style="width: ' ~ dev.cpu ~ '%;"') | safe }}></div>
+                                                        <div class="progress-bar-fill fill-cpu" {{ ('style="width: ' ~ dev.cpu ~ '%;"') | safe }}></div>
                                                     </div>
                                                     <span class="mini-val">{{ dev.cpu }}%</span>
                                                 </div>
                                                 <div class="mini-bar-row">
                                                     <span class="mini-lbl">M:</span>
                                                     <div class="progress-bar-bg">
-                                                        <div class="progress-bar-fill fill-mem" {{ ('
-                                                            style="width: ' ~ dev.mem ~ '%;"') | safe }}></div>
+                                                        <div class="progress-bar-fill fill-mem" {{ ('style="width: ' ~ dev.mem ~ '%;"') | safe }}></div>
                                                     </div>
                                                     <span class="mini-val">{{ dev.mem }}%</span>
                                                 </div>
