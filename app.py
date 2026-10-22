@@ -862,11 +862,13 @@ def api_device_metrics(device_id):
     mb_base = float(res.get("message_buffers_pct", 22.0))
     td_val = int(res.get("tx_drops", 0))
     re_val = int(res.get("rx_errors", 0))
+    te_val = int(res.get("tx_errors", 0))
 
     packet_buffers_vals = [pb_base for _ in labels]
     tx_drops_vals = [td_val for _ in labels]
     message_buffers_vals = [mb_base for _ in labels]
     rx_errors_vals = [re_val for _ in labels]
+    tx_errors_vals = [te_val for _ in labels]
 
     result = {
         "device_id": device_id,
@@ -883,6 +885,7 @@ def api_device_metrics(device_id):
         "current_tx_drops": td_val,
         "current_message_buffers": mb_base,
         "current_rx_errors": re_val,
+        "current_tx_errors": te_val,
         "labels": labels,
         "cpu": cpu_vals,
         "memory": mem_vals,
@@ -893,6 +896,7 @@ def api_device_metrics(device_id):
         "tx_drops": tx_drops_vals,
         "message_buffers": message_buffers_vals,
         "rx_errors": rx_errors_vals,
+        "tx_errors": tx_errors_vals,
         "resources": res,
         "specs": telemetry.get("hardware", {}),
         "vlans": telemetry.get("vlans", []),

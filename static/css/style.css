@@ -918,6 +918,12 @@ tr.search-target-highlight td:first-child {
     position: relative;
 }
 
+.device-chart-body {
+    height: 140px;
+    position: relative;
+    width: 100%;
+}
+
 /* --------------------------------------------------------------------------
    Table Panel (Monitored Devices & Backups)
    -------------------------------------------------------------------------- */
@@ -1727,26 +1733,109 @@ code {
 /* --------------------------------------------------------------------------
    Resource Utilization Graphs (Aruba 6-Metric Monitor)
    -------------------------------------------------------------------------- */
+/* Aruba Central Inspired Telemetry Architecture */
 .resource-graphs-section {
     display: flex;
     flex-direction: column;
     gap: 16px;
 }
 
-.resource-graphs-grid {
+.aruba-section-block {
+    background: rgba(15, 23, 42, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: var(--radius-xl);
+    padding: 16px 18px 18px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.aruba-header-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.aruba-title-group {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.aruba-badge-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 2px;
+}
+
+.aruba-section-tag {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: #38bdf8;
+    background: rgba(56, 189, 248, 0.12);
+    border: 1px solid rgba(56, 189, 248, 0.25);
+    padding: 2px 7px;
+    border-radius: 4px;
+}
+
+.aruba-section-tag.tag-diagnostics {
+    color: #f97316;
+    background: rgba(249, 115, 22, 0.12);
+    border-color: rgba(249, 115, 22, 0.25);
+}
+
+.aruba-scope-badge {
+    font-size: 10px;
+    font-weight: 600;
+    color: #94a3b8;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 2px 7px;
+    border-radius: 4px;
+}
+
+.aruba-duo-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 16px;
 }
 
-@media (max-width: 1100px) {
-    .resource-graphs-grid {
+@media (max-width: 960px) {
+    .aruba-duo-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.aruba-grid-4 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+}
+
+@media (max-width: 1200px) {
+    .aruba-grid-4 {
         grid-template-columns: repeat(2, 1fr);
     }
 }
 
-@media (max-width: 700px) {
-    .resource-graphs-grid {
+@media (max-width: 640px) {
+    .aruba-grid-4 {
+        grid-template-columns: 1fr;
+    }
+}
+
+.aruba-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+}
+
+@media (max-width: 960px) {
+    .aruba-grid-3 {
         grid-template-columns: 1fr;
     }
 }
@@ -1758,9 +1847,17 @@ code {
     padding: 16px 18px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
     position: relative;
     overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.resource-card:hover {
+    border-color: var(--border-color-light);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    transform: translateY(-2px);
 }
 
 .resource-card-header {
@@ -1772,78 +1869,209 @@ code {
 .resource-card-title {
     font-size: 13px;
     font-weight: 700;
-    color: #e2e8f0;
+    color: var(--text-primary);
     display: flex;
     align-items: center;
     gap: 6px;
+    letter-spacing: 0.1px;
+}
+
+.aruba-health-pill {
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    text-transform: uppercase;
+}
+
+.pill-healthy {
+    background: rgba(8, 197, 143, 0.15);
+    color: var(--color-green);
+    border: 1px solid rgba(8, 197, 143, 0.3);
+}
+
+.pill-optimal {
+    background: rgba(6, 182, 212, 0.15);
+    color: #06b6d4;
+    border: 1px solid rgba(6, 182, 212, 0.3);
+}
+
+.aruba-port-hint {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.04);
 }
 
 .resource-card-stat {
     display: flex;
     align-items: baseline;
     justify-content: space-between;
+    gap: 8px;
 }
 
 .resource-card-val {
-    font-size: 20px;
+    font-size: 21px;
     font-weight: 800;
     font-family: var(--font-mono);
+    letter-spacing: -0.5px;
+    color: #ffffff;
 }
 
-#valCpu {
-    color: #10b981 !important;
+.resource-sub-meta {
+    font-size: 11px;
+    color: #8b85a6;
+    font-weight: 500;
+    white-space: nowrap;
 }
 
-#valMemory {
-    color: #f59e0b !important;
+/* --------------------------------------------------------------------------
+   Model Hybrid Layout: Circular Gauge (Left) + Trend Sparkline (Right)
+   -------------------------------------------------------------------------- */
+.hybrid-card-body {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex: 1;
+    min-height: 88px;
 }
 
-#valPacketBuffers {
+.gauge-wrapper {
+    width: 86px;
+    height: 86px;
+    position: relative;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.gauge-wrapper canvas {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+.gauge-center-text {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    text-align: center;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.gauge-val {
+    font-size: 15px;
+    font-weight: 800;
+    font-family: var(--font-mono);
+    color: #ffffff;
+    line-height: 1.1;
+    letter-spacing: -0.5px;
+}
+
+.gauge-label {
+    font-size: 8px;
+    font-weight: 700;
+    color: var(--text-muted);
+    letter-spacing: 0.6px;
+    margin-top: 2px;
+    text-transform: uppercase;
+}
+
+.hybrid-sparkline-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    height: 86px;
+    justify-content: space-between;
+}
+
+.sparkline-header-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 10.5px;
+    margin-bottom: 2px;
+}
+
+.meta-label {
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.meta-sub {
+    color: var(--text-secondary);
+    font-family: var(--font-mono);
+    font-weight: 600;
+}
+
+.sparkline-canvas-box {
+    flex: 1;
+    width: 100%;
+    position: relative;
+    height: 64px;
+}
+
+/* --------------------------------------------------------------------------
+   AGIVA Official Color Palette Accents
+   -------------------------------------------------------------------------- */
+.text-cyan {
     color: #06b6d4 !important;
 }
 
-#valTxDrops {
-    color: #f43f5e !important;
+.text-copper {
+    color: var(--color-copper) !important;
 }
 
-#valMessageBuffers {
-    color: #a855f7 !important;
+.text-white {
+    color: #ffffff !important;
 }
 
-#valRxErrors {
-    color: #f97316 !important;
+.text-green {
+    color: var(--color-green) !important;
 }
 
-.resource-card-badge {
-    font-size: 11px;
+.text-red {
+    color: var(--color-red) !important;
+}
+
+.text-slate {
+    color: var(--text-muted) !important;
+}
+
+/* Mini custom legend for twin throughput card */
+.chart-legend-custom-mini {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.legend-tag.tag-traffic {
+    font-size: 10px;
     font-weight: 600;
-    padding: 2px 8px;
-    border-radius: var(--radius-pill);
-    font-family: var(--font-sans);
+    color: var(--text-secondary);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(255, 255, 255, 0.04);
+    padding: 2px 7px;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+    font-family: var(--font-mono);
 }
 
-.badge-res-green {
-    background: rgba(16, 185, 129, 0.15);
-    color: #34d399;
-    border: 1px solid rgba(16, 185, 129, 0.3);
-}
-
-.badge-res-amber {
-    background: rgba(245, 158, 11, 0.15);
-    color: #fbbf24;
-    border: 1px solid rgba(245, 158, 11, 0.3);
-}
-
-.badge-res-cyan {
-    background: rgba(6, 182, 212, 0.15);
-    color: #22d3ee;
-    border: 1px solid rgba(6, 182, 212, 0.3);
-}
-
-.badge-res-purple {
-    background: rgba(168, 85, 247, 0.15);
-    color: #c084fc;
-    border: 1px solid rgba(168, 85, 247, 0.3);
+.legend-color {
+    width: 7px;
+    height: 7px;
+    border-radius: 2px;
+    display: inline-block;
 }
 
 .resource-chart-canvas-wrapper {
@@ -2359,4 +2587,77 @@ code {
 body.nav-dragging-active,
 body.nav-dragging-active * {
     user-select: none !important;
+}
+
+/* --------------------------------------------------------------------------
+   Hardware Buffer Radial Ring Gauge Styles
+   -------------------------------------------------------------------------- */
+.buffer-gauges-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    height: 140px;
+    padding: 6px 16px;
+    position: relative;
+    width: 100%;
+}
+
+.buffer-gauge-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    flex: 1;
+}
+
+.gauge-canvas-wrapper {
+    position: relative;
+    width: 104px;
+    height: 104px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.gauge-center-info {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    pointer-events: none;
+}
+
+.gauge-value {
+    font-size: 16px;
+    font-weight: 700;
+    color: #f8fafc;
+    font-family: var(--font-mono, monospace);
+    line-height: 1.1;
+}
+
+.gauge-sub {
+    font-size: 9px;
+    color: var(--text-muted, #94a3b8);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 2px;
+}
+
+.gauge-card-title {
+    font-size: 11px;
+    font-weight: 600;
+    margin-top: 2px;
+    letter-spacing: 0.3px;
+}
+
+.buffer-gauge-divider {
+    width: 1px;
+    height: 64px;
+    background: rgba(255, 255, 255, 0.08);
 }

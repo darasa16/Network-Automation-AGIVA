@@ -14,7 +14,7 @@
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
     <!-- Relative CSS -->
-    <link rel="stylesheet" href="/static/css/style.css?v=8.1">
+    <link rel="stylesheet" href="/static/css/style.css?v=10.0">
 </head>
 
 <body>
@@ -230,11 +230,12 @@
             {% endif %}
 
             <!-- Switch Resource Utilization Graphs (6 Metrics matching Aruba 2930F Web GUI) -->
+            <!-- Aruba Central Inspired Resource Telemetry (2-by-2 Duo Grid) -->
+            <!-- Performa & Diagnostik Switch (Persis Format index.html) -->
             <div class="resource-graphs-section">
-                <div class="panel-header"
-                    style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
-                    <div>
-                        <h3 class="panel-title">Grafik Pemantauan Sumber Daya Switch</h3>
+                <div class="charts-header-bar">
+                    <div class="charts-header-info">
+                        <span class="charts-header-badge">Performa &amp; Diagnostik Switch</span>
                     </div>
                     <div class="time-range-selector" id="deviceTimeRange">
                         <span class="time-range-label">Rentang:</span>
@@ -251,123 +252,96 @@
                     </div>
                 </div>
 
-                <div class="resource-graphs-grid">
-                    <!-- 1. CPU Utilization -->
-                    <div class="resource-card">
-                        <div class="resource-card-header">
-                            <span class="resource-card-title">CPU Utilization</span>
+                <!-- SEKSI ATAS: BARIS 1 (CPU & Memory + Throughput Uplink) -->
+                <div class="charts-row">
+                    <!-- Kotak 1: Real-time CPU & Memory (Dual-Line) -->
+                    <div class="chart-panel">
+                        <div class="panel-header">
+                            <div>
+                                <h3 class="panel-title">CPU &amp; Memory Utilization (%)</h3>
+                                <span class="panel-sub">Utilisasi beban komputasi inti &amp; alokasi memori sistem
+                                    RAM</span>
+                            </div>
+                            <div class="chart-legend-custom">
+                                <span class="legend-tag"><span class="legend-color bg-cyan"></span> CPU (%)</span>
+                                <span class="legend-tag"><span class="legend-color bg-orange"></span> Memory (%)</span>
+                            </div>
                         </div>
-                        <div class="resource-card-stat">
-                            <span class="resource-card-val text-green" id="valCpu" style="color: #10b981 !important;">{{
-                                device.cpu }}%</span>
+                        <div class="device-chart-body">
+                            <canvas id="chartCpuMem"></canvas>
                         </div>
-                        <div class="resource-chart-canvas-wrapper">
-                            <canvas id="chartCpu"></canvas>
-                        </div>
+                        <div id="navCpuMem" class="timeline-nav-wrapper"></div>
                     </div>
 
-                    <!-- 2. Memory Utilization -->
-                    <div class="resource-card">
-                        <div class="resource-card-header">
-                            <span class="resource-card-title">Memory Utilization</span>
+                    <!-- Kotak 2: Throughput Uplink (Dual-Line: Ingress & Egress) -->
+                    <div class="chart-panel">
+                        <div class="panel-header">
+                            <div>
+                                <h3 class="panel-title">
+                                    {% if 'palo' in device.vendor.lower() %}
+                                    Throughput Uplink - ethernet1/2
+                                    {% elif 'huawei' in device.vendor.lower() %}
+                                    Throughput Uplink - 10GE1/0/1
+                                    {% else %}
+                                    Throughput Uplink - Port 1
+                                    {% endif %}
+                                </h3>
+                                <span class="panel-sub">Lalu lintas antarmuka jalur utama backbone (Ingress &amp;
+                                    Egress)</span>
+                            </div>
+                            <div class="chart-legend-custom">
+                                <span class="legend-tag"><span class="legend-color bg-cyan"></span> Ingress</span>
+                                <span class="legend-tag"><span class="legend-color bg-orange"></span> Egress</span>
+                            </div>
                         </div>
-                        <div class="resource-card-stat">
-                            <span class="resource-card-val text-amber" id="valMemory"
-                                style="color: #f59e0b !important;">{{ device.mem }}%</span>
+                        <div class="device-chart-body">
+                            <canvas id="chartTraffic"></canvas>
                         </div>
-                        <div class="resource-chart-canvas-wrapper">
-                            <canvas id="chartMemory"></canvas>
-                        </div>
-                    </div>
-
-                    <!-- 3. Packet Buffers -->
-                    <div class="resource-card">
-                        <div class="resource-card-header">
-                            <span class="resource-card-title">Packet Buffers</span>
-                        </div>
-                        <div class="resource-card-stat">
-                            <span class="resource-card-val text-cyan" id="valPacketBuffers"
-                                style="color: #06b6d4 !important;">{{
-                                resources.packet_buffers_pct or '31.0' }}%</span>
-                        </div>
-                        <div class="resource-chart-canvas-wrapper">
-                            <canvas id="chartPacketBuffers"></canvas>
-                        </div>
-                    </div>
-
-                    <!-- 4. TX Drops -->
-                    <div class="resource-card">
-                        <div class="resource-card-header">
-                            <span class="resource-card-title">TX Drops</span>
-                        </div>
-                        <div class="resource-card-stat">
-                            <span class="resource-card-val" id="valTxDrops" style="color: #f43f5e !important;">{{
-                                resources.tx_drops or 0 }}
-                                Drops</span>
-                        </div>
-                        <div class="resource-chart-canvas-wrapper">
-                            <canvas id="chartTxDrops"></canvas>
-                        </div>
-                    </div>
-
-                    <!-- 5. Message Buffers -->
-                    <div class="resource-card">
-                        <div class="resource-card-header">
-                            <span class="resource-card-title">Message Buffers</span>
-                        </div>
-                        <div class="resource-card-stat">
-                            <span class="resource-card-val" id="valMessageBuffers" style="color: #a855f7 !important;">{{
-                                resources.message_buffers_pct or '22.0' }}%</span>
-                        </div>
-                        <div class="resource-chart-canvas-wrapper">
-                            <canvas id="chartMessageBuffers"></canvas>
-                        </div>
-                    </div>
-
-                    <!-- 6. RX Errors -->
-                    <div class="resource-card">
-                        <div class="resource-card-header">
-                            <span class="resource-card-title">RX Errors</span>
-                        </div>
-                        <div class="resource-card-stat">
-                            <span class="resource-card-val" id="valRxErrors" style="color: #f97316 !important;">{{
-                                resources.rx_errors or 0 }}
-                                Errors</span>
-                        </div>
-                        <div class="resource-chart-canvas-wrapper">
-                            <canvas id="chartRxErrors"></canvas>
-                        </div>
+                        <div id="navTraffic" class="timeline-nav-wrapper"></div>
                     </div>
                 </div>
 
-                <!-- Aggregated Throughput & Traffic History -->
-                <div class="chart-panel" style="margin-top: 6px;">
-                    <div class="panel-header">
-                        <div>
-                            <h3 class="panel-title">
-                                {% if 'palo' in device.vendor.lower() %}
-                                Histori Traffic Internet WAN (Biznet)
-                                {% else %}
-                                Histori Bandwidth & Lalu Lintas Antarmuka (Throughput Mbps)
-                                {% endif %}
-                            </h3>
-                            <span class="panel-sub">
-                                {% if 'palo' in device.vendor.lower() %}
-                                {% endif %}
-                            </span>
+                <!-- SEKSI BAWAH: BARIS 2 (Buffer Hardware & Integritas Transmisi Fisik) -->
+                <div class="charts-row" style="margin-top: 16px;">
+                    <!-- Kotak 3: Buffer Hardware Switch (Spike Bar Histogram persis Integritas Transmisi Fisik) -->
+                    <div class="chart-panel">
+                        <div class="panel-header">
+                            <div>
+                                <h3 class="panel-title">Buffer Hardware Switch</h3>
+                                <span class="panel-sub">Utilisasi antrean packet buffer ASIC &amp; buffer control
+                                    plane</span>
+                            </div>
+                            <div class="chart-legend-custom">
+                                <span class="legend-tag"><span class="legend-color bg-cyan"></span> Packet Buffer</span>
+                                <span class="legend-tag"><span class="legend-color bg-orange"></span> Message
+                                    Buffer</span>
+                            </div>
                         </div>
-                        <div class="chart-legend-custom">
-                            <span class="legend-tag tag-traffic"><span class="legend-color bg-cyan"></span>Nilai
-                                Rx</span>
-                            <span class="legend-tag tag-traffic" style="margin-left: 8px;"><span class="legend-color"
-                                    style="background: #10b981;"></span>Nilai Tx</span>
+                        <div class="device-chart-body">
+                            <canvas id="chartBuffers"></canvas>
                         </div>
+                        <div id="navBuffers" class="timeline-nav-wrapper"></div>
                     </div>
-                    <div class="chart-body" style="height: 180px;">
-                        <canvas id="deviceTrafficChart"></canvas>
+
+                    <!-- Kotak 4: Integritas Transmisi Fisik (Spike Bar Histogram) -->
+                    <div class="chart-panel">
+                        <div class="panel-header">
+                            <div>
+                                <h3 class="panel-title">Integritas Transmisi Fisik</h3>
+                                <span class="panel-sub">Monitoring anomali transmisi frame error &amp; antrean drop
+                                    (Akumulasi 28 Port)</span>
+                            </div>
+                            <div class="chart-legend-custom">
+                                <span class="legend-tag"><span class="legend-color bg-cyan"></span> TX Errors</span>
+                                <span class="legend-tag"><span class="legend-color bg-orange"></span> RX Errors</span>
+                                <span class="legend-tag"><span class="legend-color bg-amber"></span> Drops</span>
+                            </div>
+                        </div>
+                        <div class="device-chart-body">
+                            <canvas id="chartErrorsDrops"></canvas>
+                        </div>
+                        <div id="navErrorsDrops" class="timeline-nav-wrapper"></div>
                     </div>
-                    <!-- Timeline Navigator Mini-Map Slider (Overview + Detail) -->
-                    <div id="deviceTimelineNav" class="timeline-nav-wrapper"></div>
                 </div>
             </div>
 
@@ -509,7 +483,7 @@
         window.NAV_DEVICES = JSON.parse(document.getElementById('nav-devices-data').textContent || '[]');
     </script>
     <script src="/static/js/timeline_navigator.js?v=1.0"></script>
-    <script src="/static/js/device_detail.js?v=4.2"></script>
+    <script src="/static/js/device_detail.js?v=15.0"></script>
     <script src="/static/js/global_nav.js?v=4.1"></script>
 </body>
 

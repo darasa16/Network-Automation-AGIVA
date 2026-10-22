@@ -1,16 +1,21 @@
 /**
  * Device Detail JavaScript - PT Agiva Indonesia Network Automation
- * Real-time metric polling, manual refresh interaction, and live chart synchronization.
+ * Real-time metric polling, manual refresh interaction, and 8-card live charts.
  */
 
-let chartCpuInstance = null;
-let chartMemoryInstance = null;
-let chartPacketBuffersInstance = null;
-let chartTxDropsInstance = null;
-let chartMessageBuffersInstance = null;
-let chartRxErrorsInstance = null;
-let deviceTrafficChart = null;
-let deviceTimelineNavigator = null;
+// 4 Main Chart & Visual instances (Model 1: 2 baris x 2 panel)
+let chartCpuMem = null;
+let chartTraffic = null;
+let chartBuffers = null;
+let chartErrorsDrops = null;
+
+// 4 Timeline Navigator instances
+let navCpuMem = null;
+let navTraffic = null;
+let navBuffers = null;
+let navErrorsDrops = null;
+
+let isNavBatchUpdating = false;
 let lastDeviceRawData = null;
 let currentFilter = 'all';
 let currentSearch = '';
@@ -20,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initPortControls();
     initTimeRangeSelector();
     fetchDeviceMetrics(false);
-    // Real-time polling every 5 seconds
+    // Real-time polling per 5 detik
     setInterval(() => fetchDeviceMetrics(false), 5000);
 });
 
@@ -117,15 +122,14 @@ function showToast(message, type = 'success') {
     toast.innerHTML = `
         <span style="font-size: 16px;">${icon}</span>
         <div class="toast-content" style="flex:1;">
-            <div style="font-size: 13px; font-weight: 500; color: #f8fafc;">${message}</div>
+            <div class="toast-title">${type === 'success' ? 'Berhasil' : 'Peringatan'}</div>
+            <div class="toast-message">${message}</div>
         </div>
-        <button onclick="this.parentElement.remove()" style="background:none; border:none; color:#94a3b8; cursor:pointer; font-size:16px;">&times;</button>
+        <button class="toast-close" onclick="this.parentElement.remove()">&times;</button>
     `;
-
     container.appendChild(toast);
     setTimeout(() => {
-        toast.style.animation = 'slideOutRight 0.3s forwards ease-in';
-        setTimeout(() => toast.remove(), 300);
+        if (toast.parentElement) toast.remove();
     }, 3000);
 }
 
@@ -153,11 +157,9 @@ async function fetchDeviceMetrics(isManual = false) {
         const res = await fetch(`/api/device/${devId}/metrics?range=${encodeURIComponent(currentDeviceRange)}`, { cache: 'no-store' });
         if (!res.ok) {
             updateConnectionStatus(false);
-            if (isManual) {
-                if (btn) {
-                    btn.disabled = false;
-                    btn.innerHTML = originalBtnHtml;
-                }
+            if (isManual && btn) {
+                btn.disabled = false;
+                btn.innerHTML = originalBtnHtml;
                 showToast('Gagal memperbarui data: Endpoint metrik tidak merespon.', 'warning');
             }
             return;
@@ -166,7 +168,7 @@ async function fetchDeviceMetrics(isManual = false) {
         const data = await res.json();
         updateConnectionStatus(true);
 
-        // Update Quick Stat & Resource values dynamically
+        // Update Quick Stat values
         if (data.current_cpu !== undefined) {
             const cpuEl = document.getElementById('currCpuVal');
             if (cpuEl) cpuEl.textContent = `${data.current_cpu}%`;
@@ -182,14 +184,12 @@ async function fetchDeviceMetrics(isManual = false) {
         if (data.current_traffic !== undefined) {
             const trfEl = document.getElementById('currTrafficVal');
             if (trfEl) trfEl.textContent = `${data.current_traffic} Mbps`;
+            const valTrf = document.getElementById('valThroughput');
+            if (valTrf) valTrf.textContent = `${data.current_traffic}`;
         }
         if (data.current_packet_buffers !== undefined) {
             const pbEl = document.getElementById('valPacketBuffers');
             if (pbEl) pbEl.textContent = `${data.current_packet_buffers}%`;
-        }
-        if (data.current_tx_drops !== undefined) {
-            const tdEl = document.getElementById('valTxDrops');
-            if (tdEl) tdEl.textContent = `${data.current_tx_drops} Drops`;
         }
         if (data.current_message_buffers !== undefined) {
             const mbEl = document.getElementById('valMessageBuffers');
@@ -197,7 +197,15 @@ async function fetchDeviceMetrics(isManual = false) {
         }
         if (data.current_rx_errors !== undefined) {
             const reEl = document.getElementById('valRxErrors');
-            if (reEl) reEl.textContent = `${data.current_rx_errors} Errors`;
+            if (reEl) reEl.textContent = `${data.current_rx_errors}`;
+        }
+        if (data.current_tx_errors !== undefined) {
+            const teEl = document.getElementById('valTxErrors');
+            if (teEl) teEl.textContent = `${data.current_tx_errors}`;
+        }
+        if (data.current_tx_drops !== undefined) {
+            const tdEl = document.getElementById('valTxDrops');
+            if (tdEl) tdEl.textContent = `${data.current_tx_drops}`;
         }
         if (data.uptime) {
             const uptimeEl = document.getElementById('currUptimeVal');
@@ -214,100 +222,254 @@ async function fetchDeviceMetrics(isManual = false) {
 
         renderDeviceCharts(data);
 
-        if (isManual) {
-            if (btn) {
-                btn.innerHTML = `
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#ffffff" stroke-width="2.5" style="display:inline-block; vertical-align:middle; margin-right:4px;">
-                        <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
-                    <span style="color: #ffffff;">Terperbarui</span>
-                `;
-                setTimeout(() => {
-                    btn.disabled = false;
-                    btn.innerHTML = originalBtnHtml;
-                }, 1000);
-            }
+        if (isManual && btn) {
+            btn.innerHTML = `
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#ffffff" stroke-width="2.5" style="display:inline-block; vertical-align:middle; margin-right:4px;">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span style="color: #ffffff;">Terperbarui</span>
+            `;
+            setTimeout(() => {
+                btn.disabled = false;
+                btn.innerHTML = originalBtnHtml;
+            }, 1000);
         }
     } catch (err) {
         updateConnectionStatus(false);
-        if (isManual) {
-            if (btn) {
-                btn.disabled = false;
-                btn.innerHTML = originalBtnHtml;
-            }
+        if (isManual && btn) {
+            btn.disabled = false;
+            btn.innerHTML = originalBtnHtml;
             showToast('Gagal menghubungi backend server.', 'warning');
         }
     }
 }
 
-function renderMiniResourceChart(canvasId, existingChart, labels, dataPoints, colorHex, unit = '%', isInteger = false, pointRadius = 2.5) {
+function drawRadialGauge(canvasId, value, maxVal, color) {
     const canvas = document.getElementById(canvasId);
-    if (!canvas) return null;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    const size = 104;
+    canvas.width = size * dpr;
+    canvas.height = size * dpr;
+    canvas.style.width = `${size}px`;
+    canvas.style.height = `${size}px`;
+    ctx.scale(dpr, dpr);
+    ctx.clearRect(0, 0, size, size);
 
-    const maxVal = dataPoints.length > 0 ? Math.max(...dataPoints) : 0;
-    
-    // Skala sumbu Y dinamis untuk semua perangkat (Aruba, Huawei, Palo Alto):
-    // Jika integer (Drops/Errors): headroom 25%, min ceiling 5
-    // Jika persentase (%): dinamis proporsional terhadap data riil (min ceiling 5% agar CPU 1%-2% tetap terlihat jelas)
-    let yMaxVal;
-    if (isInteger) {
-        yMaxVal = Math.max(Math.ceil(maxVal * 1.25), 5);
-    } else {
-        yMaxVal = 100; // Standar baku umum: 100%
-        if (maxVal > 100) {
-            yMaxVal = Math.ceil((maxVal * 1.2) / 10) * 10;
-        }
+    const centerX = size / 2;
+    const centerY = size / 2;
+    const radius = (size / 2) - 9;
+    const startAngle = 0.75 * Math.PI; // 135 degrees
+    const endAngle = 2.25 * Math.PI;   // 405 degrees (270 deg sweep)
+    const sweep = endAngle - startAngle;
+
+    // Background track
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius, startAngle, endAngle, false);
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+    ctx.lineWidth = 8;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+
+    // Active progress arc
+    const pct = Math.min(1, Math.max(0, value / maxVal));
+    if (pct > 0.005) {
+        const currentAngle = startAngle + (sweep * pct);
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, startAngle, currentAngle, false);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 8;
+        ctx.lineCap = 'round';
+        ctx.shadowColor = color;
+        ctx.shadowBlur = 6;
+        ctx.stroke();
+        ctx.shadowBlur = 0;
     }
+}
+
+function createOrUpdateDualChart(existingChart, ctx, labels, ds1, ds2, unit = '', suggestedMax = 100, customTooltip = null) {
+    if (!ctx) return null;
+
+    const visibleCount = (labels || []).length;
+    const dynamicPointRadius = visibleCount <= 45 ? 3 : (visibleCount <= 85 ? 1.5 : 0);
+    const hoverPointRadius = dynamicPointRadius > 0 ? dynamicPointRadius + 3 : 5;
+
+    const allVals = [...(ds1.data || []), ...(ds2.data || [])];
+    const maxVal = allVals.length > 0 ? Math.max(...allVals) : 0;
+    let actualMax = Math.max(suggestedMax, Math.ceil(maxVal * 1.25));
 
     if (existingChart) {
         existingChart.data.labels = labels;
-        existingChart.data.datasets[0].data = dataPoints;
-        existingChart.data.datasets[0].pointRadius = pointRadius;
-        existingChart.data.datasets[0].pointHoverRadius = pointRadius > 0 ? pointRadius + 3 : 5;
-        if (existingChart.data.datasets[0].borderColor !== colorHex) {
-            existingChart.data.datasets[0].borderColor = colorHex;
-            const ctx = canvas.getContext('2d');
-            const gradient = ctx.createLinearGradient(0, 0, 0, 90);
-            gradient.addColorStop(0, colorHex + '40');
-            gradient.addColorStop(1, colorHex + '00');
-            existingChart.data.datasets[0].backgroundColor = gradient;
+        existingChart.data.datasets[0].data = ds1.data;
+        existingChart.data.datasets[1].data = ds2.data;
+        existingChart.data.datasets[0].pointRadius = dynamicPointRadius;
+        existingChart.data.datasets[1].pointRadius = dynamicPointRadius;
+        existingChart.data.datasets[0].pointHoverRadius = hoverPointRadius;
+        existingChart.data.datasets[1].pointHoverRadius = hoverPointRadius;
+        if (customTooltip && existingChart.options.plugins && existingChart.options.plugins.tooltip) {
+            if (typeof customTooltip === 'object') {
+                Object.assign(existingChart.options.plugins.tooltip.callbacks, customTooltip);
+            } else {
+                existingChart.options.plugins.tooltip.callbacks.label = customTooltip;
+            }
         }
-        if (existingChart.options.scales && existingChart.options.scales.y) {
-            existingChart.options.scales.y.suggestedMax = yMaxVal;
-            existingChart.options.scales.y.max = yMaxVal;
+        if (existingChart.options.scales.y) {
+            existingChart.options.scales.y.suggestedMax = actualMax;
+            existingChart.options.scales.y.max = actualMax;
         }
         existingChart.update('none');
         return existingChart;
     }
 
-    const ctx = canvas.getContext('2d');
-    const gradient = ctx.createLinearGradient(0, 0, 0, 90);
-    gradient.addColorStop(0, colorHex + '40'); // ~25% opacity
-    gradient.addColorStop(1, colorHex + '00'); // 0% opacity
+    const gradCyan = ctx.getContext('2d').createLinearGradient(0, 0, 0, 140);
+    gradCyan.addColorStop(0, 'rgba(6, 182, 212, 0.35)');
+    gradCyan.addColorStop(1, 'rgba(6, 182, 212, 0.0)');
 
-    return new Chart(canvas, {
+    const gradOrange = ctx.getContext('2d').createLinearGradient(0, 0, 0, 140);
+    gradOrange.addColorStop(0, 'rgba(249, 115, 22, 0.25)');
+    gradOrange.addColorStop(1, 'rgba(249, 115, 22, 0.0)');
+
+    return new Chart(ctx, {
         type: 'line',
         data: {
             labels: labels,
-            datasets: [{
-                data: dataPoints,
-                borderColor: colorHex,
-                backgroundColor: gradient,
-                borderWidth: 2,
-                fill: true,
-                tension: 0.35,
-                pointRadius: pointRadius,
-                pointHoverRadius: pointRadius > 0 ? pointRadius + 3 : 5
-            }]
+            datasets: [
+                {
+                    label: ds1.label,
+                    data: ds1.data,
+                    borderColor: '#06b6d4',
+                    backgroundColor: gradCyan,
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.35,
+                    pointRadius: dynamicPointRadius,
+                    pointHoverRadius: hoverPointRadius,
+                    pointBackgroundColor: '#ffffff',
+                    pointBorderColor: '#06b6d4',
+                    pointBorderWidth: 1.5
+                },
+                {
+                    label: ds2.label,
+                    data: ds2.data,
+                    borderColor: '#f97316',
+                    backgroundColor: gradOrange,
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.35,
+                    pointRadius: dynamicPointRadius,
+                    pointHoverRadius: hoverPointRadius,
+                    pointBackgroundColor: '#ffffff',
+                    pointBorderColor: '#f97316',
+                    pointBorderWidth: 1.5
+                }
+            ]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
             plugins: {
                 legend: { display: false },
                 tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                    backgroundColor: '#18142c',
+                    titleColor: '#f8fafc',
+                    bodyColor: '#cbd5e1',
+                    borderColor: '#2b244d',
+                    borderWidth: 1,
+                    padding: 8,
+                    cornerRadius: 6,
+                    callbacks: (customTooltip && typeof customTooltip === 'object')
+                        ? customTooltip
+                        : {
+                            label: typeof customTooltip === 'function' ? customTooltip : function (ctx) {
+                                return ` ${ctx.dataset.label}: ${ctx.parsed.y}${unit}`;
+                            }
+                        }
+                }
+            },
+            scales: {
+                x: {
+                    display: true,
+                    grid: { color: 'rgba(255, 255, 255, 0.04)' },
+                    ticks: { color: '#64748b', font: { size: 9 }, maxTicksLimit: 6 }
+                },
+                y: {
+                    min: 0,
+                    suggestedMax: actualMax,
+                    max: actualMax,
+                    grid: { color: 'rgba(255, 255, 255, 0.04)' },
+                    ticks: {
+                        color: '#64748b',
+                        font: { size: 9 },
+                        maxTicksLimit: 4,
+                        callback: (val) => `${val}${unit}`
+                    }
+                }
+            }
+        }
+    });
+}
+
+function createOrUpdateBarChart(existingChart, ctx, labels, datasets, suggestedMax = 5, unit = '') {
+    if (!ctx) return null;
+
+    const allVals = datasets.flatMap(d => d.data || []);
+    const maxVal = allVals.length > 0 ? Math.max(...allVals) : 0;
+    const actualMax = Math.max(suggestedMax, Math.ceil(maxVal * (unit === '%' ? 1.0 : 1.3)));
+
+    if (existingChart) {
+        existingChart.data.labels = labels;
+        datasets.forEach((ds, i) => {
+            if (existingChart.data.datasets[i]) {
+                existingChart.data.datasets[i].data = ds.data;
+            }
+        });
+        if (existingChart.options.scales.y) {
+            existingChart.options.scales.y.suggestedMax = actualMax;
+            existingChart.options.scales.y.max = actualMax;
+        }
+        existingChart.update('none');
+        return existingChart;
+    }
+
+    return new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: datasets.map(d => ({
+                label: d.label,
+                data: d.data,
+                backgroundColor: d.color,
+                borderColor: d.borderColor || d.color,
+                borderWidth: 1,
+                borderRadius: 2,
+                barPercentage: 0.65,
+                categoryPercentage: 0.75
+            }))
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                    backgroundColor: '#18142c',
+                    titleColor: '#f8fafc',
+                    bodyColor: '#cbd5e1',
+                    borderColor: '#2b244d',
+                    borderWidth: 1,
+                    padding: 8,
+                    cornerRadius: 6,
                     callbacks: {
-                        label: (c) => ` ${c.parsed.y}${unit}`
+                        label: function (ctx) {
+                            return ` ${ctx.dataset.label}: ${ctx.parsed.y}${unit}`;
+                        }
                     }
                 }
             },
@@ -315,18 +477,19 @@ function renderMiniResourceChart(canvasId, existingChart, labels, dataPoints, co
                 x: {
                     display: true,
                     grid: { color: 'rgba(255, 255, 255, 0.04)' },
-                    ticks: { color: '#64748b', font: { size: 9.5 }, maxTicksLimit: 6 }
+                    ticks: { color: '#64748b', font: { size: 9 }, maxTicksLimit: 6 }
                 },
                 y: {
                     min: 0,
-                    suggestedMax: yMaxVal,
-                    max: yMaxVal,
+                    suggestedMax: actualMax,
+                    max: actualMax,
                     grid: { color: 'rgba(255, 255, 255, 0.04)' },
                     ticks: {
                         color: '#64748b',
-                        font: { size: 9.5 },
-                        maxTicksLimit: 5,
-                        callback: (v) => isInteger ? v : `${v}${unit}`
+                        font: { size: 9 },
+                        maxTicksLimit: 4,
+                        precision: 0,
+                        callback: (val) => `${val}${unit}`
                     }
                 }
             }
@@ -338,45 +501,161 @@ function renderDeviceCharts(data) {
     if (!data) return;
     lastDeviceRawData = data;
 
-    const navContainer = document.getElementById('deviceTimelineNav');
+    const labels = data.labels || [];
+    if (labels.length === 0) return;
 
-    // Jika mode live: sembunyikan navigator, tampilkan seluruh titik live (~12 titik)
+    // Pastikan fallback array terisi bila kosong
+    if (!data.cpu) data.cpu = labels.map(() => 0);
+    if (!data.memory) data.memory = labels.map(() => 0);
+    if (!data.traffic) data.traffic = labels.map(() => 0);
+    if (!data.traffic_in) data.traffic_in = labels.map(() => 0);
+    if (!data.traffic_out) data.traffic_out = labels.map(() => 0);
+    if (!data.packet_buffers) data.packet_buffers = labels.map(() => 35.1);
+    if (!data.message_buffers) data.message_buffers = labels.map(() => 22.0);
+    if (!data.rx_errors) data.rx_errors = labels.map(() => 0);
+    if (!data.tx_errors) data.tx_errors = labels.map(() => 0);
+    if (!data.tx_drops) data.tx_drops = labels.map(() => 0);
+
+    const navIds = ['navCpuMem', 'navTraffic', 'navBuffers', 'navErrorsDrops'];
+
+    // Jika mode live: sembunyikan semua 4 navigator slider, render seluruh data live
     if (currentDeviceRange === 'live') {
-        if (navContainer) navContainer.style.display = 'none';
-        renderDeviceChartsSlice(data, 0, (data.labels || []).length - 1);
+        navIds.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = 'none';
+        });
+        renderDeviceChartsSlice(data, 0, labels.length - 1);
         return;
     }
 
-    // Mode histori: 1h, 12h, 24h -> Tampilkan Timeline Navigator Slider
-    if (!deviceTimelineNavigator && typeof TimelineNavigator !== 'undefined') {
-        deviceTimelineNavigator = new TimelineNavigator({
-            containerId: 'deviceTimelineNav',
-            color: '#06b6d4',
-            secondaryColor: '#10b981',
-            unit: ' Mbps',
-            onWindowChange: (startIdx, endIdx) => {
-                if (lastDeviceRawData) {
-                    renderDeviceChartsSlice(lastDeviceRawData, startIdx, endIdx);
-                }
-            }
-        });
+    // Mode histori: 1h, 12h, 24h -> Inisialisasi 4 Timeline Navigators jika belum dibuat
+    initTimelineNavigators();
+
+    // Pertahankan batas pecahan jendela aktif jika pengguna sedang menyeret slider
+    const sampleNav = navCpuMem || navTraffic;
+    const preserveFractions = (sampleNav && (sampleNav.isDragging || (sampleNav.fullLabels && sampleNav.fullLabels.length > 0)))
+        ? { start: sampleNav.startFrac, end: sampleNav.endFrac }
+        : null;
+
+    isNavBatchUpdating = true;
+    try {
+        if (navCpuMem) navCpuMem.setData(labels, data.cpu, data.memory, preserveFractions);
+        if (navTraffic) navTraffic.setData(labels, data.traffic_in, data.traffic_out, preserveFractions);
+        if (navBuffers) navBuffers.setData(labels, data.packet_buffers, data.message_buffers, preserveFractions);
+        if (navErrorsDrops) navErrorsDrops.setData(labels, data.tx_errors, data.rx_errors, preserveFractions);
+    } finally {
+        isNavBatchUpdating = false;
     }
 
-    if (deviceTimelineNavigator) {
-        // Jangan reset posisi slider jika user sedang aktif dragging
-        const preserveFractions = (deviceTimelineNavigator.isDragging || (deviceTimelineNavigator.fullLabels && deviceTimelineNavigator.fullLabels.length > 0))
-            ? { start: deviceTimelineNavigator.startFrac, end: deviceTimelineNavigator.endFrac }
-            : null;
-
-        const trafficIn = data.traffic_in || data.traffic || [];
-        const trafficOut = data.traffic_out || [];
-        deviceTimelineNavigator.setData(data.labels, trafficIn, trafficOut, preserveFractions);
+    // Sinkronisasi posisi awal seluruh visual slider dan render potongan grafik aktif
+    const activeNav = navCpuMem || navTraffic;
+    if (activeNav) {
+        const total = labels.length;
+        const startIdx = Math.min(total - 1, Math.round(activeNav.startFrac * (total - 1)));
+        const endIdx = Math.min(total - 1, Math.round(activeNav.endFrac * (total - 1)));
+        renderDeviceChartsSlice(data, startIdx, endIdx);
     } else {
-        renderDeviceChartsSlice(data, 0, (data.labels || []).length - 1);
+        renderDeviceChartsSlice(data, 0, labels.length - 1);
     }
 }
 
+function initTimelineNavigators() {
+    if (typeof TimelineNavigator === 'undefined') return;
+
+    if (!navCpuMem) {
+        const el = document.getElementById('navCpuMem');
+        if (el) {
+            navCpuMem = new TimelineNavigator({
+                containerId: 'navCpuMem',
+                color: '#06b6d4',
+                secondaryColor: '#f97316',
+                unit: '%',
+                onWindowChange: (startIdx, endIdx) => {
+                    if (isNavBatchUpdating) return;
+                    if (lastDeviceRawData) {
+                        renderDeviceChartsSlice(lastDeviceRawData, startIdx, endIdx);
+                        syncAllNavigators('navCpuMem');
+                    }
+                }
+            });
+        }
+    }
+
+    if (!navTraffic) {
+        const el = document.getElementById('navTraffic');
+        if (el) {
+            navTraffic = new TimelineNavigator({
+                containerId: 'navTraffic',
+                color: '#06b6d4',
+                secondaryColor: '#f97316',
+                unit: ' Mbps',
+                onWindowChange: (startIdx, endIdx) => {
+                    if (isNavBatchUpdating) return;
+                    if (lastDeviceRawData) {
+                        renderDeviceChartsSlice(lastDeviceRawData, startIdx, endIdx);
+                        syncAllNavigators('navTraffic');
+                    }
+                }
+            });
+        }
+    }
+
+    if (!navBuffers) {
+        const el = document.getElementById('navBuffers');
+        if (el) {
+            navBuffers = new TimelineNavigator({
+                containerId: 'navBuffers',
+                color: '#06b6d4',
+                secondaryColor: '#f97316',
+                unit: '%',
+                onWindowChange: (startIdx, endIdx) => {
+                    if (isNavBatchUpdating) return;
+                    if (lastDeviceRawData) {
+                        renderDeviceChartsSlice(lastDeviceRawData, startIdx, endIdx);
+                        syncAllNavigators('navBuffers');
+                    }
+                }
+            });
+        }
+    }
+
+    if (!navErrorsDrops) {
+        const el = document.getElementById('navErrorsDrops');
+        if (el) {
+            navErrorsDrops = new TimelineNavigator({
+                containerId: 'navErrorsDrops',
+                color: '#06b6d4',
+                secondaryColor: '#f97316',
+                unit: '',
+                onWindowChange: (startIdx, endIdx) => {
+                    if (isNavBatchUpdating) return;
+                    if (lastDeviceRawData) {
+                        renderDeviceChartsSlice(lastDeviceRawData, startIdx, endIdx);
+                        syncAllNavigators('navErrorsDrops');
+                    }
+                }
+            });
+        }
+    }
+}
+
+function syncAllNavigators(sourceId) {
+    const navs = [navCpuMem, navTraffic, navBuffers, navErrorsDrops];
+    const sourceNav = navs.find(n => n && n.container && n.container.id === sourceId);
+    if (!sourceNav) return;
+
+    const s = sourceNav.startFrac;
+    const e = sourceNav.endFrac;
+
+    navs.forEach(n => {
+        if (n && n.container && n.container.id !== sourceId && !n.isDragging) {
+            n.updateWindowDOM(s, e);
+        }
+    });
+}
+
 function renderDeviceChartsSlice(data, startIdx, endIdx) {
+    if (!data) return;
     const allLabels = data.labels || [];
     if (allLabels.length === 0) return;
 
@@ -386,142 +665,71 @@ function renderDeviceChartsSlice(data, startIdx, endIdx) {
     const labels = allLabels.slice(s, e + 1);
     const cpuVals = (data.cpu || []).slice(s, e + 1);
     const memVals = (data.memory || []).slice(s, e + 1);
-    const pbVals = (data.packet_buffers || (data.cpu || []).map(() => 31.0)).slice(s, e + 1);
-    const tdVals = (data.tx_drops || (data.cpu || []).map(() => 0)).slice(s, e + 1);
-    const mbVals = (data.message_buffers || (data.cpu || []).map(() => 22.0)).slice(s, e + 1);
-    const reVals = (data.rx_errors || (data.cpu || []).map(() => 0)).slice(s, e + 1);
-    const trafficIn = (data.traffic_in || data.traffic || []).slice(s, e + 1);
-    const trafficOut = (data.traffic_out || []).slice(s, e + 1);
+    const inVals = (data.traffic_in || []).slice(s, e + 1);
+    const outVals = (data.traffic_out || []).slice(s, e + 1);
+    const trfVals = (data.traffic || []).slice(s, e + 1);
+    const pbVals = (data.packet_buffers || []).slice(s, e + 1);
+    const mbVals = (data.message_buffers || []).slice(s, e + 1);
+    const txVals = (data.tx_errors || []).slice(s, e + 1);
+    const rxVals = (data.rx_errors || []).slice(s, e + 1);
+    const tdVals = (data.tx_drops || []).slice(s, e + 1);
 
-    // Titik adaptif: jika titik <= 45 titik (saat zoom), titik tampak jelas & renggang (pointRadius: 3).
-    // Jika rentang diperlebar banyak, titik disembunyikan agar garis mulus dan tidak bertumpuk.
-    const visibleCount = labels.length;
-    const dynamicPointRadius = visibleCount <= 45 ? 3 : (visibleCount <= 85 ? 1.5 : 0);
+    // 1. Chart CPU & Memory (Dual-Line)
+    chartCpuMem = createOrUpdateDualChart(
+        chartCpuMem,
+        document.getElementById('chartCpuMem'),
+        labels,
+        { label: 'CPU', data: cpuVals },
+        { label: 'Memory', data: memVals },
+        '%',
+        100
+    );
 
-    // 1. CPU Utilization (Emerald #10b981)
-    chartCpuInstance = renderMiniResourceChart('chartCpu', chartCpuInstance, labels, cpuVals, '#10b981', '%', false, dynamicPointRadius);
-
-    // 2. Memory Utilization (Amber #f59e0b)
-    chartMemoryInstance = renderMiniResourceChart('chartMemory', chartMemoryInstance, labels, memVals, '#f59e0b', '%', false, dynamicPointRadius);
-
-    // 3. Packet Buffers (Cyan #06b6d4)
-    chartPacketBuffersInstance = renderMiniResourceChart('chartPacketBuffers', chartPacketBuffersInstance, labels, pbVals, '#06b6d4', '%', false, dynamicPointRadius);
-
-    // 4. TX Drops (Rose #f43f5e)
-    chartTxDropsInstance = renderMiniResourceChart('chartTxDrops', chartTxDropsInstance, labels, tdVals, '#f43f5e', ' drops', true, dynamicPointRadius);
-
-    // 5. Message Buffers (Purple #a855f7)
-    chartMessageBuffersInstance = renderMiniResourceChart('chartMessageBuffers', chartMessageBuffersInstance, labels, mbVals, '#a855f7', '%', false, dynamicPointRadius);
-
-    // 6. RX Errors (Vivid Orange #f97316)
-    chartRxErrorsInstance = renderMiniResourceChart('chartRxErrors', chartRxErrorsInstance, labels, reVals, '#f97316', ' errors', true, dynamicPointRadius);
-
-    // 7. Aggregated Throughput Chart (IN & OUT)
-    const ctxTraffic = document.getElementById('deviceTrafficChart');
-    if (ctxTraffic) {
-        if (deviceTrafficChart && deviceTrafficChart.config.type !== 'bar') {
-            deviceTrafficChart.destroy();
-            deviceTrafficChart = null;
+    // 2. Chart Traffic Ingress & Egress (Dual-Line with Ingress and Egress only)
+    const trafficTooltip = {
+        beforeBody: () => '',
+        label: function (ctx) {
+            if (ctx.datasetIndex === 0) {
+                return ` • Ingress (Rx): ${ctx.parsed.y} Mbps`;
+            }
+            return ` • Egress (Tx): ${ctx.parsed.y} Mbps`;
         }
+    };
 
-        const allVals = [...trafficIn, ...trafficOut];
-        const maxVal = allVals.length > 0 ? Math.max(...allVals) : 0;
-        const suggestedYMax = maxVal > 100 ? Math.ceil((maxVal * 1.25) / 10) * 10 : 100;
+    chartTraffic = createOrUpdateDualChart(
+        chartTraffic,
+        document.getElementById('chartTraffic'),
+        labels,
+        { label: 'Ingress', data: inVals },
+        { label: 'Egress', data: outVals },
+        ' Mbps',
+        50,
+        trafficTooltip
+    );
 
-        if (deviceTrafficChart) {
-            deviceTrafficChart.data.labels = labels;
-            if (deviceTrafficChart.data.datasets.length > 0) {
-                deviceTrafficChart.data.datasets[0].data = trafficIn;
-            }
-            if (deviceTrafficChart.data.datasets[1]) {
-                deviceTrafficChart.data.datasets[1].data = trafficOut;
-            }
-            if (deviceTrafficChart.options.scales.y) {
-                deviceTrafficChart.options.scales.y.suggestedMax = suggestedYMax;
-            }
-            deviceTrafficChart.update('none');
-        } else {
-            const gradientCyan = ctxTraffic.getContext('2d').createLinearGradient(0, 0, 0, 180);
-            gradientCyan.addColorStop(0, 'rgba(6, 182, 212, 0.85)');
-            gradientCyan.addColorStop(1, 'rgba(6, 182, 212, 0.2)');
+    // 3. Chart Buffer Hardware Switch (Spike Bar Chart Histogram persis Integritas Transmisi Fisik)
+    chartBuffers = createOrUpdateBarChart(
+        chartBuffers,
+        document.getElementById('chartBuffers'),
+        labels,
+        [
+            { label: 'Packet Buffer', data: pbVals, color: 'rgba(6, 182, 212, 0.85)', borderColor: '#06b6d4' },
+            { label: 'Message Buffer', data: mbVals, color: 'rgba(249, 115, 22, 0.85)', borderColor: '#f97316' }
+        ],
+        100,
+        '%'
+    );
 
-            const gradientGreen = ctxTraffic.getContext('2d').createLinearGradient(0, 0, 0, 180);
-            gradientGreen.addColorStop(0, 'rgba(16, 185, 129, 0.85)');
-            gradientGreen.addColorStop(1, 'rgba(16, 185, 129, 0.2)');
-
-            const datasets = [
-                {
-                    label: 'Rx',
-                    data: trafficIn,
-                    borderColor: '#06b6d4',
-                    backgroundColor: gradientCyan,
-                    borderWidth: 1.5,
-                    borderRadius: 4,
-                    borderSkipped: false,
-                    hoverBackgroundColor: '#06b6d4'
-                },
-                {
-                    label: 'Tx',
-                    data: trafficOut,
-                    borderColor: '#10b981',
-                    backgroundColor: gradientGreen,
-                    borderWidth: 1.5,
-                    borderRadius: 4,
-                    borderSkipped: false,
-                    hoverBackgroundColor: '#10b981'
-                }
-            ];
-
-            deviceTrafficChart = new Chart(ctxTraffic, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: datasets
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    interaction: {
-                        mode: 'index',
-                        intersect: false
-                    },
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            mode: 'index',
-                            intersect: false,
-                            backgroundColor: '#18142c',
-                            titleColor: '#cbd5e1',
-                            bodyColor: '#cbd5e1',
-                            borderColor: 'rgba(232, 165, 118, 0.3)',
-                            borderWidth: 1,
-                            padding: 10,
-                            cornerRadius: 6,
-                            callbacks: {
-                                label: (ctx) => ` ${ctx.dataset.label}: ${ctx.parsed.y} Mbps`
-                            }
-                        }
-                    },
-                    scales: {
-                        x: {
-                            grid: { color: 'rgba(255, 255, 255, 0.04)' },
-                            ticks: { color: '#64748b', font: { size: 10 } },
-                            categoryPercentage: 0.65,
-                            barPercentage: 0.85
-                        },
-                        y: {
-                            min: 0,
-                            suggestedMax: suggestedYMax,
-                            grid: { color: 'rgba(255, 255, 255, 0.04)' },
-                            ticks: {
-                                color: '#64748b',
-                                font: { size: 10 },
-                                callback: v => `${v}M`
-                            }
-                        }
-                    }
-                }
-            });
-        }
-    }
+    // 4. Spike Bar Chart (Integritas Transmisi Fisik)
+    chartErrorsDrops = createOrUpdateBarChart(
+        chartErrorsDrops,
+        document.getElementById('chartErrorsDrops'),
+        labels,
+        [
+            { label: 'TX Errors', data: txVals, color: 'rgba(6, 182, 212, 0.85)', borderColor: '#06b6d4' },
+            { label: 'RX Errors', data: rxVals, color: 'rgba(249, 115, 22, 0.85)', borderColor: '#f97316' },
+            { label: 'TX Drops', data: tdVals, color: 'rgba(234, 179, 8, 0.85)', borderColor: '#eab308' }
+        ],
+        5
+    );
 }
