@@ -434,6 +434,9 @@ function renderDeviceTable(devices) {
     const tbody = document.getElementById('deviceTableBody');
     if (!tbody) return;
 
+    // Kunci urutan permanen berdasarkan device_id (1, 2, 3) agar tidak pernah loncat
+    devices.sort((a, b) => a.id - b.id);
+
     let html = '';
     devices.forEach(dev => {
         const vendorClass = (dev.vendor || '').toLowerCase().replace(/\s+/g, '-');

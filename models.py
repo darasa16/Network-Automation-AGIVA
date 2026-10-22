@@ -17,9 +17,6 @@ class Device(Base):
     status = Column(String(20), default='UP')   # 'UP' / 'DOWN'
     cpu_usage = Column(Float, default=0.0)
     mem_usage = Column(Float, default=0.0)
-    traffic_mbps = Column(Float, default=0.0)
-    ingress_mbps = Column(Float, default=0.0)
-    egress_mbps = Column(Float, default=0.0)
     uptime = Column(String(100), default='Unknown')
     credential_ref = Column(String(100), default='env_vault')
     last_polled = Column(DateTime, default=datetime.now)
@@ -39,9 +36,6 @@ class Device(Base):
             "status": self.status,
             "cpu": round(self.cpu_usage or 0.0, 1),
             "mem": round(self.mem_usage or 0.0, 1),
-            "traffic": round(self.traffic_mbps or 0.0, 1),
-            "ingress": round(self.ingress_mbps or 0.0, 1),
-            "egress": round(self.egress_mbps or 0.0, 1),
             "uptime": self.uptime,
             "last_polled": self.last_polled.strftime("%H:%M:%S") if self.last_polled else "-"
         }
@@ -60,6 +54,11 @@ class DeviceStatusLog(Base):
     traffic_mbps = Column(Float, default=0.0)
     ingress_mbps = Column(Float, default=0.0)
     egress_mbps = Column(Float, default=0.0)
+    packet_buffers = Column(Float, default=0.0)
+    message_buffers = Column(Float, default=0.0)
+    tx_errors = Column(Integer, default=0)
+    rx_errors = Column(Integer, default=0)
+    tx_drops = Column(Integer, default=0)
 
     device = relationship("Device", back_populates="logs")
 

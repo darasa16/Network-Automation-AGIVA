@@ -51,7 +51,7 @@ def shutdown_session(exception=None):
 def inject_global_vars():
     session = db_session()
     active_alerts_count = session.query(Alert).filter(Alert.acknowledged == False).count()
-    devices = session.query(Device).all()
+    devices = session.query(Device).order_by(Device.device_id.asc()).all()
     nav_devices = [d.to_dict() for d in devices]
     return dict(
         active_alerts_count=active_alerts_count,
@@ -175,7 +175,7 @@ def dashboard():
     KPI Cards, grafik Chart.js, tabel perangkat, dan panel alert aktif.
     """
     session = db_session()
-    devices = session.query(Device).all()
+    devices = session.query(Device).order_by(Device.device_id.asc()).all()
     alerts = session.query(Alert).order_by(Alert.triggered_at.desc()).limit(10).all()
 
     total_devices = len(devices)
@@ -547,7 +547,7 @@ def api_search():
     ql = q.lower()
     
     # 1. Devices matching name, IP, vendor, site, or status
-    all_devs = session.query(Device).all()
+    all_devs = session.query(Device).order_by(Device.device_id.asc()).all()
     matched_devices = []
     for d in all_devs:
         if (ql in d.name.lower() or 
@@ -736,20 +736,20 @@ def api_status():
     """
     session = db_session()
     range_mode = request.args.get('range', 'live')
-    devices = session.query(Device).all()
+    devices = session.query(Device).order_by(Device.device_id.asc()).all()
     active_alerts = session.query(Alert).filter(Alert.acknowledged == False).all()
 
     online_devs = [d for d in devices if d.status == 'UP']
     avg_cpu = round(sum(d.cpu_usage for d in online_devs) / len(online_devs), 1) if online_devs else 0
     avg_mem = round(sum(d.mem_usage for d in online_devs) / len(online_devs), 1) if online_devs else 0
-    total_trf = round(sum(d.traffic_mbps for d in online_devs), 1)
-    ingress_trf = round(sum((getattr(d, 'ingress_mbps', None) if getattr(d, 'ingress_mbps', None) is not None and getattr(d, 'ingress_mbps', None) > 0 else (d.traffic_mbps * 0.65)) for d in online_devs), 1)
-    egress_trf = round(sum((getattr(d, 'egress_mbps', None) if getattr(d, 'egress_mbps', None) is not None and getattr(d, 'egress_mbps', None) > 0 else (d.traffic_mbps * 0.35)) for d in online_devs), 1)
-
     devices_data = [d.to_dict() for d in devices]
     alerts_data = [a.to_dict() for a in active_alerts]
     history_data = get_aggregated_chart_history(range_mode, session=session)
     session.close()
+
+    total_trf = round(history_data["ingress"][-1] + history_data["egress"][-1], 1) if history_data.get("ingress") and history_data.get("egress") else 0.0
+    ingress_trf = round(history_data["ingress"][-1], 1) if history_data.get("ingress") else 0.0
+    egress_trf = round(history_data["egress"][-1], 1) if history_data.get("egress") else 0.0
 
     return jsonify({
         "timestamp": datetime.now().strftime("%H:%M:%S"),
@@ -810,13 +810,26 @@ def api_device_metrics(device_id):
         ).order_by(DeviceStatusLog.timestamp.desc()).limit(limit_fallback).all()
         logs.reverse()
 
+    telemetry = get_device_full_telemetry(device)
+    res = telemetry.get("resources", {})
+    pb_base = float(res.get("packet_buffers_pct", 31.0))
+    mb_base = float(res.get("message_buffers_pct", 22.0))
+    td_val = int(res.get("tx_drops", 0))
+    re_val = int(res.get("rx_errors", 0))
+    te_val = int(res.get("tx_errors", 0))
+
     if not logs:
         labels = [now.strftime("%H:%M:%S")]
         cpu_vals = [round(device.cpu_usage or 0.0, 1)]
         mem_vals = [round(device.mem_usage or 0.0, 1)]
-        trf_vals = [round(device.traffic_mbps or 0.0, 2)]
-        trf_in_vals = [round(device.ingress_mbps or 0.0, 2)]
-        trf_out_vals = [round(device.egress_mbps or 0.0, 2)]
+        trf_vals = [0.0]
+        trf_in_vals = [0.0]
+        trf_out_vals = [0.0]
+        pb_vals = [pb_base]
+        mb_vals = [mb_base]
+        td_vals = [td_val]
+        re_vals = [re_val]
+        te_vals = [te_val]
     else:
         # Group into exact 2-minute cycle keys (data mentah asli tanpa perataan)
         buckets = defaultdict(list)
@@ -830,6 +843,11 @@ def api_device_metrics(device_id):
         trf_vals = []
         trf_in_vals = []
         trf_out_vals = []
+        pb_vals = []
+        mb_vals = []
+        td_vals = []
+        re_vals = []
+        te_vals = []
         for key in sorted(buckets.keys()):
             b_logs = buckets[key]
             dt = datetime.fromtimestamp(key * bucket_seconds)
@@ -847,6 +865,11 @@ def api_device_metrics(device_id):
             trf_vals.append(round(b.traffic_mbps or 0.0, 2))
             trf_in_vals.append(round(b.ingress_mbps or 0.0, 2))
             trf_out_vals.append(round(b.egress_mbps or 0.0, 2))
+            pb_vals.append(round(b.packet_buffers or 0.0, 1))
+            mb_vals.append(round(b.message_buffers or 0.0, 1))
+            td_vals.append(int(b.tx_drops or 0))
+            re_vals.append(int(b.rx_errors or 0))
+            te_vals.append(int(b.tx_errors or 0))
 
         if range_mode == 'live' and len(labels) > 12:
             labels = labels[-12:]
@@ -855,20 +878,11 @@ def api_device_metrics(device_id):
             trf_vals = trf_vals[-12:]
             trf_in_vals = trf_in_vals[-12:]
             trf_out_vals = trf_out_vals[-12:]
-
-    telemetry = get_device_full_telemetry(device)
-    res = telemetry.get("resources", {})
-    pb_base = float(res.get("packet_buffers_pct", 31.0))
-    mb_base = float(res.get("message_buffers_pct", 22.0))
-    td_val = int(res.get("tx_drops", 0))
-    re_val = int(res.get("rx_errors", 0))
-    te_val = int(res.get("tx_errors", 0))
-
-    packet_buffers_vals = [pb_base for _ in labels]
-    tx_drops_vals = [td_val for _ in labels]
-    message_buffers_vals = [mb_base for _ in labels]
-    rx_errors_vals = [re_val for _ in labels]
-    tx_errors_vals = [te_val for _ in labels]
+            pb_vals = pb_vals[-12:]
+            mb_vals = mb_vals[-12:]
+            td_vals = td_vals[-12:]
+            re_vals = re_vals[-12:]
+            te_vals = te_vals[-12:]
 
     result = {
         "device_id": device_id,
@@ -878,9 +892,9 @@ def api_device_metrics(device_id):
         "range": range_mode,
         "current_cpu": device.cpu_usage,
         "current_memory": device.mem_usage,
-        "current_traffic": round(device.traffic_mbps or 0.0, 2),
-        "current_traffic_in": round(device.ingress_mbps or 0.0, 2),
-        "current_traffic_out": round(device.egress_mbps or 0.0, 2),
+        "current_traffic": round((trf_in_vals[-1] + trf_out_vals[-1]), 2) if trf_in_vals and trf_out_vals else 0.0,
+        "current_traffic_in": trf_in_vals[-1] if trf_in_vals else 0.0,
+        "current_traffic_out": trf_out_vals[-1] if trf_out_vals else 0.0,
         "current_packet_buffers": pb_base,
         "current_tx_drops": td_val,
         "current_message_buffers": mb_base,
@@ -892,11 +906,11 @@ def api_device_metrics(device_id):
         "traffic": trf_vals,
         "traffic_in": trf_in_vals,
         "traffic_out": trf_out_vals,
-        "packet_buffers": packet_buffers_vals,
-        "tx_drops": tx_drops_vals,
-        "message_buffers": message_buffers_vals,
-        "rx_errors": rx_errors_vals,
-        "tx_errors": tx_errors_vals,
+        "packet_buffers": pb_vals,
+        "tx_drops": td_vals,
+        "message_buffers": mb_vals,
+        "rx_errors": re_vals,
+        "tx_errors": te_vals,
         "resources": res,
         "specs": telemetry.get("hardware", {}),
         "vlans": telemetry.get("vlans", []),

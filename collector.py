@@ -61,7 +61,7 @@ def load_inventory():
             session.rollback()
 
     # 2. Ambil dari DB sebagai single source of truth
-    devices = session.query(Device).all()
+    devices = session.query(Device).order_by(Device.device_id.asc()).all()
     session.close()
     return devices
 
@@ -359,6 +359,19 @@ def poll_device(device):
         logger.error(f"Gagal koneksi ke {device.name} ({device.ip_address}): {e}")
         metrics["status"] = "DOWN"
 
+    # Ambil telemetri buffer dan integritas transmisi riil
+    try:
+        from telemetry_helper import get_device_full_telemetry
+        telem = get_device_full_telemetry(device)
+        res = telem.get("resources", {})
+        metrics["packet_buffers"] = float(res.get("packet_buffers_pct", 0.0))
+        metrics["message_buffers"] = float(res.get("message_buffers_pct", 0.0))
+        metrics["tx_errors"] = int(res.get("tx_errors", 0))
+        metrics["rx_errors"] = int(res.get("rx_errors", 0))
+        metrics["tx_drops"] = int(res.get("tx_drops", 0))
+    except Exception as e:
+        logger.warning(f"Gagal mengambil buffer & error telemetri untuk {device.name}: {e}")
+
     return metrics
 
 # ==========================================
@@ -379,9 +392,6 @@ def save_metrics(device_id, metrics):
     device.status = metrics["status"]
     device.cpu_usage = metrics["cpu"]
     device.mem_usage = metrics["mem"]
-    device.traffic_mbps = metrics["traffic"]
-    device.ingress_mbps = metrics.get("ingress", 0.0)
-    device.egress_mbps = metrics.get("egress", 0.0)
     device.uptime = metrics["uptime"]
     device.last_polled = datetime.now()
 
@@ -394,6 +404,11 @@ def save_metrics(device_id, metrics):
         traffic_mbps=metrics["traffic"],
         ingress_mbps=metrics.get("ingress", 0.0),
         egress_mbps=metrics.get("egress", 0.0),
+        packet_buffers=metrics.get("packet_buffers", 0.0),
+        message_buffers=metrics.get("message_buffers", 0.0),
+        tx_errors=metrics.get("tx_errors", 0),
+        rx_errors=metrics.get("rx_errors", 0),
+        tx_drops=metrics.get("tx_drops", 0),
         timestamp=datetime.now()
     )
     session.add(log_entry)

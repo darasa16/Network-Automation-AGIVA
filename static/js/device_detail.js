@@ -297,7 +297,10 @@ function createOrUpdateDualChart(existingChart, ctx, labels, ds1, ds2, unit = ''
 
     const allVals = [...(ds1.data || []), ...(ds2.data || [])];
     const maxVal = allVals.length > 0 ? Math.max(...allVals) : 0;
-    let actualMax = Math.max(suggestedMax, Math.ceil(maxVal * 1.25));
+    let actualMax = suggestedMax;
+    if (maxVal > suggestedMax) {
+        actualMax = Math.ceil((maxVal * 1.25) / 10) * 10;
+    }
 
     if (existingChart) {
         existingChart.data.labels = labels;
@@ -413,12 +416,15 @@ function createOrUpdateDualChart(existingChart, ctx, labels, ds1, ds2, unit = ''
     });
 }
 
-function createOrUpdateBarChart(existingChart, ctx, labels, datasets, suggestedMax = 5, unit = '') {
+function createOrUpdateBarChart(existingChart, ctx, labels, datasets, suggestedMax = 100, unit = '') {
     if (!ctx) return null;
 
     const allVals = datasets.flatMap(d => d.data || []);
     const maxVal = allVals.length > 0 ? Math.max(...allVals) : 0;
-    const actualMax = Math.max(suggestedMax, Math.ceil(maxVal * (unit === '%' ? 1.0 : 1.3)));
+    let actualMax = suggestedMax;
+    if (maxVal > suggestedMax) {
+        actualMax = Math.ceil((maxVal * (unit === '%' ? 1.05 : 1.25)) / 10) * 10;
+    }
 
     if (existingChart) {
         existingChart.data.labels = labels;
@@ -703,7 +709,7 @@ function renderDeviceChartsSlice(data, startIdx, endIdx) {
         { label: 'Ingress', data: inVals },
         { label: 'Egress', data: outVals },
         ' Mbps',
-        50,
+        100,
         trafficTooltip
     );
 
@@ -730,6 +736,7 @@ function renderDeviceChartsSlice(data, startIdx, endIdx) {
             { label: 'RX Errors', data: rxVals, color: 'rgba(249, 115, 22, 0.85)', borderColor: '#f97316' },
             { label: 'TX Drops', data: tdVals, color: 'rgba(234, 179, 8, 0.85)', borderColor: '#eab308' }
         ],
-        5
+        100,
+        ''
     );
 }
