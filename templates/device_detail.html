@@ -126,7 +126,7 @@
             <div class="specs-panel">
                 <div class="panel-header">
                     <div>
-                        <h3 class="panel-title">Spesifikasi Sistem & Perangkat Keras Switch</h3>
+                        <h3 class="panel-title">Spesifikasi Sistem</h3>
                         <span class="panel-sub">Informasi identitas hardware, firmware, dan operasional perangkat
                             fisik</span>
                     </div>
@@ -377,21 +377,21 @@
                     <table class="data-table" id="portsTable">
                         <thead>
                             <tr>
-                                <th>Port / Interface</th>
-                                <th>Tipe / Media</th>
+                                <th>Interface</th>
+                                <th>Tipe</th>
                                 <th>Status Operasional</th>
                                 <th>Perangkat Terhubung (LLDP Neighbor)</th>
                                 <th>Speed</th>
-                                <th>Tx</th>
-                                <th>Rx</th>
-                                <th>Total Transfer (Tx/Rx)</th>
+                                <th>Throughput Tx</th>
+                                <th>Throughput Rx</th>
+                                <th>Bytes Tx / Rx</th>
                                 <th>PoE Power</th>
                                 <th>Errors / Drops</th>
                             </tr>
                         </thead>
                         <tbody id="portsTableBody">
                             {% for p in ports %}
-                            <tr class="port-row" data-status="{{ p.status }}"
+                            <tr class="port-row" data-port-id="{{ p.port_id }}" data-status="{{ p.status }}"
                                 data-type="{% if p.is_sfp %}sfp{% else %}poe{% endif %}"
                                 data-search="{{ p.port_name | lower }} {{ p.speed | lower }} {% if p.neighbor %}{{ p.neighbor.name | lower }} {{ p.neighbor.desc | lower }}{% endif %}">
                                 <td>
@@ -445,10 +445,10 @@
                                 <td><span>{{ p.rx_mbps }}</span></td>
                                 <td><span>{{ p.bytes_tx_fmt }} / {{ p.bytes_rx_fmt }}</span></td>
                                 <td>
-                                    {% if p.poe and p.status == 'UP' %}
-                                    <span>{{ p.poe.power_watts }} W</span>
-                                    {% elif p.is_sfp %}
+                                    {% if p.is_sfp %}
                                     <span>N/A (Fiber)</span>
+                                    {% elif p.poe and p.status == 'UP' and p.poe.power_watts > 0 %}
+                                    <span>{{ p.poe.power_watts }} W</span>
                                     {% else %}
                                     <span>0 W</span>
                                     {% endif %}
@@ -483,7 +483,7 @@
         window.NAV_DEVICES = JSON.parse(document.getElementById('nav-devices-data').textContent || '[]');
     </script>
     <script src="/static/js/timeline_navigator.js?v=1.0"></script>
-    <script src="/static/js/device_detail.js?v=16.0"></script>
+    <script src="/static/js/device_detail.js?v=18.0"></script>
     <script src="/static/js/global_nav.js?v=4.1"></script>
 </body>
 

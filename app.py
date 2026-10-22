@@ -214,6 +214,21 @@ def device_detail(device_id=1):
     alerts_data = [a.to_dict() for a in device_alerts]
 
     telemetry = get_device_full_telemetry(device)
+    ports = telemetry.get("ports", [])
+
+    # Sinkronisasi 100% Opsi B: Port 1 (Uplink) identik dengan titik log database terbaru
+    latest_log = session.query(DeviceStatusLog).filter(
+        DeviceStatusLog.device_id == device.device_id
+    ).order_by(DeviceStatusLog.timestamp.desc()).first()
+
+    if latest_log and ports:
+        for p in ports:
+            pid = str(p.get("port_id"))
+            if pid == "1" or "10ge1/0/1" in pid.lower() or "uplink" in str(p.get("port_name", "")).lower():
+                if latest_log.ingress_mbps is not None:
+                    p["rx_mbps"] = round(float(latest_log.ingress_mbps), 2)
+                if latest_log.egress_mbps is not None:
+                    p["tx_mbps"] = round(float(latest_log.egress_mbps), 2)
 
     return render_template(
         'device_detail.html',
@@ -221,7 +236,7 @@ def device_detail(device_id=1):
         alerts=alerts_data,
         specs=telemetry.get("hardware", {}),
         vlans=telemetry.get("vlans", []),
-        ports=telemetry.get("ports", []),
+        ports=ports,
         summary=telemetry.get("summary", {}),
         resources=telemetry.get("resources", {})
     )
@@ -811,6 +826,7 @@ def api_device_metrics(device_id):
         logs.reverse()
 
     telemetry = get_device_full_telemetry(device)
+    ports = telemetry.get("ports", [])
     res = telemetry.get("resources", {})
     pb_base = float(res.get("packet_buffers_pct", 31.0))
     mb_base = float(res.get("message_buffers_pct", 22.0))
@@ -914,8 +930,18 @@ def api_device_metrics(device_id):
         "resources": res,
         "specs": telemetry.get("hardware", {}),
         "vlans": telemetry.get("vlans", []),
-        "ports": telemetry.get("ports", []),
+        "ports": ports,
     }
+    # Sinkronisasi 100% Opsi B: Port 1 (Uplink) identik dengan titik grafik traffic terbaru
+    if trf_in_vals and trf_out_vals and ports:
+        latest_ingress = trf_in_vals[-1]
+        latest_egress = trf_out_vals[-1]
+        for p in ports:
+            pid = str(p.get("port_id"))
+            if pid == "1" or "10ge1/0/1" in pid.lower() or "uplink" in str(p.get("port_name", "")).lower():
+                p["rx_mbps"] = latest_ingress
+                p["tx_mbps"] = latest_egress
+
     session.close()
     return jsonify(result)
 

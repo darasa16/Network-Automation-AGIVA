@@ -96,6 +96,66 @@ function applyPortFilters() {
     });
 }
 
+function updatePortsTableRows(ports) {
+    if (!ports || !ports.length) return;
+    ports.forEach(p => {
+        const row = document.querySelector(`#portsTableBody tr[data-port-id="${p.port_id}"]`);
+        if (!row) return;
+
+        // 1. Status badge
+        const currentStatus = row.getAttribute('data-status');
+        if (currentStatus !== p.status) {
+            row.setAttribute('data-status', p.status);
+            const statusCell = row.children[2];
+            if (statusCell) {
+                if (p.status === 'UP') {
+                    statusCell.innerHTML = `<span class="status-badge badge-up"><span class="badge-dot-green"></span> UP</span>`;
+                } else {
+                    statusCell.innerHTML = `<span class="status-badge badge-down"><span class="badge-dot-red"></span> DOWN</span>`;
+                }
+            }
+        }
+
+        // 2. Speed (cell 4)
+        if (row.children[4] && p.speed) {
+            row.children[4].innerHTML = `<span>${p.speed}</span>`;
+        }
+
+        // 3. Tx (cell 5)
+        if (row.children[5] && p.tx_mbps !== undefined) {
+            row.children[5].innerHTML = `<span>${p.tx_mbps}</span>`;
+        }
+
+        // 4. Rx (cell 6)
+        if (row.children[6] && p.rx_mbps !== undefined) {
+            row.children[6].innerHTML = `<span>${p.rx_mbps}</span>`;
+        }
+
+        // 5. Total Transfer Tx/Rx (cell 7)
+        if (row.children[7] && p.bytes_tx_fmt && p.bytes_rx_fmt) {
+            row.children[7].innerHTML = `<span>${p.bytes_tx_fmt} / ${p.bytes_rx_fmt}</span>`;
+        }
+
+        // 6. PoE Power (cell 8) - No badge, clean plain text
+        if (row.children[8]) {
+            let poeText = '0 W';
+            if (p.is_sfp) {
+                poeText = 'N/A (Fiber)';
+            } else if (p.poe && p.status === 'UP' && p.poe.power_watts > 0) {
+                poeText = `${p.poe.power_watts} W`;
+            }
+            row.children[8].innerHTML = `<span>${poeText}</span>`;
+        }
+
+        // 7. Errors / Drops (cell 9)
+        if (row.children[9]) {
+            const errTotal = (p.errors_tx || 0) + (p.errors_rx || 0);
+            const drops = p.drops_tx || 0;
+            row.children[9].innerHTML = `<span>${errTotal} / ${drops}</span>`;
+        }
+    });
+}
+
 function updateConnectionStatus(isOnline) {
     const indicator = document.querySelector('.status-indicator');
     if (!indicator) return;
@@ -215,9 +275,24 @@ async function fetchDeviceMetrics(isManual = false) {
             const portUpEl = document.getElementById('currPortUpVal');
             if (portUpEl) portUpEl.textContent = `${data.summary.up_ports} / ${data.summary.total_ports}`;
         }
-        if (data.specs && data.specs.poe_consumption) {
-            const poeEl = document.getElementById('currPoeVal');
-            if (poeEl) poeEl.textContent = data.specs.poe_consumption;
+        if (data.specs) {
+            const poeEl = document.getElementById('specPoe') || document.getElementById('currPoeVal');
+            if (poeEl && data.specs.poe_consumption) poeEl.textContent = data.specs.poe_consumption;
+            const fanEl = document.getElementById('specFan');
+            if (fanEl && data.specs.fan_status) fanEl.textContent = data.specs.fan_status;
+            const ramEl = document.getElementById('specRam');
+            if (ramEl && data.specs.total_ram) ramEl.textContent = data.specs.total_ram;
+            const uplinkEl = document.getElementById('specUplink');
+            if (uplinkEl && data.specs.uplink_port) uplinkEl.textContent = data.specs.uplink_port;
+            const dnsEl = document.getElementById('specDns');
+            if (dnsEl && data.specs.dns_servers) dnsEl.textContent = data.specs.dns_servers;
+            const dnsModeEl = document.getElementById('specDnsMode');
+            if (dnsModeEl && data.specs.dns_mode) dnsModeEl.textContent = data.specs.dns_mode;
+        }
+
+        // Sinkronisasi Tabel Port dengan Siklus Log 2 Menit Terbaru
+        if (data.ports && Array.isArray(data.ports)) {
+            updatePortsTableRows(data.ports);
         }
 
         renderDeviceCharts(data);
