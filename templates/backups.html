@@ -50,10 +50,18 @@
             </div>
             <div class="clock-display" id="clockDisplay">12:00:00 WIB</div>
             <div class="user-profile">
-                <div class="avatar">EA</div>
+                <div class="avatar" title="Administrator Account">AD</div>
                 <div class="user-info">
-                    <span class="user-name">Engineer Agiva</span>
+                    <span class="user-name">{{ session.get('username', 'Administrator') }}</span>
+                    <span class="user-role">{{ session.get('role', 'Administrator') }}</span>
                 </div>
+                <a href="{{ url_for('logout') }}" class="btn-logout" title="Sign Out / Keluar Sesi">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                </a>
             </div>
         </div>
     </header>

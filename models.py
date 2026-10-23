@@ -24,6 +24,7 @@ class Device(Base):
     # Relationships
     logs = relationship("DeviceStatusLog", back_populates="device", cascade="all, delete-orphan")
     alerts = relationship("Alert", back_populates="device", cascade="all, delete-orphan")
+    incidents = relationship("IncidentLog", back_populates="device", cascade="all, delete-orphan")
     backups = relationship("BackupHistory", back_populates="device", cascade="all, delete-orphan")
 
     def to_dict(self):
@@ -89,10 +90,53 @@ class Alert(Base):
             "type": self.type,
             "severity": self.severity,
             "message": self.message,
-            "triggered_at": self.triggered_at.strftime("%H:%M:%S WIB") if self.triggered_at else "-",
+            "triggered_at": self.triggered_at.strftime("%Y-%m-%d %H:%M:%S") if self.triggered_at else "-",
             "acknowledged": self.acknowledged,
             "acknowledged_by": self.acknowledged_by,
-            "resolved_at": self.resolved_at.strftime("%Y-%m-%d %H:%M") if self.resolved_at else None
+            "resolved_at": self.resolved_at.strftime("%Y-%m-%d") if self.resolved_at else None
+        }
+
+class IncidentLog(Base):
+    """Tabel: incident_logs (Riwayat Anomali, Cooldown <10m, dan Audit Insiden)"""
+    __tablename__ = 'incident_logs'
+
+    incident_id = Column(Integer, primary_key=True, autoincrement=True)
+    device_id = Column(Integer, ForeignKey('devices.device_id', ondelete='CASCADE'), nullable=False)
+    type = Column(String(50), nullable=False)        # 'CPU_OVERLOAD', 'MEMORY_OVERLOAD', 'HOST_DOWN'
+    severity = Column(String(20), default='WARNING') # 'CRITICAL' / 'WARNING'
+    peak_metric = Column(String(50), nullable=True)  # misal '92.4%' atau 'DOWN (Timeout)'
+    started_at = Column(DateTime, default=datetime.now, nullable=False)
+    resolved_at = Column(DateTime, nullable=True)
+    duration_seconds = Column(Integer, default=0)
+    status = Column(String(30), default='ACTIVE_MONITORING') # 'ACTIVE_MONITORING', 'AUTO_COOLDOWN', 'ESCALATED_TO_ALERT', 'RESOLVED_ALERT'
+
+    device = relationship("Device", back_populates="incidents")
+
+    def to_dict(self):
+        duration_str = "-"
+        if self.duration_seconds and self.duration_seconds > 0:
+            m, s = divmod(self.duration_seconds, 60)
+            h, m = divmod(m, 60)
+            if h > 0:
+                duration_str = f"{h}j {m}m {s}d"
+            elif m > 0:
+                duration_str = f"{m}m {s}d"
+            else:
+                duration_str = f"{s} dtk"
+
+        return {
+            "id": self.incident_id,
+            "device_id": self.device_id,
+            "device_name": self.device.name if self.device else "Unknown Device",
+            "ip": self.device.ip_address if self.device else "-",
+            "type": self.type,
+            "severity": self.severity,
+            "peak_metric": self.peak_metric or "-",
+            "started_at": self.started_at.strftime("%Y-%m-%d %H:%M:%S") if self.started_at else "-",
+            "resolved_at": self.resolved_at.strftime("%Y-%m-%d %H:%M:%S") if self.resolved_at else "-",
+            "duration": duration_str,
+            "duration_seconds": self.duration_seconds or 0,
+            "status": self.status
         }
 
 # 3. TELEGRAM BOT MODELS

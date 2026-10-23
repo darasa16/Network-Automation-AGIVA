@@ -107,17 +107,19 @@ db_session = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind
 
 def init_db():
     """Create all tables and seed realistic sample data if empty in PostgreSQL."""
-    from models import Base, Device, DeviceStatusLog, Alert, TelegramWhitelist, TelegramMessageLog, BackupHistory
+    from models import Base, Device, DeviceStatusLog, Alert, IncidentLog, TelegramWhitelist, TelegramMessageLog, BackupHistory
     Base.metadata.create_all(bind=engine)
     
     # Check if database needs seeding
     session = db_session()
     try:
-        # Tetap izinkan seeding untuk akun Telegram Whitelist agar bot tetap punya admin
+        # Seeding Telegram Whitelist
         whitelist_count = session.query(TelegramWhitelist).count()
         if whitelist_count == 0:
             print("[*] Seeding Telegram Whitelist (Admin/NOC Security Access)...")
             seed_whitelist_only(session)
+
+
     except Exception as e:
         session.rollback()
         raise e

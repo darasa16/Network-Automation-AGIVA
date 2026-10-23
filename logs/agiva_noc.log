@@ -1,0 +1,20 @@
+2026-10-23 11:40:34 [INFO] [TestLogger]: Test logging verification
+2026-10-23 11:43:53 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: FW-PA220-1 - CPU_OVERLOAD (89.5%). Jendela pemantauan 10 menit dimulai.
+2026-10-23 11:43:54 [INFO] [RuleEngine]: [RuleEngine] Insiden #3 (FW-PA220-1 - CPU_OVERLOAD) pulih dalam 1 detik -> AUTO_COOLDOWN.
+2026-10-23 12:56:36 [INFO] [DataCollector]: === MODE MANUAL: Menjalankan 1 siklus polling & metrik ===
+2026-10-23 12:56:36 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-10-23 12:56:36 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-10-23 12:56:43 [INFO] [RuleEngine]: [RuleEngine] Alert #10 (SW-2930F-HO - HOST_DOWN) berhasil di-resolve setelah 87 jam 47 menit 12 detik.
+2026-10-23 12:56:43 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-10-23 12:56:48 [INFO] [RuleEngine]: [RuleEngine] Alert #8 (SW-S5735-CORNER - HOST_DOWN) berhasil di-resolve setelah 87 jam 47 menit 38 detik.
+2026-10-23 12:56:48 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-10-23 12:56:55 [INFO] [DataCollector]: === END POLLING CYCLE ===
+2026-10-23 12:56:55 [INFO] [DataCollector]: === Selesai 1 siklus manual. Keluar (tidak berjalan di latar belakang). ===
+2026-10-23 13:04:06 [INFO] [DataCollector]: === MODE MANUAL: Menjalankan 1 siklus polling & metrik ===
+2026-10-23 13:04:06 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-10-23 13:04:06 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-10-23 13:04:12 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-10-23 13:04:17 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-10-23 13:04:23 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: FW-PA220-1 - CPU_OVERLOAD (115.0%). Jendela pemantauan 10 menit dimulai.
+2026-10-23 13:04:23 [INFO] [DataCollector]: === END POLLING CYCLE ===
+2026-10-23 13:04:23 [INFO] [DataCollector]: === Selesai 1 siklus manual. Keluar (tidak berjalan di latar belakang). ===

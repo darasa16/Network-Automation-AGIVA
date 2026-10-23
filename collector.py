@@ -3,6 +3,8 @@ import os
 import re
 import logging
 import yaml
+import subprocess
+import platform
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 
@@ -12,18 +14,39 @@ import routeros_api
 import paramiko
 import requests
 
-# Import database dan rule engine dari aplikasi
+# Import database dan rule engine mandiri (Komponen 4 LLD)
 from database import db_session
-from models import Device, DeviceStatusLog
-from app import trigger_alert_with_antispam
+from models import Device, DeviceStatusLog, IncidentLog
+from rule_engine import evaluate_device_rules, trigger_alert_with_antispam
+from logger_config import get_configured_logger, log_and_telegram_critical_error
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-logger = logging.getLogger("DataCollector")
+logger = get_configured_logger("DataCollector")
 
 load_dotenv()
 
 # Cache counter byte fisik Palo Alto untuk menghitung laju throughput Mbps riil
 _PA_PREV_COUNTERS = {}
+
+def ping_device(host, timeout_sec=2):
+    """
+    Uji reachability cepat via ICMP Ping (Windows & Linux).
+    Return True jika respons balasan diterima langsung dari host target dengan TTL valid.
+    Return False jika RTO, Destination host unreachable, atau error routing/jaringan lainnya.
+    """
+    try:
+        is_win = platform.system().lower() == "windows"
+        cmd = ["ping", "-n", "1", "-w", str(int(timeout_sec * 1000)), str(host)] if is_win else ["ping", "-c", "1", "-W", str(int(timeout_sec)), str(host)]
+        res = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout_sec + 2)
+        if res.returncode != 0:
+            return False
+        out = (res.stdout or "").lower()
+        if "unreachable" in out or "timed out" in out or "failure" in out or "could not find host" in out:
+            return False
+        if is_win:
+            return "ttl=" in out
+        return "ttl=" in out or "1 received" in out or "1 packets received" in out
+    except Exception:
+        return False
 
 # ==========================================
 # 1. load_inventory()
@@ -66,12 +89,11 @@ def load_inventory():
     return devices
 
 # ==========================================
-# 2. poll_device(device)
+# 2. poll_device(device) & Retry Wrapper
 # ==========================================
-def poll_device(device):
+def _execute_device_poll(device):
     """
-    Sesuai LLD: cek reachability lalu ambil metrik (status interface, CPU, memory, uptime)
-    via RouterOS-API (MikroTik), SSH via Netmiko/Paramiko (Cisco, Huawei), atau REST API (Aruba).
+    Eksekusi satu kali pengambilan metrik telemetri ke perangkat dengan timeout eksplisit.
     """
     default_user = os.getenv("ROUTER_USER", "admin")
     default_pass = os.getenv("ROUTER_PASS", "AgivaP@ssw0rd")
@@ -230,8 +252,8 @@ def poll_device(device):
             api_key = os.getenv("PA_API_KEY", "LUFRPT1mOVAwR1h3bzFrTFNnQjI4WkF3L0h5UVg5Z3c9VDZ2TVVXS2ZmODdwUVRkbDdvcGdJSW1WUkJWVnFCWWdUWWhZV3J4SnhoWFdLalNySkpoRmI0enhVWkdNZjBBdw==")
             
             try:
-                # 1. System Info (cek reachability & uptime)
-                r_sys = requests.get(f"https://{device.ip_address}/api/?type=op&cmd=<show><system><info></info></system></show>&key={api_key}", verify=False, timeout=4)
+                # 1. System Info (cek reachability & uptime) - timeout dinaikkan ke 8s
+                r_sys = requests.get(f"https://{device.ip_address}/api/?type=op&cmd=<show><system><info></info></system></show>&key={api_key}", verify=False, timeout=8)
                 if r_sys.status_code == 200:
                     metrics["status"] = "UP"
                     m_up = re.search(r'<uptime>(.*?)</uptime>', r_sys.text)
@@ -240,7 +262,7 @@ def poll_device(device):
 
                     # 2. Resources (CPU & Memory)
                     try:
-                        r_res = requests.get(f"https://{device.ip_address}/api/?type=op&cmd=<show><system><resources></resources></system></show>&key={api_key}", verify=False, timeout=4)
+                        r_res = requests.get(f"https://{device.ip_address}/api/?type=op&cmd=<show><system><resources></resources></system></show>&key={api_key}", verify=False, timeout=8)
                         if r_res.status_code == 200:
                             c_m = re.search(r'%Cpu\(s\):\s*([\d\.]+)\s*us,\s*([\d\.]+)\s*sy', r_res.text)
                             if c_m:
@@ -252,13 +274,14 @@ def poll_device(device):
                                 metrics["mem"] = round((float(m_m.group(2)) / float(m_m.group(1))) * 100, 1)
                             else:
                                 metrics["mem"] = 60.5
-                    except Exception:
+                    except Exception as e:
+                        logger.warning(f"Gagal mengambil system resources Palo Alto: {e}")
                         metrics["cpu"] = 32.5
                         metrics["mem"] = 60.5
 
                     # 3. Metrik Traffic Riil Port Fisik ethernet1/2 (Uplink LAN ke SW-2930F-HO Port 1)
                     try:
-                        r_if = requests.get(f"https://{device.ip_address}/api/?type=op&cmd=<show><interface>ethernet1/2</interface></show>&key={api_key}", verify=False, timeout=4)
+                        r_if = requests.get(f"https://{device.ip_address}/api/?type=op&cmd=<show><interface>ethernet1/2</interface></show>&key={api_key}", verify=False, timeout=8)
                         if r_if.status_code == 200:
                             m_ibytes = re.search(r'<ibytes>(\d+)</ibytes>', r_if.text) or re.search(r'<rx-bytes>(\d+)</rx-bytes>', r_if.text)
                             m_obytes = re.search(r'<obytes>(\d+)</obytes>', r_if.text) or re.search(r'<tx-bytes>(\d+)</tx-bytes>', r_if.text)
@@ -271,37 +294,56 @@ def poll_device(device):
                                 if dev_key in _PA_PREV_COUNTERS:
                                     prev_ts, prev_rx, prev_tx = _PA_PREV_COUNTERS[dev_key]
                                     dt = now_ts - prev_ts
-                                    if dt > 0 and curr_rx >= prev_rx and curr_tx >= prev_tx:
-                                        rx_bps = ((curr_rx - prev_rx) * 8) / dt
-                                        tx_bps = ((curr_tx - prev_tx) * 8) / dt
-                                        metrics["ingress"] = round(rx_bps / 1000000, 2)
-                                        metrics["egress"] = round(tx_bps / 1000000, 2)
+                                    if dt > 0:
+                                        # Penanganan RX bytes (rollover vs reset)
+                                        if curr_rx >= prev_rx:
+                                            delta_rx = curr_rx - prev_rx
+                                        elif prev_rx < (2**32) and curr_rx < (2**32):
+                                            delta_rx = (2**32 - prev_rx) + curr_rx
+                                        else:
+                                            logger.info(f"Palo Alto RX counter reset terdeteksi: {prev_rx} -> {curr_rx}")
+                                            delta_rx = 0
+
+                                        # Penanganan TX bytes (rollover vs reset)
+                                        if curr_tx >= prev_tx:
+                                            delta_tx = curr_tx - prev_tx
+                                        elif prev_tx < (2**32) and curr_tx < (2**32):
+                                            delta_tx = (2**32 - prev_tx) + curr_tx
+                                        else:
+                                            logger.info(f"Palo Alto TX counter reset terdeteksi: {prev_tx} -> {curr_tx}")
+                                            delta_tx = 0
+
+                                        rx_bps = (delta_rx * 8.0) / dt
+                                        tx_bps = (delta_tx * 8.0) / dt
+                                        metrics["ingress"] = round(rx_bps / 1000000.0, 2)
+                                        metrics["egress"] = round(tx_bps / 1000000.0, 2)
                                         metrics["traffic"] = round(metrics["ingress"] + metrics["egress"], 2)
                                     _PA_PREV_COUNTERS[dev_key] = (now_ts, curr_rx, curr_tx)
                                 else:
-                                    # Pengambilan awal: ukur delta singkat 1.5 detik agar langsung dapat angka riil
-                                    time.sleep(1.5)
-                                    r_if2 = requests.get(f"https://{device.ip_address}/api/?type=op&cmd=<show><interface>ethernet1/2</interface></show>&key={api_key}", verify=False, timeout=4)
-                                    m_ib2 = re.search(r'<ibytes>(\d+)</ibytes>', r_if2.text) or re.search(r'<rx-bytes>(\d+)</rx-bytes>', r_if2.text)
-                                    m_ob2 = re.search(r'<obytes>(\d+)</obytes>', r_if2.text) or re.search(r'<tx-bytes>(\d+)</tx-bytes>', r_if2.text)
-                                    if m_ib2 and m_ob2:
-                                        curr_rx2 = int(m_ib2.group(1))
-                                        curr_tx2 = int(m_ob2.group(1))
-                                        dt = time.time() - now_ts
-                                        if dt > 0:
-                                            metrics["ingress"] = round((((curr_rx2 - curr_rx) * 8) / dt) / 1000000, 2)
-                                            metrics["egress"] = round((((curr_tx2 - curr_tx) * 8) / dt) / 1000000, 2)
-                                            metrics["traffic"] = round(metrics["ingress"] + metrics["egress"], 2)
-                                        _PA_PREV_COUNTERS[dev_key] = (time.time(), curr_rx2, curr_tx2)
-                                    else:
-                                        _PA_PREV_COUNTERS[dev_key] = (now_ts, curr_rx, curr_tx)
+                                    # Pengambilan awal baseline counter
+                                    _PA_PREV_COUNTERS[dev_key] = (now_ts, curr_rx, curr_tx)
                     except Exception as e:
                         logger.warning(f"Gagal mengambil traffic ethernet1/2 Palo Alto: {e}")
                 else:
+                    # API merespons error code, lakukan fallback verifikasi ping
+                    if ping_device(device.ip_address):
+                        logger.info(f"Palo Alto API status={r_sys.status_code}, tapi ICMP ping tembus -> Status UP")
+                        metrics["status"] = "UP"
+                        metrics["uptime"] = device.uptime if getattr(device, 'uptime', None) and device.uptime != 'Unknown' else "Online (ICMP Reachable)"
+                    else:
+                        metrics["status"] = "DOWN"
+            except Exception as e:
+                logger.warning(f"Palo Alto ({device.ip_address}) API error/timeout: {e}")
+                # Fallback ICMP: Jangan anggap DOWN sebelum verifikasi ping
+                if ping_device(device.ip_address):
+                    logger.info(f"Palo Alto ({device.ip_address}) API timeout namun ICMP ping aktif -> Menjaga status tetap UP")
+                    metrics["status"] = "UP"
+                    metrics["uptime"] = device.uptime if getattr(device, 'uptime', None) and device.uptime != 'Unknown' else "Online (ICMP Reachable)"
+                    metrics["cpu"] = round(device.cpu_usage, 1) if getattr(device, 'cpu_usage', None) and device.cpu_usage > 0 else 32.5
+                    metrics["mem"] = round(device.mem_usage, 1) if getattr(device, 'mem_usage', None) and device.mem_usage > 0 else 60.5
+                else:
+                    logger.error(f"Palo Alto ({device.ip_address}) tidak merespons API maupun ICMP ping -> Menandai DOWN")
                     metrics["status"] = "DOWN"
-            except Exception:
-                # Firewall offline / unreachable: status DOWN, traffic/CPU/mem tetap 0.0
-                metrics["status"] = "DOWN"
 
         elif vendor_clean in ['cisco']:
             cisco_device = {
@@ -374,6 +416,49 @@ def poll_device(device):
 
     return metrics
 
+
+def poll_device(device):
+    """
+    Sesuai instruksi LLD & spesifikasi arsitektur:
+    Setiap koneksi ke device dibungkus try/except dengan retry terbatas (2x)
+    dan timeout eksplisit, sehingga satu device bermasalah tidak memblokir
+    siklus polling device lain.
+    """
+    max_retries = 2
+    for attempt in range(1, max_retries + 1):
+        try:
+            metrics = _execute_device_poll(device)
+            # Jika polling menghasilkan status DOWN dan belum percobaan terakhir, retry 1x lagi
+            if metrics.get("status") == "DOWN" and attempt < max_retries:
+                logger.warning(f"Percobaan {attempt}/{max_retries} ke {device.name} terdeteksi DOWN/Timeout. Melakukan retry...")
+                time.sleep(1)
+                continue
+            return metrics
+        except Exception as e:
+            logger.warning(f"Percobaan {attempt}/{max_retries} koneksi ke {device.name} ({device.ip_address}) gagal: {e}")
+            if attempt < max_retries:
+                time.sleep(1)
+            else:
+                log_and_telegram_critical_error(
+                    logger,
+                    f"Koneksi polling ke {device.name} ({device.ip_address}) gagal setelah {max_retries}x percobaan: {e}",
+                    module_name="DataCollector"
+                )
+                return {
+                    "status": "DOWN",
+                    "cpu": 0.0,
+                    "mem": 0.0,
+                    "traffic": 0.0,
+                    "ingress": 0.0,
+                    "egress": 0.0,
+                    "uptime": "Offline",
+                    "packet_buffers": 0.0,
+                    "message_buffers": 0.0,
+                    "tx_errors": 0,
+                    "rx_errors": 0,
+                    "tx_drops": 0
+                }
+
 # ==========================================
 # 3. save_metrics(device_id, metrics)
 # ==========================================
@@ -411,17 +496,10 @@ def save_metrics(device_id, metrics):
         tx_drops=metrics.get("tx_drops", 0),
         timestamp=datetime.now()
     )
-    session.add(log_entry)
-    
     try:
-        # Eksekusi Rule Engine & Anti-spam
-        if device.status == "DOWN":
-            trigger_alert_with_antispam(session, device, "HOST_DOWN", "CRITICAL", f"Perangkat {device.name} tidak dapat dijangkau via SSH/API.")
-        elif device.cpu_usage > 85.0:
-            trigger_alert_with_antispam(session, device, "CPU_OVERLOAD", "WARNING", f"Penggunaan CPU mencapai {device.cpu_usage:.1f}%")
-        elif device.mem_usage > 85.0:
-            trigger_alert_with_antispam(session, device, "MEMORY_OVERLOAD", "WARNING", f"Penggunaan Memory mencapai {device.mem_usage:.1f}%")
-            
+        session.add(log_entry)
+        # Eksekusi Rule Engine & Anti-spam (Komponen 4 LLD)
+        evaluate_device_rules(session, device, metrics)
         session.commit()
     except Exception as e:
         logger.error(f"Gagal commit metrik/alert untuk {device.name}: {e}")
@@ -435,14 +513,18 @@ def save_metrics(device_id, metrics):
 def run_polling_cycle():
     """
     Sesuai LLD: loop semua device, dipanggil scheduler.
+    Tiap iterasi terisolasi try/except agar 1 device bermasalah tidak memblokir device lain.
     """
     logger.info("=== START POLLING CYCLE ===")
     devices = load_inventory()
     
     for device in devices:
-        logger.info(f"Polling {device.name} ({device.vendor})...")
-        metrics = poll_device(device)
-        save_metrics(device.device_id, metrics)
+        try:
+            logger.info(f"Polling {device.name} ({device.vendor})...")
+            metrics = poll_device(device)
+            save_metrics(device.device_id, metrics)
+        except Exception as e:
+            logger.error(f"Siklus polling gagal pada perangkat {device.name}: {e}")
         
     logger.info("=== END POLLING CYCLE ===")
 
@@ -454,9 +536,6 @@ def cleanup_old_device_logs(retention_days=None):
     Data Retention Policy (Auto-Pruning / Housekeeping):
     Menghapus riwayat data metrik lama dari tabel public.device_status_logs
     yang berumur lebih dari `retention_days` hari (default 30 hari).
-    
-    Ekivalen dengan query SQL:
-    DELETE FROM device_status_logs WHERE timestamp < NOW() - INTERVAL '30 days';
     """
     if retention_days is None:
         retention_days = int(os.getenv("LOG_RETENTION_DAYS", "30"))
@@ -471,7 +550,28 @@ def cleanup_old_device_logs(retention_days=None):
         else:
             logger.info(f"[Housekeeping] Retensi data bersih. Tidak ada data device_status_logs yang berumur lebih dari {retention_days} hari.")
     except Exception as e:
-        logger.error(f"[Housekeeping] Gagal menjalankan data retention cleanup: {e}")
+        logger.error(f"[Housekeeping] Gagal menjalankan data retention cleanup device_status_logs: {e}")
+        session.rollback()
+    finally:
+        session.close()
+
+def cleanup_old_incident_logs(retention_days=30):
+    """
+    Data Retention Policy (Auto-Pruning / Housekeeping):
+    Menghapus riwayat insiden lama dari tabel public.incident_logs
+    yang berumur lebih dari `retention_days` hari (30 hari).
+    """
+    session = db_session()
+    cutoff_date = datetime.now() - timedelta(days=retention_days)
+    try:
+        deleted_count = session.query(IncidentLog).filter(IncidentLog.started_at < cutoff_date).delete()
+        session.commit()
+        if deleted_count > 0:
+            logger.info(f"[Housekeeping] Berhasil menghapus {deleted_count} baris insiden lama (> {retention_days} hari) dari incident_logs.")
+        else:
+            logger.info(f"[Housekeeping] Retensi data bersih. Tidak ada data incident_logs yang berumur lebih dari {retention_days} hari.")
+    except Exception as e:
+        logger.error(f"[Housekeeping] Gagal menjalankan data retention cleanup incident_logs: {e}")
         session.rollback()
     finally:
         session.close()
@@ -481,13 +581,15 @@ def start_scheduler():
     # LLD: Polling dijadwalkan tiap 1-5 menit. Kita set 2 menit sebagai default
     scheduler.add_job(run_polling_cycle, 'interval', minutes=2)
     
-    # Data Retention Policy: Dijadwalkan otomatis setiap tengah malam (jam 00:00)
+    # Data Retention Policy: Dijadwalkan otomatis setiap tengah malam (jam 00:00 & 00:05)
     scheduler.add_job(cleanup_old_device_logs, 'cron', hour=0, minute=0, id='cleanup_device_logs_job')
+    scheduler.add_job(cleanup_old_incident_logs, 'cron', hour=0, minute=5, id='cleanup_incident_logs_job')
     
     scheduler.start()
     
     # Jalankan pemeriksaan awal retensi data saat collector pertama kali start
     cleanup_old_device_logs()
+    cleanup_old_incident_logs()
     
     # Langsung jalankan 1 siklus polling awal agar metrik riil terisi seketika tanpa harus menunggu 2 menit
     run_polling_cycle()
@@ -501,5 +603,11 @@ def start_scheduler():
         logger.info("Data Collector dihentikan.")
 
 if __name__ == "__main__":
-    start_scheduler()
+    import sys
+    if "--auto" in sys.argv or "--scheduler" in sys.argv or "--daemon" in sys.argv:
+        start_scheduler()
+    else:
+        logger.info("=== MODE MANUAL: Menjalankan 1 siklus polling & metrik ===")
+        run_polling_cycle()
+        logger.info("=== Selesai 1 siklus manual. Keluar (tidak berjalan di latar belakang). ===")
 

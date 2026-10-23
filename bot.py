@@ -17,8 +17,9 @@ from telegram.ext import (
     filters,
     ContextTypes,
 )
+import re
 from database import db_session
-from models import TelegramWhitelist, TelegramMessageLog
+from models import TelegramWhitelist, TelegramMessageLog, Alert, IncidentLog, Device
 
 # Set terminal encoding to UTF-8
 sys.stdout.reconfigure(encoding='utf-8')
@@ -314,43 +315,56 @@ def build_device_detail_view(device_name: str) -> str:
     return msg
 
 def build_alerts_view() -> str:
-    """Tampilan Daftar Incident & Alert Aktif"""
-    open_alerts = [a for a in ALERTS.values() if a.get("status", "").upper() == "OPEN"]
-    ack_alerts = [a for a in ALERTS.values() if a.get("status", "").upper() == "ACKNOWLEDGED"]
-    resolved_alerts = [a for a in ALERTS.values() if a.get("status", "").upper() == "RESOLVED"]
+    """Tampilan Daftar Incident & Alert Aktif dari Database"""
+    session = db_session()
+    try:
+        db_alerts = session.query(Alert).filter(Alert.resolved_at == None).order_by(Alert.triggered_at.desc()).all()
+        open_alerts = [a for a in db_alerts if not a.acknowledged]
+        ack_alerts = [a for a in db_alerts if a.acknowledged]
+        
+        today_start = datetime.combine(datetime.now().date(), datetime.min.time())
+        resolved_count = session.query(IncidentLog).filter(
+            IncidentLog.status == 'RESOLVED_ALERT',
+            IncidentLog.resolved_at >= today_start
+        ).count()
 
-    msg = (
-        "<b>DAFTAR ALERT JARINGAN</b>\n\n"
-        f"Status Antrean: {len(open_alerts)} Terbuka | {len(ack_alerts)} Sedang Ditangani | {len(resolved_alerts)} Selesai\n"
-        f"Waktu Data: <code>{get_current_time_wib()}</code>\n\n"
-    )
-
-    active_items = {k: v for k, v in ALERTS.items() if v.get("status", "").upper() != "RESOLVED"}
-
-    if not active_items:
-        msg += "Tidak ada gangguan aktif saat ini. Seluruh alert berstatus Resolved.\n"
-    else:
-        for alert_id, alert in active_items.items():
-            status_tag = "Open" if alert.get("status", "").upper() == "OPEN" else "In Progress"
-
-            msg += (
-                f"<b>[{alert['id']}] {alert['severity']} — {alert['device']}</b>\n"
-                f"• Masalah: {alert['issue']}\n"
-                f"• Lokasi: {alert['site']}\n"
-                f"• Waktu: <code>{alert['triggered_at']}</code>\n"
-                f"• Status: {status_tag}\n"
-            )
-            if alert.get("status", "").upper() == "ACKNOWLEDGED":
-                msg += f"• PIC: @{alert.get('acknowledged_by', 'NOC')} (<code>{alert.get('acknowledged_at', '')}</code>)\n"
-            msg += "\n"
-
-        msg += (
-            "Perintah tindak lanjut:\n"
-            "• /ack [id] - Konfirmasi penanganan alert\n"
-            "• /resolve [id] - Selesaikan dan pulihkan gangguan"
+        msg = (
+            "<b>DAFTAR ACTIVE ALERTS JARINGAN</b>\n\n"
+            f"Status Antrean: {len(open_alerts)} Menunggu ACK | {len(ack_alerts)} Sedang Ditangani (ACK) | {resolved_count} Resolved Hari Ini\n"
+            f"Waktu Data: <code>{get_current_time_wib()}</code>\n\n"
         )
 
-    return msg
+        if not db_alerts:
+            msg += "✅ Tidak ada gangguan aktif saat ini. Seluruh alert berstatus Resolved.\n"
+        else:
+            for a in db_alerts:
+                status_tag = "Sedang Ditangani (Acknowledged)" if a.acknowledged else "Menunggu ACK"
+                dev_name = a.device.name if a.device else f"Perangkat #{a.device_id}"
+                ip_addr = a.device.ip_address if a.device else "-"
+                time_str = a.triggered_at.strftime('%Y-%m-%d %H:%M:%S') if a.triggered_at else "-"
+
+                msg += (
+                    f"<b>[#{a.alert_id}] {a.severity} — {dev_name}</b> ({ip_addr})\n"
+                    f"• Tipe Anomali: {a.type}\n"
+                    f"• Deskripsi: {a.message}\n"
+                    f"• Waktu: <code>{time_str}</code>\n"
+                    f"• Status ACK: <b>{status_tag}</b>\n"
+                )
+                if a.acknowledged:
+                    msg += f"• Petugas: {a.acknowledged_by or 'NOC Team'}\n"
+                msg += "\n"
+
+            msg += (
+                "Perintah tindak lanjut:\n"
+                "• <code>/ack [id]</code> - Konfirmasi penanganan alert\n"
+                "• <code>/resolve [id]</code> - Selesaikan dan pindahkan ke Incident Log"
+            )
+        return msg
+    except Exception as e:
+        logger.error(f"Error in build_alerts_view: {e}")
+        return "Gagal memuat daftar alert dari database."
+    finally:
+        session.close()
 
 def build_backup_report(device_name: str, operator_name: str) -> str:
     """Laporan Hasil Eksekusi Backup Konfigurasi"""
@@ -462,7 +476,7 @@ async def alerts_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     log_telegram_message(update.effective_chat.id, "COMMAND_REPLY", f"Respon /alerts: Daftar gangguan dikirim ke @{u_name}")
 
 async def ack_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Command /ack <alert_id>: Acknowledge Alert"""
+    """Command /ack <alert_id>: Acknowledge Alert (DB + Fallback)"""
     user_id = update.effective_user.id
     if not is_whitelisted(user_id):
         logger.warning(f"Unauthorized /ack command by user {user_id}")
@@ -472,26 +486,83 @@ async def ack_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
 
-    if not context.args:
+    # Parse ID dari argumen (/ack 10) atau text (/ack10 atau /ack_10)
+    raw_id = ""
+    if context.args:
+        raw_id = context.args[0].strip()
+    elif update.message and update.message.text:
+        m = re.search(r'^/ack_?(\w+)', update.message.text.strip(), re.IGNORECASE)
+        if m:
+            raw_id = m.group(1).strip()
+
+    if not raw_id:
         text = build_alerts_view()
         await update.message.reply_text(
             "<b>PARAMETER ALERT DIPERLUKAN</b>\n\n"
-            "Gunakan format: <code>/ack &lt;id_alert&gt;</code> (contoh: <code>/ack 101</code>)\n\n"
+            "Gunakan format: <code>/ack &lt;id_alert&gt;</code> (contoh: <code>/ack 10</code>)\n\n"
             + text,
             parse_mode=ParseMode.HTML
         )
         return
 
-    alert_id = context.args[0].strip()
-    alert = ALERTS.get(alert_id)
+    alert_id_clean = raw_id.lstrip('#').replace('ALT-', '').strip()
+    handler_user = update.effective_user.username or update.effective_user.first_name
+
+    # 1. Cek di Database PostgreSQL
+    session = db_session()
+    db_alert = None
+    try:
+        if alert_id_clean.isdigit():
+            db_alert = session.query(Alert).filter(Alert.alert_id == int(alert_id_clean)).first()
+    except Exception as e:
+        logger.error(f"Error querying alert in DB: {e}")
+
+    if db_alert:
+        if db_alert.resolved_at:
+            session.close()
+            await update.message.reply_text(f"⚠️ Alert #{db_alert.alert_id} sudah dalam status <b>Resolved</b> sebelumnya.", parse_mode=ParseMode.HTML)
+            return
+
+        alert_id_val = db_alert.alert_id
+        dev_name = db_alert.device.name if db_alert.device else f"Perangkat #{db_alert.device_id}"
+        severity_val = db_alert.severity
+
+        db_alert.acknowledged = True
+        db_alert.acknowledged_by = f"@{handler_user}"
+        session.commit()
+        session.close()
+
+        ack_report = (
+            "<b>KONFIRMASI PENANGANAN ALERT</b>\n\n"
+            f"Referensi Alert: <code>#{alert_id_val}</code>\n"
+            f"Perangkat: <code>{dev_name}</code>\n"
+            f"Tingkat Bahaya: {severity_val}\n"
+            f"Petugas: @{html.escape(handler_user)}\n"
+            f"Waktu Konfirmasi: <code>{get_current_time_wib()}</code>\n"
+            "Status ACK: <b>Acknowledged (Sedang Ditangani)</b>\n\n"
+            f"Ketik <code>/resolve {alert_id_val}</code> untuk menyelesaikan gangguan dan memindahkannya ke Incident Log."
+        )
+        ACTIVE_CHATS.add(update.effective_chat.id)
+        await update.message.reply_text(ack_report, parse_mode=ParseMode.HTML)
+        log_telegram_message(
+            chat_id=str(update.effective_chat.id),
+            message_type="COMMAND_REPLY",
+            content=f"Alert #{alert_id_val} ({dev_name}) di-acknowledge oleh @{handler_user}.",
+            status="SENT"
+        )
+        return
+
+    session.close()
+
+    # 2. Fallback in-memory ALERTS
+    alert = ALERTS.get(alert_id_clean)
     if not alert:
         await update.message.reply_text(
-            f"<b>ALERT ID TIDAK DITEMUKAN</b>\n\nAlert <code>{html.escape(alert_id)}</code> tidak terdaftar dalam antrean.",
+            f"<b>ALERT ID TIDAK DITEMUKAN</b>\n\nAlert <code>{html.escape(raw_id)}</code> tidak terdaftar dalam antrean aktif.",
             parse_mode=ParseMode.HTML
         )
         return
 
-    handler_user = update.effective_user.username or update.effective_user.first_name
     alert["status"] = "Acknowledged"
     alert["acknowledged_by"] = handler_user
     alert["acknowledged_at"] = get_current_time_wib()
@@ -504,8 +575,8 @@ async def ack_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"Tingkat Bahaya: {alert['severity']}\n"
         f"Petugas: @{html.escape(handler_user)}\n"
         f"Waktu Konfirmasi: <code>{alert['acknowledged_at']}</code>\n"
-        "Status Alur: In Progress\n\n"
-        "Ketik /resolve [alert_id] untuk menutup alert jika gangguan telah diperbaiki."
+        "Status ACK: <b>Acknowledged (Sedang Ditangani)</b>\n\n"
+        f"Ketik <code>/resolve {alert['id']}</code> jika gangguan telah diperbaiki."
     )
     await update.message.reply_text(ack_report, parse_mode=ParseMode.HTML)
     log_telegram_message(
@@ -516,7 +587,7 @@ async def ack_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 async def resolve_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Command /resolve <alert_id>: Resolve Alert secara manual"""
+    """Command /resolve <alert_id>: Resolve Alert secara manual & pindahkan ke Incident Log"""
     user_id = update.effective_user.id
     if not is_whitelisted(user_id):
         logger.warning(f"Unauthorized /resolve command by user {user_id}")
@@ -526,21 +597,110 @@ async def resolve_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
 
-    if not context.args:
+    # Parse ID dari argumen (/resolve 10) atau text (/resolve10 atau /resolve_10)
+    raw_id = ""
+    if context.args:
+        raw_id = context.args[0].strip()
+    elif update.message and update.message.text:
+        m = re.search(r'^/resolve_?(\w+)', update.message.text.strip(), re.IGNORECASE)
+        if m:
+            raw_id = m.group(1).strip()
+
+    if not raw_id:
         text = build_alerts_view()
         await update.message.reply_text(
             "<b>PARAMETER ALERT DIPERLUKAN</b>\n\n"
-            "Gunakan format: <code>/resolve &lt;id_alert&gt;</code> (contoh: <code>/resolve 101</code>)\n\n"
+            "Gunakan format: <code>/resolve &lt;id_alert&gt;</code> (contoh: <code>/resolve 10</code>)\n\n"
             + text,
             parse_mode=ParseMode.HTML
         )
         return
 
-    alert_id = context.args[0].strip()
-    alert = ALERTS.get(alert_id)
+    alert_id_clean = raw_id.lstrip('#').replace('ALT-', '').strip()
+    handler_user = update.effective_user.username or update.effective_user.first_name
+
+    # 1. Cek di Database PostgreSQL
+    session = db_session()
+    db_alert = None
+    try:
+        if alert_id_clean.isdigit():
+            db_alert = session.query(Alert).filter(Alert.alert_id == int(alert_id_clean)).first()
+    except Exception as e:
+        logger.error(f"Error querying alert in DB: {e}")
+
+    if db_alert:
+        if db_alert.resolved_at:
+            session.close()
+            await update.message.reply_text(f"⚠️ Alert #{db_alert.alert_id} sudah terselesaikan sebelumnya (Status: Resolved).")
+            return
+
+        alert_id_val = db_alert.alert_id
+        dev_name = db_alert.device.name if db_alert.device else f"Perangkat #{db_alert.device_id}"
+        severity_val = db_alert.severity
+
+        now = datetime.now()
+        db_alert.resolved_at = now
+        db_alert.acknowledged = True
+
+        # Pindahkan / sinkronkan ke Incident Log dengan status RESOLVED_ALERT
+        active_inc = session.query(IncidentLog).filter(
+            IncidentLog.device_id == db_alert.device_id,
+            IncidentLog.type == db_alert.type,
+            IncidentLog.resolved_at == None
+        ).first()
+
+        if active_inc:
+            dur_sec = max(1, int((now - active_inc.started_at).total_seconds()))
+            active_inc.resolved_at = now
+            active_inc.duration_seconds = dur_sec
+            active_inc.status = 'RESOLVED_ALERT'
+            inc_id = active_inc.incident_id
+        else:
+            dur_sec = max(1, int((now - db_alert.triggered_at).total_seconds())) if db_alert.triggered_at else 600
+            new_inc = IncidentLog(
+                device_id=db_alert.device_id,
+                type=db_alert.type,
+                severity=severity_val,
+                peak_metric="-",
+                started_at=db_alert.triggered_at or now,
+                resolved_at=now,
+                duration_seconds=dur_sec,
+                status='RESOLVED_ALERT'
+            )
+            session.add(new_inc)
+            session.flush()
+            inc_id = new_inc.incident_id
+
+        session.commit()
+        session.close()
+
+        ACTIVE_CHATS.add(update.effective_chat.id)
+        resolve_report = (
+            "<b>KONFIRMASI PENYELESAIAN ALERT</b>\n\n"
+            f"Referensi Alert: <code>#{alert_id_val}</code>\n"
+            f"Perangkat: <code>{dev_name}</code>\n"
+            f"Tingkat Bahaya: {severity_val}\n"
+            f"Diselesaikan oleh: @{html.escape(handler_user)}\n"
+            f"Waktu Selesai: <code>{get_current_time_wib()}</code>\n"
+            f"Status Insiden: <b>Resolved</b> (Tercatat di Incident Log #INC-{inc_id})\n\n"
+            "✅ Perangkat telah pulih. Alert berhasil ditutup dan dipindahkan dari tabel Active Alerts ke tabel Incident Log & Cooldown History."
+        )
+        await update.message.reply_text(resolve_report, parse_mode=ParseMode.HTML)
+        log_telegram_message(
+            chat_id=str(update.effective_chat.id),
+            message_type="COMMAND_REPLY",
+            content=f"Alert #{alert_id_val} ({dev_name}) berhasil di-resolve oleh @{handler_user} dan dipindahkan ke Incident Log.",
+            status="SENT"
+        )
+        return
+
+    session.close()
+
+    # 2. Fallback in-memory ALERTS
+    alert = ALERTS.get(alert_id_clean)
     if not alert:
         await update.message.reply_text(
-            f"<b>ALERT ID TIDAK DITEMUKAN</b>\n\nAlert <code>{html.escape(alert_id)}</code> tidak terdaftar dalam antrean.",
+            f"<b>ALERT ID TIDAK DITEMUKAN</b>\n\nAlert <code>{html.escape(raw_id)}</code> tidak terdaftar dalam antrean.",
             parse_mode=ParseMode.HTML
         )
         return
@@ -549,14 +709,12 @@ async def resolve_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Alert ini sudah dalam status Resolved.")
         return
 
-    handler_user = update.effective_user.username or update.effective_user.first_name
     dev_name = alert["device"]
-    
     if dev_name in DEVICES:
         if DEVICES[dev_name]["status"] == "DOWN":
             DEVICES[dev_name]["status"] = "UP"
             DEVICES[dev_name]["uptime"] = "1 menit (Baru Pulih)"
-        elif alert_id == "102":
+        elif alert_id_clean == "102":
             DEVICES[dev_name]["cpu"] = 24
 
     alert["status"] = "Resolved"
@@ -570,7 +728,7 @@ async def resolve_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"Tingkat Bahaya: {alert['severity']}\n"
         f"Diselesaikan oleh: @{html.escape(handler_user)}\n"
         f"Waktu Selesai: <code>{alert['resolved_at']}</code>\n"
-        "Status Alur: Resolved\n\n"
+        "Status Insiden: <b>Resolved</b>\n\n"
         "Perangkat telah dipulihkan dan alert ditutup."
     )
     await update.message.reply_text(resolve_report, parse_mode=ParseMode.HTML)
@@ -847,7 +1005,9 @@ def main():
     app.add_handler(CommandHandler("device", device_command))
     app.add_handler(CommandHandler("alerts", alerts_command))
     app.add_handler(CommandHandler("ack", ack_command))
+    app.add_handler(MessageHandler(filters.Regex(r'^/ack_?\d+'), ack_command))
     app.add_handler(CommandHandler("resolve", resolve_command))
+    app.add_handler(MessageHandler(filters.Regex(r'^/resolve_?\d+'), resolve_command))
     app.add_handler(CommandHandler("backup", backup_command))
     app.add_handler(CommandHandler("user", user_command))
     app.add_handler(CommandHandler("approve", approve_command))

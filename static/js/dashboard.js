@@ -43,6 +43,13 @@ function initCharts() {
         gradientMem.addColorStop(0, 'rgba(249, 115, 22, 0.25)');
         gradientMem.addColorStop(1, 'rgba(249, 115, 22, 0.0)');
 
+        const allInitCpuMem = [...(initData.cpu || []), ...(initData.mem || [])];
+        const maxInitCpuMem = allInitCpuMem.length > 0 ? Math.max(...allInitCpuMem) : 0;
+        let initialCpuMemMax = 100;
+        if (maxInitCpuMem > 100) {
+            initialCpuMemMax = Math.ceil((maxInitCpuMem * 1.2) / 10) * 10;
+        }
+
         cpuMemChart = new Chart(ctxCpuMem, {
             type: 'line',
             data: {
@@ -72,7 +79,7 @@ function initCharts() {
                     }
                 ]
             },
-            options: getCommonChartOptions('%', 0, 100, 20)
+            options: getCommonChartOptions('%', 0, initialCpuMemMax, 20)
         });
     }
 
@@ -86,6 +93,14 @@ function initCharts() {
         const gradientOrange = ctxTraffic.getContext('2d').createLinearGradient(0, 0, 0, 220);
         gradientOrange.addColorStop(0, 'rgba(249, 115, 22, 0.25)');
         gradientOrange.addColorStop(1, 'rgba(249, 115, 22, 0.0)');
+
+        // Hitung skala dinamis SEBELUM new Chart dibuat agar tidak terjadi glitch "sempet lewat / mentok di atas" saat refresh
+        const allInitTrf = [...(initData.ingress || []), ...(initData.egress || [])];
+        const maxInitTrf = allInitTrf.length > 0 ? Math.max(...allInitTrf) : 0;
+        let initialTrfMax = 100;
+        if (maxInitTrf > 100) {
+            initialTrfMax = Math.ceil((maxInitTrf * 1.25) / 10) * 10;
+        }
 
         trafficChart = new Chart(ctxTraffic, {
             type: 'line',
@@ -116,7 +131,7 @@ function initCharts() {
                     }
                 ]
             },
-            options: getCommonChartOptions(' Mbps', 0, 100)
+            options: getCommonChartOptions(' Mbps', 0, initialTrfMax)
         });
     }
 

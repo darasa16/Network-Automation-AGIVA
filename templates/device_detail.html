@@ -54,10 +54,18 @@
             </div>
             <div class="clock-display" id="clockDisplay">12:00:00 WIB</div>
             <div class="user-profile">
-                <div class="avatar">EA</div>
+                <div class="avatar" title="Administrator Account">AD</div>
                 <div class="user-info">
-                    <span class="user-name">Engineer Agiva</span>
+                    <span class="user-name">{{ session.get('username', 'Administrator') }}</span>
+                    <span class="user-role">{{ session.get('role', 'Administrator') }}</span>
                 </div>
+                <a href="{{ url_for('logout') }}" class="btn-logout" title="Sign Out / Keluar Sesi">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                </a>
             </div>
         </div>
     </header>
@@ -229,13 +237,12 @@
             </div>
             {% endif %}
 
-            <!-- Switch Resource Utilization Graphs (6 Metrics matching Aruba 2930F Web GUI) -->
-            <!-- Aruba Central Inspired Resource Telemetry (2-by-2 Duo Grid) -->
-            <!-- Performa & Diagnostik Switch (Persis Format index.html) -->
+            {% set dev_type = 'Firewall' if ('palo' in device.vendor.lower() or 'fw' in device.name.lower()) else ('Router' if ('router' in device.vendor.lower() or 'rt' in device.name.lower() or 'mikrotik' in device.vendor.lower()) else 'Switch') %}
+            <!-- Resource Utilization Graphs -->
             <div class="resource-graphs-section">
                 <div class="charts-header-bar">
                     <div class="charts-header-info">
-                        <span class="charts-header-badge">Performa &amp; Diagnostik Switch</span>
+                        <span class="charts-header-badge">Performa &amp; Diagnostik {{ dev_type }}</span>
                     </div>
                     <div class="time-range-selector" id="deviceTimeRange">
                         <span class="time-range-label">Rentang:</span>
@@ -259,8 +266,7 @@
                         <div class="panel-header">
                             <div>
                                 <h3 class="panel-title">CPU &amp; Memory Utilization (%)</h3>
-                                <span class="panel-sub">Utilisasi beban komputasi inti &amp; alokasi memori sistem
-                                    RAM</span>
+                                <span class="panel-sub">Utilisasi beban komputasi inti &amp; alokasi OS RAM (termasuk buffer/cache kernel)</span>
                             </div>
                             <div class="chart-legend-custom">
                                 <span class="legend-tag"><span class="legend-color bg-cyan"></span> CPU (%)</span>
@@ -307,7 +313,7 @@
                     <div class="chart-panel">
                         <div class="panel-header">
                             <div>
-                                <h3 class="panel-title">Buffer Hardware Switch</h3>
+                                <h3 class="panel-title">Buffer Hardware {{ dev_type }}</h3>
                                 <span class="panel-sub">Utilisasi antrean packet buffer ASIC &amp; buffer control
                                     plane</span>
                             </div>
@@ -384,7 +390,7 @@
                                 <th>Speed</th>
                                 <th>Throughput Tx</th>
                                 <th>Throughput Rx</th>
-                                <th>Bytes Tx / Rx</th>
+                                <th title="Total akumulasi byte fisik register hardware sejak perangkat boot / counter di-reset">Bytes Tx / Rx (Kumulatif)</th>
                                 <th>PoE Power</th>
                                 <th>Errors / Drops</th>
                             </tr>

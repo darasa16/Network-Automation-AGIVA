@@ -7,9 +7,12 @@ import re
 import urllib.request
 from collections import defaultdict
 from datetime import datetime, timedelta
-from flask import Flask, render_template, jsonify, request, redirect
+from flask import Flask, render_template, jsonify, request, redirect, url_for, session as flask_session
 from database import db_session, init_db
-from models import Device, DeviceStatusLog, Alert, TelegramWhitelist, TelegramMessageLog, BackupHistory
+from models import Device, DeviceStatusLog, Alert, IncidentLog, TelegramWhitelist, TelegramMessageLog, BackupHistory
+from logger_config import get_configured_logger
+
+logger = get_configured_logger("FlaskApp")
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'agiva-noc-secret-key-2026')
@@ -18,30 +21,8 @@ app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'agiva-noc-secret-key-2026')
 init_db()
 
 
-def send_telegram_broadcast(message_text, parse_mode='HTML'):
-    load_dotenv(override=True)
-    """Mengirim pesan broadcast langsung ke grup Telegram NOC resmi."""
-    tg_token = os.getenv('TELEGRAM_BOT_TOKEN')
-    tg_chat_id = os.getenv('NOC_TELEGRAM_CHAT_ID', '-1004429503436')
-    if not tg_token or tg_token.startswith('123456'):
-        return False, 'Token Telegram belum diset di .env'
-
-    try:
-        url = f'https://api.telegram.org/bot{tg_token}/sendMessage'
-        payload = {
-            'chat_id': tg_chat_id,
-            'text': message_text,
-            'parse_mode': parse_mode
-        }
-        req = urllib.request.Request(
-            url,
-            data=json.dumps(payload).encode('utf-8'),
-            headers={'Content-Type': 'application/json'}
-        )
-        with urllib.request.urlopen(req, timeout=5) as resp:
-            return True, 'SENT'
-    except Exception as e:
-        return False, f'FAILED: {str(e)[:90]}'
+# Import Rule Engine & Alerting System (Komponen 4 LLD)
+from rule_engine import send_telegram_broadcast, trigger_alert_with_antispam
 
 @app.teardown_appcontext
 def shutdown_session(exception=None):
@@ -165,6 +146,56 @@ def get_aggregated_chart_history(range_mode='live', session=None):
         "egress": eg_vals
     }
 
+# ==============================================================
+# AUTHENTICATION & SESSION MANAGEMENT (Super Admin)
+# ==============================================================
+@app.before_request
+def check_authentication():
+    # Izinkan static assets tanpa otentikasi agar tampilan login ter-render sempurna
+    if request.path.startswith('/static'):
+        return None
+    # Izinkan endpoint login dan logout
+    if request.path in ['/login', '/logout']:
+        return None
+    # Verifikasi status login session
+    if not flask_session.get('logged_in'):
+        # Jika request API/AJAX, kembalikan response 401 JSON
+        if request.path.startswith('/api/'):
+            return jsonify({'error': 'Unauthorized', 'message': 'Sesi login telah berakhir'}), 401
+        # Redirect ke halaman login dengan parameter next
+        return redirect(url_for('login', next=request.full_path if request.query_string else request.path))
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if flask_session.get('logged_in'):
+        return redirect(url_for('dashboard'))
+
+    error = None
+    if request.method == 'POST':
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '')
+
+        super_user = os.getenv('SUPER_ADMIN_USERNAME', 'admin')
+        super_pass = os.getenv('SUPER_ADMIN_PASSWORD', 'agiva_admin123')
+
+        if username == super_user and password == super_pass:
+            flask_session['logged_in'] = True
+            flask_session['username'] = username
+            flask_session['role'] = 'Administrator'
+            next_url = request.args.get('next')
+            if next_url and next_url.startswith('/') and not next_url.startswith('//'):
+                return redirect(next_url)
+            return redirect(url_for('dashboard'))
+        else:
+            error = 'Username atau password tidak sesuai. Silakan periksa kembali.'
+
+    return render_template('login.html', error=error)
+
+@app.route('/logout')
+def logout():
+    flask_session.clear()
+    return redirect(url_for('login'))
+
 # 1. MONITORING ROUTES
 @app.route('/')
 @app.route('/index.html')
@@ -223,8 +254,9 @@ def device_detail(device_id=1):
 
     if latest_log and ports:
         for p in ports:
-            pid = str(p.get("port_id"))
-            if pid == "1" or "10ge1/0/1" in pid.lower() or "uplink" in str(p.get("port_name", "")).lower():
+            pid = str(p.get("port_id")).lower()
+            pname = str(p.get("port_name", "")).lower()
+            if pid == "1" or "10ge1/0/1" in pid or "eth1/2" in pid or "ethernet1/2" in pname or "uplink" in pname:
                 if latest_log.ingress_mbps is not None:
                     p["rx_mbps"] = round(float(latest_log.ingress_mbps), 2)
                 if latest_log.egress_mbps is not None:
@@ -263,20 +295,37 @@ def redirect_device_backups():
 @app.route('/alerts.html')
 def alerts_page():
     session = db_session()
-    alerts = session.query(Alert).order_by(Alert.triggered_at.desc()).all()
+    # 1. Ambil data alert AKTIF saja (yang belum di-resolve)
+    alerts = session.query(Alert).filter(Alert.resolved_at == None).order_by(Alert.triggered_at.desc()).all()
     alerts_data = [a.to_dict() for a in alerts]
+    
+    # 2. Ambil Incident Log (30 hari terakhir sesuai retensi)
+    cutoff_30d = datetime.now() - timedelta(days=30)
+    incidents = session.query(IncidentLog).filter(
+        IncidentLog.started_at >= cutoff_30d
+    ).order_by(IncidentLog.started_at.desc()).all()
+    incidents_data = [inc.to_dict() for inc in incidents]
     
     total_alerts = len(alerts)
     pending_alerts = sum(1 for a in alerts if not a.acknowledged)
-    acked_alerts = total_alerts - pending_alerts
+    acked_alerts = sum(1 for a in alerts if a.acknowledged)
+
+    total_incidents = len(incidents)
+    cooldown_incidents = sum(1 for inc in incidents if inc.status == 'AUTO_COOLDOWN')
+    resolved_incidents = sum(1 for inc in incidents if inc.status == 'RESOLVED_ALERT')
     
+    session.close()
     return render_template(
         'alerts.html', 
         alerts=alerts_data,
+        incidents=incidents_data,
         total_alerts=total_alerts,
         pending_alerts=pending_alerts,
         acked_alerts=acked_alerts,
-        active_alerts_count=pending_alerts
+        total_incidents=total_incidents,
+        cooldown_incidents=cooldown_incidents,
+        resolved_incidents=resolved_incidents,
+        active_alerts_count=total_alerts
     )
 
 @app.route('/api/ack/<int:alert_id>', methods=['POST'])
@@ -284,6 +333,7 @@ def api_ack_alert(alert_id):
     session = db_session()
     alert = session.query(Alert).filter(Alert.alert_id == alert_id).first()
     if not alert:
+        session.close()
         return jsonify({"success": False, "message": "Alert ID tidak ditemukan"}), 404
 
     alert.acknowledged = True
@@ -304,11 +354,78 @@ def api_ack_alert(alert_id):
     )
     session.add(tg_log)
     session.commit()
+    session.close()
 
     return jsonify({
         "success": True,
         "alert_id": alert_id,
         "message": f"Alert #{alert_id} berhasil di-acknowledge dan dicatat ke basis data."
+    })
+
+@app.route('/api/resolve/<int:alert_id>', methods=['POST'])
+def api_resolve_alert(alert_id):
+    session = db_session()
+    alert = session.query(Alert).filter(Alert.alert_id == alert_id).first()
+    if not alert:
+        session.close()
+        return jsonify({"success": False, "message": "Alert ID tidak ditemukan"}), 404
+
+    now = datetime.now()
+    alert.resolved_at = now
+    alert.acknowledged = True
+
+    # Pindahkan ke tabel IncidentLog dengan status RESOLVED_ALERT
+    active_inc = session.query(IncidentLog).filter(
+        IncidentLog.device_id == alert.device_id,
+        IncidentLog.type == alert.type,
+        IncidentLog.resolved_at == None
+    ).first()
+
+    dev_name = alert.device.name if alert.device else "Device"
+
+    if active_inc:
+        dur_sec = max(1, int((now - active_inc.started_at).total_seconds()))
+        active_inc.resolved_at = now
+        active_inc.duration_seconds = dur_sec
+        active_inc.status = 'RESOLVED_ALERT'
+        inc_id = active_inc.incident_id
+    else:
+        dur_sec = max(1, int((now - alert.triggered_at).total_seconds())) if alert.triggered_at else 600
+        new_inc = IncidentLog(
+            device_id=alert.device_id,
+            type=alert.type,
+            severity=alert.severity,
+            peak_metric="-",
+            started_at=alert.triggered_at or now,
+            resolved_at=now,
+            duration_seconds=dur_sec,
+            status='RESOLVED_ALERT'
+        )
+        session.add(new_inc)
+        session.flush()
+        inc_id = new_inc.incident_id
+
+    target_chat_id = os.getenv('NOC_TELEGRAM_CHAT_ID', '-1004429503436')
+    res_content = f"✅ *[NOC AGIVA - ALERT RESOLVED]*\n\nAlert #{alert.alert_id} ({alert.type}) pada `{dev_name}` telah diselesaikan (Resolved) via Web NOC Admin dan dipindahkan ke Incident Log."
+    send_telegram_broadcast(res_content)
+
+    tg_log = TelegramMessageLog(
+        alert_id=alert.alert_id,
+        chat_id=target_chat_id,
+        message_type="COMMAND_REPLY",
+        content=res_content,
+        status="SENT",
+        sent_at=now
+    )
+    session.add(tg_log)
+    session.commit()
+    session.close()
+
+    return jsonify({
+        "success": True,
+        "alert_id": alert_id,
+        "incident_id": inc_id,
+        "message": f"Alert #{alert_id} berhasil di-resolve dan dipindahkan ke Incident Log."
     })
 
 # 3. TELEGRAM BOT INTEGRATION ROUTES
@@ -377,65 +494,6 @@ def telegram_page():
         whitelist=[w.to_dict() for w in whitelist],
         logs=[l.to_dict() for l in msg_logs]
     )
-
-def trigger_alert_with_antispam(session, device, alert_type, severity, message):
-    """
-    Rule Engine: Anti-spam Cooldown Logic
-    Sesuai LLD: alert yang sama tidak dikirim ulang selama belum resolved,
-    dengan cooldown per jenis alert per device.
-    """
-    # Cek apakah ada alert yang sama dan belum resolved
-    existing_alert = session.query(Alert).filter(
-        Alert.device_id == device.device_id,
-        Alert.type == alert_type,
-        Alert.resolved_at == None
-    ).first()
-
-    if existing_alert:
-        # KONDISI 1: Spam terdeteksi. Jangan kirim pesan.
-        return False, existing_alert, "Spam tertahan oleh Anti-spam Cooldown."
-
-    # KONDISI 2: Alert baru, belum ada yang aktif.
-    new_alert = Alert(
-        device_id=device.device_id,
-        type=alert_type,
-        severity=severity,
-        message=message,
-        triggered_at=datetime.now(),
-        acknowledged=False
-    )
-    session.add(new_alert)
-    session.flush()
-
-    target_chat_id = os.getenv('NOC_TELEGRAM_CHAT_ID', '-1004429503436')
-    
-    # Pesan dengan format HTML yang aman untuk karakter underscore dll
-    msg_content = (
-        f"🚨 <b>[NOC AGIVA - {severity} ALERT]</b> 🚨\n\n"
-        f"📌 <b>Alert ID:</b> #{new_alert.alert_id}\n"
-        f"📌 <b>Perangkat:</b> {device.name} ({device.ip_address})\n"
-        f"📌 <b>Tipe Error:</b> {alert_type}\n"
-        f"📌 <b>Pesan:</b> {new_alert.message}\n"
-        f"📌 <b>Waktu:</b> {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} WIB\n\n"
-        f"💡 Ketik /ack {new_alert.alert_id} di bot untuk konfirmasi penanganan."
-    )
-    
-    ok, delivery_status = send_telegram_broadcast(msg_content, parse_mode='HTML')
-
-    # Log dispatch ke bot telegram
-    status_str = "SENT" if ok else str(delivery_status)[:90]
-    log_entry = TelegramMessageLog(
-        alert_id=new_alert.alert_id,
-        chat_id=target_chat_id,
-        message_type="ALERT_NOTIFICATION",
-        content=msg_content,
-        status=status_str,
-        sent_at=datetime.now()
-    )
-    session.add(log_entry)
-    session.commit()
-    
-    return True, new_alert, "Alert baru berhasil dikirim."
 
 @app.route('/api/telegram/logs', methods=['GET'])
 def api_telegram_logs():
@@ -932,13 +990,14 @@ def api_device_metrics(device_id):
         "vlans": telemetry.get("vlans", []),
         "ports": ports,
     }
-    # Sinkronisasi 100% Opsi B: Port 1 (Uplink) identik dengan titik grafik traffic terbaru
+    # Sinkronisasi 100% Opsi B: Port Uplink identik dengan titik grafik traffic terbaru (Aruba Port 1, Huawei 10GE1/0/1, Palo Alto ethernet1/2)
     if trf_in_vals and trf_out_vals and ports:
         latest_ingress = trf_in_vals[-1]
         latest_egress = trf_out_vals[-1]
         for p in ports:
-            pid = str(p.get("port_id"))
-            if pid == "1" or "10ge1/0/1" in pid.lower() or "uplink" in str(p.get("port_name", "")).lower():
+            pid = str(p.get("port_id")).lower()
+            pname = str(p.get("port_name", "")).lower()
+            if pid == "1" or "10ge1/0/1" in pid or "eth1/2" in pid or "ethernet1/2" in pname or "uplink" in pname:
                 p["rx_mbps"] = latest_ingress
                 p["tx_mbps"] = latest_egress
 
@@ -948,6 +1007,6 @@ def api_device_metrics(device_id):
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5000))
     print(f"[*] Starting PT Agiva Network Operations Dashboard on http://127.0.0.1:{port}")
-    app.run(host='0.0.0.0', port=port, debug=True)
+    app.run(host='0.0.0.0', port=port, debug=True, threaded=True)
 
 # PostgreSQL reload trigger

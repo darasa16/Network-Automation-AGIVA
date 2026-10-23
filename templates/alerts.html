@@ -4,14 +4,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alerts & Incidents Management - AGIVA NOC</title>
+    <title>Alerts & Incident Management - AGIVA NOC</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
         rel="stylesheet">
     <!-- Relative CSS -->
-    <link rel="stylesheet" href="/static/css/style.css?v=8.1">
+    <link rel="stylesheet" href="/static/css/style.css?v=8.4">
+    <style>
+        .section-separator {
+            margin-top: 1.5rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* Standardisasi 100% Font Inter untuk SELURUH elemen kedua tabel */
+        #alertsTable,
+        #incidentsTable,
+        #alertsTable *,
+        #incidentsTable * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+        }
+
+        #alertsTable th,
+        #incidentsTable th {
+            font-size: 11px !important;
+            font-weight: 700 !important;
+            color: var(--text-muted) !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.6px !important;
+            padding: 12px 16px !important;
+            border-bottom: 1px solid var(--border-color) !important;
+        }
+
+        #alertsTable td,
+        #incidentsTable td {
+            font-size: 13px !important;
+            padding: 14px 16px !important;
+            vertical-align: middle !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
+            color: var(--text-primary) !important;
+        }
+
+        #alertsTable code,
+        #incidentsTable code,
+        #alertsTable .badge-type,
+        #incidentsTable .badge-type {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+            font-size: 13px !important;
+            color: var(--text-secondary) !important;
+            background: transparent !important;
+            border: none !important;
+            padding: 0 !important;
+        }
+
+        #alertsTable strong,
+        #incidentsTable strong {
+            font-weight: 600 !important;
+            color: #ffffff !important;
+        }
+
+        #alertsTable .alert-severity-badge,
+        #incidentsTable .alert-severity-badge {
+            font-size: 10px !important;
+            font-weight: 800 !important;
+            letter-spacing: 0.5px !important;
+        }
+
+        .status-text-cell {
+            font-size: 12px !important;
+            font-weight: 600 !important;
+            letter-spacing: 0.2px !important;
+            color: var(--color-copper) !important;
+        }
+    </style>
 </head>
 
 <body>
@@ -21,7 +91,6 @@
             <a href="/" class="brand-logo">
                 <img src="/static/img/20260203-Agiva-Logo-Rect-1280px.png" alt="Agiva Logo" class="brand-img"
                     onerror="this.src='/static/img/20260203-Agiva-Logo-Rect-1280px.png'" />
-
             </a>
 
             <div class="nav-search">
@@ -51,10 +120,18 @@
             </div>
             <div class="clock-display" id="clockDisplay">12:00:00 WIB</div>
             <div class="user-profile">
-                <div class="avatar">EA</div>
+                <div class="avatar" title="Administrator Account">AD</div>
                 <div class="user-info">
-                    <span class="user-name">Engineer Agiva</span>
+                    <span class="user-name">{{ session.get('username', 'Administrator') }}</span>
+                    <span class="user-role">{{ session.get('role', 'Administrator') }}</span>
                 </div>
+                <a href="{{ url_for('logout') }}" class="btn-logout" title="Sign Out / Keluar Sesi">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                </a>
             </div>
         </div>
     </header>
@@ -62,19 +139,23 @@
     <!-- Main Container -->
     <main class="main-container">
         <div class="alerts-page-container">
+
+            <!-- ========================================================= -->
+            <!-- 1. ACTIVE & SUSTAINED ALERTS TABLE (>= 10 MENIT)          -->
+            <!-- ========================================================= -->
             <div class="page-header-row">
                 <div>
-                    <h2>Alerts & Incident Log</h2>
-                    <p class="sub-text">Peringatan real-time yang dievaluasi oleh Rule Engine dan dikirim ke Telegram
-                        Agiva Network Automation Channel.</p>
+                    <h2>Active & Sustained Alerts</h2>
+                    <p class="sub-text">Peringatan telemetri lebih dari 10 menit tanpa
+                        auto-cooldown dan memerlukan intervensi operasional.</p>
                 </div>
                 <div class="header-tools">
-                    <button class="btn-refresh" onclick="window.location.reload()">Refresh Log</button>
+                    <button class="btn-refresh" onclick="window.location.reload()">Refresh Data</button>
                 </div>
             </div>
 
             <!-- Alert Filters -->
-            <div class="filter-bar">
+            <div class="filter-bar" id="alertsFilterBar">
                 <button class="filter-tab active" data-filter="all">Semua Alert ({{ total_alerts }})</button>
                 <button class="filter-tab" data-filter="pending">Belum ACK ({{ pending_alerts }})</button>
                 <button class="filter-tab" data-filter="acked">Sudah ACK ({{ acked_alerts }})</button>
@@ -101,7 +182,7 @@
                             {% for a in alerts %}
                             <tr class="alert-row {% if a.acknowledged %}filter-row-acked{% else %}filter-row-pending{% endif %}"
                                 id="alert-row-{{ a.id }}">
-                                <td><code>#{{ a.id }}</code></td>
+                                <td>#{{ a.id }}</td>
                                 <td>
                                     {% if a.severity == 'CRITICAL' %}
                                     <span class="alert-severity-badge badge-crit">CRITICAL</span>
@@ -110,32 +191,33 @@
                                     {% endif %}
                                 </td>
                                 <td><strong>{{ a.device_name }}</strong></td>
-                                <td><code>{{ a.ip }}</code></td>
-                                <td><span class="badge-type">{{ a.type }}</span></td>
+                                <td>{{ a.ip }}</td>
+                                <td>{{ a.type }}</td>
                                 <td class="col-desc">{{ a.message }}</td>
                                 <td class="col-time">{{ a.triggered_at }}</td>
                                 <td>
                                     {% if a.acknowledged %}
-                                    <span class="badge-ack-state text-warning">Acknowledged</span>
+                                    <span class="status-text-cell"
+                                        style="color: var(--color-copper);">Acknowledged</span>
                                     {% else %}
-                                    <span class="badge-ack-state text-warning">Menunggu ACK</span>
+                                    <span class="status-text-cell" style="color: var(--color-copper);">Menunggu
+                                        ACK</span>
                                     {% endif %}
                                 </td>
                             </tr>
                             {% endfor %}
                             {% else %}
                             <tr class="empty-state-row">
-                                <td colspan="8" class="text-center py-4" style="padding: 3rem; color: #6b7280;">
-                                    <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
-                                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none"
+                                <td colspan="8" class="text-center py-4" style="padding: 2.5rem; color: #6b7280;">
+                                    <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none"
                                             stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
                                             stroke-linejoin="round" style="color: #10b981;">
                                             <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
                                             <polyline points="22 4 12 14.01 9 11.01"></polyline>
                                         </svg>
-                                        <p style="margin: 0; font-size: 1.1rem; color: #6b7280;">Semua Sistem Normal
-                                        </p>
-                                        <span>Tidak ada alert aktif yang memerlukan mitigasi</span>
+                                        <p style="margin: 0; font-size: 1rem; color: #9ca3af; font-weight: 500;">Semua
+                                            Sistem Normal</p>
                                     </div>
                                 </td>
                             </tr>
@@ -144,6 +226,104 @@
                     </table>
                 </div>
             </div>
+
+            <!-- ========================================================= -->
+            <!-- 2. INCIDENT HISTORY & COOLDOWN LOG TABLE (RETENSI 30 HARI)-->
+            <!-- ========================================================= -->
+            <div class="section-separator">
+                <div class="page-header-row">
+                    <div>
+                        <h2>Incident Log & Cooldown History</h2>
+                        <p class="sub-text">Catatan insiden log dan cooldown perangkat selama 30 hari.</p>
+                    </div>
+                </div>
+
+                <!-- Incident Filters -->
+                <div class="filter-bar" id="incidentsFilterBar">
+                    <button class="filter-tab active" data-inc-filter="all">Semua Insiden ({{ total_incidents
+                        }})</button>
+                    <button class="filter-tab" data-inc-filter="cooldown">Cooldown ({{ cooldown_incidents }})</button>
+                    <button class="filter-tab" data-inc-filter="resolved">Resolved Alert ({{ resolved_incidents
+                        }})</button>
+                </div>
+
+                <!-- Incidents Table Panel (Tanpa Kolom Message sesuai request) -->
+                <div class="table-panel">
+                    <div class="table-responsive">
+                        <table class="data-table" id="incidentsTable">
+                            <thead>
+                                <tr>
+                                    <th>Incident ID</th>
+                                    <th>Severity</th>
+                                    <th>Perangkat</th>
+                                    <th>IP Address</th>
+                                    <th>Tipe Kejadian</th>
+                                    <th>Nilai Puncak</th>
+                                    <th>Waktu Mulai</th>
+                                    <th>Waktu Selesai</th>
+                                    <th>Durasi Total</th>
+                                    <th>Status Insiden</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if incidents %}
+                                {% for inc in incidents %}
+                                <tr class="incident-row filter-inc-{{ inc.status|lower }}" id="inc-row-{{ inc.id }}">
+                                    <td>#INC-{{ inc.id }}</td>
+                                    <td>
+                                        {% if inc.severity == 'CRITICAL' %}
+                                        <span class="alert-severity-badge badge-crit">CRITICAL</span>
+                                        {% else %}
+                                        <span class="alert-severity-badge badge-warn">{{ inc.severity }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td><strong>{{ inc.device_name }}</strong></td>
+                                    <td>{{ inc.ip }}</td>
+                                    <td>{{ inc.type }}</td>
+                                    <td>{{ inc.peak_metric }}</td>
+                                    <td class="col-time">{{ inc.started_at }}</td>
+                                    <td class="col-time">{{ inc.resolved_at }}</td>
+                                    <td>{{ inc.duration }}</td>
+                                    <td>
+                                        {% if inc.status == 'AUTO_COOLDOWN' %}
+                                        <span class="status-text-cell"
+                                            style="color: var(--color-copper);">cooldown</span>
+                                        {% elif inc.status == 'RESOLVED_ALERT' %}
+                                        <span class="status-text-cell"
+                                            style="color: var(--color-copper);">Resolved</span>
+                                        {% elif inc.status == 'ACTIVE_MONITORING' %}
+                                        <span class="status-text-cell"
+                                            style="color: var(--color-copper);">Pemantauan</span>
+                                        {% else %}
+                                        <span class="status-text-cell" style="color: var(--color-copper);">{{ inc.status
+                                            }}</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                {% else %}
+                                <tr class="empty-state-row">
+                                    <td colspan="10" class="text-center py-4" style="padding: 2.5rem; color: #6b7280;">
+                                        <div
+                                            style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none"
+                                                stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                                                stroke-linejoin="round" style="color: #10b981;">
+                                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                                                <polyline points="9 12 11 14 15 10"></polyline>
+                                            </svg>
+                                            <p style="margin: 0; font-size: 1rem; color: #9ca3af; font-weight: 500;">
+                                                Belum Ada Riwayat Insiden</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </main>
 
@@ -160,14 +340,14 @@
         setInterval(updateClock, 1000);
         updateClock();
 
-        // Tab filter handler
-        document.querySelectorAll('.filter-tab').forEach(tab => {
+        // 1. Filter Tab Handler untuk Active Alerts Table
+        document.querySelectorAll('#alertsFilterBar .filter-tab').forEach(tab => {
             tab.addEventListener('click', () => {
-                document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('#alertsFilterBar .filter-tab').forEach(t => t.classList.remove('active'));
                 tab.classList.add('active');
                 const filter = tab.getAttribute('data-filter');
 
-                document.querySelectorAll('.alert-row').forEach(row => {
+                document.querySelectorAll('#alertsTable .alert-row').forEach(row => {
                     if (filter === 'all') {
                         row.style.display = '';
                     } else if (filter === 'pending') {
@@ -179,15 +359,53 @@
             });
         });
 
-        function showToast(message) {
+        // 2. Filter Tab Handler untuk Incident Log Table
+        document.querySelectorAll('#incidentsFilterBar .filter-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('#incidentsFilterBar .filter-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                const filter = tab.getAttribute('data-inc-filter');
+
+                document.querySelectorAll('#incidentsTable .incident-row').forEach(row => {
+                    if (filter === 'all') {
+                        row.style.display = '';
+                    } else if (filter === 'cooldown') {
+                        row.style.display = row.classList.contains('filter-inc-auto_cooldown') ? '' : 'none';
+                    } else if (filter === 'resolved') {
+                        row.style.display = row.classList.contains('filter-inc-resolved_alert') ? '' : 'none';
+                    }
+                });
+            });
+        });
+
+        // 3. Quick ACK via API
+        async function ackAlert(alertId) {
+            try {
+                const res = await fetch(`/api/ack/${alertId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(`Alert #${alertId} berhasil di-ACK!`);
+                    setTimeout(() => window.location.reload(), 800);
+                } else {
+                    showToast(data.message || 'Gagal ACK alert', true);
+                }
+            } catch (err) {
+                showToast('Terjadi kesalahan jaringan saat ACK alert.', true);
+            }
+        }
+
+        function showToast(message, isError = false) {
             const container = document.getElementById('toastContainer');
             if (!container) return;
             const toast = document.createElement('div');
             toast.className = 'toast';
-            toast.style.borderLeft = '4px solid #10b981';
-            toast.innerHTML = `<span>✅</span><span>${message}</span>`;
+            toast.style.borderLeft = isError ? '4px solid #ef4444' : '4px solid #10b981';
+            toast.innerHTML = `<span>${isError ? '⚠️' : '✅'}</span><span>${message}</span>`;
             container.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
+            setTimeout(() => toast.remove(), 3500);
         }
     </script>
     <script id="nav-devices-data" type="application/json">{{ nav_devices | tojson }}</script>
