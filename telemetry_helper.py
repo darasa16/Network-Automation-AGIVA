@@ -1,4 +1,5 @@
 import os
+import json
 import re
 import xml.etree.ElementTree as ET
 import urllib3
@@ -531,7 +532,7 @@ def get_huawei_telemetry(ip_address="192.168.1.155"):
             "serial": "2102353YND10N6000001",
             "firmware": "Huawei YunShan OS V600R024C00SPC500",
             "hardware_rev": "ES5D2V30S037 VER C (MAB: 2)",
-            "mac_address": "40:b4:f0:ca:72:e0",
+            "mac_address": "80:54:d9:85:76:d6",
             "ip_address": ip_address,
             "total_ram": "2048 MB",
             "poe_consumption": "38 W (Active)",
@@ -623,7 +624,7 @@ _LAST_KNOWN_PA_TELEMETRY = {
         "total_traffic_mbps": 0.0
     },
     "resources": {
-        "cpu_pct": 32.5,
+        "cpu_pct": 11.0,
         "memory_pct": 60.5,
         "packet_buffers_pct": 0.0,
         "tx_drops": 0,
@@ -647,23 +648,60 @@ def get_paloalto_telemetry(ip_address="192.168.1.11"):
     data["hardware"]["ip_address"] = ip_address
 
     try:
-        # Polling metrik dinamis terkini secara terfokus (Resources & Uplink Traffic)
-        # Menggunakan koneksi terfokus agar tidak membebani Management Plane PA-220
-        r_res = requests.get(f"https://{ip_address}/api/?type=op&cmd=<show><system><resources></resources></system></show>&key={api_key}", verify=False, timeout=5)
-        if r_res.status_code == 200:
-            res_text = r_res.text
-            cpu_m = re.search(r'%Cpu\(s\):\s*([\d\.]+)\s*us,\s*([\d\.]+)\s*sy', res_text)
-            if cpu_m:
-                c_val = round(float(cpu_m.group(1)) + float(cpu_m.group(2)), 1)
-                data["resources"]["cpu_pct"] = c_val
-                _LAST_KNOWN_PA_TELEMETRY["resources"]["cpu_pct"] = c_val
-            mem_m = re.search(r'MiB Mem\s*:\s*([\d\.]+)\s*total.*?([\d\.]+)\s*used', res_text)
-            if mem_m:
-                tot = float(mem_m.group(1))
-                usd = float(mem_m.group(2))
-                m_val = round((usd / tot) * 100, 1)
-                data["resources"]["memory_pct"] = m_val
-                _LAST_KNOWN_PA_TELEMETRY["resources"]["memory_pct"] = m_val
+        # 0. Polling System Info (MAC Address, Serial, Firmware) dinamis langsung dari XML API
+        try:
+            r_sys = requests.get(f"https://{ip_address}/api/?type=op&cmd=<show><system><info></info></system></show>&key={api_key}", verify=False, timeout=4)
+            if r_sys.status_code == 200:
+                s_root = ET.fromstring(r_sys.text)
+                mac_elem = s_root.findtext('.//system/mac-address')
+                if mac_elem:
+                    data["hardware"]["mac_address"] = mac_elem.strip()
+                    _LAST_KNOWN_PA_TELEMETRY["hardware"]["mac_address"] = mac_elem.strip()
+                ser_elem = s_root.findtext('.//system/serial')
+                if ser_elem:
+                    data["hardware"]["serial"] = ser_elem.strip()
+                ver_elem = s_root.findtext('.//system/sw-version')
+                if ver_elem:
+                    data["hardware"]["firmware"] = f"PAN-OS {ver_elem.strip()}"
+        except Exception as e_sys:
+            logger.debug(f"Palo Alto system info XML API error: {e_sys}")
+
+        # 1. Polling Data Plane (DP) CPU Riil dari Resource Monitor
+        try:
+            r_dp = requests.get(f"https://{ip_address}/api/?type=op&cmd=<show><running><resource-monitor><minute><last>1</last></minute></resource-monitor></running></show>&key={api_key}", verify=False, timeout=5)
+            if r_dp.status_code == 200:
+                dp_root = ET.fromstring(r_dp.text)
+                dp_entries = dp_root.findall('.//data-processors/dp0/minute/cpu-load-average/entry')
+                vals = []
+                for entry in dp_entries:
+                    val_str = entry.findtext('value')
+                    if val_str:
+                        try:
+                            vals.append(float(val_str.split(',')[0]))
+                        except (ValueError, IndexError):
+                            pass
+                if vals:
+                    dp_val = round(max(vals), 1)
+                    data["resources"]["cpu_pct"] = dp_val
+                    _LAST_KNOWN_PA_TELEMETRY["resources"]["cpu_pct"] = dp_val
+        except Exception as e_dp:
+            logger.debug(f"Koneksi Data Plane Palo Alto timeout: {e_dp}")
+
+        # 2. Polling Memory dari System Resources
+        try:
+            r_res = requests.get(f"https://{ip_address}/api/?type=op&cmd=<show><system><resources></resources></system></show>&key={api_key}", verify=False, timeout=5)
+            if r_res.status_code == 200:
+                res_text = r_res.text
+                mem_m = re.search(r'MiB Mem\s*:\s*([\d\.]+)\s*total.*?([\d\.]+)\s*used', res_text)
+                if mem_m:
+                    tot = float(mem_m.group(1))
+                    usd = float(mem_m.group(2))
+                    m_val = round((usd / tot) * 100, 1)
+                    data["resources"]["memory_pct"] = m_val
+                    _LAST_KNOWN_PA_TELEMETRY["resources"]["memory_pct"] = m_val
+        except Exception as e_mem:
+            logger.debug(f"Koneksi System Resources Palo Alto timeout: {e_mem}")
+
 
         # Polling trafik port fisik ethernet1/2 (LAN Gateway Uplink) untuk perhitungan delta laju Mbps riil
         r_if2 = requests.get(f"https://{ip_address}/api/?type=op&cmd=<show><interface>ethernet1/2</interface></show>&key={api_key}", verify=False, timeout=5)

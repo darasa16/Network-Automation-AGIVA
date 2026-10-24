@@ -267,6 +267,14 @@ async function fetchDeviceMetrics(isManual = false) {
             const tdEl = document.getElementById('valTxDrops');
             if (tdEl) tdEl.textContent = `${data.current_tx_drops}`;
         }
+        if (data.current_latency !== undefined) {
+            const latEl = document.getElementById('currLatencyVal');
+            if (latEl) latEl.textContent = `${data.current_latency} ms`;
+        }
+        if (data.current_packet_loss !== undefined) {
+            const lossEl = document.getElementById('currLossVal');
+            if (lossEl) lossEl.textContent = `${data.current_packet_loss}%`;
+        }
         if (data.uptime) {
             const uptimeEl = document.getElementById('currUptimeVal');
             if (uptimeEl) uptimeEl.textContent = data.uptime;

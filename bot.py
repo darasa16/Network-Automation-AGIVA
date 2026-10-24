@@ -278,17 +278,36 @@ def build_devices_view() -> str:
 
 def build_device_detail_view(device_name: str) -> str:
     """Tampilan Detail Telemetri Satu Perangkat"""
+    session = db_session()
+    db_dev = None
+    try:
+        from models import Device
+        db_dev = session.query(Device).filter(Device.name.ilike(f"%{device_name}%")).first()
+    except Exception:
+        pass
+    finally:
+        session.close()
+
     dev = DEVICES.get(device_name)
-    if not dev:
+    if not dev and not db_dev:
         return (
             "<b>PERANGKAT TIDAK DITEMUKAN</b>\n\n"
             f"Perangkat <code>{html.escape(device_name)}</code> tidak terdaftar dalam inventaris.\n"
             "Gunakan perintah /devices untuk melihat daftar perangkat yang tersedia."
         )
 
-    status_badge = "UP" if dev["status"] == "UP" else "DOWN"
-    cpu_val = dev["cpu"]
-    mem_val = dev["mem"]
+    d_name = db_dev.name if db_dev else device_name
+    d_status = db_dev.status if db_dev else dev.get("status", "UP")
+    d_ip = db_dev.ip_address if db_dev else dev.get("ip", "-")
+    d_vendor = db_dev.vendor if db_dev else dev.get("vendor", "-")
+    d_site = db_dev.site if db_dev else dev.get("site", "-")
+    d_uptime = db_dev.uptime if db_dev else dev.get("uptime", "-")
+    cpu_val = int(db_dev.cpu_usage or 0) if db_dev else int(dev.get("cpu", 0))
+    mem_val = int(db_dev.mem_usage or 0) if db_dev else int(dev.get("mem", 0))
+    lat_val = round(db_dev.latency_ms or 0.0, 1) if db_dev else 0.0
+    loss_val = round(db_dev.packet_loss or 0.0, 1) if db_dev else 0.0
+
+    status_badge = "UP" if d_status == "UP" else "DOWN"
 
     cpu_bar = make_progress_bar(cpu_val, 10)
     mem_bar = make_progress_bar(mem_val, 10)
@@ -296,21 +315,25 @@ def build_device_detail_view(device_name: str) -> str:
     cpu_label = "Kritis" if cpu_val >= 85 else ("Tinggi" if cpu_val >= 70 else "Normal")
     mem_label = "Kritis" if mem_val >= 85 else ("Tinggi" if mem_val >= 70 else "Normal")
 
+    last_b = dev.get("last_backup", "-") if dev else "-"
+    b_path = dev.get("backup_path", "-") if dev else "-"
+
     msg = (
         "<b>INFORMASI PERANGKAT\n\n"
-        f"Nama Device: {html.escape(device_name)}\n"
+        f"Nama Device: {html.escape(d_name)}\n"
         f"Status Operasional: {status_badge}\n"
-        f"Alamat IP: <code>{dev['ip']}</code>\n"
-        f"Vendor: {dev['vendor']}\n"
-        f"Lokasi: {dev['site']}\n"
-        f"Waktu Aktif: <code>{dev['uptime']}</code>\n\n"
+        f"Alamat IP: <code>{d_ip}</code>\n"
+        f"Vendor: {d_vendor}\n"
+        f"Lokasi: {d_site}\n"
+        f"Latency: <code>{lat_val} ms</code> | Ping Drop: <code>{loss_val}%</code>\n"
+        f"Waktu Aktif: <code>{d_uptime}</code>\n\n"
         "Penggunaan Sumber Daya:\n"
         f"<code>CPU [{cpu_bar}] {cpu_val:>2}% ({cpu_label})</code>\n"
         f"<code>MEM [{mem_bar}] {mem_val:>2}% ({mem_label})</code>\n\n"
         "Manajemen Konfigurasi:\n"
-        f"• Backup Terakhir: <code>{dev['last_backup']}</code>\n"
-        f"• Jalur Direktori: <code>{dev['backup_path']}</code>\n\n"
-        f"Ketik /backup {html.escape(device_name)} untuk melakukan backup konfigurasi manual."
+        f"• Backup Terakhir: <code>{last_b}</code>\n"
+        f"• Jalur Direktori: <code>{b_path}</code>\n\n"
+        f"Ketik /backup {html.escape(d_name)} untuk melakukan backup konfigurasi manual."
     )
     return msg
 

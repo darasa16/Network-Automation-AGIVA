@@ -110,6 +110,18 @@ def init_db():
     from models import Base, Device, DeviceStatusLog, Alert, IncidentLog, TelegramWhitelist, TelegramMessageLog, BackupHistory
     Base.metadata.create_all(bind=engine)
     
+    # Auto-migration: pastikan kolom latency_ms dan packet_loss ada di PostgreSQL
+    try:
+        from sqlalchemy import text
+        with engine.connect() as conn:
+            conn.execute(text("ALTER TABLE devices ADD COLUMN IF NOT EXISTS latency_ms FLOAT DEFAULT 0.0;"))
+            conn.execute(text("ALTER TABLE devices ADD COLUMN IF NOT EXISTS packet_loss FLOAT DEFAULT 0.0;"))
+            conn.execute(text("ALTER TABLE device_status_logs ADD COLUMN IF NOT EXISTS latency_ms FLOAT DEFAULT 0.0;"))
+            conn.execute(text("ALTER TABLE device_status_logs ADD COLUMN IF NOT EXISTS packet_loss FLOAT DEFAULT 0.0;"))
+            conn.commit()
+    except Exception as e:
+        print(f"[!] Migration check warning: {e}")
+
     # Check if database needs seeding
     session = db_session()
     try:

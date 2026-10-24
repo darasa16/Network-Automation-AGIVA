@@ -966,6 +966,8 @@ def api_device_metrics(device_id):
         "range": range_mode,
         "current_cpu": device.cpu_usage,
         "current_memory": device.mem_usage,
+        "current_latency": round(device.latency_ms or 0.0, 1),
+        "current_packet_loss": round(device.packet_loss or 0.0, 1),
         "current_traffic": round((trf_in_vals[-1] + trf_out_vals[-1]), 2) if trf_in_vals and trf_out_vals else 0.0,
         "current_traffic_in": trf_in_vals[-1] if trf_in_vals else 0.0,
         "current_traffic_out": trf_out_vals[-1] if trf_out_vals else 0.0,

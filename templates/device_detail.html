@@ -121,6 +121,14 @@
                                 <span class="device-meta-val">{{ specs.mac_address or '-' }}</span>
                             </div>
                             <div class="device-meta-col">
+                                <span class="device-meta-label">Latency</span>
+                                <span class="device-meta-val" id="currLatencyVal">{{ device.latency or 0.0 }} ms</span>
+                            </div>
+                            <div class="device-meta-col">
+                                <span class="device-meta-label">Ping Drop</span>
+                                <span class="device-meta-val" id="currLossVal">{{ device.packet_loss or 0.0 }}%</span>
+                            </div>
+                            <div class="device-meta-col">
                                 <span class="device-meta-label">Uptime</span>
                                 <span class="device-meta-val" id="currUptimeVal">{{ device.uptime }}</span>
                             </div>
@@ -265,8 +273,20 @@
                     <div class="chart-panel">
                         <div class="panel-header">
                             <div>
-                                <h3 class="panel-title">CPU &amp; Memory Utilization (%)</h3>
-                                <span class="panel-sub">Utilisasi beban komputasi inti &amp; alokasi OS RAM (termasuk buffer/cache kernel)</span>
+                                <h3 class="panel-title">
+                                    {% if 'palo' in device.vendor.lower() %}
+                                    Data Plane CPU &amp; Memory Utilization (%)
+                                    {% else %}
+                                    CPU &amp; Memory Utilization (%)
+                                    {% endif %}
+                                </h3>
+                                <span class="panel-sub">
+                                    {% if 'palo' in device.vendor.lower() %}
+                                    Utilisasi prosesor inspeksi paket trafik (Data Plane) &amp; alokasi OS RAM
+                                    {% else %}
+                                    Utilisasi beban komputasi inti &amp; alokasi OS RAM (termasuk buffer/cache kernel)
+                                    {% endif %}
+                                </span>
                             </div>
                             <div class="chart-legend-custom">
                                 <span class="legend-tag"><span class="legend-color bg-cyan"></span> CPU (%)</span>

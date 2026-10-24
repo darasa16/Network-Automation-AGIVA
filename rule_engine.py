@@ -272,20 +272,14 @@ def auto_resolve_alert(session, device, alert_type, recovery_message=None):
 
     is_cooldown = active_incident and (active_incident.status == 'ACTIVE_MONITORING') and (dur_sec < 600)
 
-    # Update IncidentLog jika ada
-    if active_incident:
-        active_incident.resolved_at = now
-        active_incident.duration_seconds = dur_sec
-        active_incident.status = 'AUTO_COOLDOWN' if is_cooldown else 'RESOLVED_ALERT'
-
-    # Update Alert jika ada
-    if active_alert:
-        active_alert.resolved_at = now
-
     # =========================================================================
     # KASUS A: Pulih dalam < 10 Menit (AUTO-COOLDOWN)
     # =========================================================================
     if is_cooldown:
+        active_incident.resolved_at = now
+        active_incident.duration_seconds = dur_sec
+        active_incident.status = 'AUTO_COOLDOWN'
+
         cooldown_msg = (
             f"⚡ <b>[NOC AGIVA - ANOMALI PULIH / COOLDOWN]</b> ⚡\n\n"
             f"📌 <b>Perangkat:</b> {device.name} ({device.ip_address})\n"
@@ -316,49 +310,21 @@ def auto_resolve_alert(session, device, alert_type, recovery_message=None):
         return True, active_incident
 
     # =========================================================================
-    # KASUS B: Pulih Setelah Berstatus Alert (≥ 10 Menit)
+    # KASUS B: Anomali Telah Dieskalasi ke Alert (>= 10 Menit) - OPSI 2 (MANUAL RESOLVE ONLY)
     # =========================================================================
-    alert_ref = f"#{active_alert.alert_id}" if active_alert else (f"#INC-{active_incident.incident_id}" if active_incident else "")
-    if not recovery_message:
-        recovery_message = f"Status anomali {alert_type} pada {device.name} telah pulih normal."
-
-    recovery_msg = (
-        f"✅ <b>[NOC AGIVA - RECOVERY NOTIFICATION]</b> ✅\n\n"
-        f"📌 <b>Alert ID:</b> {alert_ref} (RESOLVED)\n"
-        f"📌 <b>Perangkat:</b> {device.name} ({device.ip_address})\n"
-        f"📌 <b>Tipe Pemulihan:</b> {alert_type}\n"
-        f"📌 <b>Total Durasi Gangguan:</b> {dur_str}\n"
-        f"📌 <b>Keterangan:</b> {recovery_message}\n"
-        f"📌 <b>Waktu Pemulihan:</b> {now.strftime('%Y-%m-%d %H:%M:%S')} WIB"
+    # Sesuai SOP Opsi 2: Sistem TIDAK MENUTUP alert secara otomatis meskipun metrik sudah kembali normal.
+    # Alert TETAP TERBUKA di antrean Active & Sustained Alerts sampai petugas secara manual
+    # mengetik /resolve <alert_id> di Telegram sebagai verifikasi penyelesaian tiket.
+    alert_ref = f"#{active_alert.alert_id}" if active_alert else (f"#INC-{active_incident.incident_id}" if active_incident else "-")
+    logger.info(
+        f"[RuleEngine] Metrik {device.name} - {alert_type} telah normal kembali, "
+        f"tetapi Alert {alert_ref} tetap OPEN di antrean Active Alerts menunggu /resolve manual petugas via Telegram."
     )
-
-    ok, delivery_status = send_telegram_broadcast(recovery_msg, parse_mode='HTML')
-    status_str = "SENT" if ok else str(delivery_status)[:90]
-
-    log_entry = TelegramMessageLog(
-        alert_id=active_alert.alert_id if active_alert else None,
-        chat_id=target_chat_id,
-        message_type="RECOVERY_NOTIFICATION",
-        content=recovery_msg,
-        status=status_str,
-        sent_at=now
-    )
-    session.add(log_entry)
-    session.commit()
-
-    logger.info(f"[RuleEngine] Alert {alert_ref} ({device.name} - {alert_type}) berhasil di-resolve setelah {dur_str}.")
-    return True, active_alert or active_incident
+    return False, None
 
 
 def evaluate_device_rules(session, device, metrics):
-    """
-    Evaluasi Ambang Batas (Rule Engine Thresholds) Sesuai LLD Bab IV:
-    - Host DOWN / Unreachable
-    - CPU Utilization > 85.0%
-    - Memory Utilization > 85.0%
-    - Auto-recovery alert ketika metrik kembali ke batas normal
-    """
-    # 1. Evaluasi Status Keterjangkauan (Reachability)
+
     if device.status == "DOWN":
         trigger_alert_with_antispam(
             session=session,
@@ -369,7 +335,6 @@ def evaluate_device_rules(session, device, metrics):
             peak_metric_val="DOWN (Unreachable)"
         )
     else:
-        # Jika perangkat UP, resolve alert HOST_DOWN jika sebelumnya ada
         auto_resolve_alert(
             session=session,
             device=device,
@@ -377,7 +342,6 @@ def evaluate_device_rules(session, device, metrics):
             recovery_message=f"Koneksi ke {device.name} ({device.ip_address}) berhasil dipulihkan (STATUS: UP)."
         )
 
-    # 2. Evaluasi Beban CPU
     cpu_val = float(device.cpu_usage or 0.0)
     if cpu_val > 85.0:
         severity = "CRITICAL" if cpu_val >= 95.0 else "WARNING"
@@ -418,3 +382,46 @@ def evaluate_device_rules(session, device, metrics):
             alert_type="MEMORY_OVERLOAD",
             recovery_message=f"Penggunaan Memory {device.name} telah kembali normal ({mem_val:.1f}%)."
         )
+
+    # 4. Evaluasi Latency ICMP (ms)
+    lat_val = float(device.latency_ms or 0.0)
+    if device.status == "UP":
+        if lat_val > 50.0:
+            severity = "CRITICAL" if lat_val >= 100.0 else "WARNING"
+            trigger_alert_with_antispam(
+                session=session,
+                device=device,
+                alert_type="HIGH_LATENCY",
+                severity=severity,
+                message=f"Latency respons ICMP ke {device.name} melonjak mencapai {lat_val:.1f} ms (Batas normal: 50 ms).",
+                peak_metric_val=f"{lat_val:.1f} ms"
+            )
+        elif lat_val <= 40.0:
+            auto_resolve_alert(
+                session=session,
+                device=device,
+                alert_type="HIGH_LATENCY",
+                recovery_message=f"Latency {device.name} telah kembali normal ({lat_val:.1f} ms)."
+            )
+
+    # 5. Evaluasi Ping Drop / Packet Loss (%)
+    loss_val = float(device.packet_loss or 0.0)
+    if device.status == "UP":
+        # Jika loss > 5% dan < 100% (100% adalah kondisi HOST_DOWN)
+        if 5.0 < loss_val < 100.0:
+            severity = "CRITICAL" if loss_val >= 25.0 else "WARNING"
+            trigger_alert_with_antispam(
+                session=session,
+                device=device,
+                alert_type="PACKET_LOSS",
+                severity=severity,
+                message=f"Terdeteksi ping drop / packet loss sebesar {loss_val:.1f}% ke {device.name} (Batas normal: 5%).",
+                peak_metric_val=f"{loss_val:.1f}%"
+            )
+        elif loss_val <= 0.0:
+            auto_resolve_alert(
+                session=session,
+                device=device,
+                alert_type="PACKET_LOSS",
+                recovery_message=f"Koneksi ke {device.name} stabil tanpa packet loss (0.0%)."
+            )

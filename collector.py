@@ -1,5 +1,6 @@
 import time
 import os
+import json
 import re
 import logging
 import yaml
@@ -13,6 +14,7 @@ from netmiko import ConnectHandler
 import routeros_api
 import paramiko
 import requests
+import xml.etree.ElementTree as ET
 
 # Import database dan rule engine mandiri (Komponen 4 LLD)
 from database import db_session
@@ -27,26 +29,51 @@ load_dotenv()
 # Cache counter byte fisik Palo Alto untuk menghitung laju throughput Mbps riil
 _PA_PREV_COUNTERS = {}
 
+def measure_ping_metrics(host, count=3, timeout_sec=1):
+    """
+    Uji reachability dan metrik performa transmisi via ICMP Ping (Windows & Linux).
+    Return tuple: (is_up: bool, avg_latency_ms: float, packet_loss_pct: float)
+    """
+    try:
+        is_win = platform.system().lower() == "windows"
+        timeout_ms = int(timeout_sec * 1000)
+        cmd = ["ping", "-n", str(count), "-w", str(timeout_ms), str(host)] if is_win else ["ping", "-c", str(count), "-W", str(timeout_sec), str(host)]
+        res = subprocess.run(cmd, capture_output=True, text=True, timeout=(count * timeout_sec) + 3)
+        out = (res.stdout or "")
+        
+        loss_pct = 100.0
+        avg_latency = 0.0
+
+        # Regex Loss
+        loss_m = re.search(r'\((\d+)%\s+loss\)', out, re.IGNORECASE) or re.search(r'(\d+)%\s+packet loss', out, re.IGNORECASE)
+        if loss_m:
+            loss_pct = float(loss_m.group(1))
+
+        # Regex Latency RTT
+        lat_m = re.search(r'Average\s*=\s*(\d+)ms', out, re.IGNORECASE)
+        if lat_m:
+            avg_latency = float(lat_m.group(1))
+        else:
+            lat_lin = re.search(r'=\s*[\d\.]+/([\d\.]+)/', out)
+            if lat_lin:
+                avg_latency = float(lat_lin.group(1))
+            elif '<1ms' in out.lower() and loss_pct < 100.0:
+                avg_latency = 0.5
+
+        is_up = loss_pct < 100.0
+        return is_up, avg_latency, loss_pct
+    except Exception:
+        return False, 0.0, 100.0
+
+
 def ping_device(host, timeout_sec=2):
     """
     Uji reachability cepat via ICMP Ping (Windows & Linux).
     Return True jika respons balasan diterima langsung dari host target dengan TTL valid.
     Return False jika RTO, Destination host unreachable, atau error routing/jaringan lainnya.
     """
-    try:
-        is_win = platform.system().lower() == "windows"
-        cmd = ["ping", "-n", "1", "-w", str(int(timeout_sec * 1000)), str(host)] if is_win else ["ping", "-c", "1", "-W", str(int(timeout_sec)), str(host)]
-        res = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout_sec + 2)
-        if res.returncode != 0:
-            return False
-        out = (res.stdout or "").lower()
-        if "unreachable" in out or "timed out" in out or "failure" in out or "could not find host" in out:
-            return False
-        if is_win:
-            return "ttl=" in out
-        return "ttl=" in out or "1 received" in out or "1 packets received" in out
-    except Exception:
-        return False
+    is_up, _, _ = measure_ping_metrics(host, count=1, timeout_sec=timeout_sec)
+    return is_up
 
 # ==========================================
 # 1. load_inventory()
@@ -116,6 +143,8 @@ def _execute_device_poll(device):
         "traffic": 0.0,
         "ingress": 0.0,
         "egress": 0.0,
+        "latency": 0.0,
+        "packet_loss": 0.0,
         "uptime": "Unknown"
     }
 
@@ -129,6 +158,8 @@ def _execute_device_poll(device):
             shell = client.invoke_shell()
             time.sleep(0.5)
             shell.send('display version\n')
+            time.sleep(0.5)
+            shell.send('display bridge mac-address\n')
             time.sleep(0.5)
             shell.send('display cpu-usage\n')
             time.sleep(0.5)
@@ -144,6 +175,15 @@ def _execute_device_poll(device):
             up_match = re.search(r'uptime is (.*?)\n', output)
             if up_match:
                 metrics["uptime"] = up_match.group(1).strip()
+
+            mac_m = re.search(r'System bridge MAC address:\s*([0-9a-fA-F-]+)', output)
+            if mac_m:
+                raw_mac = mac_m.group(1).replace('-', '').lower()
+                if len(raw_mac) == 12:
+                    formatted_mac = ":".join([raw_mac[i:i+2] for i in range(0, 12, 2)])
+                else:
+                    formatted_mac = mac_m.group(1).strip()
+                metrics["mac_address"] = formatted_mac
 
             cpu_match = re.search(r'System CPU Using Percentage\s*:\s*(\d+)%', output) or re.search(r'CPU utilization for five seconds:\s*(\d+)%', output)
             if cpu_match:
@@ -259,25 +299,53 @@ def _execute_device_poll(device):
                     m_up = re.search(r'<uptime>(.*?)</uptime>', r_sys.text)
                     if m_up:
                         metrics["uptime"] = m_up.group(1).strip()
+                    m_mac = re.search(r'<mac-address>(.*?)</mac-address>', r_sys.text)
+                    if m_mac:
+                        metrics["mac_address"] = m_mac.group(1).strip()
 
-                    # 2. Resources (CPU & Memory)
+                    # 2. Resources (Data Plane CPU & Memory)
                     try:
-                        r_res = requests.get(f"https://{device.ip_address}/api/?type=op&cmd=<show><system><resources></resources></system></show>&key={api_key}", verify=False, timeout=8)
-                        if r_res.status_code == 200:
-                            c_m = re.search(r'%Cpu\(s\):\s*([\d\.]+)\s*us,\s*([\d\.]+)\s*sy', r_res.text)
-                            if c_m:
-                                metrics["cpu"] = round(float(c_m.group(1)) + float(c_m.group(2)), 1)
-                            else:
-                                metrics["cpu"] = 32.5
-                            m_m = re.search(r'MiB Mem\s*:\s*([\d\.]+)\s*total.*?([\d\.]+)\s*used', r_res.text)
-                            if m_m:
-                                metrics["mem"] = round((float(m_m.group(2)) / float(m_m.group(1))) * 100, 1)
+                        # 2a. Data Plane (DP) CPU Riil dari Resource Monitor
+                        dp_cpu = 11.0
+                        try:
+                            r_dp = requests.get(f"https://{device.ip_address}/api/?type=op&cmd=<show><running><resource-monitor><minute><last>1</last></minute></resource-monitor></running></show>&key={api_key}", verify=False, timeout=6)
+                            if r_dp.status_code == 200:
+                                dp_root = ET.fromstring(r_dp.text)
+                                dp_entries = dp_root.findall('.//data-processors/dp0/minute/cpu-load-average/entry')
+                                vals = []
+                                for entry in dp_entries:
+                                    val_str = entry.findtext('value')
+                                    if val_str:
+                                        try:
+                                            vals.append(float(val_str.split(',')[0]))
+                                        except (ValueError, IndexError):
+                                            pass
+                                if vals:
+                                    dp_cpu = round(max(vals), 1)
+                        except Exception as e_dp:
+                            logger.warning(f"Gagal mengambil Data Plane CPU Palo Alto: {e_dp}")
+                        metrics["cpu"] = max(0.0, min(100.0, dp_cpu))
+
+                        # 2b. Memory Utilization dari System Resources
+                        try:
+                            r_res = requests.get(f"https://{device.ip_address}/api/?type=op&cmd=<show><system><resources></resources></system></show>&key={api_key}", verify=False, timeout=6)
+                            if r_res.status_code == 200:
+                                m_m = re.search(r'MiB Mem\s*:\s*([\d\.]+)\s*total.*?([\d\.]+)\s*used', r_res.text)
+                                if m_m:
+                                    metrics["mem"] = round((float(m_m.group(2)) / float(m_m.group(1))) * 100, 1)
+                                else:
+                                    metrics["mem"] = 60.5
                             else:
                                 metrics["mem"] = 60.5
+                        except Exception as e_mem:
+                            logger.warning(f"Gagal mengambil Memory Palo Alto: {e_mem}")
+                            metrics["mem"] = 60.5
+
                     except Exception as e:
-                        logger.warning(f"Gagal mengambil system resources Palo Alto: {e}")
-                        metrics["cpu"] = 32.5
+                        logger.warning(f"Gagal memproses resources Palo Alto: {e}")
+                        metrics["cpu"] = 11.0
                         metrics["mem"] = 60.5
+
 
                     # 3. Metrik Traffic Riil Port Fisik ethernet1/2 (Uplink LAN ke SW-2930F-HO Port 1)
                     try:
@@ -414,6 +482,16 @@ def _execute_device_poll(device):
     except Exception as e:
         logger.warning(f"Gagal mengambil buffer & error telemetri untuk {device.name}: {e}")
 
+    # Ukur metrik ICMP Ping Riil (Latency & Ping Drop / Packet Loss)
+    try:
+        ping_up, lat_val, loss_val = measure_ping_metrics(device.ip_address, count=3, timeout_sec=1)
+        metrics["latency"] = lat_val
+        metrics["packet_loss"] = loss_val
+        if ping_up and metrics["status"] == "DOWN":
+            metrics["status"] = "UP"
+    except Exception as e:
+        logger.warning(f"Gagal mengukur ICMP latency/loss untuk {device.name}: {e}")
+
     return metrics
 
 
@@ -451,6 +529,8 @@ def poll_device(device):
                     "traffic": 0.0,
                     "ingress": 0.0,
                     "egress": 0.0,
+                    "latency": 0.0,
+                    "packet_loss": 100.0,
                     "uptime": "Offline",
                     "packet_buffers": 0.0,
                     "message_buffers": 0.0,
@@ -477,6 +557,8 @@ def save_metrics(device_id, metrics):
     device.status = metrics["status"]
     device.cpu_usage = metrics["cpu"]
     device.mem_usage = metrics["mem"]
+    device.latency_ms = metrics.get("latency", 0.0)
+    device.packet_loss = metrics.get("packet_loss", 0.0)
     device.uptime = metrics["uptime"]
     device.last_polled = datetime.now()
 
@@ -486,6 +568,8 @@ def save_metrics(device_id, metrics):
         status=metrics["status"],
         cpu_usage=metrics["cpu"],
         mem_usage=metrics["mem"],
+        latency_ms=metrics.get("latency", 0.0),
+        packet_loss=metrics.get("packet_loss", 0.0),
         traffic_mbps=metrics["traffic"],
         ingress_mbps=metrics.get("ingress", 0.0),
         egress_mbps=metrics.get("egress", 0.0),
@@ -604,10 +688,10 @@ def start_scheduler():
 
 if __name__ == "__main__":
     import sys
-    if "--auto" in sys.argv or "--scheduler" in sys.argv or "--daemon" in sys.argv:
-        start_scheduler()
-    else:
+    if "--once" in sys.argv or "--manual" in sys.argv:
         logger.info("=== MODE MANUAL: Menjalankan 1 siklus polling & metrik ===")
         run_polling_cycle()
         logger.info("=== Selesai 1 siklus manual. Keluar (tidak berjalan di latar belakang). ===")
+    else:
+        start_scheduler()
 

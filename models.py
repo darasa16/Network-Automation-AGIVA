@@ -17,6 +17,8 @@ class Device(Base):
     status = Column(String(20), default='UP')   # 'UP' / 'DOWN'
     cpu_usage = Column(Float, default=0.0)
     mem_usage = Column(Float, default=0.0)
+    latency_ms = Column(Float, default=0.0)
+    packet_loss = Column(Float, default=0.0)
     uptime = Column(String(100), default='Unknown')
     credential_ref = Column(String(100), default='env_vault')
     last_polled = Column(DateTime, default=datetime.now)
@@ -37,6 +39,8 @@ class Device(Base):
             "status": self.status,
             "cpu": round(self.cpu_usage or 0.0, 1),
             "mem": round(self.mem_usage or 0.0, 1),
+            "latency": round(self.latency_ms or 0.0, 1),
+            "packet_loss": round(self.packet_loss or 0.0, 1),
             "uptime": self.uptime,
             "last_polled": self.last_polled.strftime("%H:%M:%S") if self.last_polled else "-"
         }
@@ -52,6 +56,8 @@ class DeviceStatusLog(Base):
     status = Column(String(20), nullable=False)  # 'UP' / 'DOWN'
     cpu_usage = Column(Float, default=0.0)
     mem_usage = Column(Float, default=0.0)
+    latency_ms = Column(Float, default=0.0)
+    packet_loss = Column(Float, default=0.0)
     traffic_mbps = Column(Float, default=0.0)
     ingress_mbps = Column(Float, default=0.0)
     egress_mbps = Column(Float, default=0.0)
