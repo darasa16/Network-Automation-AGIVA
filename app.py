@@ -824,8 +824,9 @@ def api_status():
     ingress_trf = round(history_data["ingress"][-1], 1) if history_data.get("ingress") else 0.0
     egress_trf = round(history_data["egress"][-1], 1) if history_data.get("egress") else 0.0
 
-    return jsonify({
+    payload = {
         "timestamp": datetime.now().strftime("%H:%M:%S"),
+        "date_str": datetime.now().strftime("%d/%m/%Y"),
         "range": range_mode,
         "summary": {
             "total_devices": len(devices),
@@ -843,7 +844,8 @@ def api_status():
         "history": history_data,
         "devices": devices_data,
         "alerts": alerts_data
-    })
+    }
+    return jsonify(payload)
 
 @app.route('/api/device/<int:device_id>/metrics')
 def api_device_metrics(device_id):

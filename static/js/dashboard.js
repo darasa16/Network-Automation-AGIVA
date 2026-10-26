@@ -1,7 +1,7 @@
 /**
  * Dashboard JavaScript - PT Agiva Indonesia Network Automation
- * Supports BOTH:
- * 1. Offline file:// direct double-click (simulates real-time chart animation)
+ * Supports:
+ * 1. Offline Mode with localStorage & fallback cache (when app.py backend is offline)
  * 2. Online http:// server mode (polls /api/status live JSON endpoint)
  */
 
@@ -12,17 +12,136 @@ let trafficTimelineNav = null;
 let lastDashboardHistory = null;
 let currentDashboardRange = 'live';
 let isRangeJustChanged = false;
+let offlineToastShown = false;
+let isPrefetchingRanges = false;
 const MAX_CHART_POINTS = 14;
+
+const STORAGE_KEYS = {
+    DASHBOARD_DATA: 'agiva_dashboard_latest_data',
+    CHART_PREFIX: 'agiva_chart_history_', // agiva_chart_history_live, 1h, 12h, 24h
+    LAST_UPDATED: 'agiva_dashboard_last_updated'
+};
+
+/* --------------------------------------------------------------------------
+   Local Storage & Offline Data Management
+   -------------------------------------------------------------------------- */
+function saveDashboardDataToStorage(data) {
+    if (!data) return;
+    try {
+        const payload = {
+            summary: data.summary,
+            metrics: data.metrics,
+            devices: data.devices,
+            alerts: data.alerts,
+            timestamp: data.timestamp || new Date().toLocaleTimeString('id-ID'),
+            savedAt: new Date().toISOString()
+        };
+        localStorage.setItem(STORAGE_KEYS.DASHBOARD_DATA, JSON.stringify(payload));
+        localStorage.setItem(STORAGE_KEYS.LAST_UPDATED, payload.savedAt);
+
+        if (data.history) {
+            saveChartHistoryToStorage(data.range || currentDashboardRange, data.history);
+        }
+    } catch (e) {
+        console.warn('Gagal menyimpan cache dashboard ke localStorage:', e);
+    }
+}
+
+function saveChartHistoryToStorage(range, history) {
+    if (!history || !history.labels || history.labels.length === 0) return;
+    try {
+        localStorage.setItem(STORAGE_KEYS.CHART_PREFIX + range, JSON.stringify(history));
+    } catch (e) {
+        console.warn('Gagal menyimpan cache chart:', e);
+    }
+}
+
+function loadDashboardDataFromStorage() {
+    try {
+        const raw = localStorage.getItem(STORAGE_KEYS.DASHBOARD_DATA);
+        if (raw) return JSON.parse(raw);
+    } catch (e) {
+        console.warn('Error reading localStorage dashboard:', e);
+    }
+    return null;
+}
+
+function loadChartHistoryFromStorage(range) {
+    try {
+        const raw = localStorage.getItem(STORAGE_KEYS.CHART_PREFIX + range);
+        if (raw) return JSON.parse(raw);
+
+        // Fallback to 'live' if requested range not found
+        const liveRaw = localStorage.getItem(STORAGE_KEYS.CHART_PREFIX + 'live');
+        if (liveRaw) return JSON.parse(liveRaw);
+    } catch (e) {
+        console.warn('Error reading localStorage chart:', e);
+    }
+    return null;
+}
+
+async function prefetchHistoricalRanges() {
+    if (isPrefetchingRanges) return;
+    isPrefetchingRanges = true;
+    const ranges = ['1h', '12h', '24h'];
+    for (const r of ranges) {
+        if (!localStorage.getItem(STORAGE_KEYS.CHART_PREFIX + r)) {
+            try {
+                const res = await fetch(`/api/status?range=${encodeURIComponent(r)}`, { cache: 'no-store' });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.history) {
+                        saveChartHistoryToStorage(r, data.history);
+                    }
+                }
+            } catch (e) {
+                // Ignore silent prefetch error
+            }
+        }
+    }
+}
+
+function cleanupServiceWorker() {
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(registrations => {
+            for (const r of registrations) {
+                r.unregister();
+            }
+        });
+    }
+    if ('caches' in window) {
+        caches.keys().then(keys => keys.forEach(k => caches.delete(k)));
+    }
+}
+
+function restoreDashboardFromStorageIfEmpty() {
+    const cachedData = loadDashboardDataFromStorage();
+    if (!cachedData) return;
+
+    const kpiTot = document.getElementById('kpiTotal');
+    const tbody = document.getElementById('deviceTableBody');
+    const isEmptyTable = !tbody || tbody.children.length === 0 || (tbody.children.length === 1 && tbody.children[0].textContent.includes('Belum ada perangkat'));
+
+    if (isEmptyTable || (kpiTot && (kpiTot.textContent === '0' || !kpiTot.textContent.trim()))) {
+        updateDashboardView(cachedData);
+    }
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     initCharts();
     initTimeRangeSelector();
     setupTableFilters();
 
+    // Pulihkan data tabel dan KPI dari cache jika belum terisi
+    restoreDashboardFromStorageIfEmpty();
+
+    // Bersihkan service worker agar browser tetap normal menampilkan layar koneksi terputus saat app.py mati
+    cleanupServiceWorker();
+
     // Poll immediately on page load
     pollRealtimeStatus();
 
-    // Polling interval (setiap 5 detik sekali sesuai permintaan)
+    // Polling interval (setiap 5 detik)
     setInterval(pollRealtimeStatus, 5000);
 });
 
@@ -30,7 +149,20 @@ document.addEventListener('DOMContentLoaded', () => {
    Chart.js Initialization
    -------------------------------------------------------------------------- */
 function initCharts() {
-    const initData = window.INITIAL_CHART_DATA || { labels: [], cpu: [], mem: [], ingress: [], egress: [] };
+    let initData = window.INITIAL_CHART_DATA || { labels: [], cpu: [], mem: [], ingress: [], egress: [] };
+
+    // Validasi apakah data awal memiliki titik valid
+    const hasValidInitialData = initData && initData.labels && initData.labels.length > 1;
+
+    if (hasValidInitialData) {
+        saveChartHistoryToStorage('live', initData);
+    } else {
+        // Ambil data chart terakhir dari localStorage atau fallback
+        const cachedChart = loadChartHistoryFromStorage('live');
+        if (cachedChart && cachedChart.labels && cachedChart.labels.length > 0) {
+            initData = cachedChart;
+        }
+    }
 
     // 1. CPU & Memory Chart
     const ctxCpuMem = document.getElementById('cpuMemChart');
@@ -198,6 +330,13 @@ function initTimeRangeSelector() {
             isRangeJustChanged = true;
             buttons.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
+
+            // Segera render dari cache agar transisi instan dan tidak blank jika offline
+            const cachedChart = loadChartHistoryFromStorage(range);
+            if (cachedChart && cachedChart.labels && cachedChart.labels.length > 0) {
+                applyChartHistory(cachedChart);
+            }
+
             await pollRealtimeStatus();
         });
     });
@@ -352,8 +491,10 @@ async function pollRealtimeStatus() {
         const data = await response.json();
         handleServerConnected(indicator, statusText);
         updateDashboardView(data);
+        saveDashboardDataToStorage(data);
+        setTimeout(prefetchHistoricalRanges, 1500);
     } catch (error) {
-        // Server backend offline / down: PAUSE charts & show disconnected indicator
+        // Server backend offline / down: terapkan data & grafik terakhir yang tersimpan
         handleServerDisconnected(indicator, statusText);
     }
 }
@@ -361,7 +502,7 @@ async function pollRealtimeStatus() {
 function handleServerConnected(indicator, statusText) {
     if (indicator) {
         indicator.classList.remove('is-offline');
-        indicator.setAttribute('title', 'Polling Engine Terhubung Normal');
+        indicator.removeAttribute('title');
     }
     if (statusText) {
         statusText.textContent = 'LIVE POLLING';
@@ -371,13 +512,23 @@ function handleServerConnected(indicator, statusText) {
 function handleServerDisconnected(indicator, statusText) {
     if (indicator) {
         indicator.classList.add('is-offline');
-        indicator.setAttribute('title', 'Polling Engine Terputus');
+        indicator.removeAttribute('title');
     }
     if (statusText) {
         statusText.textContent = 'POLLING STOPPED';
     }
-    // CATATAN: Tidak ada push data palsu/dummy ke grafik saat server offline!
-    // Grafik tetap diam mempertahankan data terakhir (pause).
+
+    // Ambil data dan grafik terakhir dari cache lokal
+    const cachedData = loadDashboardDataFromStorage();
+    const cachedChart = loadChartHistoryFromStorage(currentDashboardRange);
+
+    if (cachedChart && cachedChart.labels && cachedChart.labels.length > 0) {
+        applyChartHistory(cachedChart);
+    }
+
+    if (cachedData) {
+        updateDashboardView(cachedData);
+    }
 }
 
 function pushChartData(chart, label, values) {

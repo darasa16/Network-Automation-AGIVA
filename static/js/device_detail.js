@@ -24,6 +24,14 @@ let currentDeviceRange = 'live';
 document.addEventListener('DOMContentLoaded', () => {
     initPortControls();
     initTimeRangeSelector();
+
+    // Pulihkan dari cache jika ada agar instan dan tidak kosong saat app.py mati
+    const devId = typeof CURRENT_DEVICE_ID !== 'undefined' ? CURRENT_DEVICE_ID : 1;
+    const cached = loadDeviceMetricsFromStorage(devId, currentDeviceRange);
+    if (cached) {
+        applyDeviceDataToUI(cached);
+    }
+
     fetchDeviceMetrics(false);
     // Real-time polling per 5 detik
     setInterval(() => fetchDeviceMetrics(false), 5000);
@@ -40,6 +48,13 @@ function initTimeRangeSelector() {
             currentDeviceRange = range;
             buttons.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
+
+            const devId = typeof CURRENT_DEVICE_ID !== 'undefined' ? CURRENT_DEVICE_ID : 1;
+            const cached = loadDeviceMetricsFromStorage(devId, range);
+            if (cached) {
+                applyDeviceDataToUI(cached);
+            }
+
             fetchDeviceMetrics(false);
         });
     });
@@ -156,6 +171,108 @@ function updatePortsTableRows(ports) {
     });
 }
 
+function saveDeviceMetricsToStorage(devId, range, data) {
+    if (!data) return;
+    try {
+        localStorage.setItem(`agiva_device_${devId}_latest_${range}`, JSON.stringify(data));
+        localStorage.setItem(`agiva_device_${devId}_latest_general`, JSON.stringify(data));
+    } catch (e) {
+        console.warn('Gagal menyimpan cache device ke localStorage:', e);
+    }
+}
+
+function loadDeviceMetricsFromStorage(devId, range) {
+    try {
+        const raw = localStorage.getItem(`agiva_device_${devId}_latest_${range}`);
+        if (raw) return JSON.parse(raw);
+        const genRaw = localStorage.getItem(`agiva_device_${devId}_latest_general`);
+        if (genRaw) return JSON.parse(genRaw);
+    } catch (e) {
+        console.warn('Error reading device cache:', e);
+    }
+    return null;
+}
+
+function applyDeviceDataToUI(data) {
+    if (!data) return;
+
+    if (data.current_cpu !== undefined) {
+        const cpuEl = document.getElementById('currCpuVal');
+        if (cpuEl) cpuEl.textContent = `${data.current_cpu}%`;
+        const valCpu = document.getElementById('valCpu');
+        if (valCpu) valCpu.textContent = `${data.current_cpu}%`;
+    }
+    if (data.current_memory !== undefined) {
+        const memEl = document.getElementById('currMemVal');
+        if (memEl) memEl.textContent = `${data.current_memory}%`;
+        const valMemory = document.getElementById('valMemory');
+        if (valMemory) valMemory.textContent = `${data.current_memory}%`;
+    }
+    if (data.current_traffic !== undefined) {
+        const trfEl = document.getElementById('currTrafficVal');
+        if (trfEl) trfEl.textContent = `${data.current_traffic} Mbps`;
+        const valTrf = document.getElementById('valThroughput');
+        if (valTrf) valTrf.textContent = `${data.current_traffic}`;
+    }
+    if (data.current_packet_buffers !== undefined) {
+        const pbEl = document.getElementById('valPacketBuffers');
+        if (pbEl) pbEl.textContent = `${data.current_packet_buffers}%`;
+    }
+    if (data.current_message_buffers !== undefined) {
+        const mbEl = document.getElementById('valMessageBuffers');
+        if (mbEl) mbEl.textContent = `${data.current_message_buffers}%`;
+    }
+    if (data.current_rx_errors !== undefined) {
+        const reEl = document.getElementById('valRxErrors');
+        if (reEl) reEl.textContent = `${data.current_rx_errors}`;
+    }
+    if (data.current_tx_errors !== undefined) {
+        const teEl = document.getElementById('valTxErrors');
+        if (teEl) teEl.textContent = `${data.current_tx_errors}`;
+    }
+    if (data.current_tx_drops !== undefined) {
+        const tdEl = document.getElementById('valTxDrops');
+        if (tdEl) tdEl.textContent = `${data.current_tx_drops}`;
+    }
+    if (data.current_latency !== undefined) {
+        const latEl = document.getElementById('currLatencyVal');
+        if (latEl) latEl.textContent = `${data.current_latency} ms`;
+    }
+    if (data.current_packet_loss !== undefined) {
+        const lossEl = document.getElementById('currLossVal');
+        if (lossEl) lossEl.textContent = `${data.current_packet_loss}%`;
+    }
+    if (data.uptime) {
+        const uptimeEl = document.getElementById('currUptimeVal');
+        if (uptimeEl) uptimeEl.textContent = data.uptime;
+    }
+    if (data.summary && data.summary.up_ports !== undefined) {
+        const portUpEl = document.getElementById('currPortUpVal');
+        if (portUpEl) portUpEl.textContent = `${data.summary.up_ports} / ${data.summary.total_ports}`;
+    }
+    if (data.specs) {
+        const poeEl = document.getElementById('specPoe') || document.getElementById('currPoeVal');
+        if (poeEl && data.specs.poe_consumption) poeEl.textContent = data.specs.poe_consumption;
+        const fanEl = document.getElementById('specFan');
+        if (fanEl && data.specs.fan_status) fanEl.textContent = data.specs.fan_status;
+        const ramEl = document.getElementById('specRam');
+        if (ramEl && data.specs.total_ram) ramEl.textContent = data.specs.total_ram;
+        const uplinkEl = document.getElementById('specUplink');
+        if (uplinkEl && data.specs.uplink_port) uplinkEl.textContent = data.specs.uplink_port;
+        const dnsEl = document.getElementById('specDns');
+        if (dnsEl && data.specs.dns_servers) dnsEl.textContent = data.specs.dns_servers;
+        const dnsModeEl = document.getElementById('specDnsMode');
+        if (dnsModeEl && data.specs.dns_mode) dnsModeEl.textContent = data.specs.dns_mode;
+    }
+
+    // Sinkronisasi Tabel Port dengan Siklus Log 2 Menit Terbaru
+    if (data.ports && Array.isArray(data.ports)) {
+        updatePortsTableRows(data.ports);
+    }
+
+    renderDeviceCharts(data);
+}
+
 function updateConnectionStatus(isOnline) {
     const indicator = document.querySelector('.status-indicator');
     if (!indicator) return;
@@ -163,11 +280,11 @@ function updateConnectionStatus(isOnline) {
 
     if (isOnline) {
         indicator.classList.remove('is-offline');
-        indicator.setAttribute('title', 'Polling Engine Terhubung Normal');
+        indicator.removeAttribute('title');
         if (textEl) textEl.textContent = 'LIVE POLLING';
     } else {
         indicator.classList.add('is-offline');
-        indicator.setAttribute('title', 'Polling Engine Terputus');
+        indicator.removeAttribute('title');
         if (textEl) textEl.textContent = 'POLLING STOPPED';
     }
 }
@@ -212,98 +329,27 @@ async function fetchDeviceMetrics(isManual = false) {
         `;
     }
 
+    const devId = typeof CURRENT_DEVICE_ID !== 'undefined' ? CURRENT_DEVICE_ID : 1;
     try {
-        const devId = typeof CURRENT_DEVICE_ID !== 'undefined' ? CURRENT_DEVICE_ID : 1;
         const res = await fetch(`/api/device/${devId}/metrics?range=${encodeURIComponent(currentDeviceRange)}`, { cache: 'no-store' });
         if (!res.ok) {
             updateConnectionStatus(false);
+            const cached = loadDeviceMetricsFromStorage(devId, currentDeviceRange);
+            if (cached) {
+                applyDeviceDataToUI(cached);
+            }
             if (isManual && btn) {
                 btn.disabled = false;
                 btn.innerHTML = originalBtnHtml;
-                showToast('Gagal memperbarui data: Endpoint metrik tidak merespon.', 'warning');
+                showToast('Endpoint backend offline. Menampilkan data snapshot terakhir.', 'warning');
             }
             return;
         }
 
         const data = await res.json();
         updateConnectionStatus(true);
-
-        // Update Quick Stat values
-        if (data.current_cpu !== undefined) {
-            const cpuEl = document.getElementById('currCpuVal');
-            if (cpuEl) cpuEl.textContent = `${data.current_cpu}%`;
-            const valCpu = document.getElementById('valCpu');
-            if (valCpu) valCpu.textContent = `${data.current_cpu}%`;
-        }
-        if (data.current_memory !== undefined) {
-            const memEl = document.getElementById('currMemVal');
-            if (memEl) memEl.textContent = `${data.current_memory}%`;
-            const valMemory = document.getElementById('valMemory');
-            if (valMemory) valMemory.textContent = `${data.current_memory}%`;
-        }
-        if (data.current_traffic !== undefined) {
-            const trfEl = document.getElementById('currTrafficVal');
-            if (trfEl) trfEl.textContent = `${data.current_traffic} Mbps`;
-            const valTrf = document.getElementById('valThroughput');
-            if (valTrf) valTrf.textContent = `${data.current_traffic}`;
-        }
-        if (data.current_packet_buffers !== undefined) {
-            const pbEl = document.getElementById('valPacketBuffers');
-            if (pbEl) pbEl.textContent = `${data.current_packet_buffers}%`;
-        }
-        if (data.current_message_buffers !== undefined) {
-            const mbEl = document.getElementById('valMessageBuffers');
-            if (mbEl) mbEl.textContent = `${data.current_message_buffers}%`;
-        }
-        if (data.current_rx_errors !== undefined) {
-            const reEl = document.getElementById('valRxErrors');
-            if (reEl) reEl.textContent = `${data.current_rx_errors}`;
-        }
-        if (data.current_tx_errors !== undefined) {
-            const teEl = document.getElementById('valTxErrors');
-            if (teEl) teEl.textContent = `${data.current_tx_errors}`;
-        }
-        if (data.current_tx_drops !== undefined) {
-            const tdEl = document.getElementById('valTxDrops');
-            if (tdEl) tdEl.textContent = `${data.current_tx_drops}`;
-        }
-        if (data.current_latency !== undefined) {
-            const latEl = document.getElementById('currLatencyVal');
-            if (latEl) latEl.textContent = `${data.current_latency} ms`;
-        }
-        if (data.current_packet_loss !== undefined) {
-            const lossEl = document.getElementById('currLossVal');
-            if (lossEl) lossEl.textContent = `${data.current_packet_loss}%`;
-        }
-        if (data.uptime) {
-            const uptimeEl = document.getElementById('currUptimeVal');
-            if (uptimeEl) uptimeEl.textContent = data.uptime;
-        }
-        if (data.summary && data.summary.up_ports !== undefined) {
-            const portUpEl = document.getElementById('currPortUpVal');
-            if (portUpEl) portUpEl.textContent = `${data.summary.up_ports} / ${data.summary.total_ports}`;
-        }
-        if (data.specs) {
-            const poeEl = document.getElementById('specPoe') || document.getElementById('currPoeVal');
-            if (poeEl && data.specs.poe_consumption) poeEl.textContent = data.specs.poe_consumption;
-            const fanEl = document.getElementById('specFan');
-            if (fanEl && data.specs.fan_status) fanEl.textContent = data.specs.fan_status;
-            const ramEl = document.getElementById('specRam');
-            if (ramEl && data.specs.total_ram) ramEl.textContent = data.specs.total_ram;
-            const uplinkEl = document.getElementById('specUplink');
-            if (uplinkEl && data.specs.uplink_port) uplinkEl.textContent = data.specs.uplink_port;
-            const dnsEl = document.getElementById('specDns');
-            if (dnsEl && data.specs.dns_servers) dnsEl.textContent = data.specs.dns_servers;
-            const dnsModeEl = document.getElementById('specDnsMode');
-            if (dnsModeEl && data.specs.dns_mode) dnsModeEl.textContent = data.specs.dns_mode;
-        }
-
-        // Sinkronisasi Tabel Port dengan Siklus Log 2 Menit Terbaru
-        if (data.ports && Array.isArray(data.ports)) {
-            updatePortsTableRows(data.ports);
-        }
-
-        renderDeviceCharts(data);
+        saveDeviceMetricsToStorage(devId, currentDeviceRange, data);
+        applyDeviceDataToUI(data);
 
         if (isManual && btn) {
             btn.innerHTML = `
@@ -319,10 +365,14 @@ async function fetchDeviceMetrics(isManual = false) {
         }
     } catch (err) {
         updateConnectionStatus(false);
+        const cached = loadDeviceMetricsFromStorage(devId, currentDeviceRange);
+        if (cached) {
+            applyDeviceDataToUI(cached);
+        }
         if (isManual && btn) {
             btn.disabled = false;
             btn.innerHTML = originalBtnHtml;
-            showToast('Gagal menghubungi backend server.', 'warning');
+            showToast('Backend server offline. Menampilkan data snapshot terakhir.', 'warning');
         }
     }
 }
