@@ -14,7 +14,7 @@ let currentDashboardRange = 'live';
 let isRangeJustChanged = false;
 let offlineToastShown = false;
 let isPrefetchingRanges = false;
-const MAX_CHART_POINTS = 14;
+const MAX_CHART_POINTS = 18;
 
 const STORAGE_KEYS = {
     DASHBOARD_DATA: 'agiva_dashboard_latest_data',
@@ -33,7 +33,7 @@ function saveDashboardDataToStorage(data) {
             metrics: data.metrics,
             devices: data.devices,
             alerts: data.alerts,
-            timestamp: data.timestamp || new Date().toLocaleTimeString('id-ID'),
+            timestamp: data.timestamp || new Date().toTimeString().split(' ')[0],
             savedAt: new Date().toISOString()
         };
         localStorage.setItem(STORAGE_KEYS.DASHBOARD_DATA, JSON.stringify(payload));
@@ -202,9 +202,9 @@ function initCharts() {
                         label: 'Memory (%)',
                         data: [...(initData.mem || [])],
                         borderColor: '#f97316',
-                        backgroundColor: gradientMem,
+                        backgroundColor: 'transparent',
                         borderWidth: 2,
-                        fill: true,
+                        fill: false,
                         tension: 0.35,
                         pointRadius: 2,
                         pointHoverRadius: 5
@@ -277,9 +277,15 @@ function getCommonChartOptions(unit, minVal = 0, initialMax = 50) {
     return {
         responsive: true,
         maintainAspectRatio: false,
+        interaction: {
+            mode: 'index',
+            intersect: false
+        },
         plugins: {
             legend: { display: false },
             tooltip: {
+                mode: 'index',
+                intersect: false,
                 backgroundColor: '#1e293b',
                 titleColor: '#f8fafc',
                 bodyColor: '#cbd5e1',

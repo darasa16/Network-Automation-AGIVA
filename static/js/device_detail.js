@@ -480,10 +480,7 @@ function createOrUpdateDualChart(existingChart, ctx, labels, ds1, ds2, unit = ''
                     fill: true,
                     tension: 0.35,
                     pointRadius: dynamicPointRadius,
-                    pointHoverRadius: hoverPointRadius,
-                    pointBackgroundColor: '#ffffff',
-                    pointBorderColor: '#06b6d4',
-                    pointBorderWidth: 1.5
+                    pointHoverRadius: hoverPointRadius
                 },
                 {
                     label: ds2.label,
@@ -494,10 +491,7 @@ function createOrUpdateDualChart(existingChart, ctx, labels, ds1, ds2, unit = ''
                     fill: true,
                     tension: 0.35,
                     pointRadius: dynamicPointRadius,
-                    pointHoverRadius: hoverPointRadius,
-                    pointBackgroundColor: '#ffffff',
-                    pointBorderColor: '#f97316',
-                    pointBorderWidth: 1.5
+                    pointHoverRadius: hoverPointRadius
                 }
             ]
         },
@@ -510,12 +504,12 @@ function createOrUpdateDualChart(existingChart, ctx, labels, ds1, ds2, unit = ''
                 tooltip: {
                     mode: 'index',
                     intersect: false,
-                    backgroundColor: '#18142c',
+                    backgroundColor: '#1e293b',
                     titleColor: '#f8fafc',
                     bodyColor: '#cbd5e1',
-                    borderColor: '#2b244d',
+                    borderColor: '#334155',
                     borderWidth: 1,
-                    padding: 8,
+                    padding: 10,
                     cornerRadius: 6,
                     callbacks: (customTooltip && typeof customTooltip === 'object')
                         ? customTooltip
@@ -598,12 +592,12 @@ function createOrUpdateBarChart(existingChart, ctx, labels, datasets, suggestedM
                 tooltip: {
                     mode: 'index',
                     intersect: false,
-                    backgroundColor: '#18142c',
+                    backgroundColor: '#1e293b',
                     titleColor: '#f8fafc',
                     bodyColor: '#cbd5e1',
-                    borderColor: '#2b244d',
+                    borderColor: '#334155',
                     borderWidth: 1,
-                    padding: 8,
+                    padding: 10,
                     cornerRadius: 6,
                     callbacks: {
                         label: function (ctx) {

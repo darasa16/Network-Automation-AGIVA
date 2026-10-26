@@ -65,15 +65,15 @@ def get_aggregated_chart_history(range_mode='live', session=None):
         cutoff = now - timedelta(hours=24)
         bucket_seconds = 120   # 2 menit data mentah (~720 titik)
     else:  # 'live'
-        cutoff = now - timedelta(minutes=24)
-        bucket_seconds = 120   # 2 menit (max 12 titik)
+        cutoff = now - timedelta(minutes=36)
+        bucket_seconds = 120   # 2 menit (max 18 titik)
 
     logs = session.query(DeviceStatusLog).filter(
         DeviceStatusLog.timestamp >= cutoff
     ).order_by(DeviceStatusLog.timestamp.asc()).all()
 
-    limit_fallback = 720 if range_mode == '24h' else (360 if range_mode == '12h' else (60 if range_mode == '1h' else 36))
-    if len(logs) < 6:
+    limit_fallback = 720 if range_mode == '24h' else (360 if range_mode == '12h' else (60 if range_mode == '1h' else 72))
+    if len(logs) < 18:
         # Fallback to latest rows if database has fewer historical rows in cutoff
         logs = session.query(DeviceStatusLog).order_by(
             DeviceStatusLog.timestamp.desc()
@@ -110,9 +110,9 @@ def get_aggregated_chart_history(range_mode='live', session=None):
         if range_mode == '24h':
             lbl = dt.strftime('%d/%m %H:%M') if dt.date() != now.date() else dt.strftime('%H:%M')
         elif range_mode in ['1h', '12h']:
-            lbl = dt.strftime('%H:%M')
+            lbl = dt.strftime('%d/%m %H:%M') if dt.date() != now.date() else dt.strftime('%H:%M')
         else: # 'live'
-            lbl = dt.strftime('%H:%M:%S')
+            lbl = dt.strftime('%d/%m %H:%M') if dt.date() != now.date() else dt.strftime('%H:%M:%S')
 
         labels.append(lbl)
         up_logs = [x for x in cycle_logs if x.status == 'UP']
@@ -128,12 +128,12 @@ def get_aggregated_chart_history(range_mode='live', session=None):
         ing_vals.append(tot_ing)
         eg_vals.append(tot_eg)
 
-    if range_mode == 'live' and len(labels) > 12:
-        labels = labels[-12:]
-        cpu_vals = cpu_vals[-12:]
-        mem_vals = mem_vals[-12:]
-        ing_vals = ing_vals[-12:]
-        eg_vals = eg_vals[-12:]
+    if range_mode == 'live' and len(labels) > 18:
+        labels = labels[-18:]
+        cpu_vals = cpu_vals[-18:]
+        mem_vals = mem_vals[-18:]
+        ing_vals = ing_vals[-18:]
+        eg_vals = eg_vals[-18:]
 
     if close_session:
         session.close()
@@ -869,16 +869,16 @@ def api_device_metrics(device_id):
         cutoff = now - timedelta(hours=24)
         bucket_seconds = 120   # 2 menit data mentah (~720 titik)
     else:  # 'live'
-        cutoff = now - timedelta(minutes=24)
-        bucket_seconds = 120   # 2 menit (max 12 titik)
+        cutoff = now - timedelta(minutes=36)
+        bucket_seconds = 120   # 2 menit (max 18 titik)
 
     logs = session.query(DeviceStatusLog).filter(
         DeviceStatusLog.device_id == device_id,
         DeviceStatusLog.timestamp >= cutoff
     ).order_by(DeviceStatusLog.timestamp.asc()).all()
 
-    limit_fallback = 720 if range_mode == '24h' else (360 if range_mode == '12h' else (60 if range_mode == '1h' else 12))
-    if len(logs) < 6:
+    limit_fallback = 720 if range_mode == '24h' else (360 if range_mode == '12h' else (60 if range_mode == '1h' else 24))
+    if len(logs) < 18:
         # Fallback to latest available logs for this device
         logs = session.query(DeviceStatusLog).filter(
             DeviceStatusLog.device_id == device_id
@@ -930,9 +930,9 @@ def api_device_metrics(device_id):
             if range_mode == '24h':
                 lbl = dt.strftime('%d/%m %H:%M') if dt.date() != now.date() else dt.strftime('%H:%M')
             elif range_mode in ['1h', '12h']:
-                lbl = dt.strftime('%H:%M')
+                lbl = dt.strftime('%d/%m %H:%M') if dt.date() != now.date() else dt.strftime('%H:%M')
             else:  # live
-                lbl = dt.strftime('%H:%M:%S')
+                lbl = dt.strftime('%d/%m %H:%M') if dt.date() != now.date() else dt.strftime('%H:%M:%S')
             labels.append(lbl)
             # Ambil data mentah riil siklus tersebut
             b = b_logs[-1]
@@ -947,18 +947,18 @@ def api_device_metrics(device_id):
             re_vals.append(int(b.rx_errors or 0))
             te_vals.append(int(b.tx_errors or 0))
 
-        if range_mode == 'live' and len(labels) > 12:
-            labels = labels[-12:]
-            cpu_vals = cpu_vals[-12:]
-            mem_vals = mem_vals[-12:]
-            trf_vals = trf_vals[-12:]
-            trf_in_vals = trf_in_vals[-12:]
-            trf_out_vals = trf_out_vals[-12:]
-            pb_vals = pb_vals[-12:]
-            mb_vals = mb_vals[-12:]
-            td_vals = td_vals[-12:]
-            re_vals = re_vals[-12:]
-            te_vals = te_vals[-12:]
+        if range_mode == 'live' and len(labels) > 18:
+            labels = labels[-18:]
+            cpu_vals = cpu_vals[-18:]
+            mem_vals = mem_vals[-18:]
+            trf_vals = trf_vals[-18:]
+            trf_in_vals = trf_in_vals[-18:]
+            trf_out_vals = trf_out_vals[-18:]
+            pb_vals = pb_vals[-18:]
+            mb_vals = mb_vals[-18:]
+            td_vals = td_vals[-18:]
+            re_vals = re_vals[-18:]
+            te_vals = te_vals[-18:]
 
     result = {
         "device_id": device_id,

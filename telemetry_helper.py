@@ -529,7 +529,7 @@ def get_huawei_telemetry(ip_address="192.168.1.155"):
     return {
         "hardware": {
             "model": "HUAWEI CloudEngine S5735-L24P4XE-A-V2",
-            "serial": "2102353YND10N6000001",
+            "serial": "4E2550055425",
             "firmware": "Huawei YunShan OS V600R024C00SPC500",
             "hardware_rev": "ES5D2V30S037 VER C (MAB: 2)",
             "mac_address": "80:54:d9:85:76:d6",
