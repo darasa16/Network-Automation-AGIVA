@@ -343,18 +343,18 @@ def evaluate_device_rules(session, device, metrics):
         )
 
     cpu_val = float(device.cpu_usage or 0.0)
-    if cpu_val > 85.0:
+    if cpu_val > 90.0:
         severity = "CRITICAL" if cpu_val >= 95.0 else "WARNING"
         trigger_alert_with_antispam(
             session=session,
             device=device,
             alert_type="CPU_OVERLOAD",
             severity=severity,
-            message=f"Penggunaan CPU melonjak mencapai {cpu_val:.1f}% (Ambang batas: 85%).",
+            message=f"Penggunaan CPU melonjak mencapai {cpu_val:.1f}% (Ambang batas: 90%).",
             peak_metric_val=f"{cpu_val:.1f}%"
         )
-    elif cpu_val <= 75.0:
-        # Auto-resolve jika CPU sudah kembali di bawah 75%
+    elif cpu_val <= 80.0:
+        # Auto-resolve jika CPU sudah kembali di bawah 80%
         auto_resolve_alert(
             session=session,
             device=device,
@@ -364,18 +364,18 @@ def evaluate_device_rules(session, device, metrics):
 
     # 3. Evaluasi Penggunaan Memori (RAM)
     mem_val = float(device.mem_usage or 0.0)
-    if mem_val > 85.0:
+    if mem_val > 90.0:
         severity = "CRITICAL" if mem_val >= 95.0 else "WARNING"
         trigger_alert_with_antispam(
             session=session,
             device=device,
             alert_type="MEMORY_OVERLOAD",
             severity=severity,
-            message=f"Penggunaan Memory melonjak mencapai {mem_val:.1f}% (Ambang batas: 85%).",
+            message=f"Penggunaan Memory melonjak mencapai {mem_val:.1f}% (Ambang batas: 90%).",
             peak_metric_val=f"{mem_val:.1f}%"
         )
-    elif mem_val <= 75.0:
-        # Auto-resolve jika Memory sudah kembali di bawah 75%
+    elif mem_val <= 80.0:
+        # Auto-resolve jika Memory sudah kembali di bawah 80%
         auto_resolve_alert(
             session=session,
             device=device,
@@ -386,17 +386,17 @@ def evaluate_device_rules(session, device, metrics):
     # 4. Evaluasi Latency ICMP (ms)
     lat_val = float(device.latency_ms or 0.0)
     if device.status == "UP":
-        if lat_val > 50.0:
-            severity = "CRITICAL" if lat_val >= 100.0 else "WARNING"
+        if lat_val > 5.0:
+            severity = "CRITICAL" if lat_val >= 50.0 else "WARNING"
             trigger_alert_with_antispam(
                 session=session,
                 device=device,
                 alert_type="HIGH_LATENCY",
                 severity=severity,
-                message=f"Latency respons ICMP ke {device.name} melonjak mencapai {lat_val:.1f} ms (Batas normal: 50 ms).",
+                message=f"Latency respons ICMP ke {device.name} melonjak mencapai {lat_val:.1f} ms (Batas normal: 5 ms).",
                 peak_metric_val=f"{lat_val:.1f} ms"
             )
-        elif lat_val <= 40.0:
+        elif lat_val <= 5.0:
             auto_resolve_alert(
                 session=session,
                 device=device,

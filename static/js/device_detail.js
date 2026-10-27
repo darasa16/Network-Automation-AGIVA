@@ -166,7 +166,7 @@ function updatePortsTableRows(ports) {
         if (row.children[9]) {
             const errTotal = (p.errors_tx || 0) + (p.errors_rx || 0);
             const drops = p.drops_tx || 0;
-            row.children[9].innerHTML = `<span>${errTotal} / ${drops}</span>`;
+            row.children[9].innerHTML = `<span>${errTotal.toLocaleString('id-ID')} / ${drops.toLocaleString('id-ID')}</span>`;
         }
     });
 }
@@ -251,10 +251,27 @@ function applyDeviceDataToUI(data) {
         if (portUpEl) portUpEl.textContent = `${data.summary.up_ports} / ${data.summary.total_ports}`;
     }
     if (data.specs) {
+        const modelEl = document.getElementById('specModel');
+        if (modelEl && data.specs.model) modelEl.textContent = data.specs.model;
+        const serialEl = document.getElementById('specSerial');
+        if (serialEl && data.specs.serial) serialEl.textContent = data.specs.serial;
+        const fwEl = document.getElementById('specFirmware');
+        if (fwEl && data.specs.firmware) fwEl.textContent = data.specs.firmware;
+        const hwRevEl = document.getElementById('specHwRev');
+        if (hwRevEl && data.specs.hardware_rev) hwRevEl.textContent = data.specs.hardware_rev;
         const poeEl = document.getElementById('specPoe') || document.getElementById('currPoeVal');
         if (poeEl && data.specs.poe_consumption) poeEl.textContent = data.specs.poe_consumption;
         const fanEl = document.getElementById('specFan');
-        if (fanEl && data.specs.fan_status) fanEl.textContent = data.specs.fan_status;
+        if (fanEl && data.specs.fan_status) {
+            fanEl.textContent = data.specs.fan_status;
+            if (data.specs.fan_status.toLowerCase().includes('tidak')) {
+                fanEl.classList.remove('text-green');
+                fanEl.classList.add('text-danger');
+            } else {
+                fanEl.classList.remove('text-danger');
+                fanEl.classList.add('text-green');
+            }
+        }
         const ramEl = document.getElementById('specRam');
         if (ramEl && data.specs.total_ram) ramEl.textContent = data.specs.total_ram;
         const uplinkEl = document.getElementById('specUplink');
@@ -601,7 +618,9 @@ function createOrUpdateBarChart(existingChart, ctx, labels, datasets, suggestedM
                     cornerRadius: 6,
                     callbacks: {
                         label: function (ctx) {
-                            return ` ${ctx.dataset.label}: ${ctx.parsed.y}${unit}`;
+                            const val = ctx.parsed.y;
+                            const formatted = Number.isInteger(val) ? val.toLocaleString('id-ID') : (typeof val === 'number' ? val.toLocaleString('id-ID', { minimumFractionDigits: 1, maximumFractionDigits: 2 }) : val);
+                            return ` ${ctx.dataset.label}: ${formatted}${unit}`;
                         }
                     }
                 }
@@ -622,7 +641,12 @@ function createOrUpdateBarChart(existingChart, ctx, labels, datasets, suggestedM
                         font: { size: 9 },
                         maxTicksLimit: 4,
                         precision: 0,
-                        callback: (val) => `${val}${unit}`
+                        callback: (val) => {
+                            if (unit === '%') return `${val}%`;
+                            if (val >= 1000000) return `${(val / 1000000).toFixed(val % 1000000 === 0 ? 0 : 1)}M`;
+                            if (val >= 1000) return `${(val / 1000).toFixed(val % 1000 === 0 ? 0 : 1)}k`;
+                            return `${val.toLocaleString('id-ID')}${unit}`;
+                        }
                     }
                 }
             }
@@ -644,7 +668,7 @@ function renderDeviceCharts(data) {
     if (!data.traffic_in) data.traffic_in = labels.map(() => 0);
     if (!data.traffic_out) data.traffic_out = labels.map(() => 0);
     if (!data.packet_buffers) data.packet_buffers = labels.map(() => 35.1);
-    if (!data.message_buffers) data.message_buffers = labels.map(() => 22.0);
+    if (!data.message_buffers) data.message_buffers = labels.map(() => 4.0);
     if (!data.rx_errors) data.rx_errors = labels.map(() => 0);
     if (!data.tx_errors) data.tx_errors = labels.map(() => 0);
     if (!data.tx_drops) data.tx_drops = labels.map(() => 0);
@@ -841,17 +865,20 @@ function renderDeviceChartsSlice(data, startIdx, endIdx) {
     );
 
     // 3. Chart Buffer Hardware Switch (Spike Bar Chart Histogram persis Integritas Transmisi Fisik)
-    chartBuffers = createOrUpdateBarChart(
-        chartBuffers,
-        document.getElementById('chartBuffers'),
-        labels,
-        [
-            { label: 'Packet Buffer', data: pbVals, color: 'rgba(6, 182, 212, 0.85)', borderColor: '#06b6d4' },
-            { label: 'Message Buffer', data: mbVals, color: 'rgba(249, 115, 22, 0.85)', borderColor: '#f97316' }
-        ],
-        100,
-        '%'
-    );
+        const isHuawei = (data.name && data.name.toLowerCase().includes('s5735')) || (data.specs && data.specs.model && data.specs.model.toLowerCase().includes('huawei'));
+        const isPalo = (data.name && data.name.toLowerCase().includes('pa220')) || (data.specs && data.specs.model && data.specs.model.toLowerCase().includes('palo'));
+        const secondLabel = isHuawei ? 'Peak Buffer' : (isPalo ? 'Packet Descriptor' : 'Message Buffer');
+        chartBuffers = createOrUpdateBarChart(
+            chartBuffers,
+            document.getElementById('chartBuffers'),
+            labels,
+            [
+                { label: 'Packet Buffer', data: pbVals, color: 'rgba(6, 182, 212, 0.85)', borderColor: '#06b6d4' },
+                { label: secondLabel, data: mbVals, color: 'rgba(249, 115, 22, 0.85)', borderColor: '#f97316' }
+            ],
+            100,
+            '%'
+        );
 
     // 4. Spike Bar Chart (Integritas Transmisi Fisik)
     chartErrorsDrops = createOrUpdateBarChart(

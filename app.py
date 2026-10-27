@@ -888,8 +888,8 @@ def api_device_metrics(device_id):
     telemetry = get_device_full_telemetry(device)
     ports = telemetry.get("ports", [])
     res = telemetry.get("resources", {})
-    pb_base = float(res.get("packet_buffers_pct", 31.0))
-    mb_base = float(res.get("message_buffers_pct", 22.0))
+    pb_base = float(res.get("packet_buffers_pct", 35.1))
+    mb_base = float(res.get("message_buffers_pct", 4.0))
     td_val = int(res.get("tx_drops", 0))
     re_val = int(res.get("rx_errors", 0))
     te_val = int(res.get("tx_errors", 0))
@@ -993,6 +993,7 @@ def api_device_metrics(device_id):
         "specs": telemetry.get("hardware", {}),
         "vlans": telemetry.get("vlans", []),
         "ports": ports,
+        "summary": telemetry.get("summary", {}),
     }
     # Sinkronisasi 100% Opsi B: Port Uplink identik dengan titik grafik traffic terbaru (Aruba Port 1, Huawei 10GE1/0/1, Palo Alto ethernet1/2)
     if trf_in_vals and trf_out_vals and ports:
@@ -1013,4 +1014,4 @@ if __name__ == '__main__':
     print(f"[*] Starting PT Agiva Network Operations Dashboard on http://127.0.0.1:{port}")
     app.run(host='0.0.0.0', port=port, debug=True, threaded=True)
 
-# PostgreSQL reload trigger
+# PostgreSQL reload trigger - full dynamic Palo Alto specs (All 10 hardware parameters + ports)

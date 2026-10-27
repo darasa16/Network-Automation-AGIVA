@@ -206,22 +206,24 @@
                                 </td>
                             </tr>
                             {% endfor %}
-                            {% else %}
-                            <tr class="empty-state-row">
-                                <td colspan="8" class="text-center py-4" style="padding: 2.5rem; color: #6b7280;">
-                                    <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                            {% endif %}
+                            <tr class="empty-state-row" id="alertsEmptyState"{% if alerts %} style="display: none;"{% endif %}>
+                                <td colspan="8" class="text-center py-4"
+                                    style="padding: 2.5rem; color: #6b7280; text-align: center;">
+                                    <div
+                                        style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;">
                                         <svg width="40" height="40" viewBox="0 0 24 24" fill="none"
                                             stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
                                             stroke-linejoin="round" style="color: #10b981;">
                                             <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
                                             <polyline points="22 4 12 14.01 9 11.01"></polyline>
                                         </svg>
-                                        <p style="margin: 0; font-size: 1rem; color: #9ca3af; font-weight: 500;">Semua
+                                        <p id="alertsEmptyTitle"
+                                            style="margin: 0; font-size: 1rem; color: #9ca3af; font-weight: 500;">Semua
                                             Sistem Normal</p>
                                     </div>
                                 </td>
                             </tr>
-                            {% endif %}
                         </tbody>
                     </table>
                 </div>
@@ -301,23 +303,24 @@
                                     </td>
                                 </tr>
                                 {% endfor %}
-                                {% else %}
-                                <tr class="empty-state-row">
-                                    <td colspan="10" class="text-center py-4" style="padding: 2.5rem; color: #6b7280;">
+                                {% endif %}
+                                <tr class="empty-state-row" id="incidentsEmptyState"{% if incidents %} style="display: none;"{% endif %}>
+                                    <td colspan="10" class="text-center py-4"
+                                        style="padding: 2.5rem; color: #6b7280; text-align: center;">
                                         <div
-                                            style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                                            style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;">
                                             <svg width="40" height="40" viewBox="0 0 24 24" fill="none"
                                                 stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
                                                 stroke-linejoin="round" style="color: #10b981;">
                                                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
                                                 <polyline points="9 12 11 14 15 10"></polyline>
                                             </svg>
-                                            <p style="margin: 0; font-size: 1rem; color: #9ca3af; font-weight: 500;">
+                                            <p id="incidentsEmptyTitle"
+                                                style="margin: 0; font-size: 1rem; color: #9ca3af; font-weight: 500;">
                                                 Belum Ada Riwayat Insiden</p>
                                         </div>
                                     </td>
                                 </tr>
-                                {% endif %}
                             </tbody>
                         </table>
                     </div>
@@ -341,40 +344,97 @@
         updateClock();
 
         // 1. Filter Tab Handler untuk Active Alerts Table
+        function updateAlertsEmptyState(filter, visibleCount) {
+            const emptyRow = document.getElementById('alertsEmptyState');
+            if (!emptyRow) return;
+            if (visibleCount === 0) {
+                emptyRow.style.display = '';
+                const titleEl = document.getElementById('alertsEmptyTitle');
+                if (filter === 'pending') {
+                    if (titleEl) titleEl.textContent = 'Tidak Ada Alert Menunggu ACK';
+                } else if (filter === 'acked') {
+                    if (titleEl) titleEl.textContent = 'Tidak Ada Alert yang Telah di-ACK';
+                } else {
+                    if (titleEl) titleEl.textContent = 'Semua Sistem Normal';
+                }
+            } else {
+                emptyRow.style.display = 'none';
+            }
+        }
+
         document.querySelectorAll('#alertsFilterBar .filter-tab').forEach(tab => {
             tab.addEventListener('click', () => {
                 document.querySelectorAll('#alertsFilterBar .filter-tab').forEach(t => t.classList.remove('active'));
                 tab.classList.add('active');
                 const filter = tab.getAttribute('data-filter');
+                let visibleCount = 0;
 
                 document.querySelectorAll('#alertsTable .alert-row').forEach(row => {
+                    let show = false;
                     if (filter === 'all') {
-                        row.style.display = '';
+                        show = true;
                     } else if (filter === 'pending') {
-                        row.style.display = row.classList.contains('filter-row-pending') ? '' : 'none';
+                        show = row.classList.contains('filter-row-pending');
                     } else if (filter === 'acked') {
-                        row.style.display = row.classList.contains('filter-row-acked') ? '' : 'none';
+                        show = row.classList.contains('filter-row-acked');
+                    }
+                    if (show) {
+                        row.style.display = '';
+                        visibleCount++;
+                    } else {
+                        row.style.display = 'none';
                     }
                 });
+
+                updateAlertsEmptyState(filter, visibleCount);
             });
         });
 
         // 2. Filter Tab Handler untuk Incident Log Table
+        function updateIncidentsEmptyState(filter, visibleCount) {
+            const emptyRow = document.getElementById('incidentsEmptyState');
+            if (!emptyRow) return;
+            if (visibleCount === 0) {
+                emptyRow.style.display = '';
+                const titleEl = document.getElementById('incidentsEmptyTitle');
+                const subEl = document.getElementById('incidentsEmptySub');
+                if (filter === 'cooldown') {
+                    if (titleEl) titleEl.textContent = 'Tidak Ada Data Cooldown';
+                } else if (filter === 'resolved') {
+                    if (titleEl) titleEl.textContent = 'Belum Ada Riwayat Resolved Alert';
+                } else {
+                    if (titleEl) titleEl.textContent = 'Belum Ada Riwayat Insiden';
+                }
+            } else {
+                emptyRow.style.display = 'none';
+            }
+        }
+
         document.querySelectorAll('#incidentsFilterBar .filter-tab').forEach(tab => {
             tab.addEventListener('click', () => {
                 document.querySelectorAll('#incidentsFilterBar .filter-tab').forEach(t => t.classList.remove('active'));
                 tab.classList.add('active');
                 const filter = tab.getAttribute('data-inc-filter');
+                let visibleCount = 0;
 
                 document.querySelectorAll('#incidentsTable .incident-row').forEach(row => {
+                    let show = false;
                     if (filter === 'all') {
-                        row.style.display = '';
+                        show = true;
                     } else if (filter === 'cooldown') {
-                        row.style.display = row.classList.contains('filter-inc-auto_cooldown') ? '' : 'none';
+                        show = row.classList.contains('filter-inc-auto_cooldown');
                     } else if (filter === 'resolved') {
-                        row.style.display = row.classList.contains('filter-inc-resolved_alert') ? '' : 'none';
+                        show = row.classList.contains('filter-inc-resolved_alert');
+                    }
+                    if (show) {
+                        row.style.display = '';
+                        visibleCount++;
+                    } else {
+                        row.style.display = 'none';
                     }
                 });
+
+                updateIncidentsEmptyState(filter, visibleCount);
             });
         });
 

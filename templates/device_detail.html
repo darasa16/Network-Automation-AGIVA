@@ -174,7 +174,7 @@
                     </div>
                     <div class="spec-item">
                         <span class="spec-label">Status Pendingin (Fan)</span>
-                        <span class="spec-value text-green" id="specFan">{{ specs.fan_status or 'Normal (OK)' }}</span>
+                        <span class="spec-value {% if specs.fan_status and 'tidak' in specs.fan_status.lower() %}text-danger{% else %}text-green{% endif %}" id="specFan">{{ specs.fan_status or 'Normal (OK)' }}</span>
                     </div>
                     <div class="spec-item">
                         <span class="spec-label">Port Uplink Utama</span>
@@ -334,13 +334,19 @@
                         <div class="panel-header">
                             <div>
                                 <h3 class="panel-title">Buffer Hardware {{ dev_type }}</h3>
-                                <span class="panel-sub">Utilisasi antrean packet buffer ASIC &amp; buffer control
-                                    plane</span>
+                                <span class="panel-sub">
+                                    {% if 'huawei' in device.vendor.lower() %}
+                                    Utilisasi antrean QoS buffer ASIC (Current vs Peak Watermark)
+                                    {% elif 'palo' in device.vendor.lower() %}
+                                    Utilisasi antrean packet buffer on-chip &amp; packet descriptor pool
+                                    {% else %}
+                                    Utilisasi antrean packet buffer ASIC &amp; buffer control plane
+                                    {% endif %}
+                                </span>
                             </div>
                             <div class="chart-legend-custom">
                                 <span class="legend-tag"><span class="legend-color bg-cyan"></span> Packet Buffer</span>
-                                <span class="legend-tag"><span class="legend-color bg-orange"></span> Message
-                                    Buffer</span>
+                                <span class="legend-tag"><span class="legend-color bg-orange"></span> {% if 'huawei' in device.vendor.lower() %}Peak Buffer{% elif 'palo' in device.vendor.lower() %}Packet Descriptor{% else %}Message Buffer{% endif %}</span>
                             </div>
                         </div>
                         <div class="device-chart-body">
@@ -479,7 +485,7 @@
                                     <span>0 W</span>
                                     {% endif %}
                                 </td>
-                                <td><span>{{ p.errors_tx + p.errors_rx }} / {{ p.drops_tx }}</span></td>
+                                <td><span>{{ "{:,}".format(p.errors_tx + p.errors_rx).replace(',', '.') }} / {{ p.drops_tx }}</span></td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -509,7 +515,7 @@
         window.NAV_DEVICES = JSON.parse(document.getElementById('nav-devices-data').textContent || '[]');
     </script>
     <script src="/static/js/timeline_navigator.js?v=1.1"></script>
-    <script src="/static/js/device_detail.js?v=19.0"></script>
+    <script src="/static/js/device_detail.js?v=20.0"></script>
     <script src="/static/js/global_nav.js?v=4.1"></script>
 </body>
 

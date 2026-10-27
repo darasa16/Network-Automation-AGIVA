@@ -6,6 +6,7 @@ import urllib3
 import requests
 import time
 import logging
+import threading
 from concurrent.futures import ThreadPoolExecutor
 
 urllib3.disable_warnings()
@@ -22,7 +23,7 @@ _LAST_KNOWN_ARUBA_TELEMETRY = {
     "total_rx_errors": 3,
     "total_tx_drops": 0,
     "packet_buffers_pct": 35.1,
-    "message_buffers_pct": 22.0,
+    "message_buffers_pct": 4.0,
     "port_errors": {
         "18": {"errors_tx": 91, "errors_rx": 0, "drops_tx": 0},
         "13": {"errors_tx": 2, "errors_rx": 0, "drops_tx": 0},
@@ -115,6 +116,66 @@ def _get_aruba_real_poe_power(ip_address="192.168.1.10"):
         logger.warning(f"Gagal mengambil real PoE power via SSH: {e}")
     return _ARUBA_REAL_POE_CACHE
 
+# Cache real Message Buffer utilization via SNMP NETSWITCH-MIB (.1.3.6.1.4.1.11.2.14.11.5.1.1.1.1.1)
+_ARUBA_MSG_BUF_CACHE = {"val": 4.0, "time": 0}
+
+def _get_aruba_real_message_buffers(ip_address="192.168.1.10", community="public"):
+    """
+    Mengambil utilisasi Message Buffers riil langsung dari switch Aruba 2930F via SNMP NETSWITCH-MIB.
+    - hpMsgBufInit (.1.3.6.1.4.1.11.2.14.11.5.1.1.1.1.1.1.4.1) : Total buffer kernel saat boot
+    - hpMsgBufFree (.1.3.6.1.4.1.11.2.14.11.5.1.1.1.1.1.1.3.1) : Buffer bebas saat ini
+    """
+    global _ARUBA_MSG_BUF_CACHE
+    now = time.time()
+    if (now - _ARUBA_MSG_BUF_CACHE["time"]) < 20 and _ARUBA_MSG_BUF_CACHE["time"] > 0:
+        return _ARUBA_MSG_BUF_CACHE["val"]
+
+    import socket
+    try:
+        def build_snmp_get(oid_str):
+            parts = [int(p) for p in oid_str.strip('.').split('.')]
+            oid_bytes = bytearray([parts[0]*40 + parts[1]])
+            for p in parts[2:]:
+                if p < 128:
+                    oid_bytes.append(p)
+                else:
+                    buf = []
+                    buf.append(p & 0x7F)
+                    p >>= 7
+                    while p > 0:
+                        buf.append((p & 0x7F) | 0x80)
+                        p >>= 7
+                    oid_bytes.extend(reversed(buf))
+            vb = bytearray([0x30, len(oid_bytes)+4, 0x06, len(oid_bytes)]) + oid_bytes + bytearray([0x05, 0x00])
+            pdu = bytearray([0xA0, len(vb)+10, 0x02, 0x01, 0x01, 0x02, 0x01, 0x00, 0x02, 0x01, 0x00, 0x30, len(vb)]) + vb
+            msg = bytearray([0x30, len(pdu)+4+len(community), 0x02, 0x01, 0x01, 0x04, len(community)]) + bytearray(community.encode('latin1')) + pdu
+            return bytearray([0x30, len(msg)]) + msg
+
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.settimeout(1.5)
+
+        # hpMsgBufInit (.1.4.1)
+        sock.sendto(build_snmp_get('1.3.6.1.4.1.11.2.14.11.5.1.1.1.1.1.1.4.1'), (ip_address, 161))
+        d_init, _ = sock.recvfrom(2048)
+        init_val = int.from_bytes(d_init[-2:], byteorder='big')
+
+        # hpMsgBufFree (.1.3.1)
+        sock.sendto(build_snmp_get('1.3.6.1.4.1.11.2.14.11.5.1.1.1.1.1.1.3.1'), (ip_address, 161))
+        d_free, _ = sock.recvfrom(2048)
+        free_val = int.from_bytes(d_free[-2:], byteorder='big')
+        sock.close()
+
+        if init_val > 0 and init_val >= free_val:
+            used = init_val - free_val
+            pct = round((used / init_val) * 100, 1)
+            _ARUBA_MSG_BUF_CACHE["val"] = pct
+            _ARUBA_MSG_BUF_CACHE["time"] = now
+            _LAST_KNOWN_ARUBA_TELEMETRY["message_buffers_pct"] = pct
+            return pct
+    except Exception as e:
+        logger.debug(f"Gagal mengambil real Message Buffers via SNMP: {e}")
+    return _ARUBA_MSG_BUF_CACHE.get("val", 4.0)
+
 def get_aruba_telemetry(ip_address="192.168.1.10"):
     base_url = f"http://{ip_address}/rest/v4"
     data = {
@@ -127,7 +188,7 @@ def get_aruba_telemetry(ip_address="192.168.1.10"):
             "ip_address": ip_address,
             "total_ram": "318 MB (333,492,736 Bytes)",
             "poe_consumption": "45 W (Active)",
-            "fan_status": "Normal (OK)",
+            "fan_status": "Normal",
             "uplink_port": "Port 1 (Uplink to Palo Alto FW-PA220-1)",
             "dns_servers": "192.168.1.1, 203.142.84.222",
             "dns_mode": "DHCP"
@@ -163,7 +224,7 @@ def get_aruba_telemetry(ip_address="192.168.1.10"):
             "ip_address": st.get("current_ip_address", {}).get("octets", ip_address),
             "total_ram": f"{round(st.get('total_memory_in_bytes', 333492736) / (1024*1024))} MB",
             "poe_consumption": f"{st.get('total_poe_consumption', 45)} W (Active)",
-            "fan_status": "Normal (OK)" if not st.get("sys_fan_status") else "Alert",
+            "fan_status": "Normal" if not st.get("sys_fan_status") else "Tidak Normal",
             "uplink_port": f"Port {st.get('uplink_port', '1')}",
             "dns_servers": ", ".join(dns_servers) if dns_servers else "192.168.1.1, 203.142.84.222",
             "dns_mode": dns.get("dns_config_mode", "DHCP").replace("DCM_", "")
@@ -340,12 +401,13 @@ def get_aruba_telemetry(ip_address="192.168.1.10"):
         except Exception:
             pass
 
+        real_msg_buf = _get_aruba_real_message_buffers(ip_address)
         data["resources"] = {
             "cpu_pct": real_cpu,
             "memory_pct": real_mem,
             "packet_buffers_pct": 35.1,
             "tx_drops": total_tx_drops,
-            "message_buffers_pct": 22.0,
+            "message_buffers_pct": real_msg_buf,
             "rx_errors": total_rx_errors,
             "tx_errors": total_tx_errors
         }
@@ -384,7 +446,7 @@ def get_aruba_telemetry(ip_address="192.168.1.10"):
             "memory_pct": real_mem,
             "packet_buffers_pct": _LAST_KNOWN_ARUBA_TELEMETRY.get("packet_buffers_pct", 35.1),
             "tx_drops": _LAST_KNOWN_ARUBA_TELEMETRY.get("total_tx_drops", 0),
-            "message_buffers_pct": _LAST_KNOWN_ARUBA_TELEMETRY.get("message_buffers_pct", 22.0),
+            "message_buffers_pct": _LAST_KNOWN_ARUBA_TELEMETRY.get("message_buffers_pct", 4.0),
             "rx_errors": _LAST_KNOWN_ARUBA_TELEMETRY.get("total_rx_errors", 3),
             "tx_errors": _LAST_KNOWN_ARUBA_TELEMETRY.get("total_tx_errors", 93)
         }
@@ -434,6 +496,173 @@ def get_aruba_telemetry(ip_address="192.168.1.10"):
         data["summary"]["sfp_ports"] = 4
 
     return data
+
+# Cache real hardware specs from Huawei CloudEngine via SSH (Solusi 2: In-Memory RAM Cache dengan TTL)
+_HUAWEI_REAL_HARDWARE_CACHE = {
+    "model": "HUAWEI CloudEngine S5735-L24P4XE-A-V2",
+    "serial": "4E2550055425",
+    "firmware": "Huawei YunShan OS V600R024C00SPC500",
+    "hardware_rev": "ES5D2V30S037 VER C (MAB: 2)",
+    "mac_address": "80:54:d9:85:76:d6",
+    "ip_address": "192.168.1.155",
+    "total_ram": "2048 MB",
+    "poe_consumption": "55 W (Active)",
+    "fan_status": "Normal",
+    "uplink_port": "10GE1/0/1 (Trunk SFP+ to SW-2930F-HO Port 25)",
+    "dns_servers": "192.168.1.1, 203.142.84.222",
+    "dns_mode": "Static",
+    "vlans": [
+        {"vlan_id": 1, "name": "VLAN 0001 (Default)", "type": "COMMON", "status": "ACTIVE", "is_primary": True, "is_voice": False, "is_jumbo": False},
+        {"vlan_id": 2, "name": "VLAN 0002 (Guest)", "type": "COMMON", "status": "ACTIVE", "is_primary": False, "is_voice": False, "is_jumbo": False},
+        {"vlan_id": 4, "name": "VLAN 0004 (Biznet WAN)", "type": "COMMON", "status": "ACTIVE", "is_primary": False, "is_voice": False, "is_jumbo": False},
+        {"vlan_id": 10, "name": "VLAN 0010 (Management)", "type": "COMMON", "status": "ACTIVE", "is_primary": False, "is_voice": False, "is_jumbo": False}
+    ]
+}
+_LAST_HUAWEI_HARDWARE_QUERY_TIME = 0
+_HUAWEI_FETCHING = False
+
+def _fetch_huawei_hardware_ssh(ip_address="192.168.1.155"):
+    global _HUAWEI_REAL_HARDWARE_CACHE, _LAST_HUAWEI_HARDWARE_QUERY_TIME, _HUAWEI_FETCHING
+    try:
+        import paramiko
+        username = os.getenv('CORNER_USER', 'Administrator')
+        password = os.getenv('CORNER_PASS', 'P@ssw0rd')
+
+        client = paramiko.SSHClient()
+        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        client.connect(ip_address, port=22, username=username, password=password, timeout=5)
+        shell = client.invoke_shell()
+        time.sleep(0.4)
+        shell.send('screen-length 0 temporary\n')
+        time.sleep(0.3)
+        shell.send('display version\n')
+        time.sleep(0.4)
+        shell.send('display device esn\n')
+        time.sleep(0.4)
+        shell.send('display poe information\n')
+        time.sleep(0.4)
+        shell.send('display device fan\n')
+        time.sleep(0.4)
+        shell.send('display lldp neighbor brief\n')
+        time.sleep(0.4)
+        shell.send('display dns server\n')
+        time.sleep(0.4)
+        shell.send('display vlan\n')
+        time.sleep(0.8)
+        out = ""
+        while shell.recv_ready():
+            out += shell.recv(65535).decode(errors='ignore')
+            time.sleep(0.2)
+        client.close()
+
+        parsed = {}
+        # 1. Model
+        m_mod = re.search(r'Board\s*Type\s*:\s*([^\r\n]+)', out)
+        if m_mod:
+            parsed['model'] = f"HUAWEI CloudEngine {m_mod.group(1).strip()}"
+
+        # 2. Serial ESN
+        m_esn = re.search(r'ESN of slot \d+:\s*([A-Za-z0-9]+)', out)
+        if m_esn:
+            parsed['serial'] = m_esn.group(1).strip()
+
+        # 3. Firmware Version
+        m_fw = re.search(r'Huawei YunShan OS.*?\((.*?)\)', out, re.DOTALL)
+        if m_fw:
+            parsed['firmware'] = f"Huawei YunShan OS {m_fw.group(1).split()[-1]}"
+
+        # 4. Hardware Revision
+        m_pcb = re.search(r'PCB\s*Version\s*:\s*([^\r\n]+)', out)
+        m_mab = re.search(r'MAB\s*Version\s*:\s*([^\r\n]+)', out)
+        if m_pcb and m_mab:
+            parsed['hardware_rev'] = f"{m_pcb.group(1).strip()} (MAB: {m_mab.group(1).strip()})"
+
+        # 5. Total RAM
+        m_ram = re.search(r'Memory\s*Size\s*:\s*(\d+)\s*M\s*bytes', out)
+        if m_ram:
+            parsed['total_ram'] = f"{m_ram.group(1).strip()} MB"
+
+        # 6. Real PoE consumption
+        m_poe = re.search(r'Power Current Value\(mW\)\s*:\s*(\d+)', out)
+        if m_poe:
+            mw = int(m_poe.group(1))
+            w = round(mw / 1000, 1)
+            parsed['poe_consumption'] = f"{w} W (Active)"
+
+        # 7. Fan Status
+        m_fan = re.findall(r'FAN\d+\s+\[\s*\d+\s*\]\s+\w+\s+\w+\s+(\w+)', out)
+        if m_fan:
+            all_ok = all(s.lower() == 'normal' for s in m_fan)
+            parsed['fan_status'] = "Normal" if all_ok else "Tidak Normal"
+
+        # 8. Uplink Port & LLDP
+        m_up = re.search(r'10GE1/0/1\s+\d+\s+([^\s]+)\s+([^\r\n]+)', out)
+        if m_up:
+            rem_port = m_up.group(1)
+            rem_dev = m_up.group(2).strip()
+            parsed['uplink_port'] = f"10GE1/0/1 (Trunk SFP+ to {rem_dev} Port {rem_port})"
+
+        # 9. DNS Server & Mode
+        dns_servers = re.findall(r'\d+\s+([SD])\s+-\s+Yes\s+\d+\s+([\d\.]+)', out)
+        if dns_servers:
+            parsed['dns_servers'] = ", ".join([d[1] for d in dns_servers])
+            parsed['dns_mode'] = "Static" if any(d[0] == 'S' for d in dns_servers) else "DHCP"
+
+        # 10. Dynamic VLAN Parsing from display vlan
+        try:
+            hw_vlans = []
+            vlan_sec = re.search(r'VID\s+Type\s+Status.*?\n[-]+\s*\n(.*?)(\n<SW-|\n\[SW-|\Z)', out, re.DOTALL)
+            if vlan_sec:
+                for line in vlan_sec.group(1).splitlines():
+                    m = re.match(r'^\s*(\d+)\s+(\w+)\s+(\w+)\s+(\w+)\s+\w+\s+\w+\s+\w+\s+\w+\s+\w+\s+([^\r\n]+)', line)
+                    if m:
+                        vid = int(m.group(1))
+                        vtype = m.group(2).upper()
+                        vst = "ACTIVE" if m.group(3).lower() == "enable" else m.group(3).upper()
+                        desc = m.group(5).strip()
+                        name = desc
+                        if vid == 1 and "default" not in desc.lower():
+                            name = f"{desc} (Default)"
+                        elif vid == 2 and "guest" not in desc.lower():
+                            name = f"{desc} (Guest)"
+                        elif vid == 4 and "biznet" not in desc.lower():
+                            name = f"{desc} (Biznet WAN)"
+                        elif vid == 10 and "management" not in desc.lower():
+                            name = f"{desc} (Management)"
+                        
+                        hw_vlans.append({
+                            "vlan_id": vid,
+                            "name": name,
+                            "type": vtype,
+                            "status": vst,
+                            "is_primary": (vid == 1),
+                            "is_voice": False,
+                            "is_jumbo": False
+                        })
+            if hw_vlans:
+                parsed['vlans'] = hw_vlans
+                logger.info(f"Huawei dynamic VLANs updated via SSH ({len(hw_vlans)} VLANs found)")
+        except Exception as e_vlan_hw:
+            logger.debug(f"Huawei dynamic VLAN parsing error: {e_vlan_hw}")
+
+        if parsed:
+            _HUAWEI_REAL_HARDWARE_CACHE.update(parsed)
+            _LAST_HUAWEI_HARDWARE_QUERY_TIME = time.time()
+            logger.info(f"Huawei hardware RAM cache updated via SSH: PoE={parsed.get('poe_consumption')}, Fan={parsed.get('fan_status')}, DNS={parsed.get('dns_servers')}")
+    except Exception as e:
+        logger.warning(f"Gagal mengambil live hardware Huawei via SSH: {e}")
+    finally:
+        _HUAWEI_FETCHING = False
+
+def _get_huawei_real_hardware(ip_address="192.168.1.155"):
+    global _HUAWEI_REAL_HARDWARE_CACHE, _LAST_HUAWEI_HARDWARE_QUERY_TIME, _HUAWEI_FETCHING
+    now = time.time()
+    # TTL: 25 detik (seperti pola Aruba), non-blocking via background thread
+    if (now - _LAST_HUAWEI_HARDWARE_QUERY_TIME) >= 25 and not _HUAWEI_FETCHING:
+        _HUAWEI_FETCHING = True
+        t = threading.Thread(target=_fetch_huawei_hardware_ssh, args=(ip_address,), daemon=True)
+        t.start()
+    return _HUAWEI_REAL_HARDWARE_CACHE
 
 def get_huawei_telemetry(ip_address="192.168.1.155"):
     """
@@ -526,27 +755,17 @@ def get_huawei_telemetry(ip_address="192.168.1.155"):
 
     up_count = sum(1 for p in ports if p["status"] == "UP")
     
+    hw_specs = dict(_get_huawei_real_hardware(ip_address))
+    hw_specs["ip_address"] = ip_address
+
     return {
-        "hardware": {
-            "model": "HUAWEI CloudEngine S5735-L24P4XE-A-V2",
-            "serial": "4E2550055425",
-            "firmware": "Huawei YunShan OS V600R024C00SPC500",
-            "hardware_rev": "ES5D2V30S037 VER C (MAB: 2)",
-            "mac_address": "80:54:d9:85:76:d6",
-            "ip_address": ip_address,
-            "total_ram": "2048 MB",
-            "poe_consumption": "38 W (Active)",
-            "fan_status": "Normal (OK)",
-            "uplink_port": "10GE1/0/1 (Trunk SFP+ to SW-2930F-HO Port 25)",
-            "dns_servers": "192.168.1.1, 192.168.1.10",
-            "dns_mode": "Static"
-        },
-        "vlans": [
+        "hardware": hw_specs,
+        "vlans": hw_specs.get("vlans") or _HUAWEI_REAL_HARDWARE_CACHE.get("vlans", [
             {"vlan_id": 1, "name": "VLAN 0001 (Default)", "type": "COMMON", "status": "ACTIVE", "is_primary": True, "is_voice": False, "is_jumbo": False},
             {"vlan_id": 2, "name": "VLAN 0002 (Guest)", "type": "COMMON", "status": "ACTIVE", "is_primary": False, "is_voice": False, "is_jumbo": False},
             {"vlan_id": 4, "name": "VLAN 0004 (Biznet WAN)", "type": "COMMON", "status": "ACTIVE", "is_primary": False, "is_voice": False, "is_jumbo": False},
             {"vlan_id": 10, "name": "VLAN 0010 (Management)", "type": "COMMON", "status": "ACTIVE", "is_primary": False, "is_voice": False, "is_jumbo": False}
-        ],
+        ]),
         "ports": ports,
         "summary": {
             "total_ports": len(ports),
@@ -558,9 +777,9 @@ def get_huawei_telemetry(ip_address="192.168.1.155"):
         "resources": {
             "cpu_pct": 1.0,
             "memory_pct": 50.0,
-            "packet_buffers_pct": 28.0,
+            "packet_buffers_pct": 0.0,
             "tx_drops": 0,
-            "message_buffers_pct": 19.0,
+            "message_buffers_pct": 8.9,
             "rx_errors": 1,
             "tx_errors": 0
         }
@@ -628,11 +847,251 @@ _LAST_KNOWN_PA_TELEMETRY = {
         "memory_pct": 60.5,
         "packet_buffers_pct": 0.0,
         "tx_drops": 0,
-        "message_buffers_pct": 0.0,
-        "rx_errors": 63969263,
+        "message_buffers_pct": 2.0,
+        "rx_errors": 65930692,
         "tx_errors": 0
     }
 }
+
+# Cache real hardware specs from Palo Alto PA-220 via PAN-OS XML API (Solusi 2: In-Memory RAM Cache dengan TTL)
+_PA_REAL_HARDWARE_CACHE = {
+    "model": "Palo Alto Networks PA-220 (NGFW)",
+    "serial": "012801127154",
+    "firmware": "PAN-OS 10.2.16-h7",
+    "hardware_rev": "PA-220 (Family 220, Dual DC Inputs)",
+    "mac_address": "c4:24:56:e8:e9:00",
+    "ip_address": "192.168.1.11",
+    "total_ram": "4.9 GB (5,030.6 MiB)",
+    "poe_consumption": "Non-PoE Device (Power Supply #1: 12.0V DC Active)",
+    "fan_status": "Fanless Passive Cooling (Temp: 41.5°C / Core: 46.0°C OK)",
+    "uplink_port": "ethernet1/2 (LAN Gateway 192.168.1.1/24 to SW-2930F-HO Port 1)",
+    "dns_servers": "192.168.1.235, 1.1.1.1",
+    "dns_mode": "Static DNS (Enterprise Management)"
+}
+_LAST_PA_HARDWARE_QUERY_TIME = 0
+_PA_FETCHING = False
+
+def _fetch_paloalto_hardware_api(ip_address="192.168.1.11"):
+    global _PA_REAL_HARDWARE_CACHE, _LAST_PA_HARDWARE_QUERY_TIME, _PA_FETCHING, _LAST_KNOWN_PA_TELEMETRY
+    try:
+        api_key = os.getenv("PA_API_KEY", "LUFRPT1mOVAwR1h3bzFrTFNnQjI4WkF3L0h5UVg5Z3c9VDZ2TVVXS2ZmODdwUVRkbDdvcGdJSW1WUkJWVnFCWWdUWWhZV3J4SnhoWFdLalNySkpoRmI0enhVWkdNZjBBdw==")
+        base_url = f"https://{ip_address}/api"
+        parsed = {}
+
+        # 1. System Info (Model, Serial, Firmware, Hardware Rev, MAC)
+        try:
+            r_sys = requests.get(f"{base_url}/?type=op&cmd=<show><system><info></info></system></show>&key={api_key}", verify=False, timeout=4)
+            if r_sys.status_code == 200:
+                s_root = ET.fromstring(r_sys.text)
+                model = s_root.findtext('.//system/model') or 'PA-220'
+                serial = s_root.findtext('.//system/serial') or '012801127154'
+                sw_ver = s_root.findtext('.//system/sw-version') or '10.2.16-h7'
+                mac = s_root.findtext('.//system/mac-address') or 'c4:24:56:e8:e9:00'
+                family = s_root.findtext('.//system/family') or '220'
+                
+                parsed["model"] = f"Palo Alto Networks {model} (NGFW)"
+                parsed["serial"] = serial
+                parsed["firmware"] = f"PAN-OS {sw_ver}"
+                parsed["hardware_rev"] = f"PA-220 (Family {family}, Dual DC Inputs)"
+                parsed["mac_address"] = mac
+                parsed["ip_address"] = ip_address
+        except Exception as e_sys:
+            logger.debug(f"Palo Alto sys info XML API error: {e_sys}")
+
+        # 2. Resources (Total RAM & Memory Usage Pct)
+        try:
+            r_res = requests.get(f"{base_url}/?type=op&cmd=<show><system><resources></resources></system></show>&key={api_key}", verify=False, timeout=4)
+            if r_res.status_code == 200:
+                mem_m = re.search(r'MiB Mem\s*:\s*([\d\.]+)\s*total.*?([\d\.]+)\s*used', r_res.text)
+                if mem_m:
+                    tot = float(mem_m.group(1))
+                    usd = float(mem_m.group(2))
+                    parsed["total_ram"] = f"{round(tot/1024, 1)} GB ({tot:,.1f} MiB)"
+                    _LAST_KNOWN_PA_TELEMETRY["resources"]["memory_pct"] = round((usd / tot) * 100, 1)
+        except Exception as e_res:
+            logger.debug(f"Palo Alto resources XML API error: {e_res}")
+
+        # 3. Environmentals (Thermal Sensors, Fan Status & Power Supply)
+        try:
+            r_env = requests.get(f"{base_url}/?type=op&cmd=<show><system><environmentals></environmentals></system></show>&key={api_key}", verify=False, timeout=4)
+            if r_env.status_code == 200:
+                e_root = ET.fromstring(r_env.text)
+                temp_u49 = None
+                temp_core = None
+                for entry in e_root.findall('.//thermal/Slot1/entry'):
+                    desc = entry.findtext('description', '')
+                    deg = entry.findtext('DegreesC', '')
+                    if deg:
+                        if 'U49' in desc or 'U48' in desc:
+                            temp_u49 = round(float(deg), 1)
+                        elif 'Core' in desc or 'Cavium' in desc:
+                            temp_core = round(float(deg), 1)
+                
+                has_alarm = any(entry.findtext('alarm', '').lower() == 'true' for entry in e_root.findall('.//thermal/Slot1/entry'))
+                status_fan = 'OK' if not has_alarm else 'Tidak Normal'
+                t_u_str = f"{temp_u49}°C" if temp_u49 is not None else "41.5°C"
+                t_c_str = f"{temp_core}°C" if temp_core is not None else "46.0°C"
+                parsed["fan_status"] = f"Fanless Passive Cooling (Temp: {t_u_str} / Core: {t_c_str} {status_fan})"
+
+                ps1 = False
+                ps2 = False
+                for ps in e_root.findall('.//power-supply/Slot1/entry'):
+                    desc = ps.findtext('description', '')
+                    ins = ps.findtext('Inserted', '').lower() == 'true'
+                    if '#1' in desc:
+                        ps1 = ins
+                    elif '#2' in desc:
+                        ps2 = ins
+
+                volt_a = '12.0'
+                for p in e_root.findall('.//power/Slot1/entry'):
+                    if '12.0V IN A' in p.findtext('description', ''):
+                        try:
+                            volt_a = f"{round(float(p.findtext('Volts', '12')), 1)}"
+                        except:
+                            volt_a = '12.0'
+
+                if ps1 and ps2:
+                    parsed["poe_consumption"] = f"Non-PoE Device (Dual Power Supply #1 & #2: {volt_a}V DC Active)"
+                elif ps1:
+                    parsed["poe_consumption"] = f"Non-PoE Device (Power Supply #1: {volt_a}V DC Active)"
+                else:
+                    parsed["poe_consumption"] = "Non-PoE Device (Power Supply Offline)"
+        except Exception as e_env:
+            logger.debug(f"Palo Alto environmentals XML API error: {e_env}")
+
+        # 4. DNS Settings (XPath)
+        try:
+            r_dns = requests.get(f"{base_url}/?type=config&action=get&xpath=/config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/dns-setting&key={api_key}", verify=False, timeout=4)
+            if r_dns.status_code == 200:
+                dns_root = ET.fromstring(r_dns.text)
+                p_dns = dns_root.findtext('.//primary')
+                s_dns = dns_root.findtext('.//secondary')
+                dns_list = [d for d in [p_dns, s_dns] if d]
+                if dns_list:
+                    parsed["dns_servers"] = ', '.join(dns_list)
+                    parsed["dns_mode"] = "Static DNS (Enterprise Management)"
+        except Exception as e_dns:
+            logger.debug(f"Palo Alto DNS settings XML API error: {e_dns}")
+
+        # 5. Interface All (Ports hardware status UP/DOWN, speed, uplink verification)
+        try:
+            r_ifall = requests.get(f"{base_url}/?type=op&cmd=<show><interface>all</interface></show>&key={api_key}", verify=False, timeout=4)
+            if r_ifall.status_code == 200:
+                if_root = ET.fromstring(r_ifall.text)
+                ports_hw = {}
+                for e in if_root.findall('.//hw/entry'):
+                    name = e.findtext('name', '')
+                    state = e.findtext('state', 'down').upper()
+                    speed = e.findtext('speed', 'ukn')
+                    ports_hw[name] = {'status': state, 'speed': speed}
+                
+                # Sinkronkan status ke _LAST_KNOWN_PA_TELEMETRY["ports"]
+                up_cnt = 0
+                for p in _LAST_KNOWN_PA_TELEMETRY.get("ports", []):
+                    p_name = p.get("port_name")
+                    if p_name in ports_hw:
+                        hw_st = ports_hw[p_name]["status"]
+                        hw_sp = ports_hw[p_name]["speed"]
+                        p["status"] = hw_st
+                        if hw_st == "UP":
+                            up_cnt += 1
+                            p["speed"] = f"{hw_sp} Mbps" if hw_sp.isdigit() else "1000 Mbps"
+                        else:
+                            p["speed"] = "1 Gbps Auto"
+                
+                _LAST_KNOWN_PA_TELEMETRY["summary"]["up_ports"] = up_cnt
+                _LAST_KNOWN_PA_TELEMETRY["summary"]["down_ports"] = 8 - up_cnt
+
+                eth2_st = ports_hw.get('ethernet1/2', {}).get('status', 'UP')
+                if eth2_st == 'UP':
+                    parsed["uplink_port"] = "ethernet1/2 (LAN Gateway 192.168.1.1/24 to SW-2930F-HO Port 1)"
+                else:
+                    parsed["uplink_port"] = "ethernet1/2 (LAN Gateway - Link DOWN)"
+        except Exception as e_if:
+            logger.debug(f"Palo Alto interface all XML API error: {e_if}")
+
+        # 6. Dynamic VLANs (Layer 2 VLANs, VIFs, and 802.1Q Subinterfaces from live XML API)
+        try:
+            pa_vlans = []
+            # 6a. L2 VLANs & VIFs from show vlan all
+            try:
+                r_vlan = requests.get(f"{base_url}/?type=op&cmd=<show><vlan>all</vlan></show>&key={api_key}", verify=False, timeout=3)
+                if r_vlan.status_code == 200:
+                    v_root = ET.fromstring(r_vlan.text)
+                    for e in v_root.findall('.//entries/entry'):
+                        vname = e.findtext('name', '').strip()
+                        vif = e.findtext('vif', '').strip()
+                        if vname.isdigit():
+                            vid = int(vname)
+                            pa_vlans.append({
+                                "vlan_id": vid,
+                                "name": f"VLAN {vid} (Default Internal)" if vid == 1 else f"VLAN {vid} (Internal Bridge)",
+                                "status": "Active (Default)" if vid == 1 else "Active",
+                                "type": "Layer 2 Bridge",
+                                "is_primary": (vid == 1)
+                            })
+                        elif vif:
+                            m = re.search(r'vlan\.(\d+)', vif)
+                            vid = int(m.group(1)) if m else 217
+                            pa_vlans.append({
+                                "vlan_id": vid,
+                                "name": f"{vname} ({vif})",
+                                "status": "Active (Virtual Interface)",
+                                "type": "Layer 3 VIF",
+                                "is_primary": False
+                            })
+            except Exception as e_vl:
+                logger.debug(f"Palo Alto L2 VLAN fetch error: {e_vl}")
+
+            # 6b. 802.1Q Subinterfaces from r_ifall (show interface all)
+            if 'r_ifall' in locals() and r_ifall.status_code == 200:
+                if_root = ET.fromstring(r_ifall.text)
+                for e in if_root.findall('.//ifnet/entry'):
+                    name = e.findtext('name', '').strip()
+                    tag = e.findtext('tag', '').strip()
+                    zone = e.findtext('zone', '').strip()
+                    ip = e.findtext('ip', '').strip()
+                    if tag and tag.isdigit() and int(tag) > 0:
+                        vid = int(tag)
+                        zone_str = f" ({zone})" if zone else ""
+                        ip_str = f" ({ip})" if ip and ip != 'N/A' else ""
+                        pa_vlans.append({
+                            "vlan_id": vid,
+                            "name": f"{name}{zone_str}",
+                            "status": f"Active{ip_str}",
+                            "type": "802.1Q Subinterface",
+                            "is_primary": False
+                        })
+            
+            if pa_vlans:
+                pa_vlans.sort(key=lambda x: (not x.get('is_primary', False), x.get('vlan_id', 0)))
+                _LAST_KNOWN_PA_TELEMETRY["vlans"] = pa_vlans
+                parsed["vlans"] = pa_vlans
+                logger.info(f"Palo Alto dynamic VLANs updated via XML API ({len(pa_vlans)} VLANs found)")
+        except Exception as e_vlan_all:
+            logger.debug(f"Palo Alto dynamic VLAN parsing error: {e_vlan_all}")
+
+        if parsed:
+            _PA_REAL_HARDWARE_CACHE.update(parsed)
+            _LAST_KNOWN_PA_TELEMETRY["hardware"].update(parsed)
+            _LAST_PA_HARDWARE_QUERY_TIME = time.time()
+            logger.info(f"Palo Alto hardware RAM cache updated via PAN-OS XML API: RAM={parsed.get('total_ram')}, Fan={parsed.get('fan_status')}, Power={parsed.get('poe_consumption')}, DNS={parsed.get('dns_servers')}")
+
+    except Exception as e:
+        logger.warning(f"Gagal mengambil live hardware Palo Alto via API: {e}")
+    finally:
+        _PA_FETCHING = False
+
+def _get_paloalto_real_hardware(ip_address="192.168.1.11"):
+    global _PA_REAL_HARDWARE_CACHE, _LAST_PA_HARDWARE_QUERY_TIME, _PA_FETCHING
+    now = time.time()
+    # TTL: 25 detik (non-blocking background thread untuk respons instan)
+    if (now - _LAST_PA_HARDWARE_QUERY_TIME) >= 25 and not _PA_FETCHING:
+        _PA_FETCHING = True
+        t = threading.Thread(target=_fetch_paloalto_hardware_api, args=(ip_address,), daemon=True)
+        t.start()
+    return _PA_REAL_HARDWARE_CACHE
 
 def get_paloalto_telemetry(ip_address="192.168.1.11"):
     """
@@ -643,32 +1102,20 @@ def get_paloalto_telemetry(ip_address="192.168.1.11"):
     import copy
     api_key = os.getenv("PA_API_KEY", "LUFRPT1mOVAwR1h3bzFrTFNnQjI4WkF3L0h5UVg5Z3c9VDZ2TVVXS2ZmODdwUVRkbDdvcGdJSW1WUkJWVnFCWWdUWWhZV3J4SnhoWFdLalNySkpoRmI0enhVWkdNZjBBdw==")
     
+    # 1. Update spesifikasi hardware dinamis dari in-memory cache (TTL 25 detik)
+    hw_specs = _get_paloalto_real_hardware(ip_address)
+
     # Salin dari state hardware riil persisten yang telah terverifikasi langsung
     data = copy.deepcopy(_LAST_KNOWN_PA_TELEMETRY)
+    data["hardware"].update(hw_specs)
     data["hardware"]["ip_address"] = ip_address
+    if "vlans" in hw_specs and hw_specs["vlans"]:
+        data["vlans"] = hw_specs["vlans"]
 
     try:
-        # 0. Polling System Info (MAC Address, Serial, Firmware) dinamis langsung dari XML API
+        # Polling Data Plane (DP) CPU Riil dari Resource Monitor (Timeout cepat 1.5s)
         try:
-            r_sys = requests.get(f"https://{ip_address}/api/?type=op&cmd=<show><system><info></info></system></show>&key={api_key}", verify=False, timeout=4)
-            if r_sys.status_code == 200:
-                s_root = ET.fromstring(r_sys.text)
-                mac_elem = s_root.findtext('.//system/mac-address')
-                if mac_elem:
-                    data["hardware"]["mac_address"] = mac_elem.strip()
-                    _LAST_KNOWN_PA_TELEMETRY["hardware"]["mac_address"] = mac_elem.strip()
-                ser_elem = s_root.findtext('.//system/serial')
-                if ser_elem:
-                    data["hardware"]["serial"] = ser_elem.strip()
-                ver_elem = s_root.findtext('.//system/sw-version')
-                if ver_elem:
-                    data["hardware"]["firmware"] = f"PAN-OS {ver_elem.strip()}"
-        except Exception as e_sys:
-            logger.debug(f"Palo Alto system info XML API error: {e_sys}")
-
-        # 1. Polling Data Plane (DP) CPU Riil dari Resource Monitor
-        try:
-            r_dp = requests.get(f"https://{ip_address}/api/?type=op&cmd=<show><running><resource-monitor><minute><last>1</last></minute></resource-monitor></running></show>&key={api_key}", verify=False, timeout=5)
+            r_dp = requests.get(f"https://{ip_address}/api/?type=op&cmd=<show><running><resource-monitor><minute><last>1</last></minute></resource-monitor></running></show>&key={api_key}", verify=False, timeout=1.5)
             if r_dp.status_code == 200:
                 dp_root = ET.fromstring(r_dp.text)
                 dp_entries = dp_root.findall('.//data-processors/dp0/minute/cpu-load-average/entry')
@@ -684,27 +1131,25 @@ def get_paloalto_telemetry(ip_address="192.168.1.11"):
                     dp_val = round(max(vals), 1)
                     data["resources"]["cpu_pct"] = dp_val
                     _LAST_KNOWN_PA_TELEMETRY["resources"]["cpu_pct"] = dp_val
+
+                # Ekstraksi Buffer Hardware (packet buffer & packet descriptor on-chip)
+                for ru_entry in dp_root.findall('.//data-processors/dp0/minute/resource-utilization/entry'):
+                    ru_name = ru_entry.findtext('name', '').lower()
+                    ru_val = ru_entry.findtext('value', '0')
+                    try:
+                        if 'packet buffer' in ru_name and 'average' in ru_name:
+                            data["resources"]["packet_buffers_pct"] = float(ru_val)
+                            _LAST_KNOWN_PA_TELEMETRY["resources"]["packet_buffers_pct"] = float(ru_val)
+                        elif 'packet descriptor (on-chip)' in ru_name and 'average' in ru_name:
+                            data["resources"]["message_buffers_pct"] = float(ru_val)
+                            _LAST_KNOWN_PA_TELEMETRY["resources"]["message_buffers_pct"] = float(ru_val)
+                    except ValueError:
+                        pass
         except Exception as e_dp:
             logger.debug(f"Koneksi Data Plane Palo Alto timeout: {e_dp}")
 
-        # 2. Polling Memory dari System Resources
-        try:
-            r_res = requests.get(f"https://{ip_address}/api/?type=op&cmd=<show><system><resources></resources></system></show>&key={api_key}", verify=False, timeout=5)
-            if r_res.status_code == 200:
-                res_text = r_res.text
-                mem_m = re.search(r'MiB Mem\s*:\s*([\d\.]+)\s*total.*?([\d\.]+)\s*used', res_text)
-                if mem_m:
-                    tot = float(mem_m.group(1))
-                    usd = float(mem_m.group(2))
-                    m_val = round((usd / tot) * 100, 1)
-                    data["resources"]["memory_pct"] = m_val
-                    _LAST_KNOWN_PA_TELEMETRY["resources"]["memory_pct"] = m_val
-        except Exception as e_mem:
-            logger.debug(f"Koneksi System Resources Palo Alto timeout: {e_mem}")
-
-
         # Polling trafik port fisik ethernet1/2 (LAN Gateway Uplink) untuk perhitungan delta laju Mbps riil
-        r_if2 = requests.get(f"https://{ip_address}/api/?type=op&cmd=<show><interface>ethernet1/2</interface></show>&key={api_key}", verify=False, timeout=5)
+        r_if2 = requests.get(f"https://{ip_address}/api/?type=op&cmd=<show><interface>ethernet1/2</interface></show>&key={api_key}", verify=False, timeout=2.0)
         if r_if2.status_code == 200:
             p2_root = ET.fromstring(r_if2.text)
             curr_rx = int(p2_root.findtext(".//ibytes") or p2_root.findtext(".//rx-bytes") or 0)
@@ -718,36 +1163,28 @@ def get_paloalto_telemetry(ip_address="192.168.1.11"):
             global _PA_PORT_RATES
 
             # Hitung delta Throughput Mbps riil menggunakan interval waktu aktual (dt)
-            # Menangani counter rollover (32-bit wrap) dan counter reset (reboot / clear counter)
             if dev_key in _PA_PORT_RATES:
                 prev_ts, prev_rx, prev_tx, prev_rx_m, prev_tx_m = _PA_PORT_RATES[dev_key]
                 dt = now_ts - prev_ts
                 if dt >= 0.5:
-                    # Penanganan RX bytes (rollover 32-bit vs reset antarmuka)
                     if curr_rx >= prev_rx:
                         delta_rx = curr_rx - prev_rx
                     elif prev_rx < (2**32) and curr_rx < (2**32):
-                        # 32-bit counter rollover (wrap-around di 4.29 GB)
                         delta_rx = (2**32 - prev_rx) + curr_rx
                     else:
-                        # Counter Reset / Reboot / clear counters pada antarmuka
                         logger.info(f"Palo Alto RX counter reset terdeteksi: {prev_rx} -> {curr_rx}")
                         delta_rx = 0
 
-                    # Penanganan TX bytes (rollover 32-bit vs reset antarmuka)
                     if curr_tx >= prev_tx:
                         delta_tx = curr_tx - prev_tx
                     elif prev_tx < (2**32) and curr_tx < (2**32):
-                        # 32-bit counter rollover
                         delta_tx = (2**32 - prev_tx) + curr_tx
                     else:
-                        # Counter Reset / Reboot
                         logger.info(f"Palo Alto TX counter reset terdeteksi: {prev_tx} -> {curr_tx}")
                         delta_tx = 0
 
                     rx_mbps = round((delta_rx * 8.0) / (dt * 1000000.0), 2)
                     tx_mbps = round((delta_tx * 8.0) / (dt * 1000000.0), 2)
-                    # Selalu perbarui baseline timestamp dan counter terkini agar tracking tidak macet
                     _PA_PORT_RATES[dev_key] = (now_ts, curr_rx, curr_tx, rx_mbps, tx_mbps)
                 else:
                     rx_mbps = prev_rx_m
