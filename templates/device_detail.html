@@ -361,7 +361,7 @@
                             <div>
                                 <h3 class="panel-title">Integritas Transmisi Fisik</h3>
                                 <span class="panel-sub">Monitoring anomali transmisi frame error &amp; antrean drop
-                                    (Akumulasi 28 Port)</span>
+                                    (Akumulasi {{ summary.total_ports or 28 }} Port)</span>
                             </div>
                             <div class="chart-legend-custom">
                                 <span class="legend-tag"><span class="legend-color bg-cyan"></span> TX Errors</span>
@@ -398,8 +398,10 @@
                             {% if 'palo' not in device.vendor.lower() %}
                             <button class="port-filter-btn" data-filter="sfp">Fiber 10G SFP+ ({{ summary.sfp_ports or 4
                                 }})</button>
-                            <button class="port-filter-btn" data-filter="poe">10/100/1000T PoE+ ({{ (summary.total_ports
-                                or 28) - (summary.sfp_ports or 4) }})</button>
+                            <button class="port-filter-btn" data-filter="poe">10/100/1000T PoE+ (24)</button>
+                            {% endif %}
+                            {% if "huawei" in device.vendor.lower() %}
+                            <button class="port-filter-btn" data-filter="logical">Logical & Stacking (7)</button>
                             {% endif %}
                         </div>
                     </div>
@@ -418,13 +420,13 @@
                                 <th>Throughput Rx</th>
                                 <th title="Total akumulasi byte fisik register hardware sejak perangkat boot / counter di-reset">Bytes Tx / Rx (Kumulatif)</th>
                                 <th>PoE Power</th>
-                                <th>Errors / Drops</th>
+                                <th title="Counter fisik register hardware: Tx Error (Kirim) / Rx Error (Terima) / Tx Drops (Buffer Egress)">Errors (Tx / Rx) / Drops</th>
                             </tr>
                         </thead>
                         <tbody id="portsTableBody">
                             {% for p in ports %}
                             <tr class="port-row" data-port-id="{{ p.port_id }}" data-status="{{ p.status }}"
-                                data-type="{% if p.is_sfp %}sfp{% else %}poe{% endif %}"
+                                data-type="{% if 'vlanif' in p.port_id.lower() or 'stack' in p.port_id.lower() %}logical{% elif p.is_sfp %}sfp{% else %}poe{% endif %}"
                                 data-search="{{ p.port_name | lower }} {{ p.speed | lower }} {% if p.neighbor %}{{ p.neighbor.name | lower }} {{ p.neighbor.desc | lower }}{% endif %}">
                                 <td>
                                     <strong>{{ p.port_name }}</strong>
@@ -436,6 +438,10 @@
                                     <span class="badge-uplink"
                                         style="background: rgba(232, 165, 118, 0.2); color: var(--color-copper); border-color: rgba(232, 165, 118, 0.4);">LAN
                                         GATEWAY</span>
+                                    {% elif 'vlanif' in p.port_id.lower() %}
+                                    <span class="badge-uplink" style="background: rgba(99, 102, 241, 0.2); color: #818cf8; border-color: rgba(99, 102, 241, 0.4);">L3 SVI</span>
+                                    {% elif 'stack' in p.port_id.lower() or '10ge1/0/5' in p.port_id.lower() or '10ge1/0/6' in p.port_id.lower() %}
+                                    <span class="badge-uplink" style="background: rgba(148, 163, 184, 0.2); color: #94a3b8; border-color: rgba(148, 163, 184, 0.4);">iSTACK</span>
                                     {% elif p.is_sfp %}
                                     <span class="badge-media-sfp">10G SFP+</span>
                                     {% elif 'palo' in device.vendor.lower() %}
@@ -479,13 +485,17 @@
                                 <td>
                                     {% if p.is_sfp %}
                                     <span>N/A (Fiber)</span>
+                                    {% elif 'vlanif' in p.port_id.lower() or 'stack' in p.port_id.lower() %}
+                                    <span>N/A</span>
+                                    {% elif 'palo' in device.vendor.lower() or 'pa220' in device.name.lower() or 'pa-220' in device.name.lower() %}
+                                    <span>N/A (Non-PoE)</span>
                                     {% elif p.poe and p.status == 'UP' and p.poe.power_watts > 0 %}
                                     <span>{{ p.poe.power_watts }} W</span>
                                     {% else %}
                                     <span>0 W</span>
                                     {% endif %}
                                 </td>
-                                <td><span>{{ "{:,}".format(p.errors_tx + p.errors_rx).replace(',', '.') }} / {{ p.drops_tx }}</span></td>
+                                <td><span>{{ "{:,}".format(p.errors_tx).replace(',', '.') }} / {{ "{:,}".format(p.errors_rx).replace(',', '.') }} / {{ "{:,}".format(p.drops_tx).replace(',', '.') }}</span></td>
                             </tr>
                             {% endfor %}
                         </tbody>

@@ -96,6 +96,8 @@ function applyPortFilters() {
             matchesTab = (type === 'sfp');
         } else if (currentFilter === 'poe') {
             matchesTab = (type === 'poe');
+        } else if (currentFilter === 'logical') {
+            matchesTab = (type === 'logical');
         }
 
         let matchesSearch = true;
@@ -154,19 +156,30 @@ function updatePortsTableRows(ports) {
         // 6. PoE Power (cell 8) - No badge, clean plain text
         if (row.children[8]) {
             let poeText = '0 W';
-            if (p.is_sfp) {
+            const pidLower = (p.port_id || '').toString().toLowerCase();
+            const isPalo = (typeof CURRENT_DEVICE_ID !== 'undefined' && CURRENT_DEVICE_ID === 3) ||
+                           (document.title && document.title.toLowerCase().includes('pa-220')) ||
+                           (document.getElementById('deviceTitle') && document.getElementById('deviceTitle').textContent.toLowerCase().includes('pa-220')) ||
+                           (lastDeviceRawData && lastDeviceRawData.specs && lastDeviceRawData.specs.model && lastDeviceRawData.specs.model.toLowerCase().includes('palo'));
+
+            if (isPalo) {
+                poeText = 'N/A (Non-PoE)';
+            } else if (p.is_sfp) {
                 poeText = 'N/A (Fiber)';
+            } else if (pidLower.includes('vlanif') || pidLower.includes('stack')) {
+                poeText = 'N/A';
             } else if (p.poe && p.status === 'UP' && p.poe.power_watts > 0) {
-                poeText = `${p.poe.power_watts} W`;
+                poeText = p.poe.power_watts + ' W';
             }
-            row.children[8].innerHTML = `<span>${poeText}</span>`;
+            row.children[8].innerHTML = '<span>' + poeText + '</span>';
         }
 
-        // 7. Errors / Drops (cell 9)
+        // 7. Errors (Tx / Rx) / Drops (cell 9) - Transparan 1:1 tanpa penjumlahan
         if (row.children[9]) {
-            const errTotal = (p.errors_tx || 0) + (p.errors_rx || 0);
-            const drops = p.drops_tx || 0;
-            row.children[9].innerHTML = `<span>${errTotal.toLocaleString('id-ID')} / ${drops.toLocaleString('id-ID')}</span>`;
+            const errTx = (p.errors_tx || 0).toLocaleString('id-ID');
+            const errRx = (p.errors_rx || 0).toLocaleString('id-ID');
+            const drops = (p.drops_tx || 0).toLocaleString('id-ID');
+            row.children[9].innerHTML = `<span>${errTx} / ${errRx} / ${drops}</span>`;
         }
     });
 }
