@@ -4,6 +4,7 @@ import os
 import random
 import json
 import re
+import time
 import urllib.request
 from collections import defaultdict
 from datetime import datetime, timedelta
@@ -430,6 +431,58 @@ def api_resolve_alert(alert_id):
 
 # 3. TELEGRAM BOT INTEGRATION ROUTES
 
+# Cache untuk status Telegram Bot agar tidak membebani network / API setiap request
+_telegram_bot_status_cache = {
+    "timestamp": 0,
+    "is_online": False
+}
+
+def is_telegram_bot_online():
+    """
+    Memeriksa apakah koneksi Bot Telegram aktif (mendukung bot di VPS maupun lokal).
+    1. Cek API Telegram resmi (getMe) dengan caching 10 detik agar cepat dan akurat.
+    2. Fallback cek file heartbeat lokal jika server tidak memiliki koneksi internet keluar.
+    """
+    global _telegram_bot_status_cache
+    now = time.time()
+    if now - _telegram_bot_status_cache["timestamp"] < 10:
+        return _telegram_bot_status_cache["is_online"]
+
+    token = os.getenv('TELEGRAM_BOT_TOKEN')
+    if not token or token.startswith('123456'):
+        _telegram_bot_status_cache = {"timestamp": now, "is_online": False}
+        return False
+
+    is_online = False
+
+    # 1. Cek langsung ke Telegram Bot API (getMe)
+    try:
+        url = f"https://api.telegram.org/bot{token}/getMe"
+        req = urllib.request.Request(url, headers={'User-Agent': 'AGIVA-NOC-Monitor'})
+        with urllib.request.urlopen(req, timeout=3) as resp:
+            if resp.status == 200:
+                is_online = True
+    except Exception:
+        is_online = False
+
+    # 2. Fallback ke file heartbeat lokal jika ada
+    if not is_online:
+        heartbeat_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'logs', 'bot_heartbeat.json')
+        if os.path.exists(heartbeat_file):
+            try:
+                with open(heartbeat_file, 'r') as f:
+                    hb = json.load(f)
+                    if hb.get('status') == 'ONLINE' and (now - hb.get('timestamp', 0) < 20):
+                        is_online = True
+            except Exception:
+                pass
+
+    _telegram_bot_status_cache = {
+        "timestamp": now,
+        "is_online": is_online
+    }
+    return is_online
+
 @app.route('/telegram')
 @app.route('/telegram.html')
 def telegram_page():
@@ -451,23 +504,13 @@ def telegram_page():
         TelegramMessageLog.sent_at >= cutoff_date
     ).order_by(TelegramMessageLog.sent_at.desc(), TelegramMessageLog.id.desc()).all()
 
-    # Cek apakah proses bot.py sedang berjalan di sistem lokal
-    bot_is_online = False
-    try:
-        import subprocess
-        result = subprocess.run(
-            ['powershell', '-Command',
-             "Get-CimInstance Win32_Process -Filter \"name='python.exe'\" | Select-Object -ExpandProperty CommandLine"],
-            capture_output=True, text=True, timeout=5
-        )
-        bot_is_online = 'bot.py' in result.stdout
-    except Exception:
-        bot_is_online = False
+    # Cek status koneksi Bot API Telegram (aktif baik di VPS maupun lokal)
+    bot_is_online = is_telegram_bot_online()
 
     bot_info = {
         "bot_name": os.getenv('TELEGRAM_BOT_NAME', 'Agiva Network Automation Bot'),
         "username": os.getenv('TELEGRAM_BOT_USERNAME', '@Agiva_Network_Automation_Bot'),
-        "status": "ONLINE" if bot_is_online else "OFFLINE",
+        "status": "Online" if bot_is_online else "Offline",
         "is_online": bot_is_online,
         "chat_group": os.getenv('TELEGRAM_GROUP_NAME', 'Agiva Network Automation Channel'),
         "chat_id": os.getenv('NOC_TELEGRAM_CHAT_ID', '-1004429503436'),
@@ -529,7 +572,8 @@ def api_telegram_logs():
     
     return jsonify({
         "logs": logs_data,
-        "active_alerts_pushed": active_alerts_pushed
+        "active_alerts_pushed": active_alerts_pushed,
+        "bot_is_online": is_telegram_bot_online()
     })
 
 @app.route('/api/telegram/test-alert', methods=['POST'])

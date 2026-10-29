@@ -4,6 +4,9 @@ import html
 import random
 import hashlib
 import logging
+import json
+import time
+import threading
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 from dotenv import load_dotenv
@@ -1005,10 +1008,28 @@ async def global_error_handler(update: object, context: ContextTypes.DEFAULT_TYP
     """Menangkap semua exception agar bot tetap berjalan tanpa crash"""
     logger.error(f"Global Error Handler caught: {context.error}")
 
+def start_local_heartbeat():
+    """Menulis heartbeat file lokal agar dashboard lokal dapat memantau status bot saat dijalankan di lokal"""
+    def _worker():
+        hb_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'logs')
+        os.makedirs(hb_dir, exist_ok=True)
+        hb_path = os.path.join(hb_dir, 'bot_heartbeat.json')
+        while True:
+            try:
+                with open(hb_path, 'w') as f:
+                    json.dump({'timestamp': time.time(), 'status': 'ONLINE', 'pid': os.getpid()}, f)
+            except Exception:
+                pass
+            time.sleep(5)
+    t = threading.Thread(target=_worker, daemon=True)
+    t.start()
+
 def main():
     if not BOT_TOKEN:
         print("[Critical] TELEGRAM_BOT_TOKEN belum diset di file .env!")
         return
+
+    start_local_heartbeat()
 
     print("===============================================================")
     print("   PT AGIVA INDONESIA — AUTOMATED NOC TELEGRAM ENGINE          ")
