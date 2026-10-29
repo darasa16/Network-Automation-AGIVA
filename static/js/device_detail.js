@@ -3,17 +3,21 @@
  * Real-time metric polling, manual refresh interaction, and 8-card live charts.
  */
 
-// 4 Main Chart & Visual instances (Model 1: 2 baris x 2 panel)
+// 6 Main Chart & Visual instances (Model 1: 3 baris x 2 panel)
 let chartCpuMem = null;
 let chartTraffic = null;
 let chartBuffers = null;
 let chartErrorsDrops = null;
+let chartLatency = null;
+let chartPacketLoss = null;
 
-// 4 Timeline Navigator instances
+// 6 Timeline Navigator instances
 let navCpuMem = null;
 let navTraffic = null;
 let navBuffers = null;
 let navErrorsDrops = null;
+let navLatency = null;
+let navPacketLoss = null;
 
 let isNavBatchUpdating = false;
 let lastDeviceRawData = null;
@@ -247,14 +251,6 @@ function applyDeviceDataToUI(data) {
         const tdEl = document.getElementById('valTxDrops');
         if (tdEl) tdEl.textContent = `${data.current_tx_drops}`;
     }
-    if (data.current_latency !== undefined) {
-        const latEl = document.getElementById('currLatencyVal');
-        if (latEl) latEl.textContent = `${data.current_latency} ms`;
-    }
-    if (data.current_packet_loss !== undefined) {
-        const lossEl = document.getElementById('currLossVal');
-        if (lossEl) lossEl.textContent = `${data.current_packet_loss}%`;
-    }
     if (data.uptime) {
         const uptimeEl = document.getElementById('currUptimeVal');
         if (uptimeEl) uptimeEl.textContent = data.uptime;
@@ -277,13 +273,7 @@ function applyDeviceDataToUI(data) {
         const fanEl = document.getElementById('specFan');
         if (fanEl && data.specs.fan_status) {
             fanEl.textContent = data.specs.fan_status;
-            if (data.specs.fan_status.toLowerCase().includes('tidak')) {
-                fanEl.classList.remove('text-green');
-                fanEl.classList.add('text-danger');
-            } else {
-                fanEl.classList.remove('text-danger');
-                fanEl.classList.add('text-green');
-            }
+            fanEl.classList.remove('text-green', 'text-danger');
         }
         const ramEl = document.getElementById('specRam');
         if (ramEl && data.specs.total_ram) ramEl.textContent = data.specs.total_ram;
@@ -573,6 +563,100 @@ function createOrUpdateDualChart(existingChart, ctx, labels, ds1, ds2, unit = ''
     });
 }
 
+function createOrUpdateSingleLineChart(existingChart, ctx, labels, ds, unit = ' ms', suggestedMax = 10, lineColor = '#06b6d4', fillColor = 'rgba(6, 182, 212, 0.35)') {
+    if (!ctx) return null;
+
+    const dynamicPointRadius = (labels && labels.length > 25) ? 0 : 3;
+    const hoverPointRadius = (labels && labels.length > 25) ? 3 : 5;
+
+    const allVals = ds.data || [];
+    const maxVal = allVals.length > 0 ? Math.max(...allVals) : 0;
+    let actualMax = suggestedMax;
+    if (maxVal > suggestedMax) {
+        actualMax = Math.ceil((maxVal * 1.25) / 5) * 5;
+    }
+
+    if (existingChart) {
+        existingChart.data.labels = labels;
+        existingChart.data.datasets[0].data = ds.data;
+        existingChart.data.datasets[0].pointRadius = dynamicPointRadius;
+        existingChart.data.datasets[0].pointHoverRadius = hoverPointRadius;
+        if (existingChart.options.scales.y) {
+            existingChart.options.scales.y.suggestedMax = actualMax;
+            existingChart.options.scales.y.max = actualMax;
+        }
+        existingChart.update('none');
+        return existingChart;
+    }
+
+    const grad = ctx.getContext('2d').createLinearGradient(0, 0, 0, 140);
+    grad.addColorStop(0, fillColor);
+    grad.addColorStop(1, 'rgba(0, 0, 0, 0.0)');
+
+    return new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: ds.label,
+                    data: ds.data,
+                    borderColor: lineColor,
+                    backgroundColor: grad,
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.35,
+                    pointRadius: dynamicPointRadius,
+                    pointHoverRadius: hoverPointRadius
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                    backgroundColor: '#1e293b',
+                    titleColor: '#f8fafc',
+                    bodyColor: '#cbd5e1',
+                    borderColor: '#334155',
+                    borderWidth: 1,
+                    padding: 10,
+                    cornerRadius: 6,
+                    callbacks: {
+                        label: function (ctx) {
+                            return ` ${ctx.dataset.label}: ${ctx.parsed.y}${unit}`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    display: true,
+                    grid: { color: 'rgba(255, 255, 255, 0.04)' },
+                    ticks: { color: '#64748b', font: { size: 9 }, maxTicksLimit: 6 }
+                },
+                y: {
+                    min: 0,
+                    suggestedMax: actualMax,
+                    max: actualMax,
+                    grid: { color: 'rgba(255, 255, 255, 0.04)' },
+                    ticks: {
+                        color: '#64748b',
+                        font: { size: 9 },
+                        maxTicksLimit: 4,
+                        callback: (val) => `${val}${unit}`
+                    }
+                }
+            }
+        }
+    });
+}
+
 function createOrUpdateBarChart(existingChart, ctx, labels, datasets, suggestedMax = 100, unit = '') {
     if (!ctx) return null;
 
@@ -685,10 +769,12 @@ function renderDeviceCharts(data) {
     if (!data.rx_errors) data.rx_errors = labels.map(() => 0);
     if (!data.tx_errors) data.tx_errors = labels.map(() => 0);
     if (!data.tx_drops) data.tx_drops = labels.map(() => 0);
+    if (!data.latency) data.latency = labels.map(() => 0.0);
+    if (!data.packet_loss) data.packet_loss = labels.map(() => 0.0);
 
-    const navIds = ['navCpuMem', 'navTraffic', 'navBuffers', 'navErrorsDrops'];
+    const navIds = ['navCpuMem', 'navTraffic', 'navBuffers', 'navErrorsDrops', 'navLatency', 'navPacketLoss'];
 
-    // Jika mode live: sembunyikan semua 4 navigator slider, render seluruh data live
+    // Jika mode live: sembunyikan semua 6 navigator slider, render seluruh data live
     if (currentDeviceRange === 'live') {
         navIds.forEach(id => {
             const el = document.getElementById(id);
@@ -698,7 +784,7 @@ function renderDeviceCharts(data) {
         return;
     }
 
-    // Mode histori: 1h, 12h, 24h -> Inisialisasi 4 Timeline Navigators jika belum dibuat
+    // Mode histori: 1h, 12h, 24h -> Inisialisasi 6 Timeline Navigators jika belum dibuat
     initTimelineNavigators();
 
     // Pertahankan batas pecahan jendela aktif jika pengguna sedang menyeret slider
@@ -713,6 +799,8 @@ function renderDeviceCharts(data) {
         if (navTraffic) navTraffic.setData(labels, data.traffic_in, data.traffic_out, preserveFractions);
         if (navBuffers) navBuffers.setData(labels, data.packet_buffers, data.message_buffers, preserveFractions);
         if (navErrorsDrops) navErrorsDrops.setData(labels, data.tx_errors, data.rx_errors, preserveFractions);
+        if (navLatency) navLatency.setData(labels, data.latency, [], preserveFractions);
+        if (navPacketLoss) navPacketLoss.setData(labels, data.packet_loss, [], preserveFractions);
     } finally {
         isNavBatchUpdating = false;
     }
@@ -807,10 +895,48 @@ function initTimelineNavigators() {
             });
         }
     }
+
+    if (!navLatency) {
+        const el = document.getElementById('navLatency');
+        if (el) {
+            navLatency = new TimelineNavigator({
+                containerId: 'navLatency',
+                color: '#06b6d4',
+                secondaryColor: '#0ea5e9',
+                unit: ' ms',
+                onWindowChange: (startIdx, endIdx) => {
+                    if (isNavBatchUpdating) return;
+                    if (lastDeviceRawData) {
+                        renderDeviceChartsSlice(lastDeviceRawData, startIdx, endIdx);
+                        syncAllNavigators('navLatency');
+                    }
+                }
+            });
+        }
+    }
+
+    if (!navPacketLoss) {
+        const el = document.getElementById('navPacketLoss');
+        if (el) {
+            navPacketLoss = new TimelineNavigator({
+                containerId: 'navPacketLoss',
+                color: '#f97316',
+                secondaryColor: '#ef4444',
+                unit: '%',
+                onWindowChange: (startIdx, endIdx) => {
+                    if (isNavBatchUpdating) return;
+                    if (lastDeviceRawData) {
+                        renderDeviceChartsSlice(lastDeviceRawData, startIdx, endIdx);
+                        syncAllNavigators('navPacketLoss');
+                    }
+                }
+            });
+        }
+    }
 }
 
 function syncAllNavigators(sourceId) {
-    const navs = [navCpuMem, navTraffic, navBuffers, navErrorsDrops];
+    const navs = [navCpuMem, navTraffic, navBuffers, navErrorsDrops, navLatency, navPacketLoss];
     const sourceNav = navs.find(n => n && n.container && n.container.id === sourceId);
     if (!sourceNav) return;
 
@@ -843,6 +969,8 @@ function renderDeviceChartsSlice(data, startIdx, endIdx) {
     const txVals = (data.tx_errors || []).slice(s, e + 1);
     const rxVals = (data.rx_errors || []).slice(s, e + 1);
     const tdVals = (data.tx_drops || []).slice(s, e + 1);
+    const latVals = (data.latency || []).slice(s, e + 1);
+    const lossVals = (data.packet_loss || []).slice(s, e + 1);
 
     // 1. Chart CPU & Memory (Dual-Line)
     chartCpuMem = createOrUpdateDualChart(
@@ -905,5 +1033,27 @@ function renderDeviceChartsSlice(data, startIdx, endIdx) {
         ],
         100,
         ''
+    );
+
+    // 5. Chart Latency (Single-Line ICMP Ping RTT ms)
+    chartLatency = createOrUpdateSingleLineChart(
+        chartLatency,
+        document.getElementById('chartLatency'),
+        labels,
+        { label: 'Latency RTT', data: latVals },
+        ' ms',
+        10
+    );
+
+    // 6. Spike Bar Chart (Ping Drop / Packet Loss %)
+    chartPacketLoss = createOrUpdateBarChart(
+        chartPacketLoss,
+        document.getElementById('chartPacketLoss'),
+        labels,
+        [
+            { label: 'Ping Drop', data: lossVals, color: 'rgba(249, 115, 22, 0.85)', borderColor: '#f97316' }
+        ],
+        100,
+        '%'
     );
 }

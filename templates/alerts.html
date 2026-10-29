@@ -11,7 +11,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
         rel="stylesheet">
     <!-- Relative CSS -->
-    <link rel="stylesheet" href="/static/css/style.css?v=8.4">
+    <link rel="stylesheet" href="/static/css/style.css?v=8.5">
     <style>
         .section-separator {
             margin-top: 1.5rem;
@@ -80,6 +80,98 @@
             font-weight: 600 !important;
             letter-spacing: 0.2px !important;
             color: var(--color-copper) !important;
+        }
+
+        /* Pagination Bar & Controls */
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(15, 12, 34, 0.35);
+            font-size: 13px;
+            color: #94a3b8;
+            flex-wrap: wrap;
+            gap: 14px;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+        }
+
+        .pagination-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .pagination-nav-btn {
+            background: transparent;
+            border: none;
+            color: #818cf8;
+            padding: 4px 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+        }
+
+        .pagination-nav-btn:hover:not(.disabled) {
+            color: #ffffff;
+            transform: translateY(-1px);
+        }
+
+        .pagination-nav-btn.disabled {
+            opacity: 0.25;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .pagination-num-btn {
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            min-width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 4px;
+            transition: all 0.2s ease;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+        }
+
+        .pagination-num-btn:hover:not(.active) {
+            color: #ffffff;
+            background: rgba(99, 102, 241, 0.15);
+        }
+
+        .pagination-num-btn.active {
+            background: #6366f1;
+            color: #ffffff;
+            font-weight: 700;
+            box-shadow: 0 0 12px rgba(99, 102, 241, 0.45);
+        }
+
+        .pagination-dots {
+            color: #64748b;
+            padding: 0 2px;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            user-select: none;
+        }
+
+        .pagination-info {
+            font-size: 12px;
+            color: #94a3b8;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
         }
     </style>
 </head>
@@ -150,7 +242,14 @@
                         auto-cooldown dan memerlukan intervensi operasional.</p>
                 </div>
                 <div class="header-tools">
-                    <button class="btn-refresh" onclick="window.location.reload()">Refresh Data</button>
+                    <button class="btn-refresh" onclick="refreshAlerts(this)">
+                        <svg class="refresh-icon" viewBox="0 0 24 24" width="14" height="14" fill="none"
+                            stroke="currentColor" stroke-width="2.5"
+                            style="display:inline-block; vertical-align:middle; margin-right:4px;">
+                            <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+                        </svg>
+                        <span>Refresh Data</span>
+                    </button>
                 </div>
             </div>
 
@@ -227,6 +326,12 @@
                         </tbody>
                     </table>
                 </div>
+
+                <!-- Pagination Bar for Active & Sustained Alerts -->
+                <div class="pagination-container" id="alertsPaginationContainer">
+                    <div id="alertsPageInfo" class="pagination-info">Menampilkan 0 log</div>
+                    <div class="pagination-controls" id="alertsPaginationControls"></div>
+                </div>
             </div>
 
             <!-- ========================================================= -->
@@ -242,11 +347,9 @@
 
                 <!-- Incident Filters -->
                 <div class="filter-bar" id="incidentsFilterBar">
-                    <button class="filter-tab active" data-inc-filter="all">Semua Insiden ({{ total_incidents
-                        }})</button>
+                    <button class="filter-tab active" data-inc-filter="all">Semua Insiden ({{ total_incidents }})</button>
                     <button class="filter-tab" data-inc-filter="cooldown">Cooldown ({{ cooldown_incidents }})</button>
-                    <button class="filter-tab" data-inc-filter="resolved">Resolved Alert ({{ resolved_incidents
-                        }})</button>
+                    <button class="filter-tab" data-inc-filter="resolved">Resolved Alert ({{ resolved_incidents }})</button>
                 </div>
 
                 <!-- Incidents Table Panel (Tanpa Kolom Message sesuai request) -->
@@ -296,6 +399,9 @@
                                         {% elif inc.status == 'ACTIVE_MONITORING' %}
                                         <span class="status-text-cell"
                                             style="color: var(--color-copper);">Pemantauan</span>
+                                        {% elif inc.status in ['ACTIVE_ALERT', 'ESCALATED_TO_ALERT'] %}
+                                        <span class="status-text-cell"
+                                            style="color: var(--color-copper);">Alert Aktif</span>
                                         {% else %}
                                         <span class="status-text-cell" style="color: var(--color-copper);">{{ inc.status
                                             }}</span>
@@ -324,6 +430,12 @@
                             </tbody>
                         </table>
                     </div>
+
+                    <!-- Pagination Bar for Incident Log & Cooldown History -->
+                    <div class="pagination-container" id="incidentsPaginationContainer">
+                        <div id="incidentsPageInfo" class="pagination-info">Menampilkan 0 log</div>
+                        <div class="pagination-controls" id="incidentsPaginationControls"></div>
+                    </div>
                 </div>
             </div>
 
@@ -343,102 +455,396 @@
         setInterval(updateClock, 1000);
         updateClock();
 
-        // 1. Filter Tab Handler untuk Active Alerts Table
-        function updateAlertsEmptyState(filter, visibleCount) {
+        // =========================================================================
+        // 1. ACTIVE & SUSTAINED ALERTS TABLE PAGINATION & FILTERING (20 items/page)
+        // =========================================================================
+        let currentAlertsPage = 1;
+        const alertsPerPage = 20;
+        let currentAlertFilter = 'all';
+
+        function checkTargetAlertPage(targetRowId) {
+            let rowId = targetRowId;
+            if (!rowId && window.location.hash) {
+                rowId = window.location.hash.replace('#', '');
+            }
+            if (rowId && (rowId.startsWith('alert-row-') || rowId.startsWith('alert-'))) {
+                const rows = Array.from(document.querySelectorAll('#alertsTable .alert-row'));
+                const idx = rows.findIndex(r => r.id === rowId);
+                if (idx !== -1) {
+                    currentAlertFilter = 'all';
+                    document.querySelectorAll('#alertsFilterBar .filter-tab').forEach(t => {
+                        t.classList.toggle('active', t.getAttribute('data-filter') === 'all');
+                    });
+                    currentAlertsPage = Math.floor(idx / alertsPerPage) + 1;
+                    return true;
+                }
+            }
+            return false;
+        }
+        window.checkTargetAlertPage = checkTargetAlertPage;
+
+        function renderAlertsPagination() {
+            const rows = Array.from(document.querySelectorAll('#alertsTable .alert-row'));
+            const filteredRows = rows.filter(row => {
+                if (currentAlertFilter === 'all') return true;
+                if (currentAlertFilter === 'pending') return row.classList.contains('filter-row-pending');
+                if (currentAlertFilter === 'acked') return row.classList.contains('filter-row-acked');
+                return true;
+            });
+
+            const totalAlerts = filteredRows.length;
+            const paginationContainer = document.getElementById('alertsPaginationContainer');
+            const pageInfo = document.getElementById('alertsPageInfo');
             const emptyRow = document.getElementById('alertsEmptyState');
-            if (!emptyRow) return;
-            if (visibleCount === 0) {
-                emptyRow.style.display = '';
-                const titleEl = document.getElementById('alertsEmptyTitle');
-                if (filter === 'pending') {
-                    if (titleEl) titleEl.textContent = 'Tidak Ada Alert Menunggu ACK';
-                } else if (filter === 'acked') {
-                    if (titleEl) titleEl.textContent = 'Tidak Ada Alert yang Telah di-ACK';
-                } else {
-                    if (titleEl) titleEl.textContent = 'Semua Sistem Normal';
+            const titleEl = document.getElementById('alertsEmptyTitle');
+
+            if (totalAlerts === 0) {
+                rows.forEach(r => r.style.display = 'none');
+                if (emptyRow) emptyRow.style.display = '';
+                if (titleEl) {
+                    if (currentAlertFilter === 'pending') {
+                        titleEl.textContent = 'Tidak Ada Alert Menunggu ACK';
+                    } else if (currentAlertFilter === 'acked') {
+                        titleEl.textContent = 'Tidak Ada Alert yang Telah di-ACK';
+                    } else {
+                        titleEl.textContent = 'Semua Sistem Normal';
+                    }
+                }
+                if (paginationContainer) paginationContainer.style.display = 'none';
+                return;
+            }
+
+            if (emptyRow) emptyRow.style.display = 'none';
+            if (paginationContainer) paginationContainer.style.display = 'flex';
+
+            const totalPages = Math.ceil(totalAlerts / alertsPerPage) || 1;
+            if (currentAlertsPage > totalPages) currentAlertsPage = totalPages;
+            if (currentAlertsPage < 1) currentAlertsPage = 1;
+
+            const startIndex = (currentAlertsPage - 1) * alertsPerPage;
+            const endIndex = Math.min(startIndex + alertsPerPage, totalAlerts);
+
+            rows.forEach(r => r.style.display = 'none');
+            filteredRows.slice(startIndex, endIndex).forEach(r => {
+                r.style.display = '';
+            });
+
+            if (pageInfo) {
+                pageInfo.innerText = `Menampilkan ${startIndex + 1} - ${endIndex} dari ${totalAlerts} log (Halaman ${currentAlertsPage} dari ${totalPages})`;
+            }
+
+            renderAlertsPaginationButtons(totalPages);
+        }
+        window.renderAlertsPagination = renderAlertsPagination;
+
+        function renderAlertsPaginationButtons(totalPages) {
+            const controls = document.getElementById('alertsPaginationControls');
+            if (!controls) return;
+
+            let btnHtml = '';
+
+            // Tombol Prev (‹ Prev)
+            btnHtml += `<button class="pagination-nav-btn ${currentAlertsPage === 1 ? 'disabled' : ''}" 
+                         onclick="gotoAlertPage(${currentAlertsPage - 1})" ${currentAlertsPage === 1 ? 'disabled' : ''}>
+                         <span>&#8249;</span> <span>Prev</span>
+                        </button>`;
+
+            // Penomoran Halaman dengan format cerdas (1 ... 9 [10] 11 ... 20)
+            if (totalPages <= 7) {
+                for (let p = 1; p <= totalPages; p++) {
+                    btnHtml += `<button class="pagination-num-btn ${p === currentAlertsPage ? 'active' : ''}" 
+                                 onclick="gotoAlertPage(${p})">${p}</button>`;
                 }
             } else {
-                emptyRow.style.display = 'none';
+                // Selalu tampilkan halaman 1
+                btnHtml += `<button class="pagination-num-btn ${currentAlertsPage === 1 ? 'active' : ''}" 
+                             onclick="gotoAlertPage(1)">1</button>`;
+
+                if (currentAlertsPage > 3) {
+                    btnHtml += `<span class="pagination-dots">...</span>`;
+                }
+
+                let start = Math.max(2, currentAlertsPage - 1);
+                let end = Math.min(totalPages - 1, currentAlertsPage + 1);
+
+                if (currentAlertsPage <= 3) {
+                    start = 2;
+                    end = 4;
+                } else if (currentAlertsPage >= totalPages - 2) {
+                    start = totalPages - 3;
+                    end = totalPages - 1;
+                }
+
+                for (let p = start; p <= end; p++) {
+                    btnHtml += `<button class="pagination-num-btn ${p === currentAlertsPage ? 'active' : ''}" 
+                                 onclick="gotoAlertPage(${p})">${p}</button>`;
+                }
+
+                if (currentAlertsPage < totalPages - 2) {
+                    btnHtml += `<span class="pagination-dots">...</span>`;
+                }
+
+                // Selalu tampilkan halaman terakhir
+                btnHtml += `<button class="pagination-num-btn ${currentAlertsPage === totalPages ? 'active' : ''}" 
+                             onclick="gotoAlertPage(${totalPages})">${totalPages}</button>`;
             }
+
+            // Tombol Next (Next ›)
+            btnHtml += `<button class="pagination-nav-btn ${currentAlertsPage === totalPages ? 'disabled' : ''}" 
+                         onclick="gotoAlertPage(${currentAlertsPage + 1})" ${currentAlertsPage === totalPages ? 'disabled' : ''}>
+                         <span>Next</span> <span>&#8250;</span>
+                        </button>`;
+
+            controls.innerHTML = btnHtml;
         }
 
+        function gotoAlertPage(page) {
+            const rows = Array.from(document.querySelectorAll('#alertsTable .alert-row'));
+            const filteredRows = rows.filter(row => {
+                if (currentAlertFilter === 'all') return true;
+                if (currentAlertFilter === 'pending') return row.classList.contains('filter-row-pending');
+                if (currentAlertFilter === 'acked') return row.classList.contains('filter-row-acked');
+                return true;
+            });
+            const totalPages = Math.ceil(filteredRows.length / alertsPerPage) || 1;
+            if (page < 1 || page > totalPages) return;
+            currentAlertsPage = page;
+            if (window.location.hash && (window.location.hash.startsWith('#alert-row-') || window.location.hash.startsWith('#alert-'))) {
+                history.replaceState(null, '', window.location.pathname + window.location.search);
+            }
+            renderAlertsPagination();
+        }
+        window.gotoAlertPage = gotoAlertPage;
+
+        // Alerts Filter Tab Listeners
         document.querySelectorAll('#alertsFilterBar .filter-tab').forEach(tab => {
             tab.addEventListener('click', () => {
                 document.querySelectorAll('#alertsFilterBar .filter-tab').forEach(t => t.classList.remove('active'));
                 tab.classList.add('active');
-                const filter = tab.getAttribute('data-filter');
-                let visibleCount = 0;
-
-                document.querySelectorAll('#alertsTable .alert-row').forEach(row => {
-                    let show = false;
-                    if (filter === 'all') {
-                        show = true;
-                    } else if (filter === 'pending') {
-                        show = row.classList.contains('filter-row-pending');
-                    } else if (filter === 'acked') {
-                        show = row.classList.contains('filter-row-acked');
-                    }
-                    if (show) {
-                        row.style.display = '';
-                        visibleCount++;
-                    } else {
-                        row.style.display = 'none';
-                    }
-                });
-
-                updateAlertsEmptyState(filter, visibleCount);
+                currentAlertFilter = tab.getAttribute('data-filter') || 'all';
+                currentAlertsPage = 1;
+                renderAlertsPagination();
             });
         });
 
-        // 2. Filter Tab Handler untuk Incident Log Table
-        function updateIncidentsEmptyState(filter, visibleCount) {
+        // =========================================================================
+        // 2. INCIDENT LOG & COOLDOWN HISTORY PAGINATION & FILTERING (20 items/page)
+        // =========================================================================
+        let currentIncidentsPage = 1;
+        const incidentsPerPage = 20;
+        let currentIncidentFilter = 'all';
+
+        function checkTargetIncidentPage(targetRowId) {
+            let rowId = targetRowId;
+            if (!rowId && window.location.hash) {
+                rowId = window.location.hash.replace('#', '');
+            }
+            if (rowId && (rowId.startsWith('inc-row-') || rowId.startsWith('inc-'))) {
+                const rows = Array.from(document.querySelectorAll('#incidentsTable .incident-row'));
+                const idx = rows.findIndex(r => r.id === rowId);
+                if (idx !== -1) {
+                    currentIncidentFilter = 'all';
+                    document.querySelectorAll('#incidentsFilterBar .filter-tab').forEach(t => {
+                        t.classList.toggle('active', t.getAttribute('data-inc-filter') === 'all');
+                    });
+                    currentIncidentsPage = Math.floor(idx / incidentsPerPage) + 1;
+                    return true;
+                }
+            }
+            return false;
+        }
+        window.checkTargetIncidentPage = checkTargetIncidentPage;
+
+        function renderIncidentsPagination() {
+            const rows = Array.from(document.querySelectorAll('#incidentsTable .incident-row'));
+            const filteredRows = rows.filter(row => {
+                if (currentIncidentFilter === 'all') return true;
+                if (currentIncidentFilter === 'cooldown') return row.classList.contains('filter-inc-auto_cooldown');
+                if (currentIncidentFilter === 'resolved') return row.classList.contains('filter-inc-resolved_alert');
+                return true;
+            });
+
+            const totalIncidents = filteredRows.length;
+            const paginationContainer = document.getElementById('incidentsPaginationContainer');
+            const pageInfo = document.getElementById('incidentsPageInfo');
             const emptyRow = document.getElementById('incidentsEmptyState');
-            if (!emptyRow) return;
-            if (visibleCount === 0) {
-                emptyRow.style.display = '';
-                const titleEl = document.getElementById('incidentsEmptyTitle');
-                const subEl = document.getElementById('incidentsEmptySub');
-                if (filter === 'cooldown') {
-                    if (titleEl) titleEl.textContent = 'Tidak Ada Data Cooldown';
-                } else if (filter === 'resolved') {
-                    if (titleEl) titleEl.textContent = 'Belum Ada Riwayat Resolved Alert';
-                } else {
-                    if (titleEl) titleEl.textContent = 'Belum Ada Riwayat Insiden';
+            const titleEl = document.getElementById('incidentsEmptyTitle');
+
+            if (totalIncidents === 0) {
+                rows.forEach(r => r.style.display = 'none');
+                if (emptyRow) emptyRow.style.display = '';
+                if (titleEl) {
+                    if (currentIncidentFilter === 'cooldown') {
+                        titleEl.textContent = 'Tidak Ada Data Cooldown';
+                    } else if (currentIncidentFilter === 'resolved') {
+                        titleEl.textContent = 'Belum Ada Riwayat Resolved Alert';
+                    } else {
+                        titleEl.textContent = 'Belum Ada Riwayat Insiden';
+                    }
+                }
+                if (paginationContainer) paginationContainer.style.display = 'none';
+                return;
+            }
+
+            if (emptyRow) emptyRow.style.display = 'none';
+            if (paginationContainer) paginationContainer.style.display = 'flex';
+
+            const totalPages = Math.ceil(totalIncidents / incidentsPerPage) || 1;
+            if (currentIncidentsPage > totalPages) currentIncidentsPage = totalPages;
+            if (currentIncidentsPage < 1) currentIncidentsPage = 1;
+
+            const startIndex = (currentIncidentsPage - 1) * incidentsPerPage;
+            const endIndex = Math.min(startIndex + incidentsPerPage, totalIncidents);
+
+            rows.forEach(r => r.style.display = 'none');
+            filteredRows.slice(startIndex, endIndex).forEach(r => {
+                r.style.display = '';
+            });
+
+            if (pageInfo) {
+                pageInfo.innerText = `Menampilkan ${startIndex + 1} - ${endIndex} dari ${totalIncidents} log (Halaman ${currentIncidentsPage} dari ${totalPages})`;
+            }
+
+            renderIncidentsPaginationButtons(totalPages);
+        }
+        window.renderIncidentsPagination = renderIncidentsPagination;
+
+        function renderIncidentsPaginationButtons(totalPages) {
+            const controls = document.getElementById('incidentsPaginationControls');
+            if (!controls) return;
+
+            let btnHtml = '';
+
+            // Tombol Prev (‹ Prev)
+            btnHtml += `<button class="pagination-nav-btn ${currentIncidentsPage === 1 ? 'disabled' : ''}" 
+                         onclick="gotoIncidentPage(${currentIncidentsPage - 1})" ${currentIncidentsPage === 1 ? 'disabled' : ''}>
+                         <span>&#8249;</span> <span>Prev</span>
+                        </button>`;
+
+            // Penomoran Halaman dengan format cerdas (1 ... 9 [10] 11 ... 20)
+            if (totalPages <= 7) {
+                for (let p = 1; p <= totalPages; p++) {
+                    btnHtml += `<button class="pagination-num-btn ${p === currentIncidentsPage ? 'active' : ''}" 
+                                 onclick="gotoIncidentPage(${p})">${p}</button>`;
                 }
             } else {
-                emptyRow.style.display = 'none';
+                // Selalu tampilkan halaman 1
+                btnHtml += `<button class="pagination-num-btn ${currentIncidentsPage === 1 ? 'active' : ''}" 
+                             onclick="gotoIncidentPage(1)">1</button>`;
+
+                if (currentIncidentsPage > 3) {
+                    btnHtml += `<span class="pagination-dots">...</span>`;
+                }
+
+                let start = Math.max(2, currentIncidentsPage - 1);
+                let end = Math.min(totalPages - 1, currentIncidentsPage + 1);
+
+                if (currentIncidentsPage <= 3) {
+                    start = 2;
+                    end = 4;
+                } else if (currentIncidentsPage >= totalPages - 2) {
+                    start = totalPages - 3;
+                    end = totalPages - 1;
+                }
+
+                for (let p = start; p <= end; p++) {
+                    btnHtml += `<button class="pagination-num-btn ${p === currentIncidentsPage ? 'active' : ''}" 
+                                 onclick="gotoIncidentPage(${p})">${p}</button>`;
+                }
+
+                if (currentIncidentsPage < totalPages - 2) {
+                    btnHtml += `<span class="pagination-dots">...</span>`;
+                }
+
+                // Selalu tampilkan halaman terakhir
+                btnHtml += `<button class="pagination-num-btn ${currentIncidentsPage === totalPages ? 'active' : ''}" 
+                             onclick="gotoIncidentPage(${totalPages})">${totalPages}</button>`;
             }
+
+            // Tombol Next (Next ›)
+            btnHtml += `<button class="pagination-nav-btn ${currentIncidentsPage === totalPages ? 'disabled' : ''}" 
+                         onclick="gotoIncidentPage(${currentIncidentsPage + 1})" ${currentIncidentsPage === totalPages ? 'disabled' : ''}>
+                         <span>Next</span> <span>&#8250;</span>
+                        </button>`;
+
+            controls.innerHTML = btnHtml;
         }
 
+        function gotoIncidentPage(page) {
+            const rows = Array.from(document.querySelectorAll('#incidentsTable .incident-row'));
+            const filteredRows = rows.filter(row => {
+                if (currentIncidentFilter === 'all') return true;
+                if (currentIncidentFilter === 'cooldown') return row.classList.contains('filter-inc-auto_cooldown');
+                if (currentIncidentFilter === 'resolved') return row.classList.contains('filter-inc-resolved_alert');
+                return true;
+            });
+            const totalPages = Math.ceil(filteredRows.length / incidentsPerPage) || 1;
+            if (page < 1 || page > totalPages) return;
+            currentIncidentsPage = page;
+            if (window.location.hash && (window.location.hash.startsWith('#inc-row-') || window.location.hash.startsWith('#inc-'))) {
+                history.replaceState(null, '', window.location.pathname + window.location.search);
+            }
+            renderIncidentsPagination();
+        }
+        window.gotoIncidentPage = gotoIncidentPage;
+
+        // Incidents Filter Tab Listeners
         document.querySelectorAll('#incidentsFilterBar .filter-tab').forEach(tab => {
             tab.addEventListener('click', () => {
                 document.querySelectorAll('#incidentsFilterBar .filter-tab').forEach(t => t.classList.remove('active'));
                 tab.classList.add('active');
-                const filter = tab.getAttribute('data-inc-filter');
-                let visibleCount = 0;
-
-                document.querySelectorAll('#incidentsTable .incident-row').forEach(row => {
-                    let show = false;
-                    if (filter === 'all') {
-                        show = true;
-                    } else if (filter === 'cooldown') {
-                        show = row.classList.contains('filter-inc-auto_cooldown');
-                    } else if (filter === 'resolved') {
-                        show = row.classList.contains('filter-inc-resolved_alert');
-                    }
-                    if (show) {
-                        row.style.display = '';
-                        visibleCount++;
-                    } else {
-                        row.style.display = 'none';
-                    }
-                });
-
-                updateIncidentsEmptyState(filter, visibleCount);
+                currentIncidentFilter = tab.getAttribute('data-inc-filter') || 'all';
+                currentIncidentsPage = 1;
+                renderIncidentsPagination();
             });
         });
 
-        // 3. Quick ACK via API
+        // =========================================================================
+        // 3. PAGE INITIALIZATION & HASH EVENT LISTENER
+        // =========================================================================
+        function initPagination() {
+            checkTargetAlertPage();
+            renderAlertsPagination();
+
+            checkTargetIncidentPage();
+            renderIncidentsPagination();
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initPagination);
+        } else {
+            initPagination();
+        }
+
+        window.addEventListener('hashchange', () => {
+            if (checkTargetAlertPage()) {
+                renderAlertsPagination();
+            }
+            if (checkTargetIncidentPage()) {
+                renderIncidentsPagination();
+            }
+        });
+
+        // =========================================================================
+        // 4. ACTION HANDLERS (Refresh Data & Quick ACK via API)
+        // =========================================================================
+        // Refresh Data with spinning animation
+        function refreshAlerts(btn) {
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = `
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" style="display:inline-block; vertical-align:middle; margin-right:4px; animation: spin 0.8s linear infinite;">
+                        <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+                    </svg>
+                    <span>Memperbarui...</span>
+                `;
+            }
+            setTimeout(() => {
+                window.location.reload();
+            }, 250);
+        }
+
+        // Quick ACK via API
         async function ackAlert(alertId) {
             try {
                 const res = await fetch(`/api/ack/${alertId}`, {
@@ -472,7 +878,7 @@
     <script>
         window.NAV_DEVICES = JSON.parse(document.getElementById('nav-devices-data').textContent || '[]');
     </script>
-    <script src="/static/js/global_nav.js?v=4.1"></script>
+    <script src="/static/js/global_nav.js?v=4.4"></script>
 </body>
 
 </html>

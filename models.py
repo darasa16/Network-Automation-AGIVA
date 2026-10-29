@@ -114,7 +114,7 @@ class IncidentLog(Base):
     started_at = Column(DateTime, default=datetime.now, nullable=False)
     resolved_at = Column(DateTime, nullable=True)
     duration_seconds = Column(Integer, default=0)
-    status = Column(String(30), default='ACTIVE_MONITORING') # 'ACTIVE_MONITORING', 'AUTO_COOLDOWN', 'ESCALATED_TO_ALERT', 'RESOLVED_ALERT'
+    status = Column(String(30), default='ACTIVE_MONITORING') # 'ACTIVE_MONITORING', 'AUTO_COOLDOWN', 'ACTIVE_ALERT', 'RESOLVED_ALERT'
 
     device = relationship("Device", back_populates="incidents")
 

@@ -638,26 +638,101 @@ def api_search():
                 "url": f"/device/{d.device_id}#deviceHeaderCard"
             })
 
-    # 2. Alerts matching type, message, severity, or device name
-    all_alerts = session.query(Alert).order_by(Alert.alert_id.desc()).limit(50).all()
+    # 2. Alerts Aktif (hanya yang belum di-resolve agar sinkron dengan tabel Active Alerts)
+    active_alerts = session.query(Alert).filter(Alert.resolved_at == None).order_by(Alert.triggered_at.desc()).all()
     matched_alerts = []
-    for a in all_alerts:
+    clean_q = ql.replace('#', '').strip()
+    for a in active_alerts:
         dev_name = a.device.name.lower() if a.device else ""
-        if (ql in a.type.lower() or 
+        dev_ip = a.device.ip_address.lower() if a.device else ""
+        alert_code = f"alert-{a.alert_id}".lower()
+        if (clean_q in alert_code or 
+            clean_q == str(a.alert_id) or
+            ql in a.type.lower() or 
             ql in a.message.lower() or 
             ql in a.severity.lower() or 
-            ql in dev_name):
+            ql in dev_name or
+            ql in dev_ip):
             matched_alerts.append({
                 "id": a.alert_id,
                 "type": a.type,
                 "severity": a.severity,
                 "message": a.message[:75] + ("..." if len(a.message) > 75 else ""),
                 "device_name": a.device.name if a.device else "Unknown Device",
+                "ip": a.device.ip_address if a.device else "-",
                 "triggered_at": a.triggered_at.strftime("%d/%m %H:%M") if a.triggered_at else "-",
                 "acknowledged": a.acknowledged,
                 "url": f"/alerts#alert-row-{a.alert_id}"
             })
             if len(matched_alerts) >= 5:
+                break
+
+    # 3. Incident Log & Cooldown History (30 hari terakhir sesuai retensi)
+    cutoff_30d = datetime.now() - timedelta(days=30)
+    all_incidents = session.query(IncidentLog).filter(
+        IncidentLog.started_at >= cutoff_30d
+    ).order_by(IncidentLog.started_at.desc()).limit(150).all()
+
+    matched_incidents = []
+    for inc in all_incidents:
+        dev_name = inc.device.name.lower() if inc.device else ""
+        dev_ip = inc.device.ip_address.lower() if inc.device else ""
+        inc_code = f"inc-{inc.incident_id}".lower()
+        status_raw = (inc.status or "").lower()
+        peak_metric_val = (inc.peak_metric or "").lower()
+        
+        # Label representatif
+        if inc.status == 'AUTO_COOLDOWN':
+            status_label = "Cooldown"
+        elif inc.status == 'RESOLVED_ALERT':
+            status_label = "Resolved"
+        elif inc.status == 'ACTIVE_MONITORING':
+            status_label = "Pemantauan"
+        elif inc.status in ['ACTIVE_ALERT', 'ESCALATED_TO_ALERT']:
+            status_label = "Alert Aktif"
+        else:
+            status_label = inc.status or "Insiden"
+
+        if (clean_q in inc_code or 
+            clean_q == str(inc.incident_id) or
+            ql in dev_name or 
+            ql in dev_ip or 
+            ql in inc.type.lower() or 
+            ql in (inc.severity or "").lower() or 
+            ql in status_raw or 
+            ql in status_label.lower() or
+            ql in peak_metric_val or
+            (ql == "cooldown" and inc.status == 'AUTO_COOLDOWN') or
+            (ql == "resolved" and inc.status == 'RESOLVED_ALERT') or
+            (ql in ["alert aktif", "active_alert", "alert"] and inc.status in ['ACTIVE_ALERT', 'ESCALATED_TO_ALERT']) or
+            (ql in ["insiden", "incident"])):
+            
+            dur_str = "-"
+            if inc.duration_seconds and inc.duration_seconds > 0:
+                m, s = divmod(inc.duration_seconds, 60)
+                h, m = divmod(m, 60)
+                if h > 0:
+                    dur_str = f"{h}j {m}m"
+                elif m > 0:
+                    dur_str = f"{m}m {s}d"
+                else:
+                    dur_str = f"{s} dtk"
+
+            matched_incidents.append({
+                "id": inc.incident_id,
+                "code": f"#INC-{inc.incident_id}",
+                "device_name": inc.device.name if inc.device else "Unknown Device",
+                "ip": inc.device.ip_address if inc.device else "-",
+                "type": inc.type,
+                "severity": inc.severity,
+                "peak_metric": inc.peak_metric or "-",
+                "status": inc.status,
+                "status_label": status_label,
+                "started_at": inc.started_at.strftime("%d/%m %H:%M") if inc.started_at else "-",
+                "duration": dur_str,
+                "url": f"/alerts#inc-row-{inc.incident_id}"
+            })
+            if len(matched_incidents) >= 6:
                 break
 
     # 3. Backups matching file_path, status, device name, or site
@@ -760,9 +835,9 @@ def api_search():
         },
         {
             "title": "Pusat Alert & Insiden",
-            "desc": "Daftar alarm gangguan dan konfirmasi penanganan",
+            "desc": "Daftar alarm aktif, riwayat incident log, dan cooldown perangkat",
             "category": "Menu Navigasi",
-            "keywords": ["alert", "alerts", "insiden", "incident", "alarm", "anomali", "ack", "notif", "peringatan"],
+            "keywords": ["alert", "alerts", "insiden", "incident", "alarm", "anomali", "ack", "notif", "peringatan", "cooldown", "resolved"],
             "url": "/alerts"
         },
         {
@@ -787,7 +862,14 @@ def api_search():
             any(ql in k for k in nav["keywords"])):
             matched_nav.append(nav)
 
-    total_count = len(matched_devices) + len(matched_alerts) + len(matched_backups) + len(matched_telegram) + len(matched_nav)
+    total_count = (len(matched_devices) + 
+                   len(matched_alerts) + 
+                   len(matched_incidents) + 
+                   len(matched_backups) + 
+                   len(matched_telegram) + 
+                   len(matched_nav))
+
+    session.close()
 
     return jsonify({
         "query": q,
@@ -795,6 +877,7 @@ def api_search():
         "categories": {
             "devices": matched_devices,
             "alerts": matched_alerts,
+            "incidents": matched_incidents,
             "backups": matched_backups,
             "telegram": matched_telegram,
             "navigation": matched_nav
@@ -898,6 +981,8 @@ def api_device_metrics(device_id):
         labels = [now.strftime("%H:%M:%S")]
         cpu_vals = [round(device.cpu_usage or 0.0, 1)]
         mem_vals = [round(device.mem_usage or 0.0, 1)]
+        lat_vals = [round(device.latency_ms or 0.0, 1)]
+        loss_vals = [round(device.packet_loss or 0.0, 1)]
         trf_vals = [0.0]
         trf_in_vals = [0.0]
         trf_out_vals = [0.0]
@@ -916,6 +1001,8 @@ def api_device_metrics(device_id):
         labels = []
         cpu_vals = []
         mem_vals = []
+        lat_vals = []
+        loss_vals = []
         trf_vals = []
         trf_in_vals = []
         trf_out_vals = []
@@ -938,6 +1025,8 @@ def api_device_metrics(device_id):
             b = b_logs[-1]
             cpu_vals.append(round(b.cpu_usage or 0.0, 1))
             mem_vals.append(round(b.mem_usage or 0.0, 1))
+            lat_vals.append(round(b.latency_ms or 0.0, 1))
+            loss_vals.append(round(b.packet_loss or 0.0, 1))
             trf_vals.append(round(b.traffic_mbps or 0.0, 2))
             trf_in_vals.append(round(b.ingress_mbps or 0.0, 2))
             trf_out_vals.append(round(b.egress_mbps or 0.0, 2))
@@ -951,6 +1040,8 @@ def api_device_metrics(device_id):
             labels = labels[-18:]
             cpu_vals = cpu_vals[-18:]
             mem_vals = mem_vals[-18:]
+            lat_vals = lat_vals[-18:]
+            loss_vals = loss_vals[-18:]
             trf_vals = trf_vals[-18:]
             trf_in_vals = trf_in_vals[-18:]
             trf_out_vals = trf_out_vals[-18:]
@@ -981,6 +1072,8 @@ def api_device_metrics(device_id):
         "labels": labels,
         "cpu": cpu_vals,
         "memory": mem_vals,
+        "latency": lat_vals,
+        "packet_loss": loss_vals,
         "traffic": trf_vals,
         "traffic_in": trf_in_vals,
         "traffic_out": trf_out_vals,

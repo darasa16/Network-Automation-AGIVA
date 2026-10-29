@@ -121,14 +121,6 @@
                                 <span class="device-meta-val">{{ specs.mac_address or '-' }}</span>
                             </div>
                             <div class="device-meta-col">
-                                <span class="device-meta-label">Latency</span>
-                                <span class="device-meta-val" id="currLatencyVal">{{ device.latency or 0.0 }} ms</span>
-                            </div>
-                            <div class="device-meta-col">
-                                <span class="device-meta-label">Ping Drop</span>
-                                <span class="device-meta-val" id="currLossVal">{{ device.packet_loss or 0.0 }}%</span>
-                            </div>
-                            <div class="device-meta-col">
                                 <span class="device-meta-label">Uptime</span>
                                 <span class="device-meta-val" id="currUptimeVal">{{ device.uptime }}</span>
                             </div>
@@ -174,7 +166,7 @@
                     </div>
                     <div class="spec-item">
                         <span class="spec-label">Status Pendingin (Fan)</span>
-                        <span class="spec-value {% if specs.fan_status and 'tidak' in specs.fan_status.lower() %}text-danger{% else %}text-green{% endif %}" id="specFan">{{ specs.fan_status or 'Normal (OK)' }}</span>
+                        <span class="spec-value" id="specFan">{{ specs.fan_status or 'Normal (OK)' }}</span>
                     </div>
                     <div class="spec-item">
                         <span class="spec-label">Port Uplink Utama</span>
@@ -375,6 +367,43 @@
                         <div id="navErrorsDrops" class="timeline-nav-wrapper"></div>
                     </div>
                 </div>
+
+                <!-- SEKSI BAWAH: BARIS 3 (Diagnostik Transmisi ICMP & Kualitas Jaringan) -->
+                <div class="charts-row" style="margin-top: 16px;">
+                    <!-- Kotak 5: Latensi Jaringan (ICMP Ping RTT) -->
+                    <div class="chart-panel">
+                        <div class="panel-header">
+                            <div>
+                                <h3 class="panel-title">Latensi Jaringan (ICMP Ping RTT)</h3>
+                                <span class="panel-sub">Waktu respons transmisi bolak-balik (Round-Trip Time) via ICMP Echo Request</span>
+                            </div>
+                            <div class="chart-legend-custom">
+                                <span class="legend-tag"><span class="legend-color bg-cyan"></span> RTT (ms)</span>
+                            </div>
+                        </div>
+                        <div class="device-chart-body">
+                            <canvas id="chartLatency"></canvas>
+                        </div>
+                        <div id="navLatency" class="timeline-nav-wrapper"></div>
+                    </div>
+
+                    <!-- Kotak 6: Ping Drop / Packet Loss (%) -->
+                    <div class="chart-panel">
+                        <div class="panel-header">
+                            <div>
+                                <h3 class="panel-title">Ping Drop / Packet Loss (%)</h3>
+                                <span class="panel-sub">Persentase kegagalan pengiriman paket ICMP (Request Time Out / Anomali Jalur)</span>
+                            </div>
+                            <div class="chart-legend-custom">
+                                <span class="legend-tag"><span class="legend-color bg-orange"></span> Drop (%)</span>
+                            </div>
+                        </div>
+                        <div class="device-chart-body">
+                            <canvas id="chartPacketLoss"></canvas>
+                        </div>
+                        <div id="navPacketLoss" class="timeline-nav-wrapper"></div>
+                    </div>
+                </div>
             </div>
 
             <!-- Complete Interface Status Table (ALL 28 Ports) -->
@@ -526,7 +555,7 @@
     </script>
     <script src="/static/js/timeline_navigator.js?v=1.1"></script>
     <script src="/static/js/device_detail.js?v=20.0"></script>
-    <script src="/static/js/global_nav.js?v=4.1"></script>
+    <script src="/static/js/global_nav.js?v=4.3"></script>
 </body>
 
 </html>

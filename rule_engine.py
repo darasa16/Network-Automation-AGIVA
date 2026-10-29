@@ -88,7 +88,7 @@ def trigger_alert_with_antispam(session, device, alert_type, severity, message, 
        - Anti-spam menahan pengiriman ulang agar grup tidak bising
     3. Jika Bertahan >= 10 Menit:
        - Eskalasi: Masukkan ke tabel `alerts` (Active Alerts)
-       - Update status IncidentLog -> 'ESCALATED_TO_ALERT'
+       - Update status IncidentLog -> 'ACTIVE_ALERT'
        - Kirim notifikasi darurat 🚨 ke Telegram
     """
     target_chat_id = os.getenv('NOC_TELEGRAM_CHAT_ID', '-1004429503436')
@@ -99,7 +99,7 @@ def trigger_alert_with_antispam(session, device, alert_type, severity, message, 
         IncidentLog.device_id == device.device_id,
         IncidentLog.type == alert_type,
         IncidentLog.resolved_at == None,
-        IncidentLog.status.in_(['ACTIVE_MONITORING', 'ESCALATED_TO_ALERT'])
+        IncidentLog.status.in_(['ACTIVE_MONITORING', 'ACTIVE_ALERT', 'ESCALATED_TO_ALERT'])
     ).first()
 
     now = datetime.now()
@@ -165,7 +165,7 @@ def trigger_alert_with_antispam(session, device, alert_type, severity, message, 
     # Cek apakah durasi sudah mencapai atau melewati 10 menit (600 detik)
     if elapsed_seconds >= 600 and active_incident.status == 'ACTIVE_MONITORING':
         # ESKALASI KE ACTIVE ALERTS!
-        active_incident.status = 'ESCALATED_TO_ALERT'
+        active_incident.status = 'ACTIVE_ALERT'
 
         # Buat entri di tabel alerts
         existing_alert = session.query(Alert).filter(
@@ -199,7 +199,7 @@ def trigger_alert_with_antispam(session, device, alert_type, severity, message, 
             f"📌 <b>Tipe Anomali:</b> {alert_type}\n"
             f"📌 <b>Detail Masalah:</b> {message}\n"
             f"📌 <b>Durasi Gangguan:</b> Telah berlangsung {dur_mins} menit (sejak {active_incident.started_at.strftime('%H:%M:%S')} WIB)\n"
-            f"📌 <b>Status:</b> ESKALASI KE ACTIVE ALERT (Memerlukan Tindakan)\n\n"
+            f"📌 <b>Status:</b> Alert Aktif (Memerlukan Tindakan)\n\n"
             f"💡 <i>Ketik /ack {alert_id} di Telegram Bot untuk konfirmasi penanganan tiket operasional.</i>"
         )
 
@@ -245,7 +245,7 @@ def auto_resolve_alert(session, device, alert_type, recovery_message=None):
         IncidentLog.device_id == device.device_id,
         IncidentLog.type == alert_type,
         IncidentLog.resolved_at == None,
-        IncidentLog.status.in_(['ACTIVE_MONITORING', 'ESCALATED_TO_ALERT'])
+        IncidentLog.status.in_(['ACTIVE_MONITORING', 'ACTIVE_ALERT', 'ESCALATED_TO_ALERT'])
     ).first()
 
     # 2. Cari juga alert aktif jika ada

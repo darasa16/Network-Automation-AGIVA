@@ -161,7 +161,14 @@
                     </div>
                     <div class="table-actions" style="display: flex; align-items: center; gap: 10px;">
                         <input type="text" id="backupTableSearch" placeholder="Saring file backup..." style="background: var(--bg-card); border: 1px solid var(--border-color); color: #fff; padding: 6px 12px; border-radius: var(--radius-sm); font-size: 12px; outline: none; width: 180px;" />
-                        <button class="btn-refresh" onclick="window.location.reload()">Refresh Data</button>
+                        <button class="btn-refresh" onclick="refreshBackups(this)">
+                            <svg class="refresh-icon" viewBox="0 0 24 24" width="14" height="14" fill="none"
+                                stroke="currentColor" stroke-width="2.5"
+                                style="display:inline-block; vertical-align:middle; margin-right:4px;">
+                                <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+                            </svg>
+                            <span>Refresh Data</span>
+                        </button>
                     </div>
                 </div>
                 <div class="table-responsive">
@@ -298,6 +305,21 @@
         setInterval(updateClock, 1000);
         updateClock();
 
+        function refreshBackups(btn) {
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = `
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" style="display:inline-block; vertical-align:middle; margin-right:4px; animation: spin 0.8s linear infinite;">
+                        <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+                    </svg>
+                    <span>Memperbarui...</span>
+                `;
+            }
+            setTimeout(() => {
+                window.location.reload();
+            }, 250);
+        }
+
         function triggerManualBackup() {
             showToast('Pencadangan konfigurasi manual dipicu via SSH/API. Menghubungi perangkat...');
             setTimeout(() => {
@@ -335,7 +357,7 @@
             });
         }
     </script>
-    <script src="/static/js/global_nav.js?v=4.1"></script>
+    <script src="/static/js/global_nav.js?v=4.3"></script>
 </body>
 
 </html>

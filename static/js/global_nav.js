@@ -47,6 +47,7 @@
         const categories = data.categories || {};
         const devices = categories.devices || [];
         const alerts = categories.alerts || [];
+        const incidents = categories.incidents || [];
         const backups = categories.backups || [];
         const telegram = categories.telegram || [];
         const navItems = categories.navigation || [];
@@ -61,7 +62,7 @@
                         <circle cx="11" cy="11" r="8"></circle>
                         <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                     </svg>
-                    Tidak ditemukan perangkat, alert, backup, bot telegram, atau menu dengan kata kunci "<strong>${escapeHtml(query)}</strong>"
+                    Tidak ditemukan perangkat, alert, insiden/cooldown, backup, bot telegram, atau menu dengan kata kunci "<strong>${escapeHtml(query)}</strong>"
                 </div>
                 <div class="search-dropdown-footer">
                     <span>Tekan <kbd class="search-kbd-key">ESC</kbd> untuk menutup</span>
@@ -119,11 +120,11 @@
             });
         }
 
-        // 2. Alerts Section
+        // 2. Active Alerts Section
         if (alerts.length > 0) {
             html += `
                 <div class="search-group-header">
-                    <span>Alerts & Insiden</span>
+                    <span>Alerts Aktif (Memerlukan Intervensi)</span>
                     <span class="search-group-count">${alerts.length}</span>
                 </div>
             `;
@@ -163,7 +164,63 @@
             });
         }
 
-        // 3. Backups Section
+        // 3. Incident Log & Cooldown History Section
+        if (incidents.length > 0) {
+            html += `
+                <div class="search-group-header">
+                    <span>Incident Log & Cooldown History</span>
+                    <span class="search-group-count">${incidents.length}</span>
+                </div>
+            `;
+            incidents.forEach(inc => {
+                const itemIdx = currentResults.length;
+                currentResults.push(inc.url);
+                const isCrit = inc.severity === 'CRITICAL';
+                const isCooldown = inc.status === 'AUTO_COOLDOWN';
+                const isResolved = inc.status === 'RESOLVED_ALERT';
+                
+                let statusBadge = '';
+                if (isCooldown) {
+                    statusBadge = '<span class="status-badge" style="background: rgba(234, 179, 8, 0.15); color: #facc15; border: 1px solid rgba(234, 179, 8, 0.3); font-size: 9.5px; padding: 1px 6px;">COOLDOWN</span>';
+                } else if (isResolved) {
+                    statusBadge = '<span class="status-badge badge-up" style="font-size: 9.5px; padding: 1px 6px;">RESOLVED</span>';
+                } else {
+                    statusBadge = isCrit
+                        ? '<span class="alert-severity-badge badge-crit" style="font-size: 9.5px; padding: 1px 6px;">CRIT</span>'
+                        : '<span class="alert-severity-badge badge-warn" style="font-size: 9.5px; padding: 1px 6px;">WARN</span>';
+                }
+
+                const iconClass = isCooldown ? 'search-icon-cooldown' : (isCrit ? 'search-icon-alert-crit' : 'search-icon-incident');
+
+                html += `
+                    <div class="search-dropdown-item" data-index="${itemIdx}" onclick="window.navigateToSearchResult('${inc.url}')">
+                        <div class="search-item-left">
+                            <div class="search-item-icon-box ${iconClass}">
+                                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                                    <polyline points="9 12 11 14 15 10"></polyline>
+                                </svg>
+                            </div>
+                            <div class="search-item-text">
+                                <div class="search-item-title">${escapeHtml(inc.code)} • ${escapeHtml(inc.type)} - ${escapeHtml(inc.device_name)}</div>
+                                <div class="search-item-desc">
+                                    <span>Puncak: ${escapeHtml(inc.peak_metric)}</span>
+                                    <span>•</span>
+                                    <span>Durasi: ${escapeHtml(inc.duration)}</span>
+                                    <span>•</span>
+                                    <span>Mulai: ${escapeHtml(inc.started_at)}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="search-item-right">
+                            ${statusBadge}
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // 4. Backups Section
         if (backups.length > 0) {
             html += `
                 <div class="search-group-header">
@@ -406,6 +463,22 @@
             }
         }
 
+        // Special handling for paginated alerts
+        if (targetId.startsWith('alert-row-') || targetId.startsWith('alert-')) {
+            if (typeof window.checkTargetAlertPage === 'function' && typeof window.renderAlertsPagination === 'function') {
+                window.checkTargetAlertPage(targetId);
+                window.renderAlertsPagination();
+            }
+        }
+
+        // Special handling for paginated incident logs
+        if (targetId.startsWith('inc-row-') || targetId.startsWith('inc-')) {
+            if (typeof window.checkTargetIncidentPage === 'function' && typeof window.renderIncidentsPagination === 'function') {
+                window.checkTargetIncidentPage(targetId);
+                window.renderIncidentsPagination();
+            }
+        }
+
         const el = document.getElementById(targetId);
         if (!el) {
             if (retries > 0) {
@@ -416,13 +489,19 @@
 
         // 1. Unhide element if inside filtered tables
         // If inside Alerts page and row is hidden by filter tab, reset to 'all'
-        const alertTabAll = document.querySelector('.filter-tab[data-filter="all"]');
-        if (alertTabAll && el.classList.contains('alert-row')) {
+        const alertTabAll = document.querySelector('#alertsFilterBar .filter-tab[data-filter="all"]');
+        if (alertTabAll && (el.classList.contains('alert-row') || targetId.startsWith('alert-row-'))) {
             alertTabAll.click();
         }
 
+        // If inside Incident Log table and row is hidden by filter tab, reset to 'all'
+        const incTabAll = document.querySelector('#incidentsFilterBar .filter-tab[data-inc-filter="all"]');
+        if (incTabAll && (el.classList.contains('incident-row') || targetId.startsWith('inc-row-'))) {
+            incTabAll.click();
+        }
+
         // Reset any local filter input if it was hiding rows
-        const localSearchInputs = document.querySelectorAll('#backupTableSearch, #searchAlerts, #tableSearch, #deviceSearch');
+        const localSearchInputs = document.querySelectorAll('#backupTableSearch, #searchAlerts, #tableSearch, #deviceSearch, #alertsTableSearch, #incidentsTableSearch');
         localSearchInputs.forEach(input => {
             if (input && input.value) {
                 input.value = '';
