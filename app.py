@@ -8,6 +8,7 @@ import time
 import urllib.request
 from collections import defaultdict
 from datetime import datetime, timedelta
+from sqlalchemy import or_, and_
 from flask import Flask, render_template, jsonify, request, redirect, url_for, session as flask_session
 from database import db_session, init_db
 from models import Device, DeviceStatusLog, Alert, IncidentLog, TelegramWhitelist, TelegramMessageLog, BackupHistory
@@ -296,25 +297,37 @@ def redirect_device_backups():
 @app.route('/alerts.html')
 def alerts_page():
     session = db_session()
-    # 1. Ambil data alert AKTIF saja (yang belum di-resolve)
-    alerts = session.query(Alert).filter(Alert.resolved_at == None).order_by(Alert.triggered_at.desc()).all()
+    cutoff_30d = datetime.now() - timedelta(days=30)
+    
+    # 1. Alert yang belum di-resolve (Menunggu ACK & Acknowledged) TIDAK AKAN HILANG meski lewat 30 hari
+    # 2. Alert yang SUDAH Resolved HANYA bertahan selama 30 hari terakhir sejak di-resolve / kejadian
+    alerts = session.query(Alert).filter(
+        or_(
+            Alert.resolved_at == None,
+            Alert.resolved_at >= cutoff_30d,
+            Alert.triggered_at >= cutoff_30d
+        )
+    ).order_by(Alert.triggered_at.desc()).all()
     alerts_data = [a.to_dict() for a in alerts]
     
     # 2. Ambil Incident Log (30 hari terakhir sesuai retensi)
-    cutoff_30d = datetime.now() - timedelta(days=30)
     incidents = session.query(IncidentLog).filter(
         IncidentLog.started_at >= cutoff_30d
     ).order_by(IncidentLog.started_at.desc()).all()
     incidents_data = [inc.to_dict() for inc in incidents]
     
     total_alerts = len(alerts)
-    pending_alerts = sum(1 for a in alerts if not a.acknowledged)
-    acked_alerts = sum(1 for a in alerts if a.acknowledged)
+    pending_alerts = sum(1 for a in alerts if not a.acknowledged and not a.resolved_at)
+    acked_alerts = sum(1 for a in alerts if a.acknowledged and not a.resolved_at)
+    resolved_alerts = sum(1 for a in alerts if a.resolved_at is not None)
 
     total_incidents = len(incidents)
     cooldown_incidents = sum(1 for inc in incidents if inc.status == 'AUTO_COOLDOWN')
     resolved_incidents = sum(1 for inc in incidents if inc.status == 'RESOLVED_ALERT')
     
+    # Badge notifikasi hanya menghitung alert yang masih aktif memerlukan penanganan
+    active_alerts_count = pending_alerts + acked_alerts
+
     session.close()
     return render_template(
         'alerts.html', 
@@ -323,10 +336,11 @@ def alerts_page():
         total_alerts=total_alerts,
         pending_alerts=pending_alerts,
         acked_alerts=acked_alerts,
+        resolved_alerts=resolved_alerts,
         total_incidents=total_incidents,
         cooldown_incidents=cooldown_incidents,
         resolved_incidents=resolved_incidents,
-        active_alerts_count=total_alerts
+        active_alerts_count=active_alerts_count
     )
 
 @app.route('/api/ack/<int:alert_id>', methods=['POST'])
@@ -682,8 +696,15 @@ def api_search():
                 "url": f"/device/{d.device_id}#deviceHeaderCard"
             })
 
-    # 2. Alerts Aktif (hanya yang belum di-resolve agar sinkron dengan tabel Active Alerts)
-    active_alerts = session.query(Alert).filter(Alert.resolved_at == None).order_by(Alert.triggered_at.desc()).all()
+    # 2. Alerts (Belum di-resolve selalu tampil, sedangkan yang sudah Resolved dibatasi 30 hari)
+    cutoff_30d = datetime.now() - timedelta(days=30)
+    active_alerts = session.query(Alert).filter(
+        or_(
+            Alert.resolved_at == None,
+            Alert.resolved_at >= cutoff_30d,
+            Alert.triggered_at >= cutoff_30d
+        )
+    ).order_by(Alert.triggered_at.desc()).all()
     matched_alerts = []
     clean_q = ql.replace('#', '').strip()
     for a in active_alerts:

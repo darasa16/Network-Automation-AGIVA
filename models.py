@@ -99,7 +99,7 @@ class Alert(Base):
             "triggered_at": self.triggered_at.strftime("%Y-%m-%d %H:%M:%S") if self.triggered_at else "-",
             "acknowledged": self.acknowledged,
             "acknowledged_by": self.acknowledged_by,
-            "resolved_at": self.resolved_at.strftime("%Y-%m-%d") if self.resolved_at else None
+            "resolved_at": self.resolved_at.strftime("%Y-%m-%d %H:%M:%S") if self.resolved_at else None
         }
 
 class IncidentLog(Base):

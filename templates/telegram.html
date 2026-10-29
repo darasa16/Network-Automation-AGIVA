@@ -46,10 +46,10 @@
                 <div id="bot-status-container">
                     {% if bot.is_online %}
                     <h3 style="color: #fff; margin: 6px 0;">Online</h3>
-                    <span class="kpi-sub">Online</span>
+                    <span class="kpi-sub">Polling Aktif</span>
                     {% else %}
                     <h3 style="color: #fff; margin: 6px 0;">Offline</h3>
-                    <span class="kpi-sub">Offline</span>
+                    <span class="kpi-sub">Polling Tidak Aktif</span>
                     {% endif %}
                 </div>
             </div>
@@ -603,10 +603,10 @@
                 const iconBox = document.getElementById('bot-icon-box');
                 if (statusContainer && data.bot_is_online !== undefined) {
                     if (data.bot_is_online) {
-                        statusContainer.innerHTML = '<h3 style="color: #fff; margin: 6px 0;">Online</h3><span class="kpi-sub">Online</span>';
+                        statusContainer.innerHTML = '<h3 style="color: #fff; margin: 6px 0;">Online</h3><span class="kpi-sub">Polling Aktif</span>';
                         if (iconBox) iconBox.className = 'kpi-icon-box icon-green';
                     } else {
-                        statusContainer.innerHTML = '<h3 style="color: #fff; margin: 6px 0;">Offline</h3><span class="kpi-sub">Offline</span>';
+                        statusContainer.innerHTML = '<h3 style="color: #fff; margin: 6px 0;">Offline</h3><span class="kpi-sub">Polling Tidak Aktif</span>';
                         if (iconBox) iconBox.className = 'kpi-icon-box icon-red';
                     }
                 }

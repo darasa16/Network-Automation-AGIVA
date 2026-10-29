@@ -238,8 +238,7 @@
             <div class="page-header-row">
                 <div>
                     <h2>Active & Sustained Alerts</h2>
-                    <p class="sub-text">Peringatan telemetri lebih dari 10 menit tanpa
-                        auto-cooldown dan memerlukan intervensi operasional.</p>
+                    <p class="sub-text">Peringatan telemetri 30 hari terakhir dengan retensi data dan status penanganan operasional.</p>
                 </div>
                 <div class="header-tools">
                     <button class="btn-refresh" onclick="refreshAlerts(this)">
@@ -258,6 +257,7 @@
                 <button class="filter-tab active" data-filter="all">Semua Alert ({{ total_alerts }})</button>
                 <button class="filter-tab" data-filter="pending">Belum ACK ({{ pending_alerts }})</button>
                 <button class="filter-tab" data-filter="acked">Sudah ACK ({{ acked_alerts }})</button>
+                <button class="filter-tab" data-filter="resolved">Resolved ({{ resolved_alerts }})</button>
             </div>
 
             <!-- Alerts Table Panel -->
@@ -273,13 +273,13 @@
                                 <th>Tipe Anomali</th>
                                 <th>Deskripsi Masalah</th>
                                 <th>Waktu Kejadian</th>
-                                <th>Status ACK</th>
+                                <th>Status Penanganan</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% if alerts %}
                             {% for a in alerts %}
-                            <tr class="alert-row {% if a.acknowledged %}filter-row-acked{% else %}filter-row-pending{% endif %}"
+                            <tr class="alert-row {% if a.resolved_at %}filter-row-resolved{% elif a.acknowledged %}filter-row-acked{% else %}filter-row-pending{% endif %}"
                                 id="alert-row-{{ a.id }}">
                                 <td>#{{ a.id }}</td>
                                 <td>
@@ -295,7 +295,10 @@
                                 <td class="col-desc">{{ a.message }}</td>
                                 <td class="col-time">{{ a.triggered_at }}</td>
                                 <td>
-                                    {% if a.acknowledged %}
+                                    {% if a.resolved_at %}
+                                    <span class="status-text-cell"
+                                        style="color: var(--color-copper);">Resolved</span>
+                                    {% elif a.acknowledged %}
                                     <span class="status-text-cell"
                                         style="color: var(--color-copper);">Acknowledged</span>
                                     {% else %}
@@ -489,6 +492,7 @@
                 if (currentAlertFilter === 'all') return true;
                 if (currentAlertFilter === 'pending') return row.classList.contains('filter-row-pending');
                 if (currentAlertFilter === 'acked') return row.classList.contains('filter-row-acked');
+                if (currentAlertFilter === 'resolved') return row.classList.contains('filter-row-resolved');
                 return true;
             });
 
@@ -506,6 +510,8 @@
                         titleEl.textContent = 'Tidak Ada Alert Menunggu ACK';
                     } else if (currentAlertFilter === 'acked') {
                         titleEl.textContent = 'Tidak Ada Alert yang Telah di-ACK';
+                    } else if (currentAlertFilter === 'resolved') {
+                        titleEl.textContent = 'Tidak Ada Alert yang Telah di-Resolve';
                     } else {
                         titleEl.textContent = 'Semua Sistem Normal';
                     }
@@ -604,6 +610,7 @@
                 if (currentAlertFilter === 'all') return true;
                 if (currentAlertFilter === 'pending') return row.classList.contains('filter-row-pending');
                 if (currentAlertFilter === 'acked') return row.classList.contains('filter-row-acked');
+                if (currentAlertFilter === 'resolved') return row.classList.contains('filter-row-resolved');
                 return true;
             });
             const totalPages = Math.ceil(filteredRows.length / alertsPerPage) || 1;
