@@ -256,7 +256,7 @@ def build_status_view() -> str:
         "/alerts - Daftar gangguan aktif\n"
         "/ack [id_alert] - Konfirmasi penanganan alert\n"
         "/resolve [id_alert] - Selesaikan dan pulihkan gangguan\n"
-        "/backup [nama_perangkat] - Backup konfigurasi manual\n"
+        "/backup [nama_perangkat] [kategori] - Backup manual konfigurasi & log audit\n"
         "/user - Profil & status hak akses akun\n"
         "/approve @username [role] - (Khusus Admin) Menyetujui akses teknisi baru."
     )
@@ -438,9 +438,9 @@ def build_start_view() -> str:
         "• /resolve [id_alert]\n"
         "Selesaikan dan pulihkan gangguan secara manual.\n"
         "Contoh: /resolve 101\n\n"
-        "• /backup [nama_perangkat]\n"
-        "Memicu penarikan konfigurasi manual dan commit otomatis ke repositori Git.\n"
-        "Contoh: /backup RTR-Core-01\n\n"
+        "• /backup [nama_perangkat] [kategori]\n"
+        "Memicu penarikan konfigurasi & log audit multi-vendor (pilihan: all, system, config, traffic, threat).\n"
+        "Contoh: /backup FW-PA220-1 (semua kategori) atau /backup SW-2930F-HO config\n\n"
         "• /user\n"
         "Melihat identitas teknisi, Chat ID Telegram, dan verifikasi otomatis akses Whitelist.\n\n"
         "• /approve [username] [role]\n"
@@ -767,7 +767,7 @@ async def resolve_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 async def backup_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Command /backup <nama>: Trigger Backup Manual"""
+    """Command /backup <nama>: Trigger Backup & Log Archive Manual Riil"""
     user_id = update.effective_user.id
     if not is_whitelisted(user_id):
         logger.warning(f"Unauthorized /backup command by user {user_id}")
@@ -781,33 +781,93 @@ async def backup_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         text = build_devices_view()
         await update.message.reply_text(
             "<b>PARAMETER PERANGKAT DIPERLUKAN</b>\n\n"
-            "Gunakan format: <code>/backup &lt;nama_perangkat&gt;</code> (contoh: <code>/backup RTR-Core-01</code>)\n\n"
+            "Gunakan format: <code>/backup &lt;nama_perangkat&gt; [kategori]</code>\n\n"
+            "<b>Pilihan Kategori:</b> <code>all</code>, <code>system</code>, <code>config</code>, <code>traffic</code>, <code>threat</code>\n\n"
+            "<b>Contoh:</b>\n"
+            "• <code>/backup FW-PA220-1</code> (Tarik semua kategori)\n"
+            "• <code>/backup FW-PA220-1 traffic</code> (Hanya Traffic)\n"
+            "• <code>/backup SW-2930F-HO config</code> (Hanya Running Config)\n\n"
             + text,
             parse_mode=ParseMode.HTML
         )
         return
 
     device_name = context.args[0].strip()
-    if device_name not in DEVICES:
-        await update.message.reply_text(
-            f"<b>PERANGKAT TIDAK DITEMUKAN</b>\n\nPerangkat <code>{html.escape(device_name)}</code> tidak valid.",
+    category_param = context.args[1].strip().lower() if len(context.args) > 1 else None
+    operator_user = update.effective_user.username or update.effective_user.first_name
+
+    cat_desc = f"kategori <b>{category_param.upper()}</b>" if category_param and category_param != "all" else "semua kategori"
+
+    progress_msg = await update.message.reply_text(
+        f"⏳ <b>MEMPROSES PENCADANGAN...</b>\n\n"
+        f"Menghubungi <code>{html.escape(device_name)}</code> via SSH/API.\n"
+        f"Mengekstrak berkas {cat_desc}...",
+        parse_mode=ParseMode.HTML
+    )
+
+    try:
+        from backup_service import run_device_backup
+        backup_result = run_device_backup(
+            device_name,
+            category_filter=category_param,
+            trigger_by=f"Telegram (@{operator_user})"
+        )
+    except Exception as e_bkp:
+        logger.error(f"Error executing backup_service: {e_bkp}")
+        backup_result = {"success": False, "error": str(e_bkp)}
+
+    if not backup_result.get("success"):
+        await progress_msg.edit_text(
+            f"❌ <b>GAGAL MENGEKSEKUSI PENCADANGAN</b>\n\n"
+            f"Perangkat: <code>{html.escape(device_name)}</code>\n"
+            f"Keterangan: {html.escape(backup_result.get('error', 'Terjadi kesalahan internal.'))}",
             parse_mode=ParseMode.HTML
         )
         return
 
-    operator_user = update.effective_user.username or update.effective_user.first_name
-    progress_msg = await update.message.reply_text(
-        f"Menghubungi {html.escape(device_name)} ({DEVICES[device_name]['ip']}) via SSH.\n"
-        "Mengekstrak running-config dan menghitung checksum berkas",
-        parse_mode=ParseMode.HTML
+    dev_name_res = backup_result.get("device", device_name)
+    ip_res = backup_result.get("ip", "-")
+    site_res = backup_result.get("site", "HO")
+    vendor_res = backup_result.get("vendor", "-")
+    items = backup_result.get("results", [])
+
+    lines = []
+    has_failed = False
+    for it in items:
+        cat = it.get("category", "Log").upper()
+        sz = it.get("size", "0 B")
+        st = it.get("status", "SUCCESS")
+        fname = it.get("file", "-")
+        mode = "Update Baru" if it.get("is_incremental") else "Full Awal"
+        drange = it.get("data_range", "")
+        if st == "SUCCESS":
+            icon = "✅"
+        else:
+            icon = "⚠️"
+            has_failed = True
+        range_label = f"\n   ↳ 🕒 <i>{html.escape(drange)}</i>" if drange else ""
+        lines.append(f"• <b>[{cat}]</b> {icon} <code>{fname}</code> ({sz}) - <i>{mode}</i>{range_label}")
+
+    overall_status = "⚠️ Selesai dengan beberapa catatan" if has_failed else "✅ Sukses Penuh"
+
+    report_text = (
+        "<b>LAPORAN HASIL BACKUP & LOG ARCHIVE</b>\n\n"
+        f"Perangkat: <b>{html.escape(dev_name_res)}</b> (<code>{ip_res}</code>)\n"
+        f"Site: {html.escape(site_res)} | Vendor: {html.escape(vendor_res)}\n"
+        f"Operator: @{html.escape(operator_user)}\n"
+        f"Waktu Eksekusi: <code>{get_current_time_wib()}</code>\n\n"
+        "<b>Rincian Pengarsipan per Kategori:</b>\n"
+        + "\n".join(lines) + "\n\n"
+        f"Direktori: <code>/backups/{html.escape(site_res)}/{html.escape(dev_name_res)}/</code>\n"
+        f"Status Akhir: <b>{overall_status}</b>\n"
+        "<i>Tercatat di dashboard web: /backups</i>"
     )
 
-    report_text = build_backup_report(device_name, operator_user)
     await progress_msg.edit_text(report_text, parse_mode=ParseMode.HTML)
     log_telegram_message(
         chat_id=str(update.effective_chat.id),
         message_type="COMMAND_REPLY",
-        content=f"Backup konfigurasi manual {device_name} berhasil dieksekusi oleh @{operator_user}.",
+        content=f"Backup & Log Archive {device_name} selesai dieksekusi oleh @{operator_user}.",
         status="SENT"
     )
 

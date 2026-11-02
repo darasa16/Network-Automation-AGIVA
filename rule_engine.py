@@ -27,7 +27,9 @@ from dotenv import load_dotenv
 from models import Alert, IncidentLog, TelegramMessageLog
 from logger_config import get_configured_logger
 
-load_dotenv(override=True)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+ENV_PATH = os.path.join(BASE_DIR, '.env')
+load_dotenv(ENV_PATH, override=True)
 
 logger = get_configured_logger("RuleEngine")
 
@@ -40,7 +42,7 @@ def send_telegram_broadcast(message_text, parse_mode='HTML'):
     - Timeout eksplisit (7 detik)
     - Fail-safe: kegagalan di-log tanpa menghentikan proses utama.
     """
-    load_dotenv(override=True)
+    load_dotenv(ENV_PATH, override=True)
     tg_token = os.getenv('TELEGRAM_BOT_TOKEN')
     tg_chat_id = os.getenv('NOC_TELEGRAM_CHAT_ID', '-1004429503436')
 
@@ -77,12 +79,27 @@ def send_telegram_broadcast(message_text, parse_mode='HTML'):
     return False, 'FAILED: Max retries exceeded'
 
 
+def is_early_warning_telegram_enabled(alert_type):
+    """
+    Menentukan apakah pesan Telegram Detik ke-0 (Early Warning) perlu dikirim ke grup:
+    1. Khusus alert_type == 'HOST_DOWN': dikirim langsung di detik nol jika TELEGRAM_IMMEDIATE_HOST_DOWN == True.
+    2. Sistem yang lain (CPU, RAM, Latency, Loss): default senyap di detik nol (hanya kirim jika TELEGRAM_ENABLE_EARLY_WARNING == True).
+    """
+    load_dotenv(ENV_PATH, override=True)
+    if alert_type == 'HOST_DOWN':
+        immediate_host_down = os.getenv('TELEGRAM_IMMEDIATE_HOST_DOWN', 'true').strip().lower() in ('true', '1', 'yes')
+        return immediate_host_down
+
+    enable_early = os.getenv('TELEGRAM_ENABLE_EARLY_WARNING', 'false').strip().lower() in ('true', '1', 'yes')
+    return enable_early
+
+
 def trigger_alert_with_antispam(session, device, alert_type, severity, message, peak_metric_val=None):
     """
     Mekanisme Anomali & Aturan 10 Menit (State Machine Real-Time):
     1. Detik ke-0 (Anomali Baru):
        - Simpan ke IncidentLog (status: 'ACTIVE_MONITORING')
-       - Kirim notifikasi Real-Time Early Warning ke Telegram
+       - Evaluasi Senyap / Kirim Early Warning (hanya jika diaktifkan atau HOST_DOWN)
     2. Polling Berikutnya (< 10 Menit):
        - Tetap dalam pemantauan, update peak_metric jika ada kenaikan
        - Anti-spam menahan pengiriman ulang agar grup tidak bising
@@ -121,36 +138,43 @@ def trigger_alert_with_antispam(session, device, alert_type, severity, message, 
         session.add(new_incident)
         session.flush()
 
-        # Format pesan Real-Time Early Warning ke Telegram
-        early_msg = (
-            f"⚡ <b>[NOC AGIVA - DETEKSI ANOMALI REAL-TIME]</b> ⚡\n\n"
-            f"📌 <b>Perangkat:</b> {device.name} ({device.ip_address})\n"
-            f"📌 <b>Vendor / Site:</b> {device.vendor} ({device.site})\n"
-            f"📌 <b>Tipe Anomali:</b> {alert_type}\n"
-            f"📌 <b>Tingkat:</b> {severity}\n"
-            f"📌 <b>Nilai Metrik:</b> {metric_display}\n"
-            f"📌 <b>Waktu Deteksi:</b> {now.strftime('%Y-%m-%d %H:%M:%S')} WIB\n"
-            f"📌 <b>Status:</b> Pemantauan Aktif (Jendela Evaluasi 10 Menit)\n\n"
-            f"💡 <i>Jika pulih &lt; 10 menit, anomali dicatat ke Incident Log (Cooldown). "
-            f"Jika bertahan ≥ 10 menit, sistem akan mengeskalasi ke Active Alerts.</i>"
-        )
+        should_send = is_early_warning_telegram_enabled(alert_type)
 
-        ok, delivery_status = send_telegram_broadcast(early_msg, parse_mode='HTML')
-        status_str = "SENT" if ok else str(delivery_status)[:90]
+        if should_send:
+            # Format pesan Real-Time Early Warning ke Telegram
+            early_msg = (
+                f"⚡ <b>[NOC AGIVA - DETEKSI ANOMALI REAL-TIME]</b> ⚡\n\n"
+                f"📌 <b>Perangkat:</b> {device.name} ({device.ip_address})\n"
+                f"📌 <b>Vendor / Site:</b> {device.vendor} ({device.site})\n"
+                f"📌 <b>Tipe Anomali:</b> {alert_type}\n"
+                f"📌 <b>Tingkat:</b> {severity}\n"
+                f"📌 <b>Nilai Metrik:</b> {metric_display}\n"
+                f"📌 <b>Waktu Deteksi:</b> {now.strftime('%Y-%m-%d %H:%M:%S')} WIB\n"
+                f"📌 <b>Status:</b> Pemantauan Aktif (Jendela Evaluasi 10 Menit)\n\n"
+                f"💡 <i>Jika pulih &lt; 10 menit, anomali dicatat ke Incident Log (Cooldown). "
+                f"Jika bertahan ≥ 10 menit, sistem akan mengeskalasi ke Active Alerts.</i>"
+            )
 
-        log_entry = TelegramMessageLog(
-            alert_id=None,
-            chat_id=target_chat_id,
-            message_type="EARLY_WARNING",
-            content=early_msg,
-            status=status_str,
-            sent_at=now
-        )
-        session.add(log_entry)
-        session.commit()
+            ok, delivery_status = send_telegram_broadcast(early_msg, parse_mode='HTML')
+            status_str = "SENT" if ok else str(delivery_status)[:90]
 
-        logger.info(f"[RuleEngine] Anomali terdeteksi: {device.name} - {alert_type} ({metric_display}). Jendela pemantauan 10 menit dimulai.")
-        return True, new_incident, "Deteksi anomali baru, early warning real-time dikirim."
+            log_entry = TelegramMessageLog(
+                alert_id=None,
+                chat_id=target_chat_id,
+                message_type="EARLY_WARNING",
+                content=early_msg,
+                status=status_str,
+                sent_at=now
+            )
+            session.add(log_entry)
+            session.commit()
+
+            logger.info(f"[RuleEngine] Anomali terdeteksi: {device.name} - {alert_type} ({metric_display}). Early warning dikirim ke Telegram.")
+            return True, new_incident, "Deteksi anomali baru, early warning real-time dikirim."
+        else:
+            session.commit()
+            logger.info(f"[RuleEngine] Anomali terdeteksi: {device.name} - {alert_type} ({metric_display}). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).")
+            return True, new_incident, "Deteksi anomali baru, evaluasi senyap 10 menit aktif (Telegram silent)."
 
     # =========================================================================
     # KASUS 2: Anomali Masih Berlangsung (Evaluasi Durasi 10 Menit)
@@ -280,47 +304,91 @@ def auto_resolve_alert(session, device, alert_type, recovery_message=None):
         active_incident.duration_seconds = dur_sec
         active_incident.status = 'AUTO_COOLDOWN'
 
-        cooldown_msg = (
-            f"⚡ <b>[NOC AGIVA - ANOMALI PULIH / COOLDOWN]</b> ⚡\n\n"
+        # Khusus HOST_DOWN: Tetap kirim notifikasi cooldown ke Telegram agar NOC tahu perangkat sudah UP kembali!
+        # Sistem lain (CPU, RAM, Latency, Loss): Senyap (Telegram silent jika pulih < 10 menit).
+        should_send = is_early_warning_telegram_enabled(alert_type)
+
+        if should_send:
+            cooldown_msg = (
+                f"⚡ <b>[NOC AGIVA - ANOMALI PULIH / COOLDOWN]</b> ⚡\n\n"
+                f"📌 <b>Perangkat:</b> {device.name} ({device.ip_address})\n"
+                f"📌 <b>Vendor / Site:</b> {device.vendor} ({device.site})\n"
+                f"📌 <b>Tipe Kejadian:</b> {alert_type}\n"
+                f"📌 <b>Metrik Puncak:</b> {active_incident.peak_metric or '-'}\n"
+                f"📌 <b>Durasi Anomali:</b> {dur_str} (Pulih &lt; 10 Menit)\n"
+                f"📌 <b>Waktu Pulih:</b> {now.strftime('%Y-%m-%d %H:%M:%S')} WIB\n"
+                f"📌 <b>Status:</b> Auto-Cooldown (Dicatat ke Incident Log #{active_incident.incident_id})\n\n"
+                f"💡 <i>Lonjakan sesaat telah mereda secara normal tanpa eskalasi tiket.</i>"
+            )
+
+            ok, delivery_status = send_telegram_broadcast(cooldown_msg, parse_mode='HTML')
+            status_str = "SENT" if ok else str(delivery_status)[:90]
+
+            log_entry = TelegramMessageLog(
+                alert_id=None,
+                chat_id=target_chat_id,
+                message_type="COOLDOWN_NOTIFICATION",
+                content=cooldown_msg,
+                status=status_str,
+                sent_at=now
+            )
+            session.add(log_entry)
+            session.commit()
+
+            logger.info(f"[RuleEngine] Insiden #{active_incident.incident_id} ({device.name} - {alert_type}) pulih dalam {dur_str} -> AUTO_COOLDOWN dikirim ke Telegram.")
+        else:
+            session.commit()
+            logger.info(f"[RuleEngine] Insiden #{active_incident.incident_id} ({device.name} - {alert_type}) pulih dalam {dur_str} -> AUTO_COOLDOWN dicatat senyap (Telegram silent).")
+
+        return True, active_incident
+
+    # =========================================================================
+    # KASUS B: Anomali yang Telah Bertahan di Atas 10 Menit (≥ 10 Menit)
+    # =========================================================================
+    # Gangguan berlangsung di atas 10 menit (sudah dieskalasi ke Active Alerts).
+    # Ketika gangguan pulih, kirimkan notifikasi pemulihan resmi ke Telegram.
+    if dur_sec >= 600 or (active_incident and active_incident.status in ('ACTIVE_ALERT', 'ESCALATED_TO_ALERT')) or active_alert:
+        if active_incident:
+            active_incident.resolved_at = now
+            active_incident.duration_seconds = dur_sec
+            active_incident.status = 'RESOLVED_ALERT'
+
+        alert_ref = "-"
+        if active_alert:
+            active_alert.resolved_at = now
+            active_alert.acknowledged = True
+            alert_ref = f"#{active_alert.alert_id}"
+
+        session.commit()
+
+        recovery_msg = (
+            f"✅ <b>[NOC AGIVA - GANGGUAN PULIH (≥ 10 MENIT)]</b> ✅\n\n"
+            f"📌 <b>Alert ID:</b> {alert_ref}\n"
             f"📌 <b>Perangkat:</b> {device.name} ({device.ip_address})\n"
             f"📌 <b>Vendor / Site:</b> {device.vendor} ({device.site})\n"
-            f"📌 <b>Tipe Kejadian:</b> {alert_type}\n"
-            f"📌 <b>Metrik Puncak:</b> {active_incident.peak_metric or '-'}\n"
-            f"📌 <b>Durasi Anomali:</b> {dur_str} (Pulih &lt; 10 Menit)\n"
-            f"📌 <b>Waktu Pulih:</b> {now.strftime('%Y-%m-%d %H:%M:%S')} WIB\n"
-            f"📌 <b>Status:</b> Auto-Cooldown (Dicatat ke Incident Log #{active_incident.incident_id})\n\n"
-            f"💡 <i>Lonjakan sesaat telah mereda secara normal tanpa eskalasi tiket.</i>"
+            f"📌 <b>Tipe Gangguan:</b> {alert_type}\n"
+            f"📌 <b>Total Durasi Gangguan:</b> {dur_str}\n"
+            f"📌 <b>Waktu Pemulihan:</b> {now.strftime('%Y-%m-%d %H:%M:%S')} WIB\n"
+            f"📌 <b>Status:</b> Resolved (Normal Kembali)\n\n"
+            f"💡 <i>{recovery_message or 'Metrik jaringan telah kembali normal ke ambang aman.'}</i>"
         )
 
-        ok, delivery_status = send_telegram_broadcast(cooldown_msg, parse_mode='HTML')
+        ok, delivery_status = send_telegram_broadcast(recovery_msg, parse_mode='HTML')
         status_str = "SENT" if ok else str(delivery_status)[:90]
 
         log_entry = TelegramMessageLog(
-            alert_id=None,
+            alert_id=active_alert.alert_id if active_alert else None,
             chat_id=target_chat_id,
-            message_type="COOLDOWN_NOTIFICATION",
-            content=cooldown_msg,
+            message_type="RECOVERY_NOTIFICATION",
+            content=recovery_msg,
             status=status_str,
             sent_at=now
         )
         session.add(log_entry)
         session.commit()
 
-        logger.info(f"[RuleEngine] Insiden #{active_incident.incident_id} ({device.name} - {alert_type}) pulih dalam {dur_str} -> AUTO_COOLDOWN.")
-        return True, active_incident
-
-    # =========================================================================
-    # KASUS B: Anomali Telah Dieskalasi ke Alert (>= 10 Menit) - OPSI 2 (MANUAL RESOLVE ONLY)
-    # =========================================================================
-    # Sesuai SOP Opsi 2: Sistem TIDAK MENUTUP alert secara otomatis meskipun metrik sudah kembali normal.
-    # Alert TETAP TERBUKA di antrean Active & Sustained Alerts sampai petugas secara manual
-    # mengetik /resolve <alert_id> di Telegram sebagai verifikasi penyelesaian tiket.
-    alert_ref = f"#{active_alert.alert_id}" if active_alert else (f"#INC-{active_incident.incident_id}" if active_incident else "-")
-    logger.info(
-        f"[RuleEngine] Metrik {device.name} - {alert_type} telah normal kembali, "
-        f"tetapi Alert {alert_ref} tetap OPEN di antrean Active Alerts menunggu /resolve manual petugas via Telegram."
-    )
-    return False, None
+        logger.info(f"[RuleEngine] Alert {alert_ref} ({device.name} - {alert_type}) pulih setelah {dur_str} (≥ 10 Menit) -> Notifikasi pemulihan dikirim ke Telegram.")
+        return True, active_alert or active_incident
 
 
 def evaluate_device_rules(session, device, metrics):

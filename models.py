@@ -203,8 +203,11 @@ class BackupHistory(Base):
     backup_id = Column(Integer, primary_key=True, autoincrement=True)
     device_id = Column(Integer, ForeignKey('devices.device_id', ondelete='CASCADE'), nullable=False)
     timestamp = Column(DateTime, default=datetime.now, nullable=False)
+    category = Column(String(50), default="System", nullable=False)
     file_path = Column(Text, nullable=False)
     file_size = Column(String(50), default="45.2 KB")
+    trigger_by = Column(String(100), default="Scheduler (02:00 WIB)", nullable=False)
+    data_range = Column(String(100), default="01/11 02:00:00 — 02/11 02:00:00 WIB", nullable=False)
     status = Column(String(20), nullable=False)  # 'SUCCESS' / 'FAILED'
 
     device = relationship("Device", back_populates="backups")

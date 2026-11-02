@@ -72,6 +72,8 @@ def ensure_postgres_running():
 def get_engine():
     """Menginisialisasi engine PostgreSQL murni sesuai spesifikasi LLD."""
     db_url = os.getenv('DATABASE_URL', DATABASE_URL)
+    if db_url.startswith('postgresql://'):
+        db_url = db_url.replace('postgresql://', 'postgresql+psycopg2://', 1)
     
     # Pastikan server PostgreSQL sudah aktif sebelum mencoba koneksi
     if db_url.startswith('postgresql'):
@@ -118,6 +120,10 @@ def init_db():
             conn.execute(text("ALTER TABLE devices ADD COLUMN IF NOT EXISTS packet_loss FLOAT DEFAULT 0.0;"))
             conn.execute(text("ALTER TABLE device_status_logs ADD COLUMN IF NOT EXISTS latency_ms FLOAT DEFAULT 0.0;"))
             conn.execute(text("ALTER TABLE device_status_logs ADD COLUMN IF NOT EXISTS packet_loss FLOAT DEFAULT 0.0;"))
+            conn.execute(text("ALTER TABLE backup_history ADD COLUMN IF NOT EXISTS category VARCHAR(50) DEFAULT 'System';"))
+            conn.execute(text("ALTER TABLE backup_history ADD COLUMN IF NOT EXISTS trigger_by VARCHAR(100) DEFAULT 'Scheduler (02:00 WIB)';"))
+            conn.execute(text("ALTER TABLE backup_history ADD COLUMN IF NOT EXISTS data_range VARCHAR(100) DEFAULT '01/11 02:00:00 — 02/11 02:00:00 WIB';"))
+            conn.execute(text("UPDATE backup_history SET data_range = TO_CHAR(COALESCE(timestamp, NOW()) - INTERVAL '1 day', 'DD/MM HH24:MI:SS') || ' — ' || TO_CHAR(COALESCE(timestamp, NOW()), 'DD/MM HH24:MI:SS') || ' WIB' WHERE data_range IS NULL OR data_range = '24 Jam Terakhir' OR data_range LIKE 'Snapshot%' OR data_range NOT LIKE '%:%';"))
             conn.commit()
     except Exception as e:
         print(f"[!] Migration check warning: {e}")
@@ -307,6 +313,7 @@ def seed_demo_data(session):
     for b in backups_data:
         bh = BackupHistory(
             device_id=b["device_id"],
+            category=b.get("category", "Config"),
             file_path=b["path"],
             file_size=b["size"],
             status=b["status"],

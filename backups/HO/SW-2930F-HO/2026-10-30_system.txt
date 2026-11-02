@@ -1,0 +1,16 @@
+======================================================================
+AGIVA NOC INITIAL FULL BACKUP [SYSTEM] - 2026-10-30 15:25:47 WIB
+======================================================================
+// BACKUP ERROR [2026-10-30 15:25:47 WIB]
+// Perangkat: SW-2930F-HO (192.168.1.10)
+// Kategori: System
+// Error: Koneksi SSH Aruba gagal: 
+Pattern not detected: 'SW\\-2930F\\-HO\\#' in output.
+
+Things you might try to fix this:
+1. Explicitly set your pattern using the expect_string argument.
+2. Increase the read_timeout to a larger value.
+
+You can also look at the Netmiko session_log or debug log for more information.
+
+

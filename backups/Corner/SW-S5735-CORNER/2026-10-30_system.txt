@@ -1,0 +1,530 @@
+======================================================================
+AGIVA NOC INITIAL FULL BACKUP [SYSTEM] - 2026-10-30 15:23:14 WIB
+======================================================================
+
+Info: The max number of VTY users is 5, the number of current VTY users online is 1, and total number of terminal users online is 1.
+      The current login time is 2026-10-30 15:23:08+07:00.
+<SW-S5735-CORNER>screen-length 0 temporary
+Info: The configuration takes effect on the current user terminal interface only.
+<SW-S5735-CORNER>display logbuffer
+Logging buffer configuration and contents : enabled
+Allowed max buffer size : 10240
+Actual buffer size : 512
+Channel number : 4 , Channel name : logbuffer
+Dropped messages : 0
+Overwritten messages : 6172
+Current messages : 512
+
+Oct 30 2026 15:11:37+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 30 2026 15:02:26+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 30 2026 14:50:11+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 30 2026 14:38:58+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 30 2026 14:29:47+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 30 2026 14:13:28+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 30 2026 14:07:21+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 30 2026 13:58:10+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 30 2026 13:43:53+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 30 2026 13:36:45+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 30 2026 13:27:34+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 30 2026 13:18:23+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 30 2026 13:06:08+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 30 2026 12:59:00+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 30 2026 12:51:52+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 30 2026 12:38:36+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 30 2026 12:31:27+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 30 2026 12:08:00+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 30 2026 11:58:49+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 30 2026 11:51:41+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 30 2026 11:42:30+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 30 2026 11:34:20+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 30 2026 11:27:12+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 30 2026 11:13:56+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 30 2026 10:57:37+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 30 2026 10:50:28+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 30 2026 10:38:14+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 30 2026 10:32:07+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 30 2026 10:14:46+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 30 2026 10:09:31+07:00 SW-S5735-CORNER %%01INFO/4/IM_LOGFILE_STORAGETHRD(l):CID=0x806003ff;The logfile surplus storage spaces is less than 20 percent. (LogFileType=security)
+Oct 30 2026 10:05:35+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 30 2026 09:57:26+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 30 2026 09:52:20+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 30 2026 09:44:10+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 30 2026 09:38:03+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 30 2026 09:29:53+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 30 2026 09:17:39+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 30 2026 09:12:33+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 30 2026 09:05:24+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 30 2026 08:55:12+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 30 2026 08:42:58+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 30 2026 08:33:47+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 30 2026 08:26:39+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 30 2026 08:13:23+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 30 2026 08:00:07+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 30 2026 07:35:48+07:00 SW-S5735-CORNER %%01INFO/4/IM_LOGFILE_AGING_DELETE(l):CID=0x806003ff;One log file was deleted due to aging. (LogFileName=1#flash:/logfile/diaglog_1_20260930073848.log.zip)
+Oct 30 2026 07:35:48+07:00 SW-S5735-CORNER %%01INFO/4/IM_LOGFILE_AGING(s):CID=0x806003ff;One log file was deleted due to aging. (LogFileName=1#flash:/logfile/diaglog_1_20260930073848.log.zip)
+Oct 30 2026 03:39:31+07:00 SW-S5735-CORNER %%01INFO/4/IM_LOGFILE_AGING_DELETE(l):CID=0x806003ff;One log file was deleted due to aging. (LogFileName=1#flash:/logfile/pads/pads_1_20260715030245.pads.zip)
+Oct 30 2026 03:39:31+07:00 SW-S5735-CORNER %%01INFO/4/IM_LOGFILE_AGING(s):CID=0x806003ff;One log file was deleted due to aging. (LogFileName=1#flash:/logfile/pads/pads_1_20260715030245.pads.zip)
+Oct 30 2026 00:45:25+07:00 SW-S5735-CORNER %%01SYSCLOCK/4/TM_UTC_TIME_CHANGE(l):CID=0x80cc001c;The system UTC time is changed from previous UTC Time 2026-10-30 00:45:26 to current UTC Time 2026-10-30 00:45:25.
+Oct 29 2026 21:12:06+07:00 SW-S5735-CORNER %%01INFO/4/IM_LOGFILE_AGING_DELETE(l):CID=0x806003ff;One log file was deleted due to aging. (LogFileName=1#flash:/logfile/diaglog_1_20260929073622.log.zip)
+Oct 29 2026 21:12:06+07:00 SW-S5735-CORNER %%01INFO/4/IM_LOGFILE_AGING(s):CID=0x806003ff;One log file was deleted due to aging. (LogFileName=1#flash:/logfile/diaglog_1_20260929073622.log.zip)
+Oct 29 2026 21:02:12+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 19:21:38+07:00 SW-S5735-CORNER %%01INFO/4/IM_LOGFILE_STORAGETHRD(l):CID=0x806003ff;The logfile surplus storage spaces is less than 20 percent. (LogFileType=log)
+Oct 29 2026 18:55:43+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 18:36:20+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 18:24:05+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 18:13:53+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 18:08:47+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 18:00:38+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 17:54:31+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 17:41:15+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 17:34:07+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 17:29:41+07:00 SW-S5735-CORNER %%01INFO/4/IM_LOGFILE_STORAGETHRD(l):CID=0x806003ff;The logfile surplus storage spaces is less than 20 percent. (LogFileType=security)
+Oct 29 2026 17:26:58+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 17:20:51+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 17:10:39+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 17:01:28+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 16:49:14+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 16:43:06+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 16:29:51+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 16:06:23+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 15:59:15+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 15:53:08+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 15:43:57+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 15:36:48+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 15:28:39+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 15:22:32+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 15:13:21+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 15:00:05+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 14:47:50+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 14:26:25+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 14:20:18+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 14:11:07+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 14:05:00+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 13:55:49+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 13:41:32+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 13:35:25+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 13:16:02+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 12:45:26+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 12:39:19+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 12:28:05+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 12:20:57+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 12:06:40+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 12:04:03+07:00 SW-S5735-CORNER %%01INFO/4/IM_LOGFILE_AGING_DELETE(l):CID=0x806003ff;One log file was deleted due to aging. (LogFileName=1#flash:/logfile/diaglog_1_20260928025421.log.zip)
+Oct 29 2026 12:04:03+07:00 SW-S5735-CORNER %%01INFO/4/IM_LOGFILE_AGING(s):CID=0x806003ff;One log file was deleted due to aging. (LogFileName=1#flash:/logfile/diaglog_1_20260928025421.log.zip)
+Oct 29 2026 12:00:33+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 11:38:06+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 11:23:50+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 11:05:28+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 10:54:15+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 10:44:03+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 10:20:35+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 10:06:18+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 10:05:55+07:00 SW-S5735-CORNER %%01INFO/4/IM_LOGFILE_STORAGETHRD(l):CID=0x806003ff;The logfile surplus storage spaces is less than 20 percent. (LogFileType=security)
+Oct 29 2026 10:01:12+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 09:55:05+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 09:48:58+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 09:36:43+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 09:20:24+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 09:14:17+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 09:03:03+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 08:54:54+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 08:45:43+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 08:26:20+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 08:20:12+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 08:06:57+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 07:41:27+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 07:32:16+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 06:27:52+07:00 SW-S5735-CORNER %%01INFO/4/IM_LOGFILE_AGING_DELETE(l):CID=0x806003ff;One log file was deleted due to aging. (LogFileName=1#flash:/logfile/diaglog_1_20260926200358.log.zip)
+Oct 29 2026 06:27:52+07:00 SW-S5735-CORNER %%01INFO/4/IM_LOGFILE_AGING(s):CID=0x806003ff;One log file was deleted due to aging. (LogFileName=1#flash:/logfile/diaglog_1_20260926200358.log.zip)
+Oct 29 2026 06:03:12+07:00 SW-S5735-CORNER %%01INFO/4/IM_LOGFILE_AGING_DELETE(l):CID=0x806003ff;One log file was deleted due to aging. (LogFileName=1#flash:/logfile/diaglog_1_20260925135420.log.zip)
+Oct 29 2026 06:03:12+07:00 SW-S5735-CORNER %%01INFO/4/IM_LOGFILE_AGING(s):CID=0x806003ff;One log file was deleted due to aging. (LogFileName=1#flash:/logfile/diaglog_1_20260925135420.log.zip)
+Oct 29 2026 04:09:16+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 03:45:48+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 03:19:17+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 03:17:55+07:00 SW-S5735-CORNER %%01INFO/4/IM_LOGFILE_STORAGETHRD(l):CID=0x806003ff;The logfile surplus storage spaces is less than 20 percent. (LogFileType=log)
+Oct 29 2026 03:06:01+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 02:44:36+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 02:15:52+07:00 SW-S5735-CORNER %%01INFO/4/IM_LOGFILE_STORAGETHRD(l):CID=0x806003ff;The logfile surplus storage spaces is less than 20 percent. (LogFileType=security)
+Oct 29 2026 01:43:24+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 29 2026 00:41:23+07:00 SW-S5735-CORNER %%01SYSCLOCK/4/TM_UTC_TIME_CHANGE(l):CID=0x80cc001c;The system UTC time is changed from previous UTC Time 2026-10-29 00:41:24 to current UTC Time 2026-10-29 00:41:23.
+Oct 28 2026 23:55:18+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 23:29:48+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 23:18:35+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 23:02:16+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 22:53:05+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 22:43:54+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 22:36:46+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 22:26:34+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 22:17:23+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 21:39:39+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 21:37:54+07:00 SW-S5735-CORNER %%01INFO/4/IM_LOGFILE_AGING_DELETE(l):CID=0x806003ff;One log file was deleted due to aging. (LogFileName=1#flash:/logfile/diaglog_1_20260924084112.log.zip)
+Oct 28 2026 21:37:54+07:00 SW-S5735-CORNER %%01INFO/4/IM_LOGFILE_AGING(s):CID=0x806003ff;One log file was deleted due to aging. (LogFileName=1#flash:/logfile/diaglog_1_20260924084112.log.zip)
+Oct 28 2026 21:15:10+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 21:03:56+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 20:57:49+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 20:50:41+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 20:17:01+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 20:09:33+07:00 SW-S5735-CORNER %%01INFO/4/IM_LOGFILE_AGING_DELETE(l):CID=0x806003ff;One log file was deleted due to aging. (LogFileName=1#flash:/logfile/pads/pads_1_20260713130019.pads.zip)
+Oct 28 2026 20:09:33+07:00 SW-S5735-CORNER %%01INFO/4/IM_LOGFILE_AGING(s):CID=0x806003ff;One log file was deleted due to aging. (LogFileName=1#flash:/logfile/pads/pads_1_20260713130019.pads.zip)
+Oct 28 2026 20:05:48+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 19:44:07+07:00 SW-S5735-CORNER %%01CPUDEFEND/4/STRACK_PROTOCOL_ATTACK(s):Service=fwmd0;System has detected one attack. (DetectionMode=source-mac, Interface=10GE1/0/1, SourceMAC=0afc-1ad5-debb, CVLAN=0, PVLAN=1, SourceIP=192.168.1.105, AttackTime=1793152649000)
+Oct 28 2026 18:59:30+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 18:39:06+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 18:19:43+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 18:14:37+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 18:02:22+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 17:51:03+07:00 SW-S5735-CORNER %%01INFO/4/IM_LOGFILE_STORAGETHRD(l):CID=0x806003ff;The logfile surplus storage spaces is less than 20 percent. (LogFileType=security)
+Oct 28 2026 17:44:00+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 17:11:22+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 17:02:11+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 16:56:04+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 16:49:57+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 16:20:22+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 16:08:07+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 15:59:58+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 15:48:44+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 15:34:28+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 15:30:01+07:00 SW-S5735-CORNER %%01FEI/4/hwMflpVlanLoopPeriodicTrap(s):Service=fwmd0;MAC flapping detected, VlanId = 1, Original-Port = GE1/0/1, Flapping port 1 = GE1/0/2, port 2 = GE1/0/3. Check the network connected to the interface learning a flapping MAC address : 3007-4d30-d9b8.
+Oct 28 2026 15:19:12+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_active(l):CID=0x0-alarmID=0x095e0012;MAC flapping detected, VlanId = 1, Original-Port = GE1/0/1, Flapping port 1 = GE1/0/2, port 2 = GE1/0/3. Check the network connected to the interface learning a flapping MAC address : 3007-4d30-d9b8.
+Oct 28 2026 15:09:59+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 15:03:52+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 14:57:44+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 14:48:33+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 14:38:21+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 14:37:09+07:00 SW-S5735-CORNER %%01INFO/4/IM_LOGFILE_AGING_DELETE(l):CID=0x806003ff;One log file was deleted due to aging. (LogFileName=1#flash:/logfile/diaglog_1_20260923073646.log.zip)
+Oct 28 2026 14:37:09+07:00 SW-S5735-CORNER %%01INFO/4/IM_LOGFILE_AGING(s):CID=0x806003ff;One log file was deleted due to aging. (LogFileName=1#flash:/logfile/diaglog_1_20260923073646.log.zip)
+Oct 28 2026 14:27:08+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 14:05:43+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 13:48:22+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 13:42:15+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 13:33:57+07:00 SW-S5735-CORNER %%01INFO/4/IM_LOGFILE_STORAGETHRD(l):CID=0x806003ff;The logfile surplus storage spaces is less than 20 percent. (LogFileType=log)
+Oct 28 2026 13:33:04+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 13:26:57+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 13:20:50+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 13:09:37+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 12:57:22+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 12:51:15+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 12:45:55+07:00 SW-S5735-CORNER %%01INFO/4/IM_LOGFILE_STORAGETHRD(l):CID=0x806003ff;The logfile surplus storage spaces is less than 20 percent. (LogFileType=security)
+Oct 28 2026 12:45:08+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 12:18:36+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 12:10:27+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 12:04:19+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 11:50:03+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 11:44:56+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 11:35:46+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 11:27:36+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 11:19:26+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 11:12:18+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 11:07:12+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 11:00:04+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 10:45:47+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 10:35:35+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 10:29:27+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 10:23:20+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 10:13:08+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 10:07:01+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 09:55:48+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 09:49:40+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 09:39:28+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 09:29:16+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 09:19:04+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 09:12:57+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 09:05:49+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 08:52:33+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 08:46:26+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 08:38:16+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 08:22:58+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 07:57:57+07:00 SW-S5735-CORNER %%01INFO/4/IM_LOGFILE_AGING_DELETE(l):CID=0x806003ff;One log file was deleted due to aging. (LogFileName=1#flash:/logfile/diaglog_1_20260922070342.log.zip)
+Oct 28 2026 07:57:57+07:00 SW-S5735-CORNER %%01INFO/4/IM_LOGFILE_AGING(s):CID=0x806003ff;One log file was deleted due to aging. (LogFileName=1#flash:/logfile/diaglog_1_20260922070342.log.zip)
+Oct 28 2026 07:30:57+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 06:30:45+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 06:24:38+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 06:16:29+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 06:02:12+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 05:47:55+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 05:30:34+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 05:21:53+07:00 SW-S5735-CORNER %%01INFO/4/IM_LOGFILE_STORAGETHRD(l):CID=0x806003ff;The logfile surplus storage spaces is less than 20 percent. (LogFileType=security)
+Oct 28 2026 04:55:53+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 04:05:54+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 03:58:46+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 03:40:24+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 03:30:12+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 02:21:52+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 02:08:36+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 01:24:44+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 01:12:30+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 00:54:32+07:00 SW-S5735-CORNER %%01INFO/4/IM_LOGFILE_AGING_DELETE(l):CID=0x806003ff;One log file was deleted due to aging. (LogFileName=1#flash:/logfile/diaglog_1_20260921011414.log.zip)
+Oct 28 2026 00:54:32+07:00 SW-S5735-CORNER %%01INFO/4/IM_LOGFILE_AGING(s):CID=0x806003ff;One log file was deleted due to aging. (LogFileName=1#flash:/logfile/diaglog_1_20260921011414.log.zip)
+Oct 28 2026 00:51:05+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 00:39:51+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 28 2026 00:36:04+07:00 SW-S5735-CORNER %%01SYSCLOCK/4/TM_UTC_TIME_CHANGE(l):CID=0x80cc001c;The system UTC time is changed from previous UTC Time 2026-10-28 00:36:04 to current UTC Time 2026-10-28 00:36:04.
+Oct 28 2026 00:24:34+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 23:41:43+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 23:14:11+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 22:41:32+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 22:29:18+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 22:20:07+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 22:10:56+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 22:05:50+07:00 SW-S5735-CORNER %%01INFO/4/IM_LOGFILE_STORAGETHRD(l):CID=0x806003ff;The logfile surplus storage spaces is less than 20 percent. (LogFileType=log)
+Oct 27 2026 21:11:46+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 20:47:50+07:00 SW-S5735-CORNER %%01INFO/4/IM_LOGFILE_STORAGETHRD(l):CID=0x806003ff;The logfile surplus storage spaces is less than 20 percent. (LogFileType=security)
+Oct 27 2026 20:40:09+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 20:15:40+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 19:46:06+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 19:36:55+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 19:18:37+07:00 SW-S5735-CORNER %%01CPUDEFEND/4/STRACK_PROTOCOL_ATTACK(s):Service=fwmd0;System has detected one attack. (DetectionMode=source-mac, Interface=10GE1/0/1, SourceMAC=d2f0-53b5-e12f, CVLAN=0, PVLAN=1, SourceIP=192.168.1.198, AttackTime=1793070369000)
+Oct 27 2026 18:30:37+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 18:21:26+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 18:11:14+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 17:49:48+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 17:37:34+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 17:02:53+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 16:46:34+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 16:35:21+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 16:33:54+07:00 SW-S5735-CORNER %%01INFO/4/IM_LOGFILE_AGING_DELETE(l):CID=0x806003ff;One log file was deleted due to aging. (LogFileName=1#flash:/logfile/diaglog_1_20260919181326.log.zip)
+Oct 27 2026 16:33:54+07:00 SW-S5735-CORNER %%01INFO/4/IM_LOGFILE_AGING(s):CID=0x806003ff;One log file was deleted due to aging. (LogFileName=1#flash:/logfile/diaglog_1_20260919181326.log.zip)
+Oct 27 2026 16:28:12+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 16:22:05+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 15:59:39+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 15:47:24+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 15:40:16+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 15:33:07+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 15:20:53+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 15:12:43+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 15:05:35+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 14:57:25+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 14:49:16+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 14:23:45+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 14:17:38+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 14:10:30+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 14:02:20+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 13:51:07+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 13:41:56+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 13:32:45+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 13:23:35+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 12:47:52+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 12:34:37+07:00 SW-S5735-CORNER %%01INFO/4/IM_LOGFILE_AGING_DELETE(l):CID=0x806003ff;One log file was deleted due to aging. (LogFileName=1#flash:/logfile/pads/pads_1_20260711230703.pads.zip)
+Oct 27 2026 12:34:37+07:00 SW-S5735-CORNER %%01INFO/4/IM_LOGFILE_AGING(s):CID=0x806003ff;One log file was deleted due to aging. (LogFileName=1#flash:/logfile/pads/pads_1_20260711230703.pads.zip)
+Oct 27 2026 12:24:25+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 12:15:14+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 12:08:06+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 12:00:57+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 11:51:46+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 11:44:38+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 11:38:31+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 11:32:23+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 11:18:07+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 11:04:51+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 10:56:41+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 10:46:29+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 10:39:21+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 10:33:14+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 10:15:53+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 10:09:46+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 10:03:39+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 09:50:23+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 09:38:09+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 09:32:01+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 09:25:54+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 09:19:47+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 09:13:40+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 09:05:30+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 08:52:14+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 08:41:01+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 08:31:50+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 08:21:38+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 08:16:32+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 08:01:14+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 06:49:50+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 27 2026 04:40:58+07:00 SW-S5735-CORNER %%01INFO/4/IM_LOGFILE_AGING_DELETE(l):CID=0x806003ff;One log file was deleted due to aging. (LogFileName=1#flash:/logfile/diaglog_1_20260918121256.log.zip)
+Oct 27 2026 04:40:58+07:00 SW-S5735-CORNER %%01INFO/4/IM_LOGFILE_AGING(s):CID=0x806003ff;One log file was deleted due to aging. (LogFileName=1#flash:/logfile/diaglog_1_20260918121256.log.zip)
+Oct 27 2026 00:39:13+07:00 SW-S5735-CORNER %%01SYSCLOCK/4/TM_UTC_TIME_CHANGE(l):CID=0x80cc001c;The system UTC time is changed from previous UTC Time 2026-10-27 00:39:14 to current UTC Time 2026-10-27 00:39:13.
+Oct 26 2026 22:02:31+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 19:40:44+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 19:22:22+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 19:05:02+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 18:53:08+07:00 SW-S5735-CORNER %%01CPUDEFEND/4/STRACK_PROTOCOL_ATTACK(s):Service=fwmd0;System has detected one attack. (DetectionMode=source-mac, Interface=10GE1/0/1, SourceMAC=1a05-2233-2f14, CVLAN=0, PVLAN=1, SourceIP=192.168.1.87, AttackTime=1792983499000)
+Oct 26 2026 18:47:41+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 18:40:33+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 18:35:27+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 18:27:17+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 18:22:11+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 18:17:05+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 18:10:58+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 18:04:51+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 17:57:42+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 17:49:33+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 17:49:05+07:00 SW-S5735-CORNER %%01INFO/4/IM_LOGFILE_STORAGETHRD(l):CID=0x806003ff;The logfile surplus storage spaces is less than 20 percent. (LogFileType=security)
+Oct 26 2026 17:43:25+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 17:37:18+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 17:30:10+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 17:25:04+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 17:14:52+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 17:04:40+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 16:54:28+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 16:47:19+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 16:40:11+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 16:32:01+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 16:25:54+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 16:19:47+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 16:12:38+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 16:06:31+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 16:00:24+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 15:58:50+07:00 SW-S5735-CORNER %%01LLDP/4/LLDP_REMTABLECHANGE(l):CID=0x80a50455;LLDP neighbor information was changed. (Added=0, Deleted=0, Dropped=0, Aged=1)
+Oct 26 2026 15:58:50+07:00 SW-S5735-CORNER %%01DEVM/2/hwPortDown(l):CID=0x80fc0101;The physical status of the port changed to down. (EntPhysicalIndex=16847116, EntPhysicalName=GE1/0/11, hwPortDownReason=0, ifOperStatus=0, ifAdminStatus=1, faultID=144384)
+Oct 26 2026 15:58:50+07:00 SW-S5735-CORNER %%01LLDP/4/LLDP_INTERFACE_REM_CHANGE(l):CID=0x80a50455;Neighbor information of the interface was changed. (Interface=GE1/0/11, Action=deleted, Added=0, Deleted=1, RemoteInterfaceName=1/1/24, RemoteDeviceManageAddress=4cd5-8710-ff40)
+Oct 26 2026 15:58:50+07:00 SW-S5735-CORNER %%01LLDP/4/LLDP_INTERFACE_NEIGB_CHANGE(l):CID=0x80a50455;Neighbor information of the interface was changed. (NeighborIndex=1, Action=deleted, Interface=GE1/0/11, RemoteChassisType=macAddress, RemoteChassisId=4cd5-8710-ff40, RemotePortIdType=interfaceName, RemotePortId=1/1/24, RemoteSystemName=DC02, RemoteSystemDescription=Aruba JL725A  ML.10.13.1090, RemoteSystemCapabilitySupported=bridge router, RemoteSystemCapabilityEnabled=bridge router, RemoteManagementAddressType=all802, RemoteManagementAddress=4cd5-8710-ff40, RemoteManufacturerName=, RemoteModelName=)
+Oct 26 2026 15:58:50+07:00 SW-S5735-CORNER %%01IFNET/2/linkDown_active(l):CID=0x807a041b-alarmID=0x08520003;The interface status changes. (ifName=GE1/0/11, AdminStatus=UP, OperStatus=DOWN, Reason=Interface physical link is down, mainIfname=GE1/0/11)
+Oct 26 2026 15:50:12+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 15:40:00+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 15:28:47+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 15:22:39+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 15:16:32+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 15:10:25+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 15:09:49+07:00 SW-S5735-CORNER %%01MSTP/4/MSTPLOG_PROPORT_STATE_FORWARDING(l):CID=0x80547552;The MSTP process's port has been set to forwarding state. (ProcessID=0, InstanceID=0, PortID=11, IfIndex=11, PortName=GE1/0/11, PwName=-)
+Oct 26 2026 15:09:49+07:00 SW-S5735-CORNER %%01MSTP/4/PORT_STATE_FORWARDING(l):CID=0x80547552;The port has been set to forwarding state. (InstanceID=0, PortIndex=11, IfIndex=11, PortName=GE1/0/11, PwName=-)
+Oct 26 2026 15:09:49+07:00 SW-S5735-CORNER %%01MSTP/4/MSTPLOG_PROPORT_STATE_LEARNING(l):CID=0x80547552;The MSTP process's port has been set to learning state. (ProcessID=0, InstanceID=0, PortID=11, IfIndex=11, PortName=GE1/0/11, PwName=-)
+Oct 26 2026 15:09:47+07:00 SW-S5735-CORNER %%01LLDP/4/LLDP_INTERFACE_REM_CHANGE(l):CID=0x80a50455;Neighbor information of the interface was changed. (Interface=GE1/0/11, Action=added, Added=1, Deleted=0, RemoteInterfaceName=1/1/24, RemoteDeviceManageAddress=4cd5-8710-ff40)
+Oct 26 2026 15:09:47+07:00 SW-S5735-CORNER %%01LLDP/4/LLDP_INTERFACE_NEIGB_CHANGE(l):CID=0x80a50455;Neighbor information of the interface was changed. (NeighborIndex=1, Action=added, Interface=GE1/0/11, RemoteChassisType=macAddress, RemoteChassisId=4cd5-8710-ff40, RemotePortIdType=interfaceName, RemotePortId=1/1/24, RemoteSystemName=DC02, RemoteSystemDescription=Aruba JL725A  ML.10.13.1090, RemoteSystemCapabilitySupported=bridge router, RemoteSystemCapabilityEnabled=bridge router, RemoteManagementAddressType=all802, RemoteManagementAddress=4cd5-8710-ff40, RemoteManufacturerName=, RemoteModelName=)
+Oct 26 2026 15:09:47+07:00 SW-S5735-CORNER %%01LLDP/4/LLDP_REMTABLECHANGE(l):CID=0x80a50455;LLDP neighbor information was changed. (Added=1, Deleted=0, Dropped=0, Aged=0)
+Oct 26 2026 15:09:44+07:00 SW-S5735-CORNER %%01MSTP/4/MSTPLOG_PROPORT_STATE_DISCARDING(l):CID=0x80547552;The MSTP process's port has been set to discarding state. (ProcessID=0, InstanceID=0, PortID=11, IfIndex=11, PortName=GE1/0/11, PwName=-)
+Oct 26 2026 15:09:44+07:00 SW-S5735-CORNER %%01MSTP/4/PORT_STATE_DISCARDING(l):CID=0x80547552;The port has been set to discarding state. (InstanceID=0, PortIndex=11, IfIndex=11, PortName=GE1/0/11, PwName=-)
+Oct 26 2026 15:09:44+07:00 SW-S5735-CORNER %%01IFNET/2/linkDown_clear(l):CID=0x807a041b-alarmID=0x08520003-clearType=service_resume;The interface status changes. (ifName=GE1/0/11, AdminStatus=UP, OperStatus=UP, Reason=Interface physical link is up, mainIfname=GE1/0/11)
+Oct 26 2026 15:09:44+07:00 SW-S5735-CORNER %%01DEVM/4/hwPortUp(l):CID=0x80fc0101;The physical status of the port changed to up. (EntPhysicalIndex=16847116, EntPhysicalName=GE1/0/11, ifOperStatus=1, ifAdminStatus=1)
+Oct 26 2026 14:55:07+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 14:43:54+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 14:30:38+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 14:22:29+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 14:02:04+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 13:41:41+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 13:26:23+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 13:15:09+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 13:09:02+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 13:02:55+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 12:56:48+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 12:50:41+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 12:36:24+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 12:30:17+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 12:22:07+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 12:12:56+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 12:04:47+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 11:57:38+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 11:51:31+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 11:44:23+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 11:37:14+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 11:31:07+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 11:22:57+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 11:14:48+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 11:07:39+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 10:57:27+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 10:51:20+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 10:24:49+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 10:13:36+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 10:03:24+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 09:50:08+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 09:40:57+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 09:32:48+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 09:26:40+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 09:19:32+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 09:09:20+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 09:03:13+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 08:57:05+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 08:48:56+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 08:36:41+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 08:27:31+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 07:58:57+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 26 2026 07:35:45+07:00 SW-S5735-CORNER %%01INFO/4/IM_LOGFILE_AGING_DELETE(l):CID=0x806003ff;One log file was deleted due to aging. (LogFileName=1#flash:/logfile/diaglog_1_20260917074143.log.zip)
+Oct 26 2026 07:35:45+07:00 SW-S5735-CORNER %%01INFO/4/IM_LOGFILE_AGING(s):CID=0x806003ff;One log file was deleted due to aging. (LogFileName=1#flash:/logfile/diaglog_1_20260917074143.log.zip)
+Oct 26 2026 00:38:17+07:00 SW-S5735-CORNER %%01SYSCLOCK/4/TM_UTC_TIME_CHANGE(l):CID=0x80cc001c;The system UTC time is changed from previous UTC Time 2026-10-26 00:38:18 to current UTC Time 2026-10-26 00:38:17.
+Oct 25 2026 23:39:33+07:00 SW-S5735-CORNER %%01INFO/4/IM_LOGFILE_AGING_DELETE(l):CID=0x806003ff;One log file was deleted due to aging. (LogFileName=1#flash:/logfile/pads/pads_1_20260710100737.pads.zip)
+Oct 25 2026 23:39:33+07:00 SW-S5735-CORNER %%01INFO/4/IM_LOGFILE_AGING(s):CID=0x806003ff;One log file was deleted due to aging. (LogFileName=1#flash:/logfile/pads/pads_1_20260710100737.pads.zip)
+Oct 25 2026 20:08:00+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 25 2026 17:52:20+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 25 2026 17:26:50+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 25 2026 08:20:06+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 25 2026 04:54:31+07:00 SW-S5735-CORNER %%01INFO/4/IM_LOGFILE_AGING_DELETE(l):CID=0x806003ff;One log file was deleted due to aging. (LogFileName=1#flash:/logfile/diaglog_1_20260916073640.log.zip)
+Oct 25 2026 04:54:31+07:00 SW-S5735-CORNER %%01INFO/4/IM_LOGFILE_AGING(s):CID=0x806003ff;One log file was deleted due to aging. (LogFileName=1#flash:/logfile/diaglog_1_20260916073640.log.zip)
+Oct 25 2026 00:38:08+07:00 SW-S5735-CORNER %%01SYSCLOCK/4/TM_UTC_TIME_CHANGE(l):CID=0x80cc001c;The system UTC time is changed from previous UTC Time 2026-10-25 00:38:08 to current UTC Time 2026-10-25 00:38:08.
+Oct 24 2026 22:51:58+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 24 2026 22:42:47+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 24 2026 14:09:42+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 24 2026 14:00:31+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 24 2026 09:35:05+07:00 SW-S5735-CORNER %%01INFO/4/IM_LOGFILE_AGING_DELETE(l):CID=0x806003ff;One log file was deleted due to aging. (LogFileName=1#flash:/logfile/pads/pads_1_20260708200035.pads.zip)
+Oct 24 2026 09:35:05+07:00 SW-S5735-CORNER %%01INFO/4/IM_LOGFILE_AGING(s):CID=0x806003ff;One log file was deleted due to aging. (LogFileName=1#flash:/logfile/pads/pads_1_20260708200035.pads.zip)
+Oct 24 2026 01:24:30+07:00 SW-S5735-CORNER %%01INFO/4/IM_LOGFILE_AGING_DELETE(l):CID=0x806003ff;One log file was deleted due to aging. (LogFileName=1#flash:/logfile/diaglog_1_20260915024232.log.zip)
+Oct 24 2026 01:24:30+07:00 SW-S5735-CORNER %%01INFO/4/IM_LOGFILE_AGING(s):CID=0x806003ff;One log file was deleted due to aging. (LogFileName=1#flash:/logfile/diaglog_1_20260915024232.log.zip)
+Oct 24 2026 01:03:52+07:00 SW-S5735-CORNER %%01CONTROLLERMNG/4/ONLINE_SUCCESS(l):Service=lbas[6228]0;Online success. (ControllerIP=159.138.3.24)
+Oct 24 2026 01:03:52+07:00 SW-S5735-CORNER %%01CONTROLLERMNG/4/REG_STATE_CHANGED(l):Service=lbas[6228]0;Register status changed from Connected to Registered. (ControllerIP=159.138.3.24)
+Oct 24 2026 01:03:50+07:00 SW-S5735-CORNER %%01CONTROLLERMNG/4/REG_STATE_CHANGED(l):Service=lbas[6228]0;Register status changed from RegisterFail to Connected. (ControllerIP=159.138.3.24)
+Oct 24 2026 01:03:22+07:00 SW-S5735-CORNER %%01SSHS/4/CALLHOME_RECORD(s):CID=0x8093754e;Callhome function maintenance information is collected. (Details =Socket creation failure response, local ip = 192.168.1.155, peer ip = 159.138.3.24, ret = 100011.)
+Oct 24 2026 01:02:06+07:00 SW-S5735-CORNER %%01CONTROLLERMNG/4/REG_STATE_CHANGED(l):Service=lbas[6228]0;Register status changed from Registered to RegisterFail. (ControllerIP=159.138.3.24)
+Oct 24 2026 01:02:06+07:00 SW-S5735-CORNER %%01CONTROLLERMNG/3/ONLINE_FAILED(l):Service=lbas[6228]0;Online failed. (ErrorCode=8, Reason=The client close the tcp link, ControllerIP=159.138.3.24)
+Oct 24 2026 00:43:57+07:00 SW-S5735-CORNER %%01SYSCLOCK/4/TM_UTC_TIME_CHANGE(l):CID=0x80cc001c;The system UTC time is changed from previous UTC Time 2026-10-24 00:43:58 to current UTC Time 2026-10-24 00:43:57.
+Oct 23 2026 22:46:36+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 23 2026 22:20:05+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 23 2026 20:40:07+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 23 2026 20:29:55+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 23 2026 19:38:55+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 23 2026 18:51:59+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 23 2026 18:34:39+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 23 2026 18:27:31+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 23 2026 18:20:22+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 23 2026 18:15:16+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 23 2026 18:09:09+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 23 2026 18:02:00+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 23 2026 17:44:40+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 23 2026 17:36:40+07:00 SW-S5735-CORNER %%01CPUDEFEND/4/STRACK_PROTOCOL_ATTACK(s):Service=fwmd0;System has detected one attack. (DetectionMode=source-mac, Interface=10GE1/0/1, SourceMAC=b2d1-40fd-c6a2, CVLAN=0, PVLAN=1, SourceIP=192.168.1.75, AttackTime=1792737331000)
+Oct 23 2026 17:36:40+07:00 SW-S5735-CORNER %%01CPUDEFEND/4/STRACK_PROTOCOL_ATTACK(s):Service=fwmd0;System has detected one attack. (DetectionMode=source-mac, Interface=10GE1/0/1, SourceMAC=d2f0-53b5-e12f, CVLAN=0, PVLAN=1, SourceIP=192.168.1.198, AttackTime=1792730145000)
+Oct 23 2026 17:26:18+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 23 2026 17:19:10+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 23 2026 17:07:57+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 23 2026 16:55:42+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 23 2026 16:48:34+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 23 2026 16:43:28+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 23 2026 16:36:19+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 23 2026 16:27:09+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 23 2026 16:14:54+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 23 2026 16:07:46+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 23 2026 16:00:37+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 23 2026 15:54:30+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 23 2026 15:48:23+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 23 2026 15:31:02+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 23 2026 15:12:41+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 23 2026 14:21:41+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 23 2026 14:06:22+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 23 2026 13:39:51+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 23 2026 13:29:39+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 23 2026 13:15:23+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 23 2026 12:44:46+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 23 2026 12:35:36+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 23 2026 12:23:21+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 23 2026 12:13:09+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 23 2026 11:35:25+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 23 2026 11:25:13+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 23 2026 11:04:49+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 23 2026 10:49:31+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 23 2026 10:29:07+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 23 2026 10:24:01+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 23 2026 10:06:40+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 23 2026 09:53:24+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 23 2026 09:48:18+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 23 2026 09:38:06+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 23 2026 09:33:00+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 23 2026 09:26:53+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 23 2026 09:17:42+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 23 2026 09:07:30+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 23 2026 08:56:17+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 23 2026 08:44:03+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 23 2026 08:35:53+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 23 2026 08:24:40+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 23 2026 07:43:52+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 23 2026 07:17:20+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 23 2026 03:01:19+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 23 2026 02:24:21+07:00 SW-S5735-CORNER %%01INFO/4/IM_LOGFILE_AGING_DELETE(l):CID=0x806003ff;One log file was deleted due to aging. (LogFileName=1#flash:/logfile/diaglog_1_20260913210405.log.zip)
+Oct 23 2026 02:24:21+07:00 SW-S5735-CORNER %%01INFO/4/IM_LOGFILE_AGING(s):CID=0x806003ff;One log file was deleted due to aging. (LogFileName=1#flash:/logfile/diaglog_1_20260913210405.log.zip)
+Oct 23 2026 00:40:11+07:00 SW-S5735-CORNER %%01SYSCLOCK/4/TM_UTC_TIME_CHANGE(l):CID=0x80cc001c;The system UTC time is changed from previous UTC Time 2026-10-23 00:40:11 to current UTC Time 2026-10-23 00:40:11.
+Oct 23 2026 00:26:17+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 22 2026 23:35:17+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 22 2026 23:21:00+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+Oct 22 2026 22:41:13+07:00 SW-S5735-CORNER %%01FWM-ETH/4/hwMflpVlanLoopAlarm_clear(l):CID=0x0-alarmID=0x095e0012-clearType=service_resume;Mac flapping detection recovered in vlan 1.
+<SW-S5735-CORNER>

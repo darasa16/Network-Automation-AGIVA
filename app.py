@@ -539,7 +539,7 @@ def telegram_page():
         {"command": "/alerts", "params": "-", "desc": "Menampilkan daftar gangguan dan anomali jaringan aktif yang memerlukan mitigasi."},
         {"command": "/ack", "params": "<alert_id>", "desc": "Melakukan konfirmasi penanganan alert anomali oleh teknisi bertugas."},
         {"command": "/resolve", "params": "<alert_id>", "desc": "Menandai bahwa gangguan jaringan telah selesai ditangani."},
-        {"command": "/backup", "params": "<nama_device>", "desc": "Memicu backup running-config manual device tertentu."},
+        {"command": "/backup", "params": "<nama_device> [kategori]", "desc": "Memicu backup manual konfigurasi & log audit (pilihan: all, system, config, traffic, threat)."},
         {"command": "/user", "params": "-", "desc": "Melihat profil teknisi, Chat ID Telegram, dan verifikasi status otorisasi Whitelist."},
         {"command": "/approve", "params": "<username> [role]", "desc": "(Khusus Admin) Menyetujui akses teknisi baru dengan role pilihan."}
     ]
@@ -632,21 +632,107 @@ def api_test_telegram_alert():
 @app.route('/backup.html')
 @app.route('/backupfile.html')
 def backups_page():
-    """Route: /backups - Riwayat backup konfigurasi harian"""
+    """Route: /backups - Riwayat backup konfigurasi & log audit multi-vendor"""
     session = db_session()
     backups = session.query(BackupHistory).order_by(BackupHistory.timestamp.desc()).all()
     backups_data = []
+    success_count = 0
+    failed_count = 0
     for b in backups:
+        cat = getattr(b, 'category', None)
+        if not cat:
+            fp_lower = (b.file_path or "").lower()
+            if "_system" in fp_lower or "logbuffer" in fp_lower:
+                cat = "System"
+            elif "_traffic" in fp_lower:
+                cat = "Traffic"
+            elif "_threat" in fp_lower:
+                cat = "Threat"
+            else:
+                cat = "Config"
+
+        if b.status == 'SUCCESS':
+            success_count += 1
+        else:
+            failed_count += 1
+
+        time_str = b.timestamp.strftime("%H:%M:%S WIB") if b.timestamp else "-"
+        date_str = b.timestamp.strftime("%d/%m/%Y") if b.timestamp else "-"
+        full_date_str = b.timestamp.strftime("%Y-%m-%d %H:%M:%S WIB") if b.timestamp else "-"
+
+        # Format rentang waktu 24 jam (dari 24 jam sebelumnya sampai jam eksekusi)
+        if b.timestamp:
+            yesterday = b.timestamp - timedelta(days=1)
+            range_str = f"{yesterday.strftime('%d/%m %H:%M:%S')} — {b.timestamp.strftime('%d/%m %H:%M:%S WIB')}"
+        else:
+            raw_range = getattr(b, 'data_range', None)
+            if raw_range and '—' in raw_range and 'Snapshot' not in raw_range:
+                range_str = raw_range
+            else:
+                range_str = "01/11 02:00:00 — 02/11 02:00:00 WIB"
+
         backups_data.append({
             "id": b.backup_id,
             "device": b.device.name if b.device else "Unknown",
             "site": b.device.site if b.device else "-",
-            "date": b.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
+            "category": cat,
+            "time": time_str,
+            "date": date_str,
+            "full_date": full_date_str,
             "file": b.file_path,
             "size": b.file_size,
+            "trigger_by": getattr(b, 'trigger_by', 'Scheduler (02:00 WIB)') or 'Scheduler (02:00 WIB)',
+            "data_range": range_str,
             "status": b.status
         })
-    return render_template('backups.html', backups=backups_data)
+    session.close()
+    return render_template(
+        'backups.html',
+        backups=backups_data,
+        success_count=success_count,
+        failed_count=failed_count,
+        total_backups=len(backups_data)
+    )
+
+@app.route('/api/backup/content/<int:backup_id>')
+def api_backup_content(backup_id):
+    """Mengembalikan isi teks berkas backup untuk preview modal di backups.html"""
+    from backup_service import get_backup_content
+    res = get_backup_content(backup_id)
+    return jsonify(res)
+
+@app.route('/api/backup/download/<int:backup_id>')
+def api_backup_download(backup_id):
+    """Mengunduh berkas fisik backup (.txt) langsung ke laptop pengguna"""
+    from flask import send_file
+    from backup_service import BACKUP_BASE_DIR
+    session = db_session()
+    try:
+        b = session.query(BackupHistory).filter(BackupHistory.backup_id == backup_id).first()
+        if not b:
+            return jsonify({"error": "Data backup tidak ditemukan"}), 404
+        
+        clean_path = b.file_path.strip("/\\")
+        parts = clean_path.split("/")
+        if parts and parts[0] == "backups":
+            parts = parts[1:]
+        
+        abs_path = os.path.join(BACKUP_BASE_DIR, *parts)
+        if not os.path.exists(abs_path):
+            return jsonify({"error": "Berkas fisik belum tersimpan di disk server"}), 404
+            
+        filename = os.path.basename(abs_path)
+        return send_file(abs_path, as_attachment=True, download_name=filename)
+    finally:
+        session.close()
+
+@app.route('/api/backup/trigger/<string:device_name>', methods=['POST'])
+def api_trigger_backup(device_name):
+    """Memicu penarikan backup & log langsung ke perangkat via SSH/API dari web modal"""
+    from backup_service import run_device_backup
+    category = request.args.get('category') or (request.json.get('category') if request.is_json else None)
+    res = run_device_backup(device_name, category_filter=category, trigger_by="Web Dashboard")
+    return jsonify(res)
 
 # 5. REAL-TIME JSON APIS FOR DASHBOARD POLLING & OMNI-SEARCH
 

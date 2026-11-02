@@ -1,0 +1,43 @@
+======================================================================
+AGIVA NOC INITIAL FULL BACKUP [CONFIG] - 2026-11-02 11:37:11 WIB
+======================================================================
+
+Running configuration:
+
+; JL255A Configuration Editor; Created on release #WC.16.11.0024
+; Ver #14:67.6f.f8.1d.9b.3f.bf.bb.ef.7c.59.fc.6b.fb.9f.fc.ff.ff.37.ef:44
+hostname "SW-2930F-HO"
+module 1 type jl255a
+include-credentials
+no telnet-server
+ip route 0.0.0.0 0.0.0.0 192.168.1.1
+ip route 192.168.101.0 255.255.255.0 192.168.104.3
+ip routing
+snmp-server community "public"
+snmp-server enable traps mac-count-notify
+snmp-server contact "MIRDA SABILA" location "KEBAYORAN SQUARE"
+snmpv3 engineid "00:00:00:0b:00:00:9c:dc:71:8c:8d:a0"
+vlan 1
+   name "DEFAULT_VLAN"
+   no untagged 12,22
+   untagged 1-11,13-21,23-28
+   ip address dhcp-bootp
+   ipv6 enable
+   ipv6 address dhcp full
+   exit
+vlan 2
+   name "Guest"
+   no ip address
+   exit
+vlan 4
+   name "Biznet"
+   untagged 12
+   tagged 2,6,9,25
+   no ip address
+   exit
+vlan 104
+   name "Management_MicroSegmentation"
+   untagged 22
+   ip address 192.168.104.1 255.255.255.0
+   exit
+allow-unsupported-transceiver

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Network Configuration Backups - AGIVA NOC</title>
+    <title>Network Configuration & Log Backups - AGIVA NOC</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,6 +13,178 @@
         rel="stylesheet">
     <!-- Relative CSS -->
     <link rel="stylesheet" href="/static/css/style.css?v=8.1">
+    <style>
+        .badge-category-orange {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(232, 165, 118, 0.15);
+            color: #E8A576;
+            border: 1px solid rgba(232, 165, 118, 0.35);
+            padding: 3px 9px;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        /* Category Filter Buttons - Diselaraskan dengan Desain Filter Tab/Badge AGIVA */
+        .category-filters-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 12px 0 18px 0;
+            flex-wrap: wrap;
+        }
+
+        .category-filter-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 8px 18px;
+            border-radius: var(--radius-pill);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1.2;
+        }
+
+        .category-filter-btn:hover {
+            color: #ffffff;
+            border-color: var(--color-copper);
+            background: rgba(232, 165, 118, 0.08);
+            transform: translateY(-1px);
+        }
+
+        .category-filter-btn.active {
+            background: var(--gradient-agiva);
+            color: #ffffff;
+            border-color: transparent;
+            box-shadow: var(--shadow-agiva);
+            font-weight: 700;
+        }
+
+        /* Modal Viewer Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 20px;
+        }
+
+        .modal-card {
+            background: #111827;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 12px;
+            width: 100%;
+            max-width: 960px;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+            animation: modalFadeIn 0.2s ease-out;
+        }
+
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.97);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .modal-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-close-btn {
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            font-size: 26px;
+            line-height: 1;
+            cursor: pointer;
+            padding: 4px 10px;
+            border-radius: 6px;
+            transition: color 0.2s, background 0.2s;
+        }
+
+        .modal-close-btn:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-body {
+            padding: 16px 20px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .modal-code-viewer {
+            margin: 0;
+            background: #090d16;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            padding: 18px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            line-height: 1.6;
+            color: #e2e8f0;
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 55vh;
+            overflow-y: auto;
+        }
+
+        .modal-footer {
+            padding: 12px 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(0, 0, 0, 0.25);
+            border-bottom-left-radius: 12px;
+            border-bottom-right-radius: 12px;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.08);
+            color: #e2e8f0;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+    </style>
 </head>
 
 <body>
@@ -22,7 +194,6 @@
             <a href="/" class="brand-logo">
                 <img src="/static/img/20260203-Agiva-Logo-Rect-1280px.png" alt="Agiva Logo" class="brand-img"
                     onerror="this.src='/static/img/20260203-Agiva-Logo-Rect-1280px.png'" />
-
             </a>
 
             <div class="nav-search">
@@ -31,14 +202,16 @@
                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                 </svg>
                 <input type="text" id="globalSearch" placeholder="Cari perangkat, alert, data" autocomplete="off" />
-                <button type="button" id="clearSearchBtn" class="search-clear-btn" title="Reset pencarian">&times;</button>
+                <button type="button" id="clearSearchBtn" class="search-clear-btn"
+                    title="Reset pencarian">&times;</button>
                 <div id="searchResultsDropdown" class="search-results-dropdown" style="display: none;"></div>
             </div>
         </div>
 
         <nav class="nav-links">
             <a href="/" class="nav-item">Monitoring</a>
-            <a href="/alerts" class="nav-item">Alerts {% if active_alerts_count > 0 %}<span class="nav-badge">{{ active_alerts_count }}</span>{% endif %}</a>
+            <a href="/alerts" class="nav-item">Alerts {% if active_alerts_count > 0 %}<span class="nav-badge">{{
+                    active_alerts_count }}</span>{% endif %}</a>
             <a href="/telegram" class="nav-item">Telegram Bot</a>
             <a href="/backups" class="nav-item active">Backups</a>
         </nav>
@@ -71,21 +244,12 @@
         <div class="backups-page-container">
             <div class="page-header-row">
                 <div>
-                    <h2>Network Configuration Backups</h2>
-                    <p class="sub-text">Pencadangan file konfigurasi harian otomatis via APScheduler dan Netmiko /
-                        RouterOS-API.</p>
+                    <h2>Network Configuration & Log Backups</h2>
+                    <p class="sub-text">Pencadangan berkas konfigurasi & log audit multi-vendor otomatis dan manual
+                        melalui bot Telegram</p>
                 </div>
                 <div class="header-tools" style="display:flex; align-items:center; gap:12px;">
-                    <span class="cron-badge">Penjadwalan Harian: Pukul 02:00 WIB</span>
-                    <button class="btn-action" onclick="triggerManualBackup()">
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                            <polyline points="7 10 12 15 17 10"></polyline>
-                            <line x1="12" y1="15" x2="12" y2="3"></line>
-                        </svg>
-                        Backup Manual Sekarang
-                    </button>
+                    <span class="cron-badge">Penjadwalan Otomatis: Setiap 02:00 WIB</span>
                 </div>
             </div>
 
@@ -95,11 +259,11 @@
                     <div class="kpi-info">
                         <span class="kpi-label">Penyimpanan Terstruktur</span>
                         <h3
-                            style="color: #38bdf8; margin: 6px 0; font-family: 'JetBrains Mono', monospace; word-break: break-all;">
+                            style="color: #ffffff; margin: 6px 0; font-family: 'JetBrains Mono', monospace; word-break: break-all; font-size: 15px; font-weight: 700;">
                             /backups/{site}/{device}/</h3>
-                        <span class="kpi-sub">Format File: YYYY-MM-DD_config.txt</span>
+                        <span class="kpi-sub">Format: YYYY-MM-DD_{category}.txt</span>
                     </div>
-                    <div class="kpi-icon-box icon-blue">
+                    <div class="kpi-icon-box icon-magenta">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z">
                             </path>
@@ -109,9 +273,9 @@
 
                 <div class="kpi-card">
                     <div class="kpi-info">
-                        <span class="kpi-label">Kebijakan Retensi</span>
-                        <h3 style="color: #10b981; margin: 6px 0;">30 Hari Terakhir</h3>
-                        <span class="kpi-sub">Penghapusan file lawas otomatis</span>
+                        <span class="kpi-label">Mode Sinkronisasi</span>
+                        <h3 style="color: #ffffff; margin: 6px 0; font-weight: 700;">Checkpoint Harian</h3>
+                        <span class="kpi-sub">Log harian terjadwal & manual Telegram</span>
                     </div>
                     <div class="kpi-icon-box icon-green">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -124,10 +288,13 @@
                 <div class="kpi-card">
                     <div class="kpi-info">
                         <span class="kpi-label">Status Siklus Terakhir</span>
-                        <h3 style="color: #E8A576; margin: 6px 0;">3 Sukses / 1 Gagal</h3>
-                        <span class="kpi-sub">Notifikasi dikirim ke Telegram tim NOC</span>
+                        <h3 style="color: #ffffff; margin: 6px 0; font-weight: 700;">
+                            {% if backups %}{{ success_count }} Sukses / {{ failed_count }} Gagal{% else %}Semua Berkas
+                            Sinkron{% endif %}
+                        </h3>
+                        <span class="kpi-sub">Notifikasi dikirim via Telegram</span>
                     </div>
-                    <div class="kpi-icon-box icon-amber">
+                    <div class="kpi-icon-box icon-red">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
                             <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
@@ -137,11 +304,12 @@
 
                 <div class="kpi-card">
                     <div class="kpi-info">
-                        <span class="kpi-label">Integrasi Git Repository</span>
-                        <h3 style="color: #38bdf8; margin: 6px 0;">Version Controlled</h3>
-                        <span class="kpi-sub">Auto commit diff perubahan config</span>
+                        <span class="kpi-label">Kategori Arsip</span>
+                        <h3 style="color: #ffffff; margin: 6px 0; font-size: 16px; font-weight: 700;">System, Config,
+                            Traffic, Threat</h3>
+                        <span class="kpi-sub">Kategori dipilih sesuai kebutuhan</span>
                     </div>
-                    <div class="kpi-icon-box icon-blue">
+                    <div class="kpi-icon-box icon-amber">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <circle cx="18" cy="18" r="3"></circle>
                             <circle cx="6" cy="6" r="3"></circle>
@@ -154,13 +322,13 @@
 
             <!-- Backups Table Panel -->
             <div class="table-panel">
-                <div class="panel-header">
+                <div class="panel-header" style="flex-wrap: wrap; gap: 12px;">
                     <div>
-                        <h3 class="panel-title">Riwayat Backup Konfigurasi Terkini</h3>
-                        <span class="panel-sub">Hasil eksekusi harian dan trigger manual bot Telegram (/backup)</span>
+                        <h3 class="panel-title">Riwayat Backup Konfigurasi & Log Audit</h3>
+                        <span class="panel-sub">Pencatatan real-time hasil eksekusi otomatis maupun manual
+                            Telegram</span>
                     </div>
                     <div class="table-actions" style="display: flex; align-items: center; gap: 10px;">
-                        <input type="text" id="backupTableSearch" placeholder="Saring file backup..." style="background: var(--bg-card); border: 1px solid var(--border-color); color: #fff; padding: 6px 12px; border-radius: var(--radius-sm); font-size: 12px; outline: none; width: 180px;" />
                         <button class="btn-refresh" onclick="refreshBackups(this)">
                             <svg class="refresh-icon" viewBox="0 0 24 24" width="14" height="14" fill="none"
                                 stroke="currentColor" stroke-width="2.5"
@@ -171,16 +339,31 @@
                         </button>
                     </div>
                 </div>
+
+                <!-- Category Filter Pills Bar -->
+                <div class="category-filters-container">
+                    <button type="button" class="category-filter-btn active" data-cat="ALL"
+                        onclick="setCategoryFilter('ALL', this)">All</button>
+                    <button type="button" class="category-filter-btn" data-cat="SYSTEM"
+                        onclick="setCategoryFilter('SYSTEM', this)">System</button>
+                    <button type="button" class="category-filter-btn" data-cat="CONFIG"
+                        onclick="setCategoryFilter('CONFIG', this)">Config</button>
+                    <button type="button" class="category-filter-btn" data-cat="TRAFFIC"
+                        onclick="setCategoryFilter('TRAFFIC', this)">Traffic</button>
+                    <button type="button" class="category-filter-btn" data-cat="THREAT"
+                        onclick="setCategoryFilter('THREAT', this)">Threat</button>
+                </div>
+
                 <div class="table-responsive">
                     <table class="data-table" id="backupsTable">
                         <thead>
                             <tr>
-                                <th>ID</th>
-                                <th>Device Name</th>
-                                <th>Site / Lokasi</th>
-                                <th>Waktu Pencadangan</th>
-                                <th>File Konfigurasi</th>
+                                <th>Rentang Waktu</th>
+                                <th>Perangkat & Site</th>
+                                <th>Kategori</th>
+                                <th>Nama File</th>
                                 <th>Ukuran</th>
+                                <th>Pemicu</th>
                                 <th>Status</th>
                                 <th class="text-center">Aksi</th>
                             </tr>
@@ -188,13 +371,38 @@
                         <tbody id="backupsTableBody">
                             {% if backups %}
                             {% for b in backups %}
-                            <tr id="backup-row-{{ b.id }}">
-                                <td><code>#{{ b.id }}</code></td>
-                                <td><strong>{{ b.device }}</strong></td>
-                                <td>{{ b.site }}</td>
-                                <td>{{ b.date }}</td>
-                                <td><code>{{ b.file }}</code></td>
+                            <tr id="backup-row-{{ b.id }}" data-category="{{ b.category | upper }}">
+                                <td>
+                                    <span
+                                        style="font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600; color:#38bdf8; background:rgba(56,189,248,0.08); padding:4px 9px; border-radius:5px; border:1px solid rgba(56,189,248,0.25); white-space:nowrap; display:inline-flex; align-items:center; gap:5px;"
+                                        title="Waktu Eksekusi: {{ b.full_date }}">
+                                        🕒 {{ b.data_range }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <strong>{{ b.device }}</strong><br>
+                                    <span style="color:#94a3b8; font-size:11px;">{{ b.site }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge-category-orange">{{ b.category }}</span>
+                                </td>
+                                <td><code
+                                        style="font-size:11px;">{{ b.file.split('/')[-1] if '/' in b.file else b.file }}</code>
+                                </td>
                                 <td>{{ b.size }}</td>
+                                <td>
+                                    {% if 'Telegram' in b.trigger_by %}
+                                    <span
+                                        style="display:inline-flex; align-items:center; gap:4px; font-size:11px; color:#38bdf8;">
+                                        <span>{{ b.trigger_by }}</span>
+                                    </span>
+                                    {% else %}
+                                    <span
+                                        style="display:inline-flex; align-items:center; gap:4px; font-size:11px; color:#94a3b8;">
+                                        <span>{{ b.trigger_by }}</span>
+                                    </span>
+                                    {% endif %}
+                                </td>
                                 <td>
                                     {% if b.status == 'SUCCESS' %}
                                     <span class="status-badge badge-up">
@@ -207,81 +415,413 @@
                                     {% endif %}
                                 </td>
                                 <td class="text-center">
-                                    <button class="btn-action"
-                                        style="padding: 4px 12px !important; font-size: 11px !important;"
-                                        onclick="viewConfig('{{ b.device }}')">Lihat Config</button>
+                                    <div style="display:inline-flex; gap:6px;">
+                                        <button class="btn-action"
+                                            style="padding: 4px 10px !important; font-size: 11px !important;"
+                                            onclick="viewConfig('{{ b.id }}', '{{ b.device }}', '{{ b.category }}', '{{ b.file }}')">Lihat</button>
+                                        <a href="/api/backup/download/{{ b.id }}" class="btn-secondary"
+                                            style="padding: 4px 10px !important; font-size: 11px !important; text-decoration:none; display:inline-flex; align-items:center;"
+                                            title="Unduh Berkas .txt">Unduh</a>
+                                    </div>
                                 </td>
                             </tr>
                             {% endfor %}
                             {% else %}
-                            <tr>
-                                <td><code>#1</code></td>
-                                <td><strong>Router-Core-01</strong></td>
-                                <td>Data Center HQ</td>
-                                <td>2026-09-28 02:00:15 WIB</td>
-                                <td><code>2026-09-28_config.txt</code></td>
-                                <td>45.2 KB</td>
+                            <!-- Realistic Default Seed Showcase for 3 Network Devices -->
+                            <tr data-category="SYSTEM">
+                                <td>
+                                    <span
+                                        style="font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600; color:#38bdf8; background:rgba(56,189,248,0.08); padding:4px 9px; border-radius:5px; border:1px solid rgba(56,189,248,0.25); white-space:nowrap; display:inline-flex; align-items:center; gap:5px;"
+                                        title="Waktu Eksekusi: 2026-11-02 02:00:10 WIB">🕒
+                                        01/11 02:00:10 — 02/11 02:00:10 WIB</span>
+                                </td>
+                                <td>
+                                    <strong>FW-PA220-1</strong><br>
+                                    <span style="color:#94a3b8; font-size:11px;">HO Gateway</span>
+                                </td>
+                                <td><span class="badge-category-orange">SYSTEM</span></td>
+                                <td><code style="font-size:11px;">2026-11-02_system.txt</code></td>
+                                <td>142.5 KB</td>
+                                <td><span
+                                        style="display:inline-flex; align-items:center; gap:4px; font-size:11px; color:#94a3b8;"><span>⏰</span>
+                                        Scheduler (02:00 WIB)</span></td>
                                 <td>
                                     <span class="status-badge badge-up">
                                         <span class="badge-dot-green"></span> SUCCESS
                                     </span>
                                 </td>
                                 <td class="text-center">
-                                    <button class="btn-action"
-                                        style="padding: 4px 12px !important; font-size: 11px !important;"
-                                        onclick="viewConfig('Router-Core-01')">Lihat Config</button>
+                                    <div style="display:inline-flex; gap:6px;">
+                                        <button class="btn-action"
+                                            style="padding: 4px 10px !important; font-size: 11px !important;"
+                                            onclick="viewConfig(null, 'FW-PA220-1', 'System', '/backups/HO_Gateway/FW-PA220-1/2026-11-02_system.txt')">Lihat</button>
+                                        <button class="btn-secondary"
+                                            style="padding: 4px 10px !important; font-size: 11px !important;"
+                                            onclick="showToast('Mengunduh berkas...')">Unduh</button>
+                                    </div>
                                 </td>
                             </tr>
-                            <tr>
-                                <td><code>#2</code></td>
-                                <td><strong>Switch-Dist-01</strong></td>
-                                <td>Data Center HQ</td>
-                                <td>2026-09-28 02:02:40 WIB</td>
-                                <td><code>2026-09-28_config.txt</code></td>
-                                <td>128.6 KB</td>
+                            <tr data-category="CONFIG">
+                                <td>
+                                    <span
+                                        style="font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600; color:#38bdf8; background:rgba(56,189,248,0.08); padding:4px 9px; border-radius:5px; border:1px solid rgba(56,189,248,0.25); white-space:nowrap; display:inline-flex; align-items:center; gap:5px;"
+                                        title="Waktu Eksekusi: 2026-11-02 02:00:15 WIB">🕒
+                                        01/11 02:00:15 — 02/11 02:00:15 WIB</span>
+                                </td>
+                                <td>
+                                    <strong>FW-PA220-1</strong><br>
+                                    <span style="color:#94a3b8; font-size:11px;">HO Gateway</span>
+                                </td>
+                                <td><span class="badge-category-orange">CONFIG</span></td>
+                                <td><code style="font-size:11px;">2026-11-02_config.txt</code></td>
+                                <td>18.4 KB</td>
+                                <td><span
+                                        style="display:inline-flex; align-items:center; gap:4px; font-size:11px; color:#94a3b8;"><span>⏰</span>
+                                        Scheduler (02:00 WIB)</span></td>
                                 <td>
                                     <span class="status-badge badge-up">
                                         <span class="badge-dot-green"></span> SUCCESS
                                     </span>
                                 </td>
                                 <td class="text-center">
-                                    <button class="btn-action"
-                                        style="padding: 4px 12px !important; font-size: 11px !important;"
-                                        onclick="viewConfig('Switch-Dist-01')">Lihat Config</button>
+                                    <div style="display:inline-flex; gap:6px;">
+                                        <button class="btn-action"
+                                            style="padding: 4px 10px !important; font-size: 11px !important;"
+                                            onclick="viewConfig(null, 'FW-PA220-1', 'Config', '/backups/HO_Gateway/FW-PA220-1/2026-11-02_config.txt')">Lihat</button>
+                                        <button class="btn-secondary"
+                                            style="padding: 4px 10px !important; font-size: 11px !important;"
+                                            onclick="showToast('Mengunduh berkas...')">Unduh</button>
+                                    </div>
                                 </td>
                             </tr>
-                            <tr>
-                                <td><code>#3</code></td>
-                                <td><strong>Router-Edge-01</strong></td>
-                                <td>Gateway IDC</td>
-                                <td>2026-09-28 02:04:11 WIB</td>
-                                <td><code>2026-09-28_config.txt</code></td>
-                                <td>56.8 KB</td>
+                            <tr data-category="TRAFFIC">
+                                <td>
+                                    <span
+                                        style="font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600; color:#38bdf8; background:rgba(56,189,248,0.08); padding:4px 9px; border-radius:5px; border:1px solid rgba(56,189,248,0.25); white-space:nowrap; display:inline-flex; align-items:center; gap:5px;"
+                                        title="Waktu Eksekusi: 2026-11-02 02:00:25 WIB">🕒
+                                        01/11 02:00:25 — 02/11 02:00:25 WIB</span>
+                                </td>
+                                <td>
+                                    <strong>FW-PA220-1</strong><br>
+                                    <span style="color:#94a3b8; font-size:11px;">HO Gateway</span>
+                                </td>
+                                <td><span class="badge-category-orange">TRAFFIC</span></td>
+                                <td><code style="font-size:11px;">2026-11-02_traffic.txt</code></td>
+                                <td>380.2 KB</td>
+                                <td><span
+                                        style="display:inline-flex; align-items:center; gap:4px; font-size:11px; color:#94a3b8;"><span>⏰</span>
+                                        Scheduler (02:00 WIB)</span></td>
                                 <td>
                                     <span class="status-badge badge-up">
                                         <span class="badge-dot-green"></span> SUCCESS
                                     </span>
                                 </td>
                                 <td class="text-center">
-                                    <button class="btn-action"
-                                        style="padding: 4px 12px !important; font-size: 11px !important;"
-                                        onclick="viewConfig('Router-Edge-01')">Lihat Config</button>
+                                    <div style="display:inline-flex; gap:6px;">
+                                        <button class="btn-action"
+                                            style="padding: 4px 10px !important; font-size: 11px !important;"
+                                            onclick="viewConfig(null, 'FW-PA220-1', 'Traffic', '/backups/HO_Gateway/FW-PA220-1/2026-11-02_traffic.txt')">Lihat</button>
+                                        <button class="btn-secondary"
+                                            style="padding: 4px 10px !important; font-size: 11px !important;"
+                                            onclick="showToast('Mengunduh berkas...')">Unduh</button>
+                                    </div>
                                 </td>
                             </tr>
-                            <tr>
-                                <td><code>#4</code></td>
-                                <td><strong>Switch-Access-Bdg</strong></td>
-                                <td>Bandung Site</td>
-                                <td>2026-09-28 02:05:30 WIB</td>
-                                <td><code>-</code></td>
-                                <td>0 KB</td>
+                            <tr data-category="THREAT">
                                 <td>
-                                    <span class="status-badge badge-down">
-                                        <span class="badge-dot-red"></span> FAILED
+                                    <span
+                                        style="font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600; color:#38bdf8; background:rgba(56,189,248,0.08); padding:4px 9px; border-radius:5px; border:1px solid rgba(56,189,248,0.25); white-space:nowrap; display:inline-flex; align-items:center; gap:5px;"
+                                        title="Waktu Eksekusi: 2026-11-02 02:00:30 WIB">🕒
+                                        01/11 02:00:30 — 02/11 02:00:30 WIB</span>
+                                </td>
+                                <td>
+                                    <strong>FW-PA220-1</strong><br>
+                                    <span style="color:#94a3b8; font-size:11px;">HO Gateway</span>
+                                </td>
+                                <td><span class="badge-category-orange">THREAT</span></td>
+                                <td><code style="font-size:11px;">2026-11-02_threat.txt</code></td>
+                                <td>24.8 KB</td>
+                                <td><span
+                                        style="display:inline-flex; align-items:center; gap:4px; font-size:11px; color:#94a3b8;"><span>⏰</span>
+                                        Scheduler (02:00 WIB)</span></td>
+                                <td>
+                                    <span class="status-badge badge-up">
+                                        <span class="badge-dot-green"></span> SUCCESS
                                     </span>
                                 </td>
                                 <td class="text-center">
-                                    <span class="text-muted-xs">Gagal Backup</span>
+                                    <div style="display:inline-flex; gap:6px;">
+                                        <button class="btn-action"
+                                            style="padding: 4px 10px !important; font-size: 11px !important;"
+                                            onclick="viewConfig(null, 'FW-PA220-1', 'Threat', '/backups/HO_Gateway/FW-PA220-1/2026-11-02_threat.txt')">Lihat</button>
+                                        <button class="btn-secondary"
+                                            style="padding: 4px 10px !important; font-size: 11px !important;"
+                                            onclick="showToast('Mengunduh berkas...')">Unduh</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr data-category="SYSTEM">
+                                <td>
+                                    <span
+                                        style="font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600; color:#38bdf8; background:rgba(56,189,248,0.08); padding:4px 9px; border-radius:5px; border:1px solid rgba(56,189,248,0.25); white-space:nowrap; display:inline-flex; align-items:center; gap:5px;"
+                                        title="Waktu Eksekusi: 2026-11-02 02:01:10 WIB">🕒
+                                        01/11 02:01:10 — 02/11 02:01:10 WIB</span>
+                                </td>
+                                <td>
+                                    <strong>SW-2930F-HO</strong><br>
+                                    <span style="color:#94a3b8; font-size:11px;">HO</span>
+                                </td>
+                                <td><span class="badge-category-orange">SYSTEM</span></td>
+                                <td><code style="font-size:11px;">2026-11-02_system.txt</code></td>
+                                <td>88.6 KB</td>
+                                <td><span
+                                        style="display:inline-flex; align-items:center; gap:4px; font-size:11px; color:#94a3b8;"><span>⏰</span>
+                                        Scheduler (02:00 WIB)</span></td>
+                                <td>
+                                    <span class="status-badge badge-up">
+                                        <span class="badge-dot-green"></span> SUCCESS
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <div style="display:inline-flex; gap:6px;">
+                                        <button class="btn-action"
+                                            style="padding: 4px 10px !important; font-size: 11px !important;"
+                                            onclick="viewConfig(null, 'SW-2930F-HO', 'System', '/backups/HO/SW-2930F-HO/2026-11-02_system.txt')">Lihat</button>
+                                        <button class="btn-secondary"
+                                            style="padding: 4px 10px !important; font-size: 11px !important;"
+                                            onclick="showToast('Mengunduh berkas...')">Unduh</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr data-category="CONFIG">
+                                <td>
+                                    <span
+                                        style="font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600; color:#38bdf8; background:rgba(56,189,248,0.08); padding:4px 9px; border-radius:5px; border:1px solid rgba(56,189,248,0.25); white-space:nowrap; display:inline-flex; align-items:center; gap:5px;"
+                                        title="Waktu Eksekusi: 2026-11-02 02:01:20 WIB">🕒
+                                        01/11 02:01:20 — 02/11 02:01:20 WIB</span>
+                                </td>
+                                <td>
+                                    <strong>SW-2930F-HO</strong><br>
+                                    <span style="color:#94a3b8; font-size:11px;">HO</span>
+                                </td>
+                                <td><span class="badge-category-orange">CONFIG</span></td>
+                                <td><code style="font-size:11px;">2026-11-02_config.txt</code></td>
+                                <td>42.1 KB</td>
+                                <td><span
+                                        style="display:inline-flex; align-items:center; gap:4px; font-size:11px; color:#94a3b8;"><span>⏰</span>
+                                        Scheduler (02:00 WIB)</span></td>
+                                <td>
+                                    <span class="status-badge badge-up">
+                                        <span class="badge-dot-green"></span> SUCCESS
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <div style="display:inline-flex; gap:6px;">
+                                        <button class="btn-action"
+                                            style="padding: 4px 10px !important; font-size: 11px !important;"
+                                            onclick="viewConfig(null, 'SW-2930F-HO', 'Config', '/backups/HO/SW-2930F-HO/2026-11-02_config.txt')">Lihat</button>
+                                        <button class="btn-secondary"
+                                            style="padding: 4px 10px !important; font-size: 11px !important;"
+                                            onclick="showToast('Mengunduh berkas...')">Unduh</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr data-category="TRAFFIC">
+                                <td>
+                                    <span
+                                        style="font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600; color:#38bdf8; background:rgba(56,189,248,0.08); padding:4px 9px; border-radius:5px; border:1px solid rgba(56,189,248,0.25); white-space:nowrap; display:inline-flex; align-items:center; gap:5px;"
+                                        title="Waktu Eksekusi: 2026-11-02 02:01:35 WIB">🕒
+                                        01/11 02:01:35 — 02/11 02:01:35 WIB</span>
+                                </td>
+                                <td>
+                                    <strong>SW-2930F-HO</strong><br>
+                                    <span style="color:#94a3b8; font-size:11px;">HO</span>
+                                </td>
+                                <td><span class="badge-category-orange">TRAFFIC</span></td>
+                                <td><code style="font-size:11px;">2026-11-02_traffic.txt</code></td>
+                                <td>195.4 KB</td>
+                                <td><span
+                                        style="display:inline-flex; align-items:center; gap:4px; font-size:11px; color:#94a3b8;"><span>⏰</span>
+                                        Scheduler (02:00 WIB)</span></td>
+                                <td>
+                                    <span class="status-badge badge-up">
+                                        <span class="badge-dot-green"></span> SUCCESS
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <div style="display:inline-flex; gap:6px;">
+                                        <button class="btn-action"
+                                            style="padding: 4px 10px !important; font-size: 11px !important;"
+                                            onclick="viewConfig(null, 'SW-2930F-HO', 'Traffic', '/backups/HO/SW-2930F-HO/2026-11-02_traffic.txt')">Lihat</button>
+                                        <button class="btn-secondary"
+                                            style="padding: 4px 10px !important; font-size: 11px !important;"
+                                            onclick="showToast('Mengunduh berkas...')">Unduh</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr data-category="THREAT">
+                                <td>
+                                    <span
+                                        style="font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600; color:#38bdf8; background:rgba(56,189,248,0.08); padding:4px 9px; border-radius:5px; border:1px solid rgba(56,189,248,0.25); white-space:nowrap; display:inline-flex; align-items:center; gap:5px;"
+                                        title="Waktu Eksekusi: 2026-11-02 02:01:45 WIB">🕒
+                                        01/11 02:01:45 — 02/11 02:01:45 WIB</span>
+                                </td>
+                                <td>
+                                    <strong>SW-2930F-HO</strong><br>
+                                    <span style="color:#94a3b8; font-size:11px;">HO</span>
+                                </td>
+                                <td><span class="badge-category-orange">THREAT</span></td>
+                                <td><code style="font-size:11px;">2026-11-02_threat.txt</code></td>
+                                <td>14.2 KB</td>
+                                <td><span
+                                        style="display:inline-flex; align-items:center; gap:4px; font-size:11px; color:#94a3b8;"><span>⏰</span>
+                                        Scheduler (02:00 WIB)</span></td>
+                                <td>
+                                    <span class="status-badge badge-up">
+                                        <span class="badge-dot-green"></span> SUCCESS
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <div style="display:inline-flex; gap:6px;">
+                                        <button class="btn-action"
+                                            style="padding: 4px 10px !important; font-size: 11px !important;"
+                                            onclick="viewConfig(null, 'SW-2930F-HO', 'Threat', '/backups/HO/SW-2930F-HO/2026-11-02_threat.txt')">Lihat</button>
+                                        <button class="btn-secondary"
+                                            style="padding: 4px 10px !important; font-size: 11px !important;"
+                                            onclick="showToast('Mengunduh berkas...')">Unduh</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr data-category="SYSTEM">
+                                <td>
+                                    <span
+                                        style="font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600; color:#38bdf8; background:rgba(56,189,248,0.08); padding:4px 9px; border-radius:5px; border:1px solid rgba(56,189,248,0.25); white-space:nowrap; display:inline-flex; align-items:center; gap:5px;"
+                                        title="Waktu Eksekusi: 2026-11-02 02:02:05 WIB">🕒
+                                        01/11 02:02:05 — 02/11 02:02:05 WIB</span>
+                                </td>
+                                <td>
+                                    <strong>SW-S5735-CORNER</strong><br>
+                                    <span style="color:#94a3b8; font-size:11px;">Corner</span>
+                                </td>
+                                <td><span class="badge-category-orange">SYSTEM</span></td>
+                                <td><code style="font-size:11px;">2026-11-02_system.txt</code></td>
+                                <td>112.4 KB</td>
+                                <td><span
+                                        style="display:inline-flex; align-items:center; gap:4px; font-size:11px; color:#94a3b8;"><span>⏰</span>
+                                        Scheduler (02:00 WIB)</span></td>
+                                <td>
+                                    <span class="status-badge badge-up">
+                                        <span class="badge-dot-green"></span> SUCCESS
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <div style="display:inline-flex; gap:6px;">
+                                        <button class="btn-action"
+                                            style="padding: 4px 10px !important; font-size: 11px !important;"
+                                            onclick="viewConfig(null, 'SW-S5735-CORNER', 'System', '/backups/Corner/SW-S5735-CORNER/2026-11-02_system.txt')">Lihat</button>
+                                        <button class="btn-secondary"
+                                            style="padding: 4px 10px !important; font-size: 11px !important;"
+                                            onclick="showToast('Mengunduh berkas...')">Unduh</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr data-category="CONFIG">
+                                <td>
+                                    <span
+                                        style="font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600; color:#38bdf8; background:rgba(56,189,248,0.08); padding:4px 9px; border-radius:5px; border:1px solid rgba(56,189,248,0.25); white-space:nowrap; display:inline-flex; align-items:center; gap:5px;"
+                                        title="Waktu Eksekusi: 2026-11-02 02:02:18 WIB">🕒
+                                        01/11 02:02:18 — 02/11 02:02:18 WIB</span>
+                                </td>
+                                <td>
+                                    <strong>SW-S5735-CORNER</strong><br>
+                                    <span style="color:#94a3b8; font-size:11px;">Corner</span>
+                                </td>
+                                <td><span class="badge-category-orange">CONFIG</span></td>
+                                <td><code style="font-size:11px;">2026-11-02_config.txt</code></td>
+                                <td>64.3 KB</td>
+                                <td><span
+                                        style="display:inline-flex; align-items:center; gap:4px; font-size:11px; color:#94a3b8;"><span>⏰</span>
+                                        Scheduler (02:00 WIB)</span></td>
+                                <td>
+                                    <span class="status-badge badge-up">
+                                        <span class="badge-dot-green"></span> SUCCESS
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <div style="display:inline-flex; gap:6px;">
+                                        <button class="btn-action"
+                                            style="padding: 4px 10px !important; font-size: 11px !important;"
+                                            onclick="viewConfig(null, 'SW-S5735-CORNER', 'Config', '/backups/Corner/SW-S5735-CORNER/2026-11-02_config.txt')">Lihat</button>
+                                        <button class="btn-secondary"
+                                            style="padding: 4px 10px !important; font-size: 11px !important;"
+                                            onclick="showToast('Mengunduh berkas...')">Unduh</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr data-category="TRAFFIC">
+                                <td>
+                                    <span
+                                        style="font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600; color:#38bdf8; background:rgba(56,189,248,0.08); padding:4px 9px; border-radius:5px; border:1px solid rgba(56,189,248,0.25); white-space:nowrap; display:inline-flex; align-items:center; gap:5px;"
+                                        title="Waktu Eksekusi: 2026-11-02 02:02:30 WIB">🕒
+                                        01/11 02:02:30 — 02/11 02:02:30 WIB</span>
+                                </td>
+                                <td>
+                                    <strong>SW-S5735-CORNER</strong><br>
+                                    <span style="color:#94a3b8; font-size:11px;">Corner</span>
+                                </td>
+                                <td><span class="badge-category-orange">TRAFFIC</span></td>
+                                <td><code style="font-size:11px;">2026-11-02_traffic.txt</code></td>
+                                <td>220.8 KB</td>
+                                <td><span
+                                        style="display:inline-flex; align-items:center; gap:4px; font-size:11px; color:#94a3b8;"><span>⏰</span>
+                                        Scheduler (02:00 WIB)</span></td>
+                                <td>
+                                    <span class="status-badge badge-up">
+                                        <span class="badge-dot-green"></span> SUCCESS
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <div style="display:inline-flex; gap:6px;">
+                                        <button class="btn-action"
+                                            style="padding: 4px 10px !important; font-size: 11px !important;"
+                                            onclick="viewConfig(null, 'SW-S5735-CORNER', 'Traffic', '/backups/Corner/SW-S5735-CORNER/2026-11-02_traffic.txt')">Lihat</button>
+                                        <button class="btn-secondary"
+                                            style="padding: 4px 10px !important; font-size: 11px !important;"
+                                            onclick="showToast('Mengunduh berkas...')">Unduh</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr data-category="THREAT">
+                                <td>
+                                    <span
+                                        style="font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600; color:#38bdf8; background:rgba(56,189,248,0.08); padding:4px 9px; border-radius:5px; border:1px solid rgba(56,189,248,0.25); white-space:nowrap; display:inline-flex; align-items:center; gap:5px;"
+                                        title="Waktu Eksekusi: 2026-11-02 02:02:40 WIB">🕒
+                                        01/11 02:02:40 — 02/11 02:02:40 WIB</span>
+                                </td>
+                                <td>
+                                    <strong>SW-S5735-CORNER</strong><br>
+                                    <span style="color:#94a3b8; font-size:11px;">Corner</span>
+                                </td>
+                                <td><span class="badge-category-orange">THREAT</span></td>
+                                <td><code style="font-size:11px;">2026-11-02_threat.txt</code></td>
+                                <td>16.5 KB</td>
+                                <td><span
+                                        style="display:inline-flex; align-items:center; gap:4px; font-size:11px; color:#94a3b8;"><span>⏰</span>
+                                        Scheduler (02:00 WIB)</span></td>
+                                <td>
+                                    <span class="status-badge badge-up">
+                                        <span class="badge-dot-green"></span> SUCCESS
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <div style="display:inline-flex; gap:6px;">
+                                        <button class="btn-action"
+                                            style="padding: 4px 10px !important; font-size: 11px !important;"
+                                            onclick="viewConfig(null, 'SW-S5735-CORNER', 'Threat', '/backups/Corner/SW-S5735-CORNER/2026-11-02_threat.txt')">Lihat</button>
+                                        <button class="btn-secondary"
+                                            style="padding: 4px 10px !important; font-size: 11px !important;"
+                                            onclick="showToast('Mengunduh berkas...')">Unduh</button>
+                                    </div>
                                 </td>
                             </tr>
                             {% endif %}
@@ -291,6 +831,41 @@
             </div>
         </div>
     </main>
+
+    <!-- Modal View Log / Config -->
+    <div id="configViewerModal" class="modal-overlay" style="display: none;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <h3 id="modalDeviceTitle" style="margin:0; font-size:16px; color:#fff;">Viewer Berkas</h3>
+                        <span id="modalCategoryBadge" class="badge-category-orange">SYSTEM</span>
+                    </div>
+                    <p id="modalFilePath"
+                        style="margin:4px 0 0 0; font-family:'JetBrains Mono', monospace; font-size:11px; color:#94a3b8; word-break:break-all;">
+                    </p>
+                </div>
+                <button type="button" class="modal-close-btn" onclick="closeConfigModal()"
+                    title="Tutup Modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <pre id="modalContentBox" class="modal-code-viewer">Memuat isi berkas...</pre>
+            </div>
+            <div class="modal-footer">
+                <span id="modalTimestamp"
+                    style="font-size:12px; color:#94a3b8; font-family:'JetBrains Mono', monospace;"></span>
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <button type="button" id="btnModalPull" class="btn-action"
+                        style="display:none; padding:6px 14px !important; font-size:12px !important; background:#E8A576; color:#0f172a;"
+                        onclick="pullLiveBackupFromModal()">⚡ Tarik Log Langsung dari Switch</button>
+                    <button type="button" class="btn-secondary" onclick="copyModalContent()">Salin Teks</button>
+                    <button type="button" class="btn-action"
+                        style="padding:6px 16px !important; font-size:12px !important;"
+                        onclick="closeConfigModal()">Tutup</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Toast Notification Container -->
     <div id="toastContainer" class="toast-container"></div>
@@ -320,20 +895,136 @@
             }, 250);
         }
 
-        function triggerManualBackup() {
-            showToast('Pencadangan konfigurasi manual dipicu via SSH/API. Menghubungi perangkat...');
-            setTimeout(() => {
-                showToast('Pencadangan berhasil disimpan dan ringkasan dikirim ke Telegram!');
-            }, 1800);
+        let currentCategoryFilter = 'ALL';
+
+        function setCategoryFilter(cat, btn) {
+            currentCategoryFilter = cat;
+            document.querySelectorAll('.category-filter-btn').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            applyCombinedFilters();
         }
 
-        function viewConfig(devName) {
-            showToast(`Membuka berkas konfigurasi terbaru untuk ${devName}...`);
+        function applyCombinedFilters() {
+            document.querySelectorAll('#backupsTableBody tr').forEach(row => {
+                const rowCat = (row.getAttribute('data-category') || '').toUpperCase();
+                const matchesCat = (currentCategoryFilter === 'ALL' || rowCat === currentCategoryFilter);
+                row.style.display = matchesCat ? '' : 'none';
+            });
         }
 
-        function retryBackup(devName) {
-            showToast(`Mencoba ulang koneksi SSH ke ${devName}...`);
+        let currentModalDevice = '';
+        let currentModalCategory = 'SYSTEM';
+        let currentModalBackupId = null;
+
+        function viewConfig(backupId, devName, category, filePath) {
+            currentModalDevice = devName;
+            currentModalCategory = category || 'SYSTEM';
+            currentModalBackupId = backupId;
+
+            const modal = document.getElementById('configViewerModal');
+            const titleEl = document.getElementById('modalDeviceTitle');
+            const catBadge = document.getElementById('modalCategoryBadge');
+            const pathEl = document.getElementById('modalFilePath');
+            const codeBox = document.getElementById('modalContentBox');
+            const timeEl = document.getElementById('modalTimestamp');
+            const btnPull = document.getElementById('btnModalPull');
+
+            if (btnPull) btnPull.style.display = 'none';
+
+            titleEl.textContent = devName ? `Berkas Arsip - ${devName}` : 'Viewer Berkas';
+            catBadge.textContent = category ? category.toUpperCase() : 'SYSTEM';
+            pathEl.textContent = filePath || '';
+            codeBox.textContent = '⏳ Mengambil berkas dari storage server...';
+            timeEl.textContent = '';
+            modal.style.display = 'flex';
+
+            if (backupId) {
+                fetch(`/api/backup/content/${backupId}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            codeBox.textContent = data.content || '(Berkas kosong)';
+                            timeEl.textContent = `Pencadangan: ${data.date} • Ukuran: ${data.file_size}`;
+                            if (btnPull) btnPull.style.display = 'none';
+                        } else {
+                            codeBox.textContent = `[Info] ${data.error || 'Gagal memuat isi berkas.'}\n\nLokasi: ${data.file_path || filePath}\nStatus: Berkas fisik belum ada di disk server.\n\nKlik tombol di bawah atau ketik /backup ${devName} di Telegram untuk menarik langsung via SSH/API!`;
+                            if (btnPull) {
+                                btnPull.style.display = 'inline-block';
+                                btnPull.disabled = false;
+                                btnPull.textContent = `⚡ Tarik ${category.toUpperCase()} dari ${devName}`;
+                            }
+                        }
+                    })
+                    .catch(err => {
+                        codeBox.textContent = `[Error Network] Gagal menghubungi API server: ${err}`;
+                    });
+            } else {
+                codeBox.textContent = `// CONTOH TAMPILAN BERKAS LOG / KONFIGURASI\n// Perangkat : ${devName}\n// Kategori  : ${category}\n// Jalur     : ${filePath}\n\n======================================================================\nAGIVA NOC LOG ARCHIVE [${category ? category.toUpperCase() : 'SYSTEM'}]\n======================================================================\nI 11/02/26 02:00:12 ports: port 1 is now on-line (1000FDx)\nI 11/02/26 02:00:15 ssh: SSH client 192.168.1.50 logged in for user admin\nW 11/02/26 02:00:18 ST-P: CST Root changed from 32768:00... to 32768:11...\n\n[INFO] Jalankan perintah /backup ${devName} di Telegram bot untuk menarik log riil langsung dari perangkat!`;
+            }
         }
+
+        function pullLiveBackupFromModal() {
+            if (!currentModalDevice) return;
+            const btnPull = document.getElementById('btnModalPull');
+            const codeBox = document.getElementById('modalContentBox');
+            if (btnPull) {
+                btnPull.disabled = true;
+                btnPull.textContent = '⏳ Menghubungi Perangkat via SSH/API...';
+            }
+            codeBox.textContent = `⏳ Sedang menghubungi ${currentModalDevice} via SSH/API...\nMengekstrak log [${currentModalCategory}]...\nMohon tunggu beberapa detik...`;
+
+            fetch(`/api/backup/trigger/${encodeURIComponent(currentModalDevice)}?category=${encodeURIComponent(currentModalCategory)}`, { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast(`✅ Berhasil menarik berkas dari ${currentModalDevice}!`);
+                        if (currentModalBackupId) {
+                            setTimeout(() => {
+                                viewConfig(currentModalBackupId, currentModalDevice, currentModalCategory, '');
+                            }, 500);
+                        } else {
+                            setTimeout(() => window.location.reload(), 1200);
+                        }
+                    } else {
+                        codeBox.textContent = `❌ Gagal menarik log dari ${currentModalDevice}:\n${data.error || 'Koneksi timeout/ditolak.'}`;
+                        if (btnPull) {
+                            btnPull.disabled = false;
+                            btnPull.textContent = 'Coba Lagi';
+                        }
+                    }
+                })
+                .catch(err => {
+                    codeBox.textContent = `❌ Terjadi kesalahan saat memicu backup: ${err}`;
+                    if (btnPull) {
+                        btnPull.disabled = false;
+                        btnPull.textContent = 'Coba Lagi';
+                    }
+                });
+        }
+
+        function closeConfigModal() {
+            const modal = document.getElementById('configViewerModal');
+            if (modal) modal.style.display = 'none';
+        }
+
+        function copyModalContent() {
+            const codeBox = document.getElementById('modalContentBox');
+            if (!codeBox) return;
+            navigator.clipboard.writeText(codeBox.textContent).then(() => {
+                showToast('Isi log berhasil disalin ke clipboard!');
+            }).catch(() => {
+                showToast('Gagal menyalin teks.');
+            });
+        }
+
+        // Close on ESC key or backdrop click
+        window.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') closeConfigModal();
+        });
+        document.addEventListener('click', function (e) {
+            const modal = document.getElementById('configViewerModal');
+            if (e.target === modal) closeConfigModal();
+        });
 
         function showToast(message) {
             const container = document.getElementById('toastContainer');
@@ -346,16 +1037,6 @@
             setTimeout(() => toast.remove(), 3500);
         }
 
-        // Local Backup Table filter
-        const tblSearch = document.getElementById('backupTableSearch');
-        if (tblSearch) {
-            tblSearch.addEventListener('input', function (e) {
-                const q = e.target.value.toLowerCase().trim();
-                document.querySelectorAll('#backupsTableBody tr').forEach(row => {
-                    row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
-                });
-            });
-        }
     </script>
     <script src="/static/js/global_nav.js?v=4.3"></script>
 </body>

@@ -26,6 +26,32 @@ logger = get_configured_logger("DataCollector")
 
 load_dotenv()
 
+POLLING_INTERVAL_MINUTES = int(os.getenv("POLLING_INTERVAL_MINUTES", "2"))
+_scheduler = None
+
+def get_next_polling_time(reference_time=None):
+    """
+    Mengambil waktu polling berikutnya dari scheduler APScheduler aktif,
+    atau mengestimasi berdasarkan POLLING_INTERVAL_MINUTES jika scheduler belum/tidak aktif.
+    """
+    global _scheduler
+    if reference_time is None:
+        reference_time = datetime.now()
+        
+    if _scheduler and _scheduler.running:
+        try:
+            job = _scheduler.get_job('polling_job')
+            if job and job.next_run_time:
+                nrt = job.next_run_time
+                if hasattr(nrt, 'astimezone'):
+                    return nrt.astimezone().strftime("%Y-%m-%d %H:%M:%S")
+                return nrt.strftime("%Y-%m-%d %H:%M:%S")
+        except Exception:
+            pass
+
+    next_dt = reference_time + timedelta(minutes=POLLING_INTERVAL_MINUTES)
+    return next_dt.strftime("%Y-%m-%d %H:%M:%S")
+
 # Cache counter byte fisik Palo Alto untuk menghitung laju throughput Mbps riil
 _PA_PREV_COUNTERS = {}
 
@@ -662,7 +688,13 @@ def run_polling_cycle():
     Sesuai LLD: loop semua device, dipanggil scheduler.
     Tiap iterasi terisolasi try/except agar 1 device bermasalah tidak memblokir device lain.
     """
+    awal_polling = datetime.now()
+    awal_str = awal_polling.strftime("%Y-%m-%d %H:%M:%S")
+    next_str = get_next_polling_time(awal_polling)
+
     logger.info("=== START POLLING CYCLE ===")
+    logger.info(f"[*] Awal Polling : {awal_str}")
+    logger.info(f"[*] Next Polling : {next_str} (Interval: {POLLING_INTERVAL_MINUTES} menit)")
     devices = load_inventory()
     
     for device in devices:
@@ -673,7 +705,11 @@ def run_polling_cycle():
         except Exception as e:
             logger.error(f"Siklus polling gagal pada perangkat {device.name}: {e}")
         
-    logger.info("=== END POLLING CYCLE ===")
+    duration = (datetime.now() - awal_polling).total_seconds()
+    next_str_end = get_next_polling_time(awal_polling)
+    logger.info(f"=== END POLLING CYCLE (Durasi: {duration:.2f}s) ===")
+    logger.info(f"[*] Awal Polling : {awal_str}")
+    logger.info(f"[*] Next Polling : {next_str_end}")
 
 # ==========================================
 # 5. Data Retention Policy (Housekeeping)
@@ -724,29 +760,41 @@ def cleanup_old_incident_logs(retention_days=30):
         session.close()
 
 def start_scheduler():
-    scheduler = BackgroundScheduler()
-    # LLD: Polling dijadwalkan tiap 1-5 menit. Kita set 2 menit sebagai default
-    scheduler.add_job(run_polling_cycle, 'interval', minutes=2)
+    global _scheduler
+    _scheduler = BackgroundScheduler()
+    # LLD: Polling dijadwalkan tiap 1-5 menit. Menggunakan POLLING_INTERVAL_MINUTES (default 2 menit)
+    _scheduler.add_job(run_polling_cycle, 'interval', minutes=POLLING_INTERVAL_MINUTES, id='polling_job')
     
     # Data Retention Policy: Dijadwalkan otomatis setiap tengah malam (jam 00:00 & 00:05)
-    scheduler.add_job(cleanup_old_device_logs, 'cron', hour=0, minute=0, id='cleanup_device_logs_job')
-    scheduler.add_job(cleanup_old_incident_logs, 'cron', hour=0, minute=5, id='cleanup_incident_logs_job')
+    _scheduler.add_job(cleanup_old_device_logs, 'cron', hour=0, minute=0, id='cleanup_device_logs_job')
+    _scheduler.add_job(cleanup_old_incident_logs, 'cron', hour=0, minute=5, id='cleanup_incident_logs_job')
     
-    scheduler.start()
+    # Pencadangan Konfigurasi & Log Harian Otomatis: Setiap Pukul 02:00 WIB (Incremental via Checkpoint)
+    backup_hour = int(os.getenv('BACKUP_CRON_HOUR', 2))
+    backup_minute = int(os.getenv('BACKUP_CRON_MINUTE', 0))
+    try:
+        from backup_service import run_all_devices_backup
+        _scheduler.add_job(run_all_devices_backup, 'cron', hour=backup_hour, minute=backup_minute, id='daily_backup_job')
+        logger.info(f"Job pencadangan harian terdaftar: setiap pukul {backup_hour:02d}:{backup_minute:02d} WIB.")
+    except Exception as e_bkp:
+        logger.warning(f"Gagal mendaftarkan job backup harian ke scheduler: {e_bkp}")
+    
+    _scheduler.start()
     
     # Jalankan pemeriksaan awal retensi data saat collector pertama kali start
     cleanup_old_device_logs()
     cleanup_old_incident_logs()
     
-    # Langsung jalankan 1 siklus polling awal agar metrik riil terisi seketika tanpa harus menunggu 2 menit
+    # Langsung jalankan 1 siklus polling awal agar metrik riil terisi seketika tanpa harus menunggu interval
     run_polling_cycle()
     
-    logger.info("Scheduler berjalan. Menunggu jadwal polling (tiap 2 mnt) & housekeeping (tiap 00:00)...")
+    next_poll = get_next_polling_time()
+    logger.info(f"Scheduler berjalan. Menunggu jadwal polling (tiap {POLLING_INTERVAL_MINUTES} mnt, Next Polling: {next_poll}) & housekeeping (tiap 00:00)...")
     try:
         while True:
             time.sleep(2)
     except (KeyboardInterrupt, SystemExit):
-        scheduler.shutdown()
+        _scheduler.shutdown()
         logger.info("Data Collector dihentikan.")
 
 if __name__ == "__main__":
