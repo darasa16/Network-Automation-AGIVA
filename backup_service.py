@@ -554,3 +554,97 @@ def get_backup_content(backup_id: int) -> dict:
     finally:
         session.close()
 
+def cleanup_old_backup_history(retention_days: int = None) -> dict:
+    """
+    Data Retention Policy (Housekeeping) untuk Riwayat Backup & Log Audit:
+    - Menghapus riwayat backup & log audit (System, Config, Traffic, Threat) yang berumur > retention_days (default 30 hari).
+    - Menghapus record di tabel public.backup_history dan berkas fisik .txt di disk server.
+    - SAFETY NET (Disaster Recovery): Menjaga minimal 1 salinan backup 'Config' terakhir untuk masing-masing
+      perangkat jaringan agar selalu tersedia konfigurasi cadangan untuk pemulihan darurat jika perangkat mati/rusak.
+    """
+    if retention_days is None:
+        retention_days = int(os.getenv("BACKUP_RETENTION_DAYS", "30"))
+
+    session = db_session()
+    cutoff_date = datetime.now() - timedelta(days=retention_days)
+
+    deleted_db_count = 0
+    deleted_files_count = 0
+    skipped_safety_net = 0
+
+    try:
+        # 1. Cari riwayat backup yang tanggalnya lebih lama dari cutoff_date
+        old_backups = session.query(BackupHistory).filter(BackupHistory.timestamp < cutoff_date).all()
+        if not old_backups:
+            logger.info(f"[Housekeeping] Retensi data backup bersih. Tidak ada data backup/log audit yang berumur > {retention_days} hari.")
+            return {"deleted_db": 0, "deleted_files": 0, "skipped_safety_net": 0}
+
+        # 2. Identifikasi backup 'Config' terbaru untuk tiap perangkat (Safety Net Disaster Recovery)
+        device_ids_with_old_config = {
+            b.device_id for b in old_backups if (b.category or "").strip().lower() == "config"
+        }
+        latest_config_backup_ids = set()
+        for dev_id in device_ids_with_old_config:
+            latest_cfg = (
+                session.query(BackupHistory.backup_id)
+                .filter(
+                    BackupHistory.device_id == dev_id,
+                    BackupHistory.category.ilike("config")
+                )
+                .order_by(BackupHistory.timestamp.desc(), BackupHistory.backup_id.desc())
+                .first()
+            )
+            if latest_cfg:
+                latest_config_backup_ids.add(latest_cfg[0])
+
+        # 3. Iterasi dan proses pembersihan data & berkas fisik
+        for b in old_backups:
+            cat_lower = (b.category or "").strip().lower()
+
+            # Pengecekan Safety Net: Lindungi salinan konfigurasi terakhir per perangkat
+            if cat_lower == "config" and b.backup_id in latest_config_backup_ids:
+                dev_name = b.device.name if b.device else f"Perangkat #{b.device_id}"
+                logger.info(
+                    f"[Housekeeping] Safety Net Aktif: Melewati penghapusan backup Config ID {b.backup_id} ({dev_name}) "
+                    f"karena merupakan salinan konfigurasi terakhir untuk Disaster Recovery."
+                )
+                skipped_safety_net += 1
+                continue
+
+            # Hapus berkas fisik .txt di disk lokal server jika ada
+            if b.file_path:
+                clean_path = b.file_path.replace("\\", "/").strip("/")
+                parts = clean_path.split("/")
+                if parts and parts[0] == "backups":
+                    parts = parts[1:]
+                abs_path = os.path.join(BACKUP_BASE_DIR, *parts)
+
+                if os.path.isfile(abs_path):
+                    try:
+                        os.remove(abs_path)
+                        deleted_files_count += 1
+                    except Exception as e_del:
+                        logger.warning(f"[Housekeeping] Gagal menghapus berkas fisik {abs_path}: {e_del}")
+
+            session.delete(b)
+            deleted_db_count += 1
+
+        session.commit()
+        logger.info(
+            f"[Housekeeping] Retensi Backup & Log Audit berhasil dieksekusi: "
+            f"{deleted_db_count} record database & {deleted_files_count} berkas fisik dihapus (> {retention_days} hari). "
+            f"{skipped_safety_net} konfigurasi dilindungi Safety Net."
+        )
+    except Exception as e:
+        logger.error(f"[Housekeeping] Gagal menjalankan retensi backup & log audit: {e}")
+        session.rollback()
+    finally:
+        session.close()
+
+    return {
+        "deleted_db": deleted_db_count,
+        "deleted_files": deleted_files_count,
+        "skipped_safety_net": skipped_safety_net
+    }
+
+

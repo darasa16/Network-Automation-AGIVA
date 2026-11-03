@@ -759,15 +759,29 @@ def cleanup_old_incident_logs(retention_days=30):
     finally:
         session.close()
 
+def cleanup_old_backup_history_job(retention_days=None):
+    """
+    Data Retention Policy (Auto-Pruning / Housekeeping):
+    Menghapus riwayat backup konfigurasi & log audit lama dari tabel public.backup_history
+    dan berkas fisik .txt di disk lokal yang berumur lebih dari `retention_days` hari (default 30 hari).
+    Dilengkapi Safety Net untuk mempertahankan minimal 1 backup Config terakhir per perangkat demi Disaster Recovery.
+    """
+    try:
+        from backup_service import cleanup_old_backup_history
+        cleanup_old_backup_history(retention_days=retention_days)
+    except Exception as e:
+        logger.error(f"[Housekeeping] Gagal menjalankan data retention cleanup backup_history: {e}")
+
 def start_scheduler():
     global _scheduler
     _scheduler = BackgroundScheduler()
     # LLD: Polling dijadwalkan tiap 1-5 menit. Menggunakan POLLING_INTERVAL_MINUTES (default 2 menit)
     _scheduler.add_job(run_polling_cycle, 'interval', minutes=POLLING_INTERVAL_MINUTES, id='polling_job')
     
-    # Data Retention Policy: Dijadwalkan otomatis setiap tengah malam (jam 00:00 & 00:05)
+    # Data Retention Policy: Dijadwalkan otomatis setiap tengah malam (jam 00:00, 00:05, & 00:10 WIB)
     _scheduler.add_job(cleanup_old_device_logs, 'cron', hour=0, minute=0, id='cleanup_device_logs_job')
     _scheduler.add_job(cleanup_old_incident_logs, 'cron', hour=0, minute=5, id='cleanup_incident_logs_job')
+    _scheduler.add_job(cleanup_old_backup_history_job, 'cron', hour=0, minute=10, id='cleanup_backup_history_job')
     
     # Pencadangan Konfigurasi & Log Harian Otomatis: Setiap Pukul 02:00 WIB (Incremental via Checkpoint)
     backup_hour = int(os.getenv('BACKUP_CRON_HOUR', 2))
@@ -784,6 +798,7 @@ def start_scheduler():
     # Jalankan pemeriksaan awal retensi data saat collector pertama kali start
     cleanup_old_device_logs()
     cleanup_old_incident_logs()
+    cleanup_old_backup_history_job()
     
     # Langsung jalankan 1 siklus polling awal agar metrik riil terisi seketika tanpa harus menunggu interval
     run_polling_cycle()

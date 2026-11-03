@@ -1,0 +1,4 @@
+======================================================================
+AGIVA NOC INITIAL FULL BACKUP [SYSTEM] - 2026-11-03 15:50:18 WIB
+======================================================================
+<response status="success" code="19"><result><msg><line>query job enqueued with jobid 262</line></msg><job>262</job></result></response>

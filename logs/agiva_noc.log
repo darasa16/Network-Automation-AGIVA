@@ -7742,3 +7742,1888 @@ You can also look at the Netmiko session_log or debug log for more information.
 2026-11-02 15:11:34 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 26.08s) ===
 2026-11-02 15:11:34 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 15:11:08
 2026-11-02 15:11:34 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 15:13:08
+2026-11-02 15:13:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 15:13:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 15:13:08
+2026-11-02 15:13:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 15:15:08 (Interval: 2 menit)
+2026-11-02 15:13:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 15:13:17 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-2930F-HO - HIGH_LATENCY (9.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-02 15:13:17 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 15:13:25 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 15:13:34 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 25.70s) ===
+2026-11-02 15:13:34 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 15:13:08
+2026-11-02 15:13:34 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 15:15:08
+2026-11-02 15:15:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 15:15:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 15:15:08
+2026-11-02 15:15:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 15:17:08 (Interval: 2 menit)
+2026-11-02 15:15:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 15:15:17 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 15:15:25 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 15:15:37 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 29.62s) ===
+2026-11-02 15:15:37 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 15:15:08
+2026-11-02 15:15:37 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 15:17:08
+2026-11-02 15:17:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 15:17:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 15:17:08
+2026-11-02 15:17:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 15:19:08 (Interval: 2 menit)
+2026-11-02 15:17:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 15:17:17 [INFO] [RuleEngine]: [RuleEngine] Insiden #249 (SW-2930F-HO - HIGH_LATENCY) pulih dalam 3 menit 59 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-02 15:17:17 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 15:17:25 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-S5735-CORNER - HIGH_LATENCY (10.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-02 15:17:25 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 15:17:35 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 27.67s) ===
+2026-11-02 15:17:35 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 15:17:08
+2026-11-02 15:17:35 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 15:19:08
+2026-11-02 15:19:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 15:19:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 15:19:08
+2026-11-02 15:19:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 15:21:08 (Interval: 2 menit)
+2026-11-02 15:19:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 15:19:19 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 15:19:26 [INFO] [RuleEngine]: [RuleEngine] Insiden #250 (SW-S5735-CORNER - HIGH_LATENCY) pulih dalam 2 menit 1 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-02 15:19:26 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 15:19:35 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: FW-PA220-1 - HIGH_LATENCY (6.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-02 15:19:35 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 27.26s) ===
+2026-11-02 15:19:35 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 15:19:08
+2026-11-02 15:19:35 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 15:21:08
+2026-11-02 15:21:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 15:21:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 15:21:08
+2026-11-02 15:21:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 15:23:08 (Interval: 2 menit)
+2026-11-02 15:21:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 15:21:17 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 15:21:25 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 15:21:34 [INFO] [RuleEngine]: [RuleEngine] Insiden #251 (FW-PA220-1 - HIGH_LATENCY) pulih dalam 1 menit 58 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-02 15:21:34 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 25.78s) ===
+2026-11-02 15:21:34 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 15:21:08
+2026-11-02 15:21:34 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 15:23:08
+2026-11-02 15:23:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 15:23:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 15:23:08
+2026-11-02 15:23:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 15:25:08 (Interval: 2 menit)
+2026-11-02 15:23:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 15:23:18 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-2930F-HO - HIGH_LATENCY (13.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-02 15:23:18 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 15:23:26 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-S5735-CORNER - HIGH_LATENCY (20.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-02 15:23:26 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 15:23:35 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: FW-PA220-1 - HIGH_LATENCY (10.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-02 15:23:35 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 27.62s) ===
+2026-11-02 15:23:35 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 15:23:08
+2026-11-02 15:23:35 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 15:25:08
+2026-11-02 15:25:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 15:25:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 15:25:08
+2026-11-02 15:25:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 15:27:08 (Interval: 2 menit)
+2026-11-02 15:25:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 15:25:18 [INFO] [RuleEngine]: [RuleEngine] Insiden #252 (SW-2930F-HO - HIGH_LATENCY) pulih dalam 2 menit 0 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-02 15:25:18 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 15:25:26 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 15:25:35 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 26.99s) ===
+2026-11-02 15:25:35 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 15:25:08
+2026-11-02 15:25:35 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 15:27:08
+2026-11-02 15:27:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 15:27:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 15:27:08
+2026-11-02 15:27:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 15:29:08 (Interval: 2 menit)
+2026-11-02 15:27:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 15:27:20 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 15:27:27 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 15:27:37 [INFO] [RuleEngine]: [RuleEngine] Insiden #254 (FW-PA220-1 - HIGH_LATENCY) pulih dalam 4 menit 1 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-02 15:27:37 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 28.78s) ===
+2026-11-02 15:27:37 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 15:27:08
+2026-11-02 15:27:37 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 15:29:08
+2026-11-02 15:29:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 15:29:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 15:29:08
+2026-11-02 15:29:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 15:31:08 (Interval: 2 menit)
+2026-11-02 15:29:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 15:29:18 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-2930F-HO - HIGH_LATENCY (62.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-02 15:29:18 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 15:29:25 [INFO] [RuleEngine]: [RuleEngine] Insiden #253 (SW-S5735-CORNER - HIGH_LATENCY) pulih dalam 5 menit 59 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-02 15:29:25 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 15:29:34 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 26.19s) ===
+2026-11-02 15:29:34 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 15:29:08
+2026-11-02 15:29:34 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 15:31:08
+2026-11-02 15:31:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 15:31:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 15:31:08
+2026-11-02 15:31:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 15:33:08 (Interval: 2 menit)
+2026-11-02 15:31:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 15:31:17 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 15:31:25 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-S5735-CORNER - HIGH_LATENCY (10.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-02 15:31:25 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 15:31:34 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 26.59s) ===
+2026-11-02 15:31:34 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 15:31:08
+2026-11-02 15:31:34 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 15:33:08
+2026-11-02 15:33:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 15:33:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 15:33:08
+2026-11-02 15:33:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 15:35:08 (Interval: 2 menit)
+2026-11-02 15:33:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 15:33:18 [INFO] [RuleEngine]: [RuleEngine] Insiden #255 (SW-2930F-HO - HIGH_LATENCY) pulih dalam 4 menit 0 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-02 15:33:18 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 15:33:26 [INFO] [RuleEngine]: [RuleEngine] Insiden #256 (SW-S5735-CORNER - HIGH_LATENCY) pulih dalam 2 menit 1 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-02 15:33:26 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 15:33:36 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 27.99s) ===
+2026-11-02 15:33:36 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 15:33:08
+2026-11-02 15:33:36 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 15:35:08
+2026-11-02 15:35:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 15:35:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 15:35:08
+2026-11-02 15:35:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 15:37:08 (Interval: 2 menit)
+2026-11-02 15:35:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 15:35:19 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 15:35:26 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 15:35:37 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 29.13s) ===
+2026-11-02 15:35:37 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 15:35:08
+2026-11-02 15:35:37 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 15:37:08
+2026-11-02 15:37:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 15:37:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 15:37:08
+2026-11-02 15:37:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 15:39:08 (Interval: 2 menit)
+2026-11-02 15:37:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 15:37:22 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-2930F-HO - HIGH_LATENCY (23.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-02 15:37:22 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 15:37:30 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-S5735-CORNER - HIGH_LATENCY (6.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-02 15:37:30 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 15:37:39 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: FW-PA220-1 - HIGH_LATENCY (9.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-02 15:37:39 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 31.24s) ===
+2026-11-02 15:37:39 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 15:37:08
+2026-11-02 15:37:39 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 15:39:08
+2026-11-02 15:39:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 15:39:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 15:39:08
+2026-11-02 15:39:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 15:41:08 (Interval: 2 menit)
+2026-11-02 15:39:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 15:39:08 [WARNING] [DataCollector]: Gagal mengambil port-statistics Aruba via REST: HTTPConnectionPool(host='192.168.1.10', port=80): Max retries exceeded with url: /rest/v4/port-statistics/1 (Caused by NewConnectionError("HTTPConnection(host='192.168.1.10', port=80): Failed to establish a new connection: [WinError 10065] A socket operation was attempted to an unreachable host"))
+2026-11-02 15:39:10 [WARNING] [DataCollector]: Percobaan 1/2 ke SW-2930F-HO terdeteksi DOWN/Timeout. Melakukan retry...
+2026-11-02 15:39:11 [WARNING] [DataCollector]: Gagal mengambil port-statistics Aruba via REST: HTTPConnectionPool(host='192.168.1.10', port=80): Max retries exceeded with url: /rest/v4/port-statistics/1 (Caused by NewConnectionError("HTTPConnection(host='192.168.1.10', port=80): Failed to establish a new connection: [WinError 10065] A socket operation was attempted to an unreachable host"))
+2026-11-02 15:39:13 [WARNING] [RuleEngine]: Percobaan 1/2 kirim pesan Telegram gagal: <urlopen error [Errno 11001] getaddrinfo failed>
+2026-11-02 15:39:14 [WARNING] [RuleEngine]: Percobaan 2/2 kirim pesan Telegram gagal: <urlopen error [Errno 11001] getaddrinfo failed>
+2026-11-02 15:39:14 [ERROR] [RuleEngine]: Gagal mengirim pesan Telegram setelah 2x percobaan: <urlopen error [Errno 11001] getaddrinfo failed>
+2026-11-02 15:39:14 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-2930F-HO - HOST_DOWN (DOWN (Unreachable)). Early warning dikirim ke Telegram.
+2026-11-02 15:39:14 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 15:39:14 [ERROR] [DataCollector]: Gagal koneksi ke SW-S5735-CORNER (192.168.1.155): [Errno None] Unable to connect to port 22 on 192.168.1.155
+2026-11-02 15:39:16 [WARNING] [DataCollector]: Percobaan 1/2 ke SW-S5735-CORNER terdeteksi DOWN/Timeout. Melakukan retry...
+2026-11-02 15:39:17 [ERROR] [DataCollector]: Gagal koneksi ke SW-S5735-CORNER (192.168.1.155): [Errno None] Unable to connect to port 22 on 192.168.1.155
+2026-11-02 15:39:20 [WARNING] [RuleEngine]: Percobaan 1/2 kirim pesan Telegram gagal: <urlopen error [Errno 11001] getaddrinfo failed>
+2026-11-02 15:39:21 [WARNING] [RuleEngine]: Percobaan 2/2 kirim pesan Telegram gagal: <urlopen error [Errno 11001] getaddrinfo failed>
+2026-11-02 15:39:21 [ERROR] [RuleEngine]: Gagal mengirim pesan Telegram setelah 2x percobaan: <urlopen error [Errno 11001] getaddrinfo failed>
+2026-11-02 15:39:21 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-S5735-CORNER - HOST_DOWN (DOWN (Unreachable)). Early warning dikirim ke Telegram.
+2026-11-02 15:39:21 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 15:39:21 [WARNING] [DataCollector]: Palo Alto (192.168.1.11) API error/timeout: HTTPSConnectionPool(host='192.168.1.11', port=443): Max retries exceeded with url: /api/?type=op&cmd=%3Cshow%3E%3Csystem%3E%3Cinfo%3E%3C/info%3E%3C/system%3E%3C/show%3E&key=LUFRPT1mOVAwR1h3bzFrTFNnQjI4WkF3L0h5UVg5Z3c9VDZ2TVVXS2ZmODdwUVRkbDdvcGdJSW1WUkJWVnFCWWdUWWhZV3J4SnhoWFdLalNySkpoRmI0enhVWkdNZjBBdw== (Caused by NewConnectionError("HTTPSConnection(host='192.168.1.11', port=443): Failed to establish a new connection: [WinError 10065] A socket operation was attempted to an unreachable host"))
+2026-11-02 15:39:21 [ERROR] [DataCollector]: Palo Alto (192.168.1.11) tidak merespons API maupun ICMP ping -> Menandai DOWN
+2026-11-02 15:39:23 [WARNING] [DataCollector]: Percobaan 1/2 ke FW-PA220-1 terdeteksi DOWN/Timeout. Melakukan retry...
+2026-11-02 15:39:24 [WARNING] [DataCollector]: Palo Alto (192.168.1.11) API error/timeout: HTTPSConnectionPool(host='192.168.1.11', port=443): Max retries exceeded with url: /api/?type=op&cmd=%3Cshow%3E%3Csystem%3E%3Cinfo%3E%3C/info%3E%3C/system%3E%3C/show%3E&key=LUFRPT1mOVAwR1h3bzFrTFNnQjI4WkF3L0h5UVg5Z3c9VDZ2TVVXS2ZmODdwUVRkbDdvcGdJSW1WUkJWVnFCWWdUWWhZV3J4SnhoWFdLalNySkpoRmI0enhVWkdNZjBBdw== (Caused by NewConnectionError("HTTPSConnection(host='192.168.1.11', port=443): Failed to establish a new connection: [WinError 10065] A socket operation was attempted to an unreachable host"))
+2026-11-02 15:39:24 [ERROR] [DataCollector]: Palo Alto (192.168.1.11) tidak merespons API maupun ICMP ping -> Menandai DOWN
+2026-11-02 15:39:26 [WARNING] [RuleEngine]: Percobaan 1/2 kirim pesan Telegram gagal: <urlopen error [Errno 11001] getaddrinfo failed>
+2026-11-02 15:39:27 [WARNING] [RuleEngine]: Percobaan 2/2 kirim pesan Telegram gagal: <urlopen error [Errno 11001] getaddrinfo failed>
+2026-11-02 15:39:27 [ERROR] [RuleEngine]: Gagal mengirim pesan Telegram setelah 2x percobaan: <urlopen error [Errno 11001] getaddrinfo failed>
+2026-11-02 15:39:27 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: FW-PA220-1 - HOST_DOWN (DOWN (Unreachable)). Early warning dikirim ke Telegram.
+2026-11-02 15:39:27 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 19.03s) ===
+2026-11-02 15:39:27 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 15:39:08
+2026-11-02 15:39:27 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 15:41:08
+2026-11-02 15:41:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 15:41:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 15:41:08
+2026-11-02 15:41:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 15:43:08 (Interval: 2 menit)
+2026-11-02 15:41:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 15:41:08 [WARNING] [DataCollector]: Gagal mengambil port-statistics Aruba via REST: HTTPConnectionPool(host='192.168.1.10', port=80): Max retries exceeded with url: /rest/v4/port-statistics/1 (Caused by NewConnectionError("HTTPConnection(host='192.168.1.10', port=80): Failed to establish a new connection: [WinError 10065] A socket operation was attempted to an unreachable host"))
+2026-11-02 15:41:12 [WARNING] [RuleEngine]: Percobaan 1/2 kirim pesan Telegram gagal: <urlopen error [Errno 11001] getaddrinfo failed>
+2026-11-02 15:41:13 [WARNING] [RuleEngine]: Percobaan 2/2 kirim pesan Telegram gagal: <urlopen error [Errno 11001] getaddrinfo failed>
+2026-11-02 15:41:13 [ERROR] [RuleEngine]: Gagal mengirim pesan Telegram setelah 2x percobaan: <urlopen error [Errno 11001] getaddrinfo failed>
+2026-11-02 15:41:13 [INFO] [RuleEngine]: [RuleEngine] Insiden #260 (SW-2930F-HO - HOST_DOWN) pulih dalam 1 menit 58 detik -> AUTO_COOLDOWN dikirim ke Telegram.
+2026-11-02 15:41:13 [INFO] [RuleEngine]: [RuleEngine] Insiden #257 (SW-2930F-HO - HIGH_LATENCY) pulih dalam 3 menit 50 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-02 15:41:13 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-2930F-HO - PACKET_LOSS (66.0%). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-02 15:41:13 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 15:41:13 [ERROR] [DataCollector]: Gagal koneksi ke SW-S5735-CORNER (192.168.1.155): [Errno None] Unable to connect to port 22 on 192.168.1.155
+2026-11-02 15:41:17 [WARNING] [RuleEngine]: Percobaan 1/2 kirim pesan Telegram gagal: <urlopen error [Errno 11001] getaddrinfo failed>
+2026-11-02 15:41:18 [WARNING] [RuleEngine]: Percobaan 2/2 kirim pesan Telegram gagal: <urlopen error [Errno 11001] getaddrinfo failed>
+2026-11-02 15:41:18 [ERROR] [RuleEngine]: Gagal mengirim pesan Telegram setelah 2x percobaan: <urlopen error [Errno 11001] getaddrinfo failed>
+2026-11-02 15:41:18 [INFO] [RuleEngine]: [RuleEngine] Insiden #261 (SW-S5735-CORNER - HOST_DOWN) pulih dalam 1 menit 57 detik -> AUTO_COOLDOWN dikirim ke Telegram.
+2026-11-02 15:41:18 [INFO] [RuleEngine]: [RuleEngine] Insiden #258 (SW-S5735-CORNER - HIGH_LATENCY) pulih dalam 3 menit 48 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-02 15:41:18 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-S5735-CORNER - PACKET_LOSS (66.0%). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-02 15:41:18 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 15:41:18 [WARNING] [DataCollector]: Palo Alto (192.168.1.11) API error/timeout: HTTPSConnectionPool(host='192.168.1.11', port=443): Max retries exceeded with url: /api/?type=op&cmd=%3Cshow%3E%3Csystem%3E%3Cinfo%3E%3C/info%3E%3C/system%3E%3C/show%3E&key=LUFRPT1mOVAwR1h3bzFrTFNnQjI4WkF3L0h5UVg5Z3c9VDZ2TVVXS2ZmODdwUVRkbDdvcGdJSW1WUkJWVnFCWWdUWWhZV3J4SnhoWFdLalNySkpoRmI0enhVWkdNZjBBdw== (Caused by NewConnectionError("HTTPSConnection(host='192.168.1.11', port=443): Failed to establish a new connection: [WinError 10065] A socket operation was attempted to an unreachable host"))
+2026-11-02 15:41:20 [ERROR] [DataCollector]: Palo Alto (192.168.1.11) tidak merespons API maupun ICMP ping -> Menandai DOWN
+2026-11-02 15:41:24 [WARNING] [RuleEngine]: Percobaan 1/2 kirim pesan Telegram gagal: <urlopen error [Errno 11001] getaddrinfo failed>
+2026-11-02 15:41:25 [WARNING] [RuleEngine]: Percobaan 2/2 kirim pesan Telegram gagal: <urlopen error [Errno 11001] getaddrinfo failed>
+2026-11-02 15:41:25 [ERROR] [RuleEngine]: Gagal mengirim pesan Telegram setelah 2x percobaan: <urlopen error [Errno 11001] getaddrinfo failed>
+2026-11-02 15:41:25 [INFO] [RuleEngine]: [RuleEngine] Insiden #262 (FW-PA220-1 - HOST_DOWN) pulih dalam 1 menit 58 detik -> AUTO_COOLDOWN dikirim ke Telegram.
+2026-11-02 15:41:25 [INFO] [RuleEngine]: [RuleEngine] Insiden #259 (FW-PA220-1 - HIGH_LATENCY) pulih dalam 3 menit 46 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-02 15:41:25 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: FW-PA220-1 - PACKET_LOSS (33.0%). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-02 15:41:25 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 17.17s) ===
+2026-11-02 15:41:25 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 15:41:08
+2026-11-02 15:41:25 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 15:43:08
+2026-11-02 15:43:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 15:43:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 15:43:08
+2026-11-02 15:43:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 15:45:08 (Interval: 2 menit)
+2026-11-02 15:43:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 15:43:17 [INFO] [RuleEngine]: [RuleEngine] Insiden #263 (SW-2930F-HO - PACKET_LOSS) pulih dalam 2 menit 4 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-02 15:43:17 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 15:43:25 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-S5735-CORNER - HIGH_LATENCY (17.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-02 15:43:25 [INFO] [RuleEngine]: [RuleEngine] Insiden #264 (SW-S5735-CORNER - PACKET_LOSS) pulih dalam 2 menit 7 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-02 15:43:25 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 15:43:33 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: FW-PA220-1 - HIGH_LATENCY (6.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-02 15:43:33 [INFO] [RuleEngine]: [RuleEngine] Insiden #265 (FW-PA220-1 - PACKET_LOSS) pulih dalam 2 menit 8 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-02 15:43:33 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 25.67s) ===
+2026-11-02 15:43:33 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 15:43:08
+2026-11-02 15:43:33 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 15:45:08
+2026-11-02 15:45:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 15:45:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 15:45:08
+2026-11-02 15:45:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 15:47:08 (Interval: 2 menit)
+2026-11-02 15:45:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 15:45:18 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 15:45:25 [INFO] [RuleEngine]: [RuleEngine] Insiden #266 (SW-S5735-CORNER - HIGH_LATENCY) pulih dalam 1 menit 59 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-02 15:45:25 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 15:45:38 [INFO] [RuleEngine]: [RuleEngine] Insiden #267 (FW-PA220-1 - HIGH_LATENCY) pulih dalam 2 menit 4 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-02 15:45:38 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 30.11s) ===
+2026-11-02 15:45:38 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 15:45:08
+2026-11-02 15:45:38 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 15:47:08
+2026-11-02 15:47:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 15:47:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 15:47:08
+2026-11-02 15:47:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 15:49:08 (Interval: 2 menit)
+2026-11-02 15:47:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 15:47:17 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-2930F-HO - HIGH_LATENCY (16.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-02 15:47:17 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 15:47:25 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 15:47:36 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: FW-PA220-1 - HIGH_LATENCY (6.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-02 15:47:36 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 28.12s) ===
+2026-11-02 15:47:36 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 15:47:08
+2026-11-02 15:47:36 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 15:49:08
+2026-11-02 15:49:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 15:49:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 15:49:08
+2026-11-02 15:49:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 15:51:08 (Interval: 2 menit)
+2026-11-02 15:49:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 15:49:17 [INFO] [RuleEngine]: [RuleEngine] Insiden #268 (SW-2930F-HO - HIGH_LATENCY) pulih dalam 1 menit 59 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-02 15:49:17 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 15:49:25 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 15:49:35 [INFO] [RuleEngine]: [RuleEngine] Insiden #269 (FW-PA220-1 - HIGH_LATENCY) pulih dalam 1 menit 59 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-02 15:49:35 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 27.18s) ===
+2026-11-02 15:49:35 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 15:49:08
+2026-11-02 15:49:35 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 15:51:08
+2026-11-02 15:51:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 15:51:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 15:51:08
+2026-11-02 15:51:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 15:53:08 (Interval: 2 menit)
+2026-11-02 15:51:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 15:51:18 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 15:51:25 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 15:51:35 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: FW-PA220-1 - HIGH_LATENCY (9.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-02 15:51:35 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 27.32s) ===
+2026-11-02 15:51:35 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 15:51:08
+2026-11-02 15:51:35 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 15:53:08
+2026-11-02 15:53:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 15:53:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 15:53:08
+2026-11-02 15:53:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 15:55:08 (Interval: 2 menit)
+2026-11-02 15:53:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 15:53:21 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 15:53:29 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-S5735-CORNER - HIGH_LATENCY (7.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-02 15:53:29 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 15:53:38 [INFO] [RuleEngine]: [RuleEngine] Insiden #270 (FW-PA220-1 - HIGH_LATENCY) pulih dalam 2 menit 2 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-02 15:53:38 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 29.73s) ===
+2026-11-02 15:53:38 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 15:53:08
+2026-11-02 15:53:38 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 15:55:08
+2026-11-02 15:55:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 15:55:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 15:55:08
+2026-11-02 15:55:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 15:57:08 (Interval: 2 menit)
+2026-11-02 15:55:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 15:55:17 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 15:55:25 [INFO] [RuleEngine]: [RuleEngine] Insiden #271 (SW-S5735-CORNER - HIGH_LATENCY) pulih dalam 1 menit 55 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-02 15:55:25 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 15:55:34 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 25.85s) ===
+2026-11-02 15:55:34 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 15:55:08
+2026-11-02 15:55:34 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 15:57:08
+2026-11-02 15:57:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 15:57:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 15:57:08
+2026-11-02 15:57:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 15:59:08 (Interval: 2 menit)
+2026-11-02 15:57:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 15:57:17 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-2930F-HO - HIGH_LATENCY (15.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-02 15:57:17 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 15:57:25 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 15:57:34 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 26.17s) ===
+2026-11-02 15:57:34 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 15:57:08
+2026-11-02 15:57:34 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 15:59:08
+2026-11-02 16:41:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 16:41:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 16:41:08
+2026-11-02 16:41:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 16:43:08 (Interval: 2 menit)
+2026-11-02 16:41:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 16:41:18 [WARNING] [RuleEngine]: [RuleEngine] ESKALASI ALERT #14: SW-2930F-HO - HIGH_LATENCY telah berlangsung 43 menit.
+2026-11-02 16:41:18 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 16:41:26 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-S5735-CORNER - HIGH_LATENCY (15.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-02 16:41:26 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 16:41:38 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: FW-PA220-1 - HIGH_LATENCY (7.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-02 16:41:38 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 30.26s) ===
+2026-11-02 16:41:38 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 16:41:08
+2026-11-02 16:41:38 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 16:43:08
+2026-11-02 16:43:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 16:43:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 16:43:08
+2026-11-02 16:43:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 16:45:08 (Interval: 2 menit)
+2026-11-02 16:43:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 16:43:18 [INFO] [RuleEngine]: [RuleEngine] Alert #14 (SW-2930F-HO - HIGH_LATENCY) pulih setelah 46 menit 0 detik (≥ 10 Menit) -> Notifikasi pemulihan dikirim ke Telegram.
+2026-11-02 16:43:18 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 16:43:26 [INFO] [RuleEngine]: [RuleEngine] Insiden #273 (SW-S5735-CORNER - HIGH_LATENCY) pulih dalam 1 menit 59 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-02 16:43:26 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 16:43:35 [INFO] [RuleEngine]: [RuleEngine] Insiden #274 (FW-PA220-1 - HIGH_LATENCY) pulih dalam 1 menit 56 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-02 16:43:35 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 26.82s) ===
+2026-11-02 16:43:35 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 16:43:08
+2026-11-02 16:43:35 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 16:45:08
+2026-11-02 16:45:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 16:45:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 16:45:08
+2026-11-02 16:45:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 16:47:08 (Interval: 2 menit)
+2026-11-02 16:45:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 16:45:18 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 16:45:25 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 16:45:38 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: FW-PA220-1 - HIGH_LATENCY (6.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-02 16:45:38 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 30.19s) ===
+2026-11-02 16:45:38 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 16:45:08
+2026-11-02 16:45:38 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 16:47:08
+2026-11-02 16:47:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 16:47:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 16:47:08
+2026-11-02 16:47:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 16:49:08 (Interval: 2 menit)
+2026-11-02 16:47:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 16:47:17 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 16:47:25 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 16:47:36 [INFO] [RuleEngine]: [RuleEngine] Insiden #275 (FW-PA220-1 - HIGH_LATENCY) pulih dalam 1 menit 57 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-02 16:47:36 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 28.11s) ===
+2026-11-02 16:47:36 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 16:47:08
+2026-11-02 16:47:36 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 16:49:08
+2026-11-02 16:48:52 [INFO] [BackupService]: Memulai backup [System] untuk SW-2930F-HO (192.168.1.10) [Incremental: True]...
+2026-11-02 16:49:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 16:49:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 16:49:08
+2026-11-02 16:49:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 16:51:08 (Interval: 2 menit)
+2026-11-02 16:49:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 16:49:18 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 16:49:23 [INFO] [BackupService]: Koneksi SSH Aruba (Netmiko) berhasil dengan user='admin'
+2026-11-02 16:49:23 [INFO] [BackupService]: Memulai backup [Config] untuk SW-2930F-HO (192.168.1.10) [Incremental: True]...
+2026-11-02 16:49:25 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 16:49:27 [INFO] [BackupService]: Koneksi SSH Aruba (Netmiko) berhasil dengan user='admin'
+2026-11-02 16:49:27 [INFO] [BackupService]: Memulai backup [Traffic] untuk SW-2930F-HO (192.168.1.10) [Incremental: False]...
+2026-11-02 16:49:30 [INFO] [BackupService]: Koneksi SSH Aruba (Netmiko) berhasil dengan user='admin'
+2026-11-02 16:49:31 [INFO] [BackupService]: Memulai backup [Threat] untuk SW-2930F-HO (192.168.1.10) [Incremental: False]...
+2026-11-02 16:49:34 [INFO] [BackupService]: Koneksi SSH Aruba (Netmiko) berhasil dengan user='admin'
+2026-11-02 16:49:36 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 28.15s) ===
+2026-11-02 16:49:36 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 16:49:08
+2026-11-02 16:49:36 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 16:51:08
+2026-11-02 16:51:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 16:51:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 16:51:08
+2026-11-02 16:51:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 16:53:08 (Interval: 2 menit)
+2026-11-02 16:51:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 16:51:17 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 16:51:25 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 16:51:33 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: FW-PA220-1 - HIGH_LATENCY (6.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-02 16:51:33 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 25.33s) ===
+2026-11-02 16:51:33 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 16:51:08
+2026-11-02 16:51:33 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 16:53:08
+2026-11-02 16:53:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 16:53:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 16:53:08
+2026-11-02 16:53:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 16:55:08 (Interval: 2 menit)
+2026-11-02 16:53:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 16:53:20 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-2930F-HO - HIGH_LATENCY (47.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-02 16:53:20 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 16:53:27 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-S5735-CORNER - HIGH_LATENCY (35.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-02 16:53:27 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 16:53:36 [INFO] [RuleEngine]: [RuleEngine] Insiden #276 (FW-PA220-1 - HIGH_LATENCY) pulih dalam 2 menit 3 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-02 16:53:36 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 28.62s) ===
+2026-11-02 16:53:36 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 16:53:08
+2026-11-02 16:53:36 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 16:55:08
+2026-11-02 16:55:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 16:55:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 16:55:08
+2026-11-02 16:55:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 16:57:08 (Interval: 2 menit)
+2026-11-02 16:55:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 16:55:18 [INFO] [RuleEngine]: [RuleEngine] Insiden #277 (SW-2930F-HO - HIGH_LATENCY) pulih dalam 1 menit 58 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-02 16:55:18 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 16:55:25 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 16:55:34 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 26.18s) ===
+2026-11-02 16:55:34 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 16:55:08
+2026-11-02 16:55:34 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 16:57:08
+2026-11-02 16:57:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 16:57:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 16:57:08
+2026-11-02 16:57:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 16:59:08 (Interval: 2 menit)
+2026-11-02 16:57:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 16:57:18 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 16:57:26 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 16:57:35 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 27.54s) ===
+2026-11-02 16:57:35 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 16:57:08
+2026-11-02 16:57:35 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 16:59:08
+2026-11-02 16:59:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 16:59:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 16:59:08
+2026-11-02 16:59:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 17:01:08 (Interval: 2 menit)
+2026-11-02 16:59:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 16:59:18 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 16:59:26 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 16:59:35 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 27.09s) ===
+2026-11-02 16:59:35 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 16:59:08
+2026-11-02 16:59:35 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 17:01:08
+2026-11-02 17:01:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 17:01:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 17:01:08
+2026-11-02 17:01:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 17:03:08 (Interval: 2 menit)
+2026-11-02 17:01:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 17:01:18 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-2930F-HO - HIGH_LATENCY (169.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-02 17:01:18 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 17:01:25 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 17:01:38 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 29.79s) ===
+2026-11-02 17:01:38 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 17:01:08
+2026-11-02 17:01:38 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 17:03:08
+2026-11-02 17:03:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 17:03:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 17:03:08
+2026-11-02 17:03:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 17:05:08 (Interval: 2 menit)
+2026-11-02 17:03:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 17:03:17 [INFO] [RuleEngine]: [RuleEngine] Insiden #279 (SW-2930F-HO - HIGH_LATENCY) pulih dalam 1 menit 59 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-02 17:03:17 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 17:03:25 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 17:03:36 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 27.89s) ===
+2026-11-02 17:03:36 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 17:03:08
+2026-11-02 17:03:36 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 17:05:08
+2026-11-02 17:05:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 17:05:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 17:05:08
+2026-11-02 17:05:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 17:07:08 (Interval: 2 menit)
+2026-11-02 17:05:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 17:05:18 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 17:05:26 [INFO] [RuleEngine]: [RuleEngine] Alert - (SW-S5735-CORNER - HIGH_LATENCY) pulih setelah 11 menit 58 detik (≥ 10 Menit) -> Notifikasi pemulihan dikirim ke Telegram.
+2026-11-02 17:05:26 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 17:05:37 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 28.92s) ===
+2026-11-02 17:05:37 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 17:05:08
+2026-11-02 17:05:37 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 17:07:08
+2026-11-02 17:07:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 17:07:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 17:07:08
+2026-11-02 17:07:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 17:09:08 (Interval: 2 menit)
+2026-11-02 17:07:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 17:07:17 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 17:07:25 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-S5735-CORNER - HIGH_LATENCY (14.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-02 17:07:25 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 17:07:35 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: FW-PA220-1 - HIGH_LATENCY (10.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-02 17:07:35 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 26.73s) ===
+2026-11-02 17:07:35 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 17:07:08
+2026-11-02 17:07:35 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 17:09:08
+2026-11-02 17:09:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 17:09:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 17:09:08
+2026-11-02 17:09:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 17:11:08 (Interval: 2 menit)
+2026-11-02 17:09:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 17:09:18 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 17:09:25 [INFO] [RuleEngine]: [RuleEngine] Insiden #280 (SW-S5735-CORNER - HIGH_LATENCY) pulih dalam 2 menit 0 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-02 17:09:25 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 17:09:34 [INFO] [RuleEngine]: [RuleEngine] Insiden #281 (FW-PA220-1 - HIGH_LATENCY) pulih dalam 1 menit 59 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-02 17:09:34 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 26.35s) ===
+2026-11-02 17:09:34 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 17:09:08
+2026-11-02 17:09:34 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 17:11:08
+2026-11-02 17:11:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 17:11:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 17:11:08
+2026-11-02 17:11:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 17:13:08 (Interval: 2 menit)
+2026-11-02 17:11:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 17:11:18 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 17:11:25 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 17:11:35 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 26.77s) ===
+2026-11-02 17:11:35 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 17:11:08
+2026-11-02 17:11:35 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 17:13:08
+2026-11-02 17:13:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 17:13:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 17:13:08
+2026-11-02 17:13:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 17:15:08 (Interval: 2 menit)
+2026-11-02 17:13:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 17:13:18 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 17:13:25 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 17:13:34 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 25.92s) ===
+2026-11-02 17:13:34 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 17:13:08
+2026-11-02 17:13:34 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 17:15:08
+2026-11-02 17:15:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 17:15:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 17:15:08
+2026-11-02 17:15:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 17:17:08 (Interval: 2 menit)
+2026-11-02 17:15:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 17:15:18 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 17:15:25 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-S5735-CORNER - HIGH_LATENCY (12.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-02 17:15:25 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 17:15:38 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 30.05s) ===
+2026-11-02 17:15:38 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 17:15:08
+2026-11-02 17:15:38 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 17:17:08
+2026-11-02 17:17:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 17:17:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 17:17:08
+2026-11-02 17:17:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 17:19:08 (Interval: 2 menit)
+2026-11-02 17:17:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 17:17:18 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-2930F-HO - HIGH_LATENCY (27.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-02 17:17:18 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 17:17:26 [INFO] [RuleEngine]: [RuleEngine] Insiden #282 (SW-S5735-CORNER - HIGH_LATENCY) pulih dalam 2 menit 0 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-02 17:17:26 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 17:17:38 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 29.75s) ===
+2026-11-02 17:17:38 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 17:17:08
+2026-11-02 17:17:38 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 17:19:08
+2026-11-02 17:19:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 17:19:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 17:19:08
+2026-11-02 17:19:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 17:21:08 (Interval: 2 menit)
+2026-11-02 17:19:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 17:19:18 [INFO] [RuleEngine]: [RuleEngine] Insiden #283 (SW-2930F-HO - HIGH_LATENCY) pulih dalam 1 menit 59 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-02 17:19:18 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 17:19:25 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 17:19:35 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 27.66s) ===
+2026-11-02 17:19:35 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 17:19:08
+2026-11-02 17:19:35 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 17:21:08
+2026-11-02 17:21:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 17:21:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 17:21:08
+2026-11-02 17:21:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 17:23:08 (Interval: 2 menit)
+2026-11-02 17:21:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 17:21:17 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 17:21:25 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 17:21:35 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: FW-PA220-1 - HIGH_LATENCY (7.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-02 17:21:35 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 27.67s) ===
+2026-11-02 17:21:35 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 17:21:08
+2026-11-02 17:21:35 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 17:23:08
+2026-11-02 17:23:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 17:23:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 17:23:08
+2026-11-02 17:23:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 17:25:08 (Interval: 2 menit)
+2026-11-02 17:23:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 17:23:18 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 17:23:25 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 17:23:34 [INFO] [RuleEngine]: [RuleEngine] Insiden #284 (FW-PA220-1 - HIGH_LATENCY) pulih dalam 1 menit 58 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-02 17:23:34 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 25.97s) ===
+2026-11-02 17:23:34 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 17:23:08
+2026-11-02 17:23:34 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 17:25:08
+2026-11-02 17:25:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 17:25:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 17:25:08
+2026-11-02 17:25:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 17:27:08 (Interval: 2 menit)
+2026-11-02 17:25:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 17:25:18 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 17:25:25 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 17:25:34 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 26.02s) ===
+2026-11-02 17:25:34 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 17:25:08
+2026-11-02 17:25:34 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 17:27:08
+2026-11-02 17:27:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 17:27:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 17:27:08
+2026-11-02 17:27:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 17:29:08 (Interval: 2 menit)
+2026-11-02 17:27:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 17:27:19 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-2930F-HO - HIGH_LATENCY (39.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-02 17:27:19 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 17:27:28 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-S5735-CORNER - HIGH_LATENCY (9.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-02 17:27:28 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 17:27:36 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 28.69s) ===
+2026-11-02 17:27:36 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 17:27:08
+2026-11-02 17:27:36 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 17:29:08
+2026-11-02 17:29:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 17:29:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 17:29:08
+2026-11-02 17:29:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 17:31:08 (Interval: 2 menit)
+2026-11-02 17:29:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 17:29:17 [INFO] [RuleEngine]: [RuleEngine] Insiden #285 (SW-2930F-HO - HIGH_LATENCY) pulih dalam 1 menit 58 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-02 17:29:17 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 17:29:25 [INFO] [RuleEngine]: [RuleEngine] Insiden #286 (SW-S5735-CORNER - HIGH_LATENCY) pulih dalam 1 menit 57 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-02 17:29:25 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 17:29:34 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 25.81s) ===
+2026-11-02 17:29:34 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 17:29:08
+2026-11-02 17:29:34 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 17:31:08
+2026-11-02 17:31:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 17:31:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 17:31:08
+2026-11-02 17:31:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 17:33:08 (Interval: 2 menit)
+2026-11-02 17:31:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 17:31:17 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 17:31:25 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 17:31:35 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 26.83s) ===
+2026-11-02 17:31:35 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 17:31:08
+2026-11-02 17:31:35 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 17:33:08
+2026-11-02 17:33:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 17:33:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 17:33:08
+2026-11-02 17:33:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 17:35:08 (Interval: 2 menit)
+2026-11-02 17:33:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 17:33:17 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 17:33:25 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 17:33:34 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 26.32s) ===
+2026-11-02 17:33:34 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 17:33:08
+2026-11-02 17:33:34 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 17:35:08
+2026-11-02 17:35:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 17:35:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 17:35:08
+2026-11-02 17:35:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 17:37:08 (Interval: 2 menit)
+2026-11-02 17:35:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 17:35:18 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 17:35:25 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 17:35:36 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 27.77s) ===
+2026-11-02 17:35:36 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 17:35:08
+2026-11-02 17:35:36 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 17:37:08
+2026-11-02 17:37:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 17:37:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 17:37:08
+2026-11-02 17:37:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 17:39:08 (Interval: 2 menit)
+2026-11-02 17:37:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 17:37:17 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 17:37:25 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 17:37:34 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 26.63s) ===
+2026-11-02 17:37:34 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 17:37:08
+2026-11-02 17:37:34 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 17:39:08
+2026-11-02 17:39:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 17:39:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 17:39:08
+2026-11-02 17:39:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 17:41:08 (Interval: 2 menit)
+2026-11-02 17:39:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 17:39:18 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-2930F-HO - HIGH_LATENCY (10.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-02 17:39:18 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 17:39:25 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 17:39:34 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: FW-PA220-1 - HIGH_LATENCY (48.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-02 17:39:34 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 26.33s) ===
+2026-11-02 17:39:34 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 17:39:08
+2026-11-02 17:39:34 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 17:41:08
+2026-11-02 17:41:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 17:41:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 17:41:08
+2026-11-02 17:41:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 17:43:08 (Interval: 2 menit)
+2026-11-02 17:41:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 17:41:18 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 17:41:25 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 17:41:35 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 27.44s) ===
+2026-11-02 17:41:35 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 17:41:08
+2026-11-02 17:41:35 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 17:43:08
+2026-11-02 17:43:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 17:43:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 17:43:08
+2026-11-02 17:43:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 17:45:08 (Interval: 2 menit)
+2026-11-02 17:43:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 17:43:17 [INFO] [RuleEngine]: [RuleEngine] Insiden #287 (SW-2930F-HO - HIGH_LATENCY) pulih dalam 3 menit 59 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-02 17:43:17 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 17:43:25 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 17:43:34 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 25.86s) ===
+2026-11-02 17:43:34 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 17:43:08
+2026-11-02 17:43:34 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 17:45:08
+2026-11-02 17:45:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 17:45:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 17:45:08
+2026-11-02 17:45:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 17:47:08 (Interval: 2 menit)
+2026-11-02 17:45:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 17:45:17 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 17:45:25 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 17:45:37 [INFO] [RuleEngine]: [RuleEngine] Insiden #288 (FW-PA220-1 - HIGH_LATENCY) pulih dalam 6 menit 3 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-02 17:45:37 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 29.42s) ===
+2026-11-02 17:45:37 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 17:45:08
+2026-11-02 17:45:37 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 17:47:08
+2026-11-02 17:47:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 17:47:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 17:47:08
+2026-11-02 17:47:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 17:49:08 (Interval: 2 menit)
+2026-11-02 17:47:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 17:47:21 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-2930F-HO - HIGH_LATENCY (6.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-02 17:47:21 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 17:47:29 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 17:47:39 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 31.23s) ===
+2026-11-02 17:47:39 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 17:47:08
+2026-11-02 17:47:39 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 17:49:08
+2026-11-02 17:49:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 17:49:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 17:49:08
+2026-11-02 17:49:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 17:51:08 (Interval: 2 menit)
+2026-11-02 17:49:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 17:49:17 [INFO] [RuleEngine]: [RuleEngine] Insiden #289 (SW-2930F-HO - HIGH_LATENCY) pulih dalam 1 menit 56 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-02 17:49:17 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 17:49:25 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 17:49:35 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 27.26s) ===
+2026-11-02 17:49:35 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 17:49:08
+2026-11-02 17:49:35 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 17:51:08
+2026-11-02 17:51:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 17:51:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 17:51:08
+2026-11-02 17:51:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 17:53:08 (Interval: 2 menit)
+2026-11-02 17:51:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 17:51:18 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-2930F-HO - HIGH_LATENCY (15.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-02 17:51:18 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 17:51:26 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-S5735-CORNER - HIGH_LATENCY (10.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-02 17:51:26 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 17:51:38 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 30.64s) ===
+2026-11-02 17:51:38 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 17:51:08
+2026-11-02 17:51:38 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 17:53:08
+2026-11-02 17:53:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 17:53:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 17:53:08
+2026-11-02 17:53:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 17:55:08 (Interval: 2 menit)
+2026-11-02 17:53:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 17:53:17 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 17:53:25 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 17:53:33 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 25.19s) ===
+2026-11-02 17:53:33 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 17:53:08
+2026-11-02 17:53:33 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 17:55:08
+2026-11-02 17:55:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 17:55:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 17:55:08
+2026-11-02 17:55:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 17:57:08 (Interval: 2 menit)
+2026-11-02 17:55:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 17:55:18 [INFO] [RuleEngine]: [RuleEngine] Insiden #290 (SW-2930F-HO - HIGH_LATENCY) pulih dalam 3 menit 59 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-02 17:55:18 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 17:55:25 [INFO] [RuleEngine]: [RuleEngine] Insiden #291 (SW-S5735-CORNER - HIGH_LATENCY) pulih dalam 3 menit 59 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-02 17:55:25 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 17:55:34 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: FW-PA220-1 - HIGH_LATENCY (7.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-02 17:55:34 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 26.65s) ===
+2026-11-02 17:55:34 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 17:55:08
+2026-11-02 17:55:34 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 17:57:08
+2026-11-02 17:57:08 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-02 17:57:08 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 17:57:08
+2026-11-02 17:57:08 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 17:59:08 (Interval: 2 menit)
+2026-11-02 17:57:08 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-02 17:57:17 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-02 17:57:25 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-02 17:57:34 [INFO] [RuleEngine]: [RuleEngine] Insiden #292 (FW-PA220-1 - HIGH_LATENCY) pulih dalam 2 menit 0 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-02 17:57:34 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 26.65s) ===
+2026-11-02 17:57:34 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-02 17:57:08
+2026-11-02 17:57:34 [INFO] [DataCollector]: [*] Next Polling : 2026-11-02 17:59:08
+2026-11-02 17:57:43 [INFO] [DataCollector]: Data Collector dihentikan.
+2026-11-03 11:36:22 [INFO] [DataCollector]: Job pencadangan harian terdaftar: setiap pukul 02:00 WIB.
+2026-11-03 11:36:22 [INFO] [DataCollector]: [Housekeeping] Retensi data bersih. Tidak ada data device_status_logs yang berumur lebih dari 30 hari.
+2026-11-03 11:36:22 [INFO] [DataCollector]: [Housekeeping] Retensi data bersih. Tidak ada data incident_logs yang berumur lebih dari 30 hari.
+2026-11-03 11:36:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 11:36:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 11:36:22
+2026-11-03 11:36:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 11:38:22 (Interval: 2 menit)
+2026-11-03 11:36:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 11:36:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 11:36:39 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-S5735-CORNER - HIGH_LATENCY (12.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 11:36:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 11:36:48 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: FW-PA220-1 - HIGH_LATENCY (6.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 11:36:48 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 26.28s) ===
+2026-11-03 11:36:48 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 11:36:22
+2026-11-03 11:36:48 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 11:38:22
+2026-11-03 11:36:48 [INFO] [DataCollector]: Scheduler berjalan. Menunggu jadwal polling (tiap 2 mnt, Next Polling: 2026-11-03 11:38:22) & housekeeping (tiap 00:00)...
+2026-11-03 11:38:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 11:38:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 11:38:22
+2026-11-03 11:38:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 11:40:22 (Interval: 2 menit)
+2026-11-03 11:38:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 11:38:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 11:38:40 [INFO] [RuleEngine]: [RuleEngine] Insiden #325 (SW-S5735-CORNER - HIGH_LATENCY) pulih dalam 2 menit 0 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 11:38:40 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 11:38:48 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 26.42s) ===
+2026-11-03 11:38:48 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 11:38:22
+2026-11-03 11:38:48 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 11:40:22
+2026-11-03 11:40:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 11:40:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 11:40:22
+2026-11-03 11:40:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 11:42:22 (Interval: 2 menit)
+2026-11-03 11:40:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 11:40:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 11:40:39 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-S5735-CORNER - HIGH_LATENCY (11.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 11:40:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 11:40:48 [INFO] [RuleEngine]: [RuleEngine] Insiden #326 (FW-PA220-1 - HIGH_LATENCY) pulih dalam 4 menit 0 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 11:40:48 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 26.35s) ===
+2026-11-03 11:40:48 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 11:40:22
+2026-11-03 11:40:48 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 11:42:22
+2026-11-03 11:42:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 11:42:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 11:42:22
+2026-11-03 11:42:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 11:44:22 (Interval: 2 menit)
+2026-11-03 11:42:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 11:42:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 11:42:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 11:42:48 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: FW-PA220-1 - HIGH_LATENCY (13.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 11:42:48 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 25.65s) ===
+2026-11-03 11:42:48 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 11:42:22
+2026-11-03 11:42:48 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 11:44:22
+2026-11-03 11:44:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 11:44:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 11:44:22
+2026-11-03 11:44:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 11:46:22 (Interval: 2 menit)
+2026-11-03 11:44:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 11:44:31 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 11:44:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 11:44:47 [INFO] [RuleEngine]: [RuleEngine] Insiden #328 (FW-PA220-1 - HIGH_LATENCY) pulih dalam 1 menit 59 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 11:44:47 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 25.39s) ===
+2026-11-03 11:44:47 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 11:44:22
+2026-11-03 11:44:47 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 11:46:22
+2026-11-03 11:46:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 11:46:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 11:46:22
+2026-11-03 11:46:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 11:48:22 (Interval: 2 menit)
+2026-11-03 11:46:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 11:46:32 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-2930F-HO - HIGH_LATENCY (6.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 11:46:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 11:46:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 11:46:49 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: FW-PA220-1 - HIGH_LATENCY (6.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 11:46:49 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 27.38s) ===
+2026-11-03 11:46:49 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 11:46:22
+2026-11-03 11:46:49 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 11:48:22
+2026-11-03 11:48:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 11:48:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 11:48:22
+2026-11-03 11:48:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 11:50:22 (Interval: 2 menit)
+2026-11-03 11:48:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 11:48:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 11:48:40 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 11:48:50 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 27.92s) ===
+2026-11-03 11:48:50 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 11:48:22
+2026-11-03 11:48:50 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 11:50:22
+2026-11-03 11:50:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 11:50:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 11:50:22
+2026-11-03 11:50:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 11:52:22 (Interval: 2 menit)
+2026-11-03 11:50:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 11:50:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 11:50:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 11:50:51 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 28.90s) ===
+2026-11-03 11:50:51 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 11:50:22
+2026-11-03 11:50:51 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 11:52:22
+2026-11-03 11:52:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 11:52:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 11:52:22
+2026-11-03 11:52:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 11:54:22 (Interval: 2 menit)
+2026-11-03 11:52:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 11:52:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 11:52:41 [WARNING] [RuleEngine]: [RuleEngine] ESKALASI ALERT #15: SW-S5735-CORNER - HIGH_LATENCY telah berlangsung 12 menit.
+2026-11-03 11:52:41 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 11:52:50 [INFO] [RuleEngine]: [RuleEngine] Insiden #330 (FW-PA220-1 - HIGH_LATENCY) pulih dalam 6 menit 0 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 11:52:50 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 27.63s) ===
+2026-11-03 11:52:50 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 11:52:22
+2026-11-03 11:52:50 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 11:54:22
+2026-11-03 11:54:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 11:54:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 11:54:22
+2026-11-03 11:54:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 11:56:22 (Interval: 2 menit)
+2026-11-03 11:54:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 11:54:31 [INFO] [RuleEngine]: [RuleEngine] Insiden #329 (SW-2930F-HO - HIGH_LATENCY) pulih dalam 7 menit 59 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 11:54:31 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 11:54:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 11:54:48 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 25.90s) ===
+2026-11-03 11:54:48 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 11:54:22
+2026-11-03 11:54:48 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 11:56:22
+2026-11-03 11:56:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 11:56:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 11:56:22
+2026-11-03 11:56:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 11:58:22 (Interval: 2 menit)
+2026-11-03 11:56:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 11:56:33 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 11:56:41 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 11:56:49 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: FW-PA220-1 - HIGH_LATENCY (43.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 11:56:49 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 27.32s) ===
+2026-11-03 11:56:49 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 11:56:22
+2026-11-03 11:56:49 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 11:58:22
+2026-11-03 11:58:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 11:58:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 11:58:22
+2026-11-03 11:58:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 12:00:22 (Interval: 2 menit)
+2026-11-03 11:58:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 11:58:32 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-2930F-HO - HIGH_LATENCY (12.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 11:58:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 11:58:40 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 11:58:49 [INFO] [RuleEngine]: [RuleEngine] Insiden #331 (FW-PA220-1 - HIGH_LATENCY) pulih dalam 1 menit 59 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 11:58:49 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 26.92s) ===
+2026-11-03 11:58:49 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 11:58:22
+2026-11-03 11:58:49 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 12:00:22
+2026-11-03 12:00:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 12:00:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 12:00:22
+2026-11-03 12:00:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 12:02:22 (Interval: 2 menit)
+2026-11-03 12:00:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 12:00:32 [INFO] [RuleEngine]: [RuleEngine] Insiden #332 (SW-2930F-HO - HIGH_LATENCY) pulih dalam 1 menit 59 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 12:00:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 12:00:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 12:00:55 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 32.59s) ===
+2026-11-03 12:00:55 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 12:00:22
+2026-11-03 12:00:55 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 12:02:22
+2026-11-03 12:02:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 12:02:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 12:02:22
+2026-11-03 12:02:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 12:04:22 (Interval: 2 menit)
+2026-11-03 12:02:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 12:02:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 12:02:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 12:02:53 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 30.95s) ===
+2026-11-03 12:02:53 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 12:02:22
+2026-11-03 12:02:53 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 12:04:22
+2026-11-03 12:04:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 12:04:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 12:04:22
+2026-11-03 12:04:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 12:06:22 (Interval: 2 menit)
+2026-11-03 12:04:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 12:04:35 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-2930F-HO - HIGH_LATENCY (36.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 12:04:35 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 12:04:43 [INFO] [RuleEngine]: [RuleEngine] Alert #15 (SW-S5735-CORNER - HIGH_LATENCY) pulih setelah 24 menit 3 detik (≥ 10 Menit) -> Notifikasi pemulihan dikirim ke Telegram.
+2026-11-03 12:04:43 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 12:04:55 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 33.34s) ===
+2026-11-03 12:04:55 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 12:04:22
+2026-11-03 12:04:55 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 12:06:22
+2026-11-03 12:06:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 12:06:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 12:06:22
+2026-11-03 12:06:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 12:08:22 (Interval: 2 menit)
+2026-11-03 12:06:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 12:06:32 [INFO] [RuleEngine]: [RuleEngine] Insiden #333 (SW-2930F-HO - HIGH_LATENCY) pulih dalam 1 menit 57 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 12:06:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 12:06:40 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 12:06:53 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 30.93s) ===
+2026-11-03 12:06:53 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 12:06:22
+2026-11-03 12:06:53 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 12:08:22
+2026-11-03 12:08:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 12:08:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 12:08:22
+2026-11-03 12:08:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 12:10:22 (Interval: 2 menit)
+2026-11-03 12:08:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 12:08:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 12:08:39 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-S5735-CORNER - HIGH_LATENCY (29.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 12:08:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 12:08:49 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: FW-PA220-1 - HIGH_LATENCY (16.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 12:08:49 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 26.83s) ===
+2026-11-03 12:08:49 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 12:08:22
+2026-11-03 12:08:49 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 12:10:22
+2026-11-03 12:10:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 12:10:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 12:10:22
+2026-11-03 12:10:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 12:12:22 (Interval: 2 menit)
+2026-11-03 12:10:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 12:10:33 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-2930F-HO - HIGH_LATENCY (13.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 12:10:33 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 12:10:40 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 12:10:50 [INFO] [RuleEngine]: [RuleEngine] Insiden #335 (FW-PA220-1 - HIGH_LATENCY) pulih dalam 2 menit 1 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 12:10:50 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 28.12s) ===
+2026-11-03 12:10:50 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 12:10:22
+2026-11-03 12:10:50 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 12:12:22
+2026-11-03 12:12:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 12:12:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 12:12:22
+2026-11-03 12:12:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 12:14:22 (Interval: 2 menit)
+2026-11-03 12:12:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 12:12:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 12:12:40 [INFO] [RuleEngine]: [RuleEngine] Insiden #334 (SW-S5735-CORNER - HIGH_LATENCY) pulih dalam 4 menit 0 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 12:12:40 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 12:12:48 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 26.18s) ===
+2026-11-03 12:12:48 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 12:12:22
+2026-11-03 12:12:48 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 12:14:22
+2026-11-03 12:14:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 12:14:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 12:14:22
+2026-11-03 12:14:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 12:16:22 (Interval: 2 menit)
+2026-11-03 12:14:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 12:14:32 [INFO] [RuleEngine]: [RuleEngine] Insiden #336 (SW-2930F-HO - HIGH_LATENCY) pulih dalam 3 menit 58 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 12:14:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 12:14:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 12:14:47 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 25.44s) ===
+2026-11-03 12:14:47 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 12:14:22
+2026-11-03 12:14:47 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 12:16:22
+2026-11-03 12:16:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 12:16:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 12:16:22
+2026-11-03 12:16:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 12:18:22 (Interval: 2 menit)
+2026-11-03 12:16:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 12:16:32 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-2930F-HO - HIGH_LATENCY (20.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 12:16:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 12:16:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 12:16:49 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: FW-PA220-1 - HIGH_LATENCY (11.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 12:16:49 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 27.14s) ===
+2026-11-03 12:16:49 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 12:16:22
+2026-11-03 12:16:49 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 12:18:22
+2026-11-03 12:18:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 12:18:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 12:18:22
+2026-11-03 12:18:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 12:20:22 (Interval: 2 menit)
+2026-11-03 12:18:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 12:18:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 12:18:40 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-S5735-CORNER - HIGH_LATENCY (8.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 12:18:40 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 12:18:50 [INFO] [RuleEngine]: [RuleEngine] Insiden #338 (FW-PA220-1 - HIGH_LATENCY) pulih dalam 2 menit 0 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 12:18:50 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 27.62s) ===
+2026-11-03 12:18:50 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 12:18:22
+2026-11-03 12:18:50 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 12:20:22
+2026-11-03 12:20:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 12:20:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 12:20:22
+2026-11-03 12:20:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 12:22:22 (Interval: 2 menit)
+2026-11-03 12:20:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 12:20:37 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 12:20:49 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-S5735-CORNER - PACKET_LOSS (33.0%). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 12:20:49 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 12:21:00 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: FW-PA220-1 - HIGH_LATENCY (16.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 12:21:00 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 37.79s) ===
+2026-11-03 12:21:00 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 12:20:22
+2026-11-03 12:21:00 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 12:22:22
+2026-11-03 12:22:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 12:22:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 12:22:22
+2026-11-03 12:22:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 12:24:22 (Interval: 2 menit)
+2026-11-03 12:22:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 12:22:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 12:22:40 [INFO] [RuleEngine]: [RuleEngine] Insiden #339 (SW-S5735-CORNER - HIGH_LATENCY) pulih dalam 3 menit 59 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 12:22:40 [INFO] [RuleEngine]: [RuleEngine] Insiden #340 (SW-S5735-CORNER - PACKET_LOSS) pulih dalam 1 menit 51 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 12:22:40 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 12:22:49 [INFO] [RuleEngine]: [RuleEngine] Insiden #341 (FW-PA220-1 - HIGH_LATENCY) pulih dalam 1 menit 49 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 12:22:49 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 26.89s) ===
+2026-11-03 12:22:49 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 12:22:22
+2026-11-03 12:22:49 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 12:24:22
+2026-11-03 12:24:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 12:24:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 12:24:22
+2026-11-03 12:24:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 12:26:22 (Interval: 2 menit)
+2026-11-03 12:24:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 12:24:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 12:24:39 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-S5735-CORNER - HIGH_LATENCY (13.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 12:24:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 12:24:48 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 26.37s) ===
+2026-11-03 12:24:48 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 12:24:22
+2026-11-03 12:24:48 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 12:26:22
+2026-11-03 12:26:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 12:26:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 12:26:22
+2026-11-03 12:26:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 12:28:22 (Interval: 2 menit)
+2026-11-03 12:26:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 12:26:33 [WARNING] [RuleEngine]: [RuleEngine] ESKALASI ALERT #16: SW-2930F-HO - HIGH_LATENCY telah berlangsung 10 menit.
+2026-11-03 12:26:33 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 12:26:41 [INFO] [RuleEngine]: [RuleEngine] Insiden #342 (SW-S5735-CORNER - HIGH_LATENCY) pulih dalam 2 menit 1 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 12:26:41 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 12:26:50 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: FW-PA220-1 - HIGH_LATENCY (90.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 12:26:50 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 27.71s) ===
+2026-11-03 12:26:50 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 12:26:22
+2026-11-03 12:26:50 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 12:28:22
+2026-11-03 12:28:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 12:28:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 12:28:22
+2026-11-03 12:28:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 12:30:22 (Interval: 2 menit)
+2026-11-03 12:28:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 12:28:33 [INFO] [RuleEngine]: [RuleEngine] Alert #16 (SW-2930F-HO - HIGH_LATENCY) pulih setelah 12 menit 0 detik (≥ 10 Menit) -> Notifikasi pemulihan dikirim ke Telegram.
+2026-11-03 12:28:33 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 12:28:41 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-S5735-CORNER - HIGH_LATENCY (17.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 12:28:41 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 12:28:50 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 27.92s) ===
+2026-11-03 12:28:50 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 12:28:22
+2026-11-03 12:28:50 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 12:30:22
+2026-11-03 12:30:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 12:30:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 12:30:22
+2026-11-03 12:30:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 12:32:22 (Interval: 2 menit)
+2026-11-03 12:30:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 12:30:33 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 12:30:41 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 12:30:54 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 31.59s) ===
+2026-11-03 12:30:54 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 12:30:22
+2026-11-03 12:30:54 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 12:32:22
+2026-11-03 12:32:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 12:32:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 12:32:22
+2026-11-03 12:32:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 12:34:22 (Interval: 2 menit)
+2026-11-03 12:32:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 12:32:34 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-2930F-HO - HIGH_LATENCY (31.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 12:32:34 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 12:32:42 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 12:32:54 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 32.38s) ===
+2026-11-03 12:32:54 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 12:32:22
+2026-11-03 12:32:54 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 12:34:22
+2026-11-03 12:34:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 12:34:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 12:34:22
+2026-11-03 12:34:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 12:36:22 (Interval: 2 menit)
+2026-11-03 12:34:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 12:34:32 [INFO] [RuleEngine]: [RuleEngine] Insiden #345 (SW-2930F-HO - HIGH_LATENCY) pulih dalam 1 menit 58 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 12:34:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 12:34:40 [INFO] [RuleEngine]: [RuleEngine] Insiden #344 (SW-S5735-CORNER - HIGH_LATENCY) pulih dalam 5 menit 58 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 12:34:40 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 12:34:52 [INFO] [RuleEngine]: [RuleEngine] Insiden #343 (FW-PA220-1 - HIGH_LATENCY) pulih dalam 8 menit 2 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 12:34:53 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 30.48s) ===
+2026-11-03 12:34:53 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 12:34:22
+2026-11-03 12:34:53 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 12:36:22
+2026-11-03 12:36:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 12:36:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 12:36:22
+2026-11-03 12:36:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 12:38:22 (Interval: 2 menit)
+2026-11-03 12:36:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 12:36:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 12:36:40 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-S5735-CORNER - HIGH_LATENCY (8.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 12:36:40 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 12:36:50 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 27.74s) ===
+2026-11-03 12:36:50 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 12:36:22
+2026-11-03 12:36:50 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 12:38:22
+2026-11-03 12:38:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 12:38:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 12:38:22
+2026-11-03 12:38:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 12:40:22 (Interval: 2 menit)
+2026-11-03 12:38:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 12:38:32 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-2930F-HO - HIGH_LATENCY (10.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 12:38:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 12:38:40 [INFO] [RuleEngine]: [RuleEngine] Insiden #346 (SW-S5735-CORNER - HIGH_LATENCY) pulih dalam 1 menit 59 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 12:38:40 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 12:38:49 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 26.83s) ===
+2026-11-03 12:38:49 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 12:38:22
+2026-11-03 12:38:49 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 12:40:22
+2026-11-03 12:40:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 12:40:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 12:40:22
+2026-11-03 12:40:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 12:42:22 (Interval: 2 menit)
+2026-11-03 12:40:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 12:40:32 [INFO] [RuleEngine]: [RuleEngine] Insiden #347 (SW-2930F-HO - HIGH_LATENCY) pulih dalam 1 menit 59 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 12:40:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 12:40:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 12:40:48 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: FW-PA220-1 - HIGH_LATENCY (21.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 12:40:49 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 26.47s) ===
+2026-11-03 12:40:49 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 12:40:22
+2026-11-03 12:40:49 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 12:42:22
+2026-11-03 12:42:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 12:42:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 12:42:22
+2026-11-03 12:42:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 12:44:22 (Interval: 2 menit)
+2026-11-03 12:42:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 12:42:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 12:42:39 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-S5735-CORNER - HIGH_LATENCY (7.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 12:42:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 12:42:48 [INFO] [RuleEngine]: [RuleEngine] Insiden #348 (FW-PA220-1 - HIGH_LATENCY) pulih dalam 1 menit 59 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 12:42:48 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 25.84s) ===
+2026-11-03 12:42:48 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 12:42:22
+2026-11-03 12:42:48 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 12:44:22
+2026-11-03 12:44:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 12:44:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 12:44:22
+2026-11-03 12:44:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 12:46:22 (Interval: 2 menit)
+2026-11-03 12:44:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 12:44:32 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-2930F-HO - HIGH_LATENCY (34.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 12:44:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 12:44:39 [INFO] [RuleEngine]: [RuleEngine] Insiden #349 (SW-S5735-CORNER - HIGH_LATENCY) pulih dalam 2 menit 0 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 12:44:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 12:44:48 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 25.82s) ===
+2026-11-03 12:44:48 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 12:44:22
+2026-11-03 12:44:48 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 12:46:22
+2026-11-03 12:46:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 12:46:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 12:46:22
+2026-11-03 12:46:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 12:48:22 (Interval: 2 menit)
+2026-11-03 12:46:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 12:46:32 [INFO] [RuleEngine]: [RuleEngine] Insiden #350 (SW-2930F-HO - HIGH_LATENCY) pulih dalam 1 menit 59 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 12:46:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 12:46:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 12:46:48 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: FW-PA220-1 - HIGH_LATENCY (18.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 12:46:48 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 26.23s) ===
+2026-11-03 12:46:48 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 12:46:22
+2026-11-03 12:46:48 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 12:48:22
+2026-11-03 12:48:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 12:48:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 12:48:22
+2026-11-03 12:48:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 12:50:22 (Interval: 2 menit)
+2026-11-03 12:48:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 12:48:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 12:48:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 12:48:50 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 27.47s) ===
+2026-11-03 12:48:50 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 12:48:22
+2026-11-03 12:48:50 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 12:50:22
+2026-11-03 12:50:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 12:50:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 12:50:22
+2026-11-03 12:50:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 12:52:22 (Interval: 2 menit)
+2026-11-03 12:50:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 12:50:32 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-2930F-HO - HIGH_LATENCY (13.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 12:50:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 12:50:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 12:50:49 [INFO] [RuleEngine]: [RuleEngine] Insiden #351 (FW-PA220-1 - HIGH_LATENCY) pulih dalam 4 menit 0 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 12:50:49 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 26.99s) ===
+2026-11-03 12:50:49 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 12:50:22
+2026-11-03 12:50:49 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 12:52:22
+2026-11-03 12:52:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 12:52:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 12:52:22
+2026-11-03 12:52:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 12:54:22 (Interval: 2 menit)
+2026-11-03 12:52:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 12:52:33 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 12:52:41 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 12:52:52 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: FW-PA220-1 - HIGH_LATENCY (12.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 12:52:52 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 30.37s) ===
+2026-11-03 12:52:52 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 12:52:22
+2026-11-03 12:52:52 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 12:54:22
+2026-11-03 12:54:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 12:54:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 12:54:22
+2026-11-03 12:54:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 12:56:22 (Interval: 2 menit)
+2026-11-03 12:54:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 12:54:34 [INFO] [RuleEngine]: [RuleEngine] Insiden #352 (SW-2930F-HO - HIGH_LATENCY) pulih dalam 4 menit 2 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 12:54:34 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 12:54:42 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 12:54:51 [INFO] [RuleEngine]: [RuleEngine] Insiden #353 (FW-PA220-1 - HIGH_LATENCY) pulih dalam 1 menit 58 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 12:54:51 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 28.71s) ===
+2026-11-03 12:54:51 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 12:54:22
+2026-11-03 12:54:51 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 12:56:22
+2026-11-03 12:56:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 12:56:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 12:56:22
+2026-11-03 12:56:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 12:58:22 (Interval: 2 menit)
+2026-11-03 12:56:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 12:56:32 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-2930F-HO - HIGH_LATENCY (6.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 12:56:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 12:56:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 12:56:48 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 25.79s) ===
+2026-11-03 12:56:48 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 12:56:22
+2026-11-03 12:56:48 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 12:58:22
+2026-11-03 12:58:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 12:58:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 12:58:22
+2026-11-03 12:58:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 13:00:22 (Interval: 2 menit)
+2026-11-03 12:58:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 12:58:31 [INFO] [RuleEngine]: [RuleEngine] Insiden #354 (SW-2930F-HO - HIGH_LATENCY) pulih dalam 1 menit 59 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 12:58:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 12:58:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 12:58:48 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: FW-PA220-1 - HIGH_LATENCY (18.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 12:58:48 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 25.50s) ===
+2026-11-03 12:58:48 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 12:58:22
+2026-11-03 12:58:48 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 13:00:22
+2026-11-03 13:00:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 13:00:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 13:00:22
+2026-11-03 13:00:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 13:02:22 (Interval: 2 menit)
+2026-11-03 13:00:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 13:00:34 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-2930F-HO - HIGH_LATENCY (28.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 13:00:34 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 13:00:42 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 13:00:51 [INFO] [RuleEngine]: [RuleEngine] Insiden #355 (FW-PA220-1 - HIGH_LATENCY) pulih dalam 2 menit 3 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 13:00:51 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 29.47s) ===
+2026-11-03 13:00:52 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 13:00:22
+2026-11-03 13:00:52 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 13:02:22
+2026-11-03 13:02:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 13:02:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 13:02:22
+2026-11-03 13:02:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 13:04:22 (Interval: 2 menit)
+2026-11-03 13:02:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 13:02:35 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 13:02:42 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 13:02:52 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 30.10s) ===
+2026-11-03 13:02:52 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 13:02:22
+2026-11-03 13:02:52 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 13:04:22
+2026-11-03 13:04:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 13:04:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 13:04:22
+2026-11-03 13:04:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 13:06:22 (Interval: 2 menit)
+2026-11-03 13:04:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 13:04:32 [INFO] [RuleEngine]: [RuleEngine] Insiden #356 (SW-2930F-HO - HIGH_LATENCY) pulih dalam 3 menit 57 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 13:04:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 13:04:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 13:04:49 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: FW-PA220-1 - HIGH_LATENCY (11.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 13:04:49 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 26.98s) ===
+2026-11-03 13:04:49 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 13:04:22
+2026-11-03 13:04:49 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 13:06:22
+2026-11-03 13:06:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 13:06:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 13:06:22
+2026-11-03 13:06:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 13:08:22 (Interval: 2 menit)
+2026-11-03 13:06:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 13:06:34 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-2930F-HO - HIGH_LATENCY (10.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 13:06:34 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 13:06:42 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-S5735-CORNER - HIGH_LATENCY (299.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 13:06:42 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 13:06:51 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 29.30s) ===
+2026-11-03 13:06:51 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 13:06:22
+2026-11-03 13:06:51 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 13:08:22
+2026-11-03 13:08:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 13:08:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 13:08:22
+2026-11-03 13:08:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 13:10:22 (Interval: 2 menit)
+2026-11-03 13:08:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 13:08:31 [INFO] [RuleEngine]: [RuleEngine] Insiden #358 (SW-2930F-HO - HIGH_LATENCY) pulih dalam 1 menit 57 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 13:08:31 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 13:08:39 [INFO] [RuleEngine]: [RuleEngine] Insiden #359 (SW-S5735-CORNER - HIGH_LATENCY) pulih dalam 1 menit 56 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 13:08:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 13:08:47 [INFO] [RuleEngine]: [RuleEngine] Insiden #357 (FW-PA220-1 - HIGH_LATENCY) pulih dalam 3 menit 58 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 13:08:47 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 25.09s) ===
+2026-11-03 13:08:47 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 13:08:22
+2026-11-03 13:08:47 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 13:10:22
+2026-11-03 13:10:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 13:10:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 13:10:22
+2026-11-03 13:10:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 13:12:22 (Interval: 2 menit)
+2026-11-03 13:10:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 13:10:31 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 13:10:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 13:10:50 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 27.60s) ===
+2026-11-03 13:10:50 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 13:10:22
+2026-11-03 13:10:50 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 13:12:22
+2026-11-03 13:12:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 13:12:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 13:12:22
+2026-11-03 13:12:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 13:14:22 (Interval: 2 menit)
+2026-11-03 13:12:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 13:12:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 13:12:40 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 13:12:48 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: FW-PA220-1 - HIGH_LATENCY (12.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 13:12:48 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 26.19s) ===
+2026-11-03 13:12:48 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 13:12:22
+2026-11-03 13:12:48 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 13:14:22
+2026-11-03 13:14:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 13:14:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 13:14:22
+2026-11-03 13:14:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 13:16:22 (Interval: 2 menit)
+2026-11-03 13:14:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 13:14:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 13:14:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 13:14:49 [INFO] [RuleEngine]: [RuleEngine] Insiden #360 (FW-PA220-1 - HIGH_LATENCY) pulih dalam 2 menit 0 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 13:14:49 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 26.80s) ===
+2026-11-03 13:14:49 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 13:14:22
+2026-11-03 13:14:49 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 13:16:22
+2026-11-03 13:16:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 13:16:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 13:16:22
+2026-11-03 13:16:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 13:18:22 (Interval: 2 menit)
+2026-11-03 13:16:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 13:16:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 13:16:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 13:16:49 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 26.65s) ===
+2026-11-03 13:16:49 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 13:16:22
+2026-11-03 13:16:49 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 13:18:22
+2026-11-03 13:18:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 13:18:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 13:18:22
+2026-11-03 13:18:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 13:20:22 (Interval: 2 menit)
+2026-11-03 13:18:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 13:18:32 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-2930F-HO - HIGH_LATENCY (44.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 13:18:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 13:18:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 13:18:49 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: FW-PA220-1 - HIGH_LATENCY (8.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 13:18:49 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 27.27s) ===
+2026-11-03 13:18:49 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 13:18:22
+2026-11-03 13:18:49 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 13:20:22
+2026-11-03 13:20:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 13:20:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 13:20:22
+2026-11-03 13:20:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 13:22:22 (Interval: 2 menit)
+2026-11-03 13:20:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 13:20:32 [INFO] [RuleEngine]: [RuleEngine] Insiden #361 (SW-2930F-HO - HIGH_LATENCY) pulih dalam 2 menit 0 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 13:20:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 13:20:40 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 13:20:49 [INFO] [RuleEngine]: [RuleEngine] Insiden #362 (FW-PA220-1 - HIGH_LATENCY) pulih dalam 2 menit 0 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 13:20:49 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 27.37s) ===
+2026-11-03 13:20:49 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 13:20:22
+2026-11-03 13:20:49 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 13:22:22
+2026-11-03 13:22:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 13:22:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 13:22:22
+2026-11-03 13:22:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 13:24:22 (Interval: 2 menit)
+2026-11-03 13:22:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 13:22:31 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 13:22:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 13:22:48 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 25.81s) ===
+2026-11-03 13:22:48 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 13:22:22
+2026-11-03 13:22:48 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 13:24:22
+2026-11-03 13:24:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 13:24:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 13:24:22
+2026-11-03 13:24:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 13:26:22 (Interval: 2 menit)
+2026-11-03 13:24:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 13:24:33 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 13:24:40 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 13:24:49 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: FW-PA220-1 - HIGH_LATENCY (22.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 13:24:49 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 26.84s) ===
+2026-11-03 13:24:49 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 13:24:22
+2026-11-03 13:24:49 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 13:26:22
+2026-11-03 13:26:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 13:26:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 13:26:22
+2026-11-03 13:26:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 13:28:22 (Interval: 2 menit)
+2026-11-03 13:26:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 13:26:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 13:26:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 13:26:47 [INFO] [RuleEngine]: [RuleEngine] Insiden #363 (FW-PA220-1 - HIGH_LATENCY) pulih dalam 1 menit 58 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 13:26:47 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 25.36s) ===
+2026-11-03 13:26:47 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 13:26:22
+2026-11-03 13:26:47 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 13:28:22
+2026-11-03 13:28:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 13:28:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 13:28:22
+2026-11-03 13:28:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 13:30:22 (Interval: 2 menit)
+2026-11-03 13:28:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 13:28:32 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-2930F-HO - HIGH_LATENCY (11.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 13:28:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 13:28:39 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-S5735-CORNER - HIGH_LATENCY (11.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 13:28:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 13:28:48 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 26.15s) ===
+2026-11-03 13:28:48 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 13:28:22
+2026-11-03 13:28:48 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 13:30:22
+2026-11-03 13:30:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 13:30:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 13:30:22
+2026-11-03 13:30:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 13:32:22 (Interval: 2 menit)
+2026-11-03 13:30:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 13:30:33 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 13:30:40 [INFO] [RuleEngine]: [RuleEngine] Insiden #365 (SW-S5735-CORNER - HIGH_LATENCY) pulih dalam 2 menit 0 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 13:30:40 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 13:30:50 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 27.99s) ===
+2026-11-03 13:30:50 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 13:30:22
+2026-11-03 13:30:50 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 13:32:22
+2026-11-03 13:32:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 13:32:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 13:32:22
+2026-11-03 13:32:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 13:34:22 (Interval: 2 menit)
+2026-11-03 13:32:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 13:32:32 [INFO] [RuleEngine]: [RuleEngine] Insiden #364 (SW-2930F-HO - HIGH_LATENCY) pulih dalam 4 menit 0 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 13:32:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 13:32:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 13:32:49 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 26.49s) ===
+2026-11-03 13:32:49 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 13:32:22
+2026-11-03 13:32:49 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 13:34:22
+2026-11-03 13:34:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 13:34:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 13:34:22
+2026-11-03 13:34:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 13:36:22 (Interval: 2 menit)
+2026-11-03 13:34:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 13:34:32 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-2930F-HO - HIGH_LATENCY (29.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 13:34:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 13:34:40 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-S5735-CORNER - HIGH_LATENCY (9.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 13:34:40 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 13:34:49 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 27.45s) ===
+2026-11-03 13:34:49 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 13:34:22
+2026-11-03 13:34:49 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 13:36:22
+2026-11-03 13:36:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 13:36:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 13:36:22
+2026-11-03 13:36:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 13:38:22 (Interval: 2 menit)
+2026-11-03 13:36:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 13:36:32 [INFO] [RuleEngine]: [RuleEngine] Insiden #366 (SW-2930F-HO - HIGH_LATENCY) pulih dalam 1 menit 59 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 13:36:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 13:36:39 [INFO] [RuleEngine]: [RuleEngine] Insiden #367 (SW-S5735-CORNER - HIGH_LATENCY) pulih dalam 1 menit 59 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 13:36:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 13:36:48 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: FW-PA220-1 - HIGH_LATENCY (8.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 13:36:48 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 25.93s) ===
+2026-11-03 13:36:48 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 13:36:22
+2026-11-03 13:36:48 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 13:38:22
+2026-11-03 13:38:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 13:38:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 13:38:22
+2026-11-03 13:38:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 13:40:22 (Interval: 2 menit)
+2026-11-03 13:38:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 13:38:31 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 13:38:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 13:38:48 [INFO] [RuleEngine]: [RuleEngine] Insiden #368 (FW-PA220-1 - HIGH_LATENCY) pulih dalam 1 menit 59 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 13:38:48 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 25.78s) ===
+2026-11-03 13:38:48 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 13:38:22
+2026-11-03 13:38:48 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 13:40:22
+2026-11-03 13:40:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 13:40:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 13:40:22
+2026-11-03 13:40:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 13:42:22 (Interval: 2 menit)
+2026-11-03 13:40:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 13:40:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 13:40:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 13:40:48 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: FW-PA220-1 - HIGH_LATENCY (6.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 13:40:48 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 26.01s) ===
+2026-11-03 13:40:48 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 13:40:22
+2026-11-03 13:40:48 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 13:42:22
+2026-11-03 13:42:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 13:42:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 13:42:22
+2026-11-03 13:42:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 13:44:22 (Interval: 2 menit)
+2026-11-03 13:42:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 13:42:32 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-2930F-HO - HIGH_LATENCY (39.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 13:42:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 13:42:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 13:42:48 [INFO] [RuleEngine]: [RuleEngine] Insiden #369 (FW-PA220-1 - HIGH_LATENCY) pulih dalam 1 menit 59 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 13:42:48 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 25.95s) ===
+2026-11-03 13:42:48 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 13:42:22
+2026-11-03 13:42:48 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 13:44:22
+2026-11-03 13:44:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 13:44:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 13:44:22
+2026-11-03 13:44:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 13:46:22 (Interval: 2 menit)
+2026-11-03 13:44:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 13:44:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 13:44:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 13:44:48 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 25.76s) ===
+2026-11-03 13:44:48 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 13:44:22
+2026-11-03 13:44:48 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 13:46:22
+2026-11-03 13:46:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 13:46:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 13:46:22
+2026-11-03 13:46:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 13:48:22 (Interval: 2 menit)
+2026-11-03 13:46:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 13:46:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 13:46:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 13:46:49 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: FW-PA220-1 - HIGH_LATENCY (6.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 13:46:49 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 26.62s) ===
+2026-11-03 13:46:49 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 13:46:22
+2026-11-03 13:46:49 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 13:48:22
+2026-11-03 13:48:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 13:48:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 13:48:22
+2026-11-03 13:48:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 13:50:22 (Interval: 2 menit)
+2026-11-03 13:48:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 13:48:32 [INFO] [RuleEngine]: [RuleEngine] Insiden #370 (SW-2930F-HO - HIGH_LATENCY) pulih dalam 5 menit 59 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 13:48:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 13:48:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 13:48:49 [INFO] [RuleEngine]: [RuleEngine] Insiden #371 (FW-PA220-1 - HIGH_LATENCY) pulih dalam 2 menit 0 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 13:48:49 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 26.66s) ===
+2026-11-03 13:48:49 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 13:48:22
+2026-11-03 13:48:49 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 13:50:22
+2026-11-03 13:50:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 13:50:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 13:50:22
+2026-11-03 13:50:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 13:52:22 (Interval: 2 menit)
+2026-11-03 13:50:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 13:50:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 13:50:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 13:50:49 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 26.48s) ===
+2026-11-03 13:50:49 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 13:50:22
+2026-11-03 13:50:49 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 13:52:22
+2026-11-03 13:52:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 13:52:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 13:52:22
+2026-11-03 13:52:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 13:54:22 (Interval: 2 menit)
+2026-11-03 13:52:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 13:52:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 13:52:39 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-S5735-CORNER - HIGH_LATENCY (9.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 13:52:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 13:52:48 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: FW-PA220-1 - HIGH_LATENCY (9.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 13:52:48 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 25.96s) ===
+2026-11-03 13:52:48 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 13:52:22
+2026-11-03 13:52:48 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 13:54:22
+2026-11-03 13:54:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 13:54:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 13:54:22
+2026-11-03 13:54:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 13:56:22 (Interval: 2 menit)
+2026-11-03 13:54:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 13:54:32 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-2930F-HO - HIGH_LATENCY (14.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 13:54:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 13:54:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 13:54:48 [INFO] [RuleEngine]: [RuleEngine] Insiden #373 (FW-PA220-1 - HIGH_LATENCY) pulih dalam 1 menit 59 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 13:54:48 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 25.81s) ===
+2026-11-03 13:54:48 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 13:54:22
+2026-11-03 13:54:48 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 13:56:22
+2026-11-03 13:55:51 [INFO] [BackupService]: Memulai backup [System] untuk SW-S5735-CORNER (192.168.1.155) [Incremental: True]...
+2026-11-03 13:55:57 [INFO] [BackupService]: Memulai backup [Config] untuk SW-S5735-CORNER (192.168.1.155) [Incremental: True]...
+2026-11-03 13:56:01 [INFO] [BackupService]: Memulai backup [Traffic] untuk SW-S5735-CORNER (192.168.1.155) [Incremental: False]...
+2026-11-03 13:56:05 [INFO] [BackupService]: Memulai backup [Threat] untuk SW-S5735-CORNER (192.168.1.155) [Incremental: False]...
+2026-11-03 13:56:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 13:56:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 13:56:22
+2026-11-03 13:56:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 13:58:22 (Interval: 2 menit)
+2026-11-03 13:56:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 13:56:32 [INFO] [RuleEngine]: [RuleEngine] Insiden #374 (SW-2930F-HO - HIGH_LATENCY) pulih dalam 2 menit 0 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 13:56:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 13:56:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 13:56:48 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: FW-PA220-1 - HIGH_LATENCY (8.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 13:56:48 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 26.27s) ===
+2026-11-03 13:56:48 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 13:56:22
+2026-11-03 13:56:48 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 13:58:22
+2026-11-03 13:58:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 13:58:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 13:58:22
+2026-11-03 13:58:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 14:00:22 (Interval: 2 menit)
+2026-11-03 13:58:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 13:58:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 13:58:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 13:58:48 [INFO] [RuleEngine]: [RuleEngine] Insiden #375 (FW-PA220-1 - HIGH_LATENCY) pulih dalam 1 menit 59 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 13:58:48 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 25.83s) ===
+2026-11-03 13:58:48 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 13:58:22
+2026-11-03 13:58:48 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 14:00:22
+2026-11-03 14:00:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 14:00:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 14:00:22
+2026-11-03 14:00:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 14:02:22 (Interval: 2 menit)
+2026-11-03 14:00:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 14:00:31 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 14:00:39 [INFO] [RuleEngine]: [RuleEngine] Insiden #372 (SW-S5735-CORNER - HIGH_LATENCY) pulih dalam 7 menit 59 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 14:00:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 14:00:51 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 29.10s) ===
+2026-11-03 14:00:51 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 14:00:22
+2026-11-03 14:00:51 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 14:02:22
+2026-11-03 14:02:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 14:02:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 14:02:22
+2026-11-03 14:02:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 14:04:22 (Interval: 2 menit)
+2026-11-03 14:02:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 14:02:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 14:02:39 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-S5735-CORNER - HIGH_LATENCY (8.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 14:02:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 14:02:49 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 26.66s) ===
+2026-11-03 14:02:49 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 14:02:22
+2026-11-03 14:02:49 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 14:04:22
+2026-11-03 14:04:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 14:04:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 14:04:22
+2026-11-03 14:04:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 14:06:22 (Interval: 2 menit)
+2026-11-03 14:04:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 14:04:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 14:04:39 [INFO] [RuleEngine]: [RuleEngine] Insiden #376 (SW-S5735-CORNER - HIGH_LATENCY) pulih dalam 2 menit 0 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 14:04:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 14:04:49 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: FW-PA220-1 - HIGH_LATENCY (10.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 14:04:49 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 26.78s) ===
+2026-11-03 14:04:49 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 14:04:22
+2026-11-03 14:04:49 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 14:06:22
+2026-11-03 14:06:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 14:06:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 14:06:22
+2026-11-03 14:06:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 14:08:22 (Interval: 2 menit)
+2026-11-03 14:06:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 14:06:32 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-2930F-HO - HIGH_LATENCY (10.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 14:06:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 14:06:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 14:06:53 [INFO] [RuleEngine]: [RuleEngine] Insiden #377 (FW-PA220-1 - HIGH_LATENCY) pulih dalam 2 menit 4 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 14:06:53 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 31.08s) ===
+2026-11-03 14:06:53 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 14:06:22
+2026-11-03 14:06:53 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 14:08:22
+2026-11-03 14:08:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 14:08:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 14:08:22
+2026-11-03 14:08:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 14:10:22 (Interval: 2 menit)
+2026-11-03 14:08:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 14:08:32 [INFO] [RuleEngine]: [RuleEngine] Insiden #378 (SW-2930F-HO - HIGH_LATENCY) pulih dalam 1 menit 59 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 14:08:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 14:08:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 14:08:48 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: FW-PA220-1 - HIGH_LATENCY (10.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 14:08:48 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 25.72s) ===
+2026-11-03 14:08:48 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 14:08:22
+2026-11-03 14:08:48 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 14:10:22
+2026-11-03 14:10:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 14:10:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 14:10:22
+2026-11-03 14:10:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 14:12:22 (Interval: 2 menit)
+2026-11-03 14:10:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 14:10:33 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 14:10:40 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 14:10:50 [INFO] [RuleEngine]: [RuleEngine] Insiden #379 (FW-PA220-1 - HIGH_LATENCY) pulih dalam 2 menit 1 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 14:10:50 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 27.65s) ===
+2026-11-03 14:10:50 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 14:10:22
+2026-11-03 14:10:50 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 14:12:22
+2026-11-03 14:12:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 14:12:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 14:12:22
+2026-11-03 14:12:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 14:14:22 (Interval: 2 menit)
+2026-11-03 14:12:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 14:12:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 14:12:39 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-S5735-CORNER - HIGH_LATENCY (8.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 14:12:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 14:12:48 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 26.14s) ===
+2026-11-03 14:12:48 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 14:12:22
+2026-11-03 14:12:48 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 14:14:22
+2026-11-03 14:14:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 14:14:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 14:14:22
+2026-11-03 14:14:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 14:16:22 (Interval: 2 menit)
+2026-11-03 14:14:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 14:14:31 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-2930F-HO - HIGH_LATENCY (9.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 14:14:31 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 14:14:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 14:14:49 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: FW-PA220-1 - HIGH_LATENCY (8.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 14:14:49 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 27.35s) ===
+2026-11-03 14:14:49 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 14:14:22
+2026-11-03 14:14:49 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 14:16:22
+2026-11-03 14:16:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 14:16:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 14:16:22
+2026-11-03 14:16:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 14:18:22 (Interval: 2 menit)
+2026-11-03 14:16:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 14:16:32 [INFO] [RuleEngine]: [RuleEngine] Insiden #381 (SW-2930F-HO - HIGH_LATENCY) pulih dalam 2 menit 0 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 14:16:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 14:16:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 14:16:49 [INFO] [RuleEngine]: [RuleEngine] Insiden #382 (FW-PA220-1 - HIGH_LATENCY) pulih dalam 1 menit 59 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 14:16:49 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 27.09s) ===
+2026-11-03 14:16:49 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 14:16:22
+2026-11-03 14:16:49 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 14:18:22
+2026-11-03 14:18:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 14:18:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 14:18:22
+2026-11-03 14:18:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 14:20:22 (Interval: 2 menit)
+2026-11-03 14:18:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 14:18:33 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-2930F-HO - HIGH_LATENCY (7.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 14:18:33 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 14:18:40 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 14:18:51 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: FW-PA220-1 - HIGH_LATENCY (82.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 14:18:51 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 28.77s) ===
+2026-11-03 14:18:51 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 14:18:22
+2026-11-03 14:18:51 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 14:20:22
+2026-11-03 14:20:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 14:20:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 14:20:22
+2026-11-03 14:20:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 14:22:22 (Interval: 2 menit)
+2026-11-03 14:20:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 14:20:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 14:20:39 [INFO] [RuleEngine]: [RuleEngine] Insiden #380 (SW-S5735-CORNER - HIGH_LATENCY) pulih dalam 8 menit 0 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 14:20:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 14:20:49 [INFO] [RuleEngine]: [RuleEngine] Insiden #384 (FW-PA220-1 - HIGH_LATENCY) pulih dalam 1 menit 57 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 14:20:49 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 26.69s) ===
+2026-11-03 14:20:49 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 14:20:22
+2026-11-03 14:20:49 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 14:22:22
+2026-11-03 14:22:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 14:22:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 14:22:22
+2026-11-03 14:22:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 14:24:22 (Interval: 2 menit)
+2026-11-03 14:22:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 14:22:32 [INFO] [RuleEngine]: [RuleEngine] Insiden #383 (SW-2930F-HO - HIGH_LATENCY) pulih dalam 3 menit 59 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 14:22:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 14:22:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 14:22:48 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: FW-PA220-1 - HIGH_LATENCY (6.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 14:22:48 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 25.95s) ===
+2026-11-03 14:22:48 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 14:22:22
+2026-11-03 14:22:48 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 14:24:22
+2026-11-03 14:24:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 14:24:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 14:24:22
+2026-11-03 14:24:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 14:26:22 (Interval: 2 menit)
+2026-11-03 14:24:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 14:24:36 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-2930F-HO - HIGH_LATENCY (253.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 14:24:36 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 14:24:44 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-S5735-CORNER - HIGH_LATENCY (20.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 14:24:44 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 14:24:53 [INFO] [RuleEngine]: [RuleEngine] Insiden #385 (FW-PA220-1 - HIGH_LATENCY) pulih dalam 2 menit 5 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 14:24:53 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 31.18s) ===
+2026-11-03 14:24:53 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 14:24:22
+2026-11-03 14:24:53 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 14:26:22
+2026-11-03 14:26:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 14:26:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 14:26:22
+2026-11-03 14:26:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 14:28:22 (Interval: 2 menit)
+2026-11-03 14:26:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 14:26:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 14:26:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 14:26:48 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: FW-PA220-1 - HIGH_LATENCY (22.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 14:26:48 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 26.29s) ===
+2026-11-03 14:26:48 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 14:26:22
+2026-11-03 14:26:48 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 14:28:22
+2026-11-03 14:28:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 14:28:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 14:28:22
+2026-11-03 14:28:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 14:30:22 (Interval: 2 menit)
+2026-11-03 14:28:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 14:28:32 [INFO] [RuleEngine]: [RuleEngine] Insiden #386 (SW-2930F-HO - HIGH_LATENCY) pulih dalam 3 menit 56 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 14:28:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 14:28:40 [INFO] [RuleEngine]: [RuleEngine] Insiden #387 (SW-S5735-CORNER - HIGH_LATENCY) pulih dalam 3 menit 55 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 14:28:40 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 14:28:48 [INFO] [RuleEngine]: [RuleEngine] Insiden #388 (FW-PA220-1 - HIGH_LATENCY) pulih dalam 2 menit 0 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 14:28:48 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 26.35s) ===
+2026-11-03 14:28:48 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 14:28:22
+2026-11-03 14:28:48 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 14:30:22
+2026-11-03 14:30:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 14:30:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 14:30:22
+2026-11-03 14:30:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 14:32:22 (Interval: 2 menit)
+2026-11-03 14:30:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 14:30:32 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-2930F-HO - HIGH_LATENCY (8.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 14:30:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 14:30:39 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-S5735-CORNER - HIGH_LATENCY (100.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 14:30:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 14:30:49 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 26.72s) ===
+2026-11-03 14:30:49 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 14:30:22
+2026-11-03 14:30:49 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 14:32:22
+2026-11-03 14:32:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 14:32:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 14:32:22
+2026-11-03 14:32:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 14:34:22 (Interval: 2 menit)
+2026-11-03 14:32:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 14:32:32 [INFO] [RuleEngine]: [RuleEngine] Insiden #389 (SW-2930F-HO - HIGH_LATENCY) pulih dalam 1 menit 59 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 14:32:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 14:32:39 [INFO] [RuleEngine]: [RuleEngine] Insiden #390 (SW-S5735-CORNER - HIGH_LATENCY) pulih dalam 1 menit 59 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 14:32:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 14:32:49 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 26.64s) ===
+2026-11-03 14:32:49 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 14:32:22
+2026-11-03 14:32:49 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 14:34:22
+2026-11-03 14:34:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 14:34:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 14:34:22
+2026-11-03 14:34:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 14:36:22 (Interval: 2 menit)
+2026-11-03 14:34:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 14:34:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 14:34:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 14:34:49 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 27.32s) ===
+2026-11-03 14:34:49 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 14:34:22
+2026-11-03 14:34:49 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 14:36:22
+2026-11-03 14:36:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 14:36:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 14:36:22
+2026-11-03 14:36:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 14:38:22 (Interval: 2 menit)
+2026-11-03 14:36:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 14:36:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 14:36:40 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-S5735-CORNER - HIGH_LATENCY (8.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 14:36:40 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 14:36:49 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: FW-PA220-1 - HIGH_LATENCY (8.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 14:36:49 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 27.01s) ===
+2026-11-03 14:36:49 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 14:36:22
+2026-11-03 14:36:49 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 14:38:22
+2026-11-03 14:38:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 14:38:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 14:38:22
+2026-11-03 14:38:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 14:40:22 (Interval: 2 menit)
+2026-11-03 14:38:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 14:38:32 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-2930F-HO - HIGH_LATENCY (8.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 14:38:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 14:38:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 14:38:48 [INFO] [RuleEngine]: [RuleEngine] Insiden #392 (FW-PA220-1 - HIGH_LATENCY) pulih dalam 1 menit 58 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 14:38:48 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 25.74s) ===
+2026-11-03 14:38:48 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 14:38:22
+2026-11-03 14:38:48 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 14:40:22
+2026-11-03 14:40:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 14:40:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 14:40:22
+2026-11-03 14:40:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 14:42:22 (Interval: 2 menit)
+2026-11-03 14:40:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 14:40:32 [INFO] [RuleEngine]: [RuleEngine] Insiden #393 (SW-2930F-HO - HIGH_LATENCY) pulih dalam 2 menit 0 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 14:40:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 14:40:39 [INFO] [RuleEngine]: [RuleEngine] Insiden #391 (SW-S5735-CORNER - HIGH_LATENCY) pulih dalam 3 menit 59 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 14:40:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 14:40:48 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 25.92s) ===
+2026-11-03 14:40:48 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 14:40:22
+2026-11-03 14:40:48 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 14:42:22
+2026-11-03 14:42:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 14:42:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 14:42:22
+2026-11-03 14:42:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 14:44:22 (Interval: 2 menit)
+2026-11-03 14:42:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 14:42:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 14:42:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 14:42:48 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: FW-PA220-1 - HIGH_LATENCY (6.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 14:42:48 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 25.74s) ===
+2026-11-03 14:42:48 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 14:42:22
+2026-11-03 14:42:48 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 14:44:22
+2026-11-03 14:44:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 14:44:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 14:44:22
+2026-11-03 14:44:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 14:46:22 (Interval: 2 menit)
+2026-11-03 14:44:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 14:44:31 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 14:44:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 14:44:48 [INFO] [RuleEngine]: [RuleEngine] Insiden #394 (FW-PA220-1 - HIGH_LATENCY) pulih dalam 2 menit 0 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 14:44:48 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 26.35s) ===
+2026-11-03 14:44:48 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 14:44:22
+2026-11-03 14:44:48 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 14:46:22
+2026-11-03 14:46:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 14:46:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 14:46:22
+2026-11-03 14:46:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 14:48:22 (Interval: 2 menit)
+2026-11-03 14:46:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 14:46:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 14:46:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 14:46:50 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: FW-PA220-1 - HIGH_LATENCY (16.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 14:46:50 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 28.43s) ===
+2026-11-03 14:46:50 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 14:46:22
+2026-11-03 14:46:50 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 14:48:22
+2026-11-03 14:48:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 14:48:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 14:48:22
+2026-11-03 14:48:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 14:50:22 (Interval: 2 menit)
+2026-11-03 14:48:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 14:48:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 14:48:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 14:48:54 [INFO] [RuleEngine]: [RuleEngine] Insiden #395 (FW-PA220-1 - HIGH_LATENCY) pulih dalam 2 menit 3 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 14:48:54 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 32.09s) ===
+2026-11-03 14:48:54 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 14:48:22
+2026-11-03 14:48:54 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 14:50:22
+2026-11-03 14:50:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 14:50:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 14:50:22
+2026-11-03 14:50:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 14:52:22 (Interval: 2 menit)
+2026-11-03 14:50:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 14:50:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 14:50:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 14:50:49 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: FW-PA220-1 - HIGH_LATENCY (21.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 14:50:49 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 26.91s) ===
+2026-11-03 14:50:49 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 14:50:22
+2026-11-03 14:50:49 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 14:52:22
+2026-11-03 14:52:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 14:52:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 14:52:22
+2026-11-03 14:52:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 14:54:22 (Interval: 2 menit)
+2026-11-03 14:52:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 14:52:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 14:52:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 14:52:49 [INFO] [RuleEngine]: [RuleEngine] Insiden #396 (FW-PA220-1 - HIGH_LATENCY) pulih dalam 1 menit 59 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 14:52:49 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 26.77s) ===
+2026-11-03 14:52:49 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 14:52:22
+2026-11-03 14:52:49 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 14:54:22
+2026-11-03 14:54:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 14:54:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 14:54:22
+2026-11-03 14:54:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 14:56:22 (Interval: 2 menit)
+2026-11-03 14:54:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 14:54:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 14:54:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 14:54:48 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 25.74s) ===
+2026-11-03 14:54:48 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 14:54:22
+2026-11-03 14:54:48 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 14:56:22
+2026-11-03 14:56:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 14:56:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 14:56:22
+2026-11-03 14:56:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 14:58:22 (Interval: 2 menit)
+2026-11-03 14:56:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 14:56:33 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 14:56:41 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 14:56:49 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 27.28s) ===
+2026-11-03 14:56:49 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 14:56:22
+2026-11-03 14:56:49 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 14:58:22
+2026-11-03 14:58:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 14:58:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 14:58:22
+2026-11-03 14:58:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 15:00:22 (Interval: 2 menit)
+2026-11-03 14:58:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 14:58:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 14:58:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 14:58:47 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 25.09s) ===
+2026-11-03 14:58:47 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 14:58:22
+2026-11-03 14:58:47 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 15:00:22
+2026-11-03 15:00:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 15:00:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 15:00:22
+2026-11-03 15:00:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 15:02:22 (Interval: 2 menit)
+2026-11-03 15:00:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 15:00:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 15:00:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 15:00:52 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 30.19s) ===
+2026-11-03 15:00:52 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 15:00:22
+2026-11-03 15:00:52 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 15:02:22
+2026-11-03 15:02:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 15:02:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 15:02:22
+2026-11-03 15:02:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 15:04:22 (Interval: 2 menit)
+2026-11-03 15:02:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 15:02:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 15:02:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 15:02:49 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 26.91s) ===
+2026-11-03 15:02:49 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 15:02:22
+2026-11-03 15:02:49 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 15:04:22
+2026-11-03 15:04:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 15:04:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 15:04:22
+2026-11-03 15:04:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 15:06:22 (Interval: 2 menit)
+2026-11-03 15:04:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 15:04:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 15:04:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 15:04:50 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 27.75s) ===
+2026-11-03 15:04:50 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 15:04:22
+2026-11-03 15:04:50 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 15:06:22
+2026-11-03 15:06:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 15:06:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 15:06:22
+2026-11-03 15:06:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 15:08:22 (Interval: 2 menit)
+2026-11-03 15:06:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 15:06:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 15:06:41 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 15:06:52 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: FW-PA220-1 - HIGH_LATENCY (33.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 15:06:52 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 30.41s) ===
+2026-11-03 15:06:52 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 15:06:22
+2026-11-03 15:06:52 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 15:08:22
+2026-11-03 15:08:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 15:08:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 15:08:22
+2026-11-03 15:08:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 15:10:22 (Interval: 2 menit)
+2026-11-03 15:08:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 15:08:34 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 15:08:42 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-S5735-CORNER - HIGH_LATENCY (39.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 15:08:42 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 15:08:50 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 28.29s) ===
+2026-11-03 15:08:50 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 15:08:22
+2026-11-03 15:08:50 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 15:10:22
+2026-11-03 15:10:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 15:10:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 15:10:22
+2026-11-03 15:10:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 15:12:22 (Interval: 2 menit)
+2026-11-03 15:10:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 15:10:31 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 15:10:39 [INFO] [RuleEngine]: [RuleEngine] Insiden #398 (SW-S5735-CORNER - HIGH_LATENCY) pulih dalam 1 menit 57 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 15:10:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 15:10:48 [INFO] [RuleEngine]: [RuleEngine] Insiden #397 (FW-PA220-1 - HIGH_LATENCY) pulih dalam 3 menit 55 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 15:10:48 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 25.59s) ===
+2026-11-03 15:10:48 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 15:10:22
+2026-11-03 15:10:48 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 15:12:22
+2026-11-03 15:12:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 15:12:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 15:12:22
+2026-11-03 15:12:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 15:14:22 (Interval: 2 menit)
+2026-11-03 15:12:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 15:12:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 15:12:40 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 15:12:49 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 26.47s) ===
+2026-11-03 15:12:49 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 15:12:22
+2026-11-03 15:12:49 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 15:14:22
+2026-11-03 15:14:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 15:14:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 15:14:22
+2026-11-03 15:14:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 15:16:22 (Interval: 2 menit)
+2026-11-03 15:14:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 15:14:31 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 15:14:39 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-S5735-CORNER - HIGH_LATENCY (6.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 15:14:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 15:14:47 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 25.02s) ===
+2026-11-03 15:14:47 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 15:14:22
+2026-11-03 15:14:47 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 15:16:22
+2026-11-03 15:16:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 15:16:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 15:16:22
+2026-11-03 15:16:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 15:18:22 (Interval: 2 menit)
+2026-11-03 15:16:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 15:16:31 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 15:16:39 [INFO] [RuleEngine]: [RuleEngine] Insiden #399 (SW-S5735-CORNER - HIGH_LATENCY) pulih dalam 2 menit 0 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 15:16:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 15:16:50 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: FW-PA220-1 - HIGH_LATENCY (9.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 15:16:50 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 27.64s) ===
+2026-11-03 15:16:50 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 15:16:22
+2026-11-03 15:16:50 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 15:18:22
+2026-11-03 15:18:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 15:18:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 15:18:22
+2026-11-03 15:18:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 15:20:22 (Interval: 2 menit)
+2026-11-03 15:18:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 15:18:32 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-2930F-HO - HIGH_LATENCY (10.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 15:18:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 15:18:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 15:18:50 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 27.91s) ===
+2026-11-03 15:18:50 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 15:18:22
+2026-11-03 15:18:50 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 15:20:22
+2026-11-03 15:20:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 15:20:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 15:20:22
+2026-11-03 15:20:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 15:22:22 (Interval: 2 menit)
+2026-11-03 15:20:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 15:20:33 [INFO] [RuleEngine]: [RuleEngine] Insiden #401 (SW-2930F-HO - HIGH_LATENCY) pulih dalam 2 menit 1 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 15:20:33 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 15:20:40 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: SW-S5735-CORNER - HIGH_LATENCY (20.0 ms). Jendela pemantauan 10 menit dimulai secara senyap (Telegram muted).
+2026-11-03 15:20:40 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 15:20:51 [INFO] [RuleEngine]: [RuleEngine] Insiden #400 (FW-PA220-1 - HIGH_LATENCY) pulih dalam 4 menit 1 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 15:20:51 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 28.66s) ===
+2026-11-03 15:20:51 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 15:20:22
+2026-11-03 15:20:51 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 15:22:22
+2026-11-03 15:22:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 15:22:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 15:22:22
+2026-11-03 15:22:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 15:24:22 (Interval: 2 menit)
+2026-11-03 15:22:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-03 15:22:32 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-03 15:22:39 [INFO] [RuleEngine]: [RuleEngine] Insiden #402 (SW-S5735-CORNER - HIGH_LATENCY) pulih dalam 1 menit 59 detik -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-03 15:22:39 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-03 15:22:48 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 25.82s) ===
+2026-11-03 15:22:48 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 15:22:22
+2026-11-03 15:22:48 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 15:24:22
+2026-11-03 15:24:22 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-03 15:24:22 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-03 15:24:22
+2026-11-03 15:24:22 [INFO] [DataCollector]: [*] Next Polling : 2026-11-03 15:26:22 (Interval: 2 menit)
+2026-11-03 15:24:22 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...

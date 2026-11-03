@@ -685,13 +685,29 @@ def backups_page():
             "data_range": range_str,
             "status": b.status
         })
+
+    category_counts = {
+        "all": len(backups_data),
+        "system": 0,
+        "config": 0,
+        "traffic": 0,
+        "threat": 0
+    }
+    for b in backups_data:
+        cat_key = (b.get('category') or 'CONFIG').lower()
+        if cat_key in category_counts:
+            category_counts[cat_key] += 1
+        else:
+            category_counts['config'] += 1
+
     session.close()
     return render_template(
         'backups.html',
         backups=backups_data,
         success_count=success_count,
         failed_count=failed_count,
-        total_backups=len(backups_data)
+        total_backups=len(backups_data),
+        category_counts=category_counts
     )
 
 @app.route('/api/backup/content/<int:backup_id>')

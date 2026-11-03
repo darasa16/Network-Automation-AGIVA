@@ -243,7 +243,17 @@ def seed_demo_data(session):
     # 4. Seed Telegram Whitelist (NOC Engineers & Groups)
     whitelist_data = [
         {"chat_id": "-1004429503436", "username": "@Agiva_Network_Automation_Bot", "name": "Agiva Network Automation Channel", "role": "Broadcast Group"},
-        {"chat_id": "5419251159", "username": "@darasamsara", "name": "Dara Samsara", "role": "Admin"}
+        {"chat_id": "5419251159", "username": "@darasamsara", "name": "Dara Samsara", "role": "Admin"},
+        {"chat_id": "1849201941", "username": "@budi_noc", "name": "Budi Santoso", "role": "Lead NOC Engineer"},
+        {"chat_id": "1849201942", "username": "@andi_net", "name": "Andi Pratama", "role": "Senior Network Engineer"},
+        {"chat_id": "1849201943", "username": "@citra_sec", "name": "Citra Lestari", "role": "Cybersecurity Analyst"},
+        {"chat_id": "1849201944", "username": "@reza_ops", "name": "Reza Kurniawan", "role": "Network Operations"},
+        {"chat_id": "1849201945", "username": "@dewi_infra", "name": "Dewi Anggraini", "role": "Infrastructure Engineer"},
+        {"chat_id": "1849201946", "username": "@fajar_sys", "name": "Fajar Hidayat", "role": "Systems Engineer"},
+        {"chat_id": "1849201947", "username": "@maya_netops", "name": "Maya Putri", "role": "NOC Technician"},
+        {"chat_id": "1849201948", "username": "@eko_cloud", "name": "Eko Prasetyo", "role": "Cloud Network Specialist"},
+        {"chat_id": "1849201949", "username": "@rina_mon", "name": "Rina Marlina", "role": "Monitoring Specialist"},
+        {"chat_id": "1849201950", "username": "@gilang_core", "name": "Gilang Ramadhan", "role": "Core IP Engineer"}
     ]
     for w in whitelist_data:
         entry = TelegramWhitelist(
@@ -333,7 +343,17 @@ def seed_whitelist_only(session):
     
     whitelist_data = [
         {"chat_id": target_channel_id, "username": "@Agiva_Network_Automation_Bot", "name": "Agiva Network Automation Channel", "role": "Broadcast Group"},
-        {"chat_id": lead_chat_id, "username": "@darasamsara", "name": "Dara Samsara", "role": "Admin"}
+        {"chat_id": lead_chat_id, "username": "@darasamsara", "name": "Dara Samsara", "role": "Admin"},
+        {"chat_id": "1849201941", "username": "@budi_noc", "name": "Budi Santoso", "role": "Lead NOC Engineer"},
+        {"chat_id": "1849201942", "username": "@andi_net", "name": "Andi Pratama", "role": "Senior Network Engineer"},
+        {"chat_id": "1849201943", "username": "@citra_sec", "name": "Citra Lestari", "role": "Cybersecurity Analyst"},
+        {"chat_id": "1849201944", "username": "@reza_ops", "name": "Reza Kurniawan", "role": "Network Operations"},
+        {"chat_id": "1849201945", "username": "@dewi_infra", "name": "Dewi Anggraini", "role": "Infrastructure Engineer"},
+        {"chat_id": "1849201946", "username": "@fajar_sys", "name": "Fajar Hidayat", "role": "Systems Engineer"},
+        {"chat_id": "1849201947", "username": "@maya_netops", "name": "Maya Putri", "role": "NOC Technician"},
+        {"chat_id": "1849201948", "username": "@eko_cloud", "name": "Eko Prasetyo", "role": "Cloud Network Specialist"},
+        {"chat_id": "1849201949", "username": "@rina_mon", "name": "Rina Marlina", "role": "Monitoring Specialist"},
+        {"chat_id": "1849201950", "username": "@gilang_core", "name": "Gilang Ramadhan", "role": "Core IP Engineer"}
     ]
     for w in whitelist_data:
         entry = TelegramWhitelist(

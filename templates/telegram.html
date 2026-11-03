@@ -111,7 +111,7 @@
                     </div>
                 </div>
                 <div class="table-responsive">
-                    <table class="data-table">
+                    <table class="data-table" id="tgWhitelistTable">
                         <thead>
                             <tr>
                                 <th>Chat ID</th>
@@ -121,26 +121,16 @@
                                 <th>Status</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            {% for w in whitelist %}
-                            <tr id="whitelist-row-{{ w.id }}">
-                                <td>{{ w.chat_id }}</td>
-                                <td><strong style="color:#38bdf8;">{{ w.username }}</strong></td>
-                                <td>{{ w.name }}</td>
-                                <td>{{ w.role }}</td>
-                                <td>
-                                    {% if w.is_active %}
-                                    <span class="status-badge badge-up"><span class="badge-dot-green"></span>
-                                        ACTIVE</span>
-                                    {% else %}
-                                    <span class="status-badge badge-down"><span class="badge-dot-red"></span>
-                                        INACTIVE</span>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                            {% endfor %}
+                        <tbody id="tgWhitelistBody">
+                            <!-- Dimuat dinamis via JavaScript dengan Paginasi -->
                         </tbody>
                     </table>
+                </div>
+
+                <!-- Pagination Bar for Whitelist -->
+                <div class="pagination-container" id="tgWhitelistPaginationContainer">
+                    <div id="tgWhitelistPageInfo" class="pagination-info">Menampilkan 0 engineer</div>
+                    <div class="pagination-controls" id="tgWhitelistPaginationControls"></div>
                 </div>
             </div>
 
@@ -315,6 +305,10 @@
             display: inline !important;
         }
 
+        #tgCommandsTable .col-desc {
+            color: #ffffff !important;
+        }
+
         /* Standarisasi Font Inter (Sans-serif) untuk Kolom Tabel Riwayat Telegram */
         #tgLogsTable,
         #tgLogsTable th,
@@ -329,22 +323,45 @@
         #tgLogsTable code {
             font-size: 13px;
             font-weight: 500;
-            background: rgba(255, 255, 255, 0.06);
-            padding: 2px 7px;
-            border-radius: 4px;
+            background: transparent !important; border: none !important; box-shadow: none !important;
+            padding: 0 !important;
+            border-radius: 0 !important;
             color: #e2e8f0;
         }
 
         #tgLogsTable .col-time {
             font-size: 13px;
-            color: #cbd5e1;
+            color: #ffffff !important;
             white-space: nowrap;
         }
 
         #tgLogsTable .col-type {
             font-size: 13px;
-            color: #cbd5e1;
+            color: #ffffff !important;
             font-weight: 500;
+        }
+
+        #tgWhitelistTable .status-badge,
+        #tgLogsTable .status-badge {
+            width: 78px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 4px 0 !important;
+            box-sizing: border-box;
+            font-size: 11px;
+            font-weight: 700;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        #tgWhitelistTable .badge-dot-green,
+        #tgWhitelistTable .badge-dot-red,
+        #tgLogsTable .badge-dot-green,
+        #tgLogsTable .badge-dot-red {
+            display: none !important;
         }
 
         #tgLogsTable .col-msg-content {
@@ -356,8 +373,167 @@
     {% endblock %}
 
     {% block scripts %}
+    <script id="tgWhitelistData" type="application/json">{{ whitelist | tojson }}</script>
     <script id="tgLogsData" type="application/json">{{ logs | tojson }}</script>
     <script>
+        let allWhitelist = [];
+        try {
+            const rawWl = document.getElementById('tgWhitelistData');
+            allWhitelist = rawWl ? JSON.parse(rawWl.textContent || '[]') : [];
+        } catch (e) {
+            allWhitelist = [];
+        }
+        let currentWhitelistPage = 1;
+        const whitelistPerPage = 5;
+
+        function checkTargetWhitelistPage(targetRowId) {
+            let rowId = targetRowId;
+            if (!rowId && window.location.hash) {
+                rowId = window.location.hash.replace('#', '');
+            }
+            if (rowId && rowId.startsWith('whitelist-row-')) {
+                const targetId = parseInt(rowId.replace('whitelist-row-', ''), 10);
+                if (!isNaN(targetId) && allWhitelist && allWhitelist.length > 0) {
+                    const idx = allWhitelist.findIndex(w => Number(w.id) === targetId);
+                    if (idx !== -1) {
+                        currentWhitelistPage = Math.floor(idx / whitelistPerPage) + 1;
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        window.checkTargetWhitelistPage = checkTargetWhitelistPage;
+
+        function renderWhitelistTable(targetRowId) {
+            if (targetRowId) {
+                checkTargetWhitelistPage(targetRowId);
+            }
+            const tbody = document.getElementById('tgWhitelistBody');
+            const paginationContainer = document.getElementById('tgWhitelistPaginationContainer');
+            const pageInfo = document.getElementById('tgWhitelistPageInfo');
+            if (!tbody) return;
+
+            const totalWhitelist = allWhitelist.length;
+
+            if (totalWhitelist === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 25px; color: #94a3b8;">Belum ada akun engineer yang terdaftar di whitelist.</td></tr>`;
+                if (paginationContainer) paginationContainer.style.display = 'none';
+                return;
+            }
+
+            if (paginationContainer) paginationContainer.style.display = 'flex';
+
+            const totalPages = Math.ceil(totalWhitelist / whitelistPerPage) || 1;
+            if (currentWhitelistPage > totalPages) currentWhitelistPage = totalPages;
+            if (currentWhitelistPage < 1) currentWhitelistPage = 1;
+
+            const startIndex = (currentWhitelistPage - 1) * whitelistPerPage;
+            const endIndex = Math.min(startIndex + whitelistPerPage, totalWhitelist);
+            const pageData = allWhitelist.slice(startIndex, endIndex);
+
+            let html = '';
+            for (const w of pageData) {
+                const isActive = Boolean(w.is_active);
+                const badgeClass = isActive ? 'badge-up' : 'badge-down';
+                const statusText = isActive ? 'ACTIVE' : 'INACTIVE';
+
+                html += `
+                <tr id="whitelist-row-${w.id}">
+                    <td>${escapeHtml(w.chat_id || '')}</td>
+                    <td><strong style="color:#38bdf8;">${escapeHtml(w.username || '')}</strong></td>
+                    <td>${escapeHtml(w.name || '')}</td>
+                    <td>${escapeHtml(w.role || '')}</td>
+                    <td>
+                        <span class="status-badge ${badgeClass}">
+                            ${statusText}
+                        </span>
+                    </td>
+                </tr>`;
+            }
+            tbody.innerHTML = html;
+
+            if (pageInfo) {
+                pageInfo.innerText = `Menampilkan ${startIndex + 1} - ${endIndex} dari ${totalWhitelist} engineer (Halaman ${currentWhitelistPage} dari ${totalPages})`;
+            }
+
+            renderWhitelistPaginationButtons(totalPages);
+        }
+        window.renderWhitelistTable = renderWhitelistTable;
+
+        function renderWhitelistPaginationButtons(totalPages) {
+            const controls = document.getElementById('tgWhitelistPaginationControls');
+            if (!controls) return;
+
+            let btnHtml = '';
+
+            // Tombol Prev (‹ Prev)
+            btnHtml += `<button class="pagination-nav-btn ${currentWhitelistPage === 1 ? 'disabled' : ''}" 
+                         onclick="gotoWhitelistPage(${currentWhitelistPage - 1})" ${currentWhitelistPage === 1 ? 'disabled' : ''}>
+                         <span>&#8249;</span> <span>Prev</span>
+                        </button>`;
+
+            // Penomoran Halaman dengan format cerdas (1 ... 9 [10] 11 ... 20)
+            if (totalPages <= 7) {
+                for (let p = 1; p <= totalPages; p++) {
+                    btnHtml += `<button class="pagination-num-btn ${p === currentWhitelistPage ? 'active' : ''}" 
+                                 onclick="gotoWhitelistPage(${p})">${p}</button>`;
+                }
+            } else {
+                // Selalu tampilkan halaman 1
+                btnHtml += `<button class="pagination-num-btn ${currentWhitelistPage === 1 ? 'active' : ''}" 
+                             onclick="gotoWhitelistPage(1)">1</button>`;
+
+                if (currentWhitelistPage > 3) {
+                    btnHtml += `<span class="pagination-dots">...</span>`;
+                }
+
+                let start = Math.max(2, currentWhitelistPage - 1);
+                let end = Math.min(totalPages - 1, currentWhitelistPage + 1);
+
+                if (currentWhitelistPage <= 3) {
+                    start = 2;
+                    end = 4;
+                } else if (currentWhitelistPage >= totalPages - 2) {
+                    start = totalPages - 3;
+                    end = totalPages - 1;
+                }
+
+                for (let p = start; p <= end; p++) {
+                    btnHtml += `<button class="pagination-num-btn ${p === currentWhitelistPage ? 'active' : ''}" 
+                                 onclick="gotoWhitelistPage(${p})">${p}</button>`;
+                }
+
+                if (currentWhitelistPage < totalPages - 2) {
+                    btnHtml += `<span class="pagination-dots">...</span>`;
+                }
+
+                // Selalu tampilkan halaman terakhir
+                btnHtml += `<button class="pagination-num-btn ${currentWhitelistPage === totalPages ? 'active' : ''}" 
+                             onclick="gotoWhitelistPage(${totalPages})">${totalPages}</button>`;
+            }
+
+            // Tombol Next (Next ›)
+            btnHtml += `<button class="pagination-nav-btn ${currentWhitelistPage === totalPages ? 'disabled' : ''}" 
+                         onclick="gotoWhitelistPage(${currentWhitelistPage + 1})" ${currentWhitelistPage === totalPages ? 'disabled' : ''}>
+                         <span>Next</span> <span>&#8250;</span>
+                        </button>`;
+
+            controls.innerHTML = btnHtml;
+        }
+        window.renderWhitelistPaginationButtons = renderWhitelistPaginationButtons;
+
+        function gotoWhitelistPage(page) {
+            const totalPages = Math.ceil(allWhitelist.length / whitelistPerPage) || 1;
+            if (page < 1 || page > totalPages) return;
+            currentWhitelistPage = page;
+            if (window.location.hash && window.location.hash.startsWith('#whitelist-row-')) {
+                history.replaceState(null, '', window.location.pathname + window.location.search);
+            }
+            renderWhitelistTable();
+        }
+        window.gotoWhitelistPage = gotoWhitelistPage;
+
         let allLogs = [];
         try {
             const rawEl = document.getElementById('tgLogsData');
@@ -432,15 +608,21 @@
                         ? 'TEST PING'
                         : 'CMD REPLY');
 
+                const rawStatus = (l.status || 'SENT').trim();
+                const isSuccess = rawStatus.toUpperCase() === 'SENT' || rawStatus.toUpperCase() === 'SUCCESS';
+                const badgeClass = isSuccess ? 'badge-up' : 'badge-down';
+                const displayStatus = isSuccess ? 'SENT' : 'FAILED';
+                const statusTitle = isSuccess ? 'Pesan berhasil terkirim' : `Gagal: ${rawStatus}`;
+
                 html += `
                 <tr id="msglog-row-${l.id}">
                     <td class="col-time">${escapeHtml(l.sent_at || '')}</td>
                     <td class="col-type">${typeLabel}</td>
-                    <td><code>${escapeHtml(l.chat_id || '')}</code></td>
+                    <td>${escapeHtml(l.chat_id || '')}</td>
                     <td class="col-msg-content">${escapeHtml(l.content || '')}</td>
                     <td>
-                        <span class="status-badge badge-up">
-                            <span class="badge-dot-green"></span> ${escapeHtml(l.status || 'SENT')}
+                        <span class="status-badge ${badgeClass}" title="${escapeHtml(statusTitle)}">
+                            ${displayStatus}
                         </span>
                     </td>
                 </tr>`;
@@ -626,12 +808,16 @@
 
         // Jalankan render tabel pertama kali saat DOM selesai dimuat
         document.addEventListener('DOMContentLoaded', () => {
+            checkTargetWhitelistPage();
+            renderWhitelistTable();
             checkTargetLogPage();
             renderLogsTable();
         });
 
-        // Re-render jika hash berubah ke log di halaman berbeda
+        // Re-render jika hash berubah ke log atau whitelist di halaman berbeda
         window.addEventListener('hashchange', () => {
+            checkTargetWhitelistPage();
+            renderWhitelistTable();
             checkTargetLogPage();
             renderLogsTable();
         });

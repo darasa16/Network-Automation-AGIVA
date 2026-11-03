@@ -12,8 +12,100 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
         rel="stylesheet">
     <!-- Relative CSS -->
-    <link rel="stylesheet" href="/static/css/style.css?v=8.1">
+    <link rel="stylesheet" href="/static/css/style.css?v=10.1">
     <style>
+        #backupsTable td,
+        #backupsTable td span,
+        #backupsTable td code,
+        #backupsTable td strong {
+            font-size: 13px;
+            font-family: var(--font-sans);
+            color: #ffffff !important;
+        }
+
+        #backupsTable td:first-child,
+        #backupsTable td:first-child span {
+            font-size: 13px;
+            color: #ffffff !important;
+        }
+
+        /* Label Sub-Site Perangkat (Diselaraskan dengan .neighbor-desc: 11px, var(--text-muted)) */
+        #backupsTable .device-site-sub {
+            font-size: 11px !important;
+            color: var(--text-muted) !important;
+            margin-top: 2px;
+            display: inline-block;
+        }
+
+        /* Kecualikan badge kategori, status, dan tombol aksi */
+        #backupsTable .badge-category-orange,
+        #backupsTable .badge-category-orange * {
+            font-size: 11px !important;
+            font-family: 'JetBrains Mono', monospace !important;
+            color: #E8A576 !important;
+            border-radius: var(--radius-pill) !important;
+        }
+
+        #backupsTable .status-badge {
+            width: 78px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 4px 0 !important;
+            box-sizing: border-box;
+        }
+
+        #backupsTable .status-badge.badge-up,
+        #backupsTable .status-badge.badge-up * {
+            font-size: 11px !important;
+            color: var(--color-green) !important;
+        }
+
+        #backupsTable .status-badge.badge-down,
+        #backupsTable .status-badge.badge-down * {
+            font-size: 11px !important;
+            color: var(--color-red) !important;
+        }
+
+        /* Hilangkan titik bulat pada badge status */
+        #backupsTable .badge-dot-green,
+        #backupsTable .badge-dot-red {
+            display: none !important;
+        }
+
+        #backupsTable .btn-action,
+        #backupsTable .btn-secondary {
+            width: 64px !important;
+            min-width: 64px !important;
+            box-sizing: border-box !important;
+            background: var(--gradient-agiva) !important;
+            color: #ffffff !important;
+            border: none !important;
+            border-radius: var(--radius-pill) !important;
+            padding: 4px 0 !important;
+            font-size: 11px !important;
+            font-weight: 600 !important;
+            text-transform: none !important;
+            letter-spacing: normal !important;
+            text-decoration: none !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            text-align: center !important;
+            box-shadow: 0 2px 8px rgba(232, 165, 118, 0.25) !important;
+            cursor: pointer;
+            transition: all 0.2s ease !important;
+        }
+
+        #backupsTable .btn-action:hover,
+        #backupsTable .btn-secondary:hover {
+            background: var(--gradient-agiva-hover) !important;
+            color: #ffffff !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 4px 12px rgba(232, 165, 118, 0.45) !important;
+        }
+
         .badge-category-orange {
             display: inline-flex;
             align-items: center;
@@ -21,8 +113,8 @@
             background: rgba(232, 165, 118, 0.15);
             color: #E8A576;
             border: 1px solid rgba(232, 165, 118, 0.35);
-            padding: 3px 9px;
-            border-radius: 4px;
+            padding: 4px 12px;
+            border-radius: var(--radius-pill);
             font-family: 'JetBrains Mono', monospace;
             font-weight: 600;
             font-size: 11px;
@@ -53,6 +145,7 @@
             align-items: center;
             justify-content: center;
             line-height: 1.2;
+            gap: 6px;
         }
 
         .category-filter-btn:hover {
@@ -325,8 +418,7 @@
                 <div class="panel-header" style="flex-wrap: wrap; gap: 12px;">
                     <div>
                         <h3 class="panel-title">Riwayat Backup Konfigurasi & Log Audit</h3>
-                        <span class="panel-sub">Pencatatan real-time hasil eksekusi otomatis maupun manual
-                            Telegram</span>
+                        <span class="panel-sub">Pencatatan real-time hasil eksekusi otomatis maupun manual Telegram &bull; Retensi Data 30 Hari (Safety Net DR Aktif)</span>
                     </div>
                     <div class="table-actions" style="display: flex; align-items: center; gap: 10px;">
                         <button class="btn-refresh" onclick="refreshBackups(this)">
@@ -343,15 +435,15 @@
                 <!-- Category Filter Pills Bar -->
                 <div class="category-filters-container">
                     <button type="button" class="category-filter-btn active" data-cat="ALL"
-                        onclick="setCategoryFilter('ALL', this)">All</button>
+                        onclick="setCategoryFilter('ALL', this)"><span>All</span> <span class="filter-count" id="count-all">({{ category_counts.all if category_counts else (backups|length if backups else 12) }})</span></button>
                     <button type="button" class="category-filter-btn" data-cat="SYSTEM"
-                        onclick="setCategoryFilter('SYSTEM', this)">System</button>
+                        onclick="setCategoryFilter('SYSTEM', this)"><span>System</span> <span class="filter-count" id="count-system">({{ category_counts.system if category_counts else 3 }})</span></button>
                     <button type="button" class="category-filter-btn" data-cat="CONFIG"
-                        onclick="setCategoryFilter('CONFIG', this)">Config</button>
+                        onclick="setCategoryFilter('CONFIG', this)"><span>Config</span> <span class="filter-count" id="count-config">({{ category_counts.config if category_counts else 3 }})</span></button>
                     <button type="button" class="category-filter-btn" data-cat="TRAFFIC"
-                        onclick="setCategoryFilter('TRAFFIC', this)">Traffic</button>
+                        onclick="setCategoryFilter('TRAFFIC', this)"><span>Traffic</span> <span class="filter-count" id="count-traffic">({{ category_counts.traffic if category_counts else 3 }})</span></button>
                     <button type="button" class="category-filter-btn" data-cat="THREAT"
-                        onclick="setCategoryFilter('THREAT', this)">Threat</button>
+                        onclick="setCategoryFilter('THREAT', this)"><span>Threat</span> <span class="filter-count" id="count-threat">({{ category_counts.threat if category_counts else 3 }})</span></button>
                 </div>
 
                 <div class="table-responsive">
@@ -359,7 +451,7 @@
                         <thead>
                             <tr>
                                 <th>Rentang Waktu</th>
-                                <th>Perangkat & Site</th>
+                                <th>Perangkat</th>
                                 <th>Kategori</th>
                                 <th>Nama File</th>
                                 <th>Ukuran</th>
@@ -373,32 +465,28 @@
                             {% for b in backups %}
                             <tr id="backup-row-{{ b.id }}" data-category="{{ b.category | upper }}">
                                 <td>
-                                    <span
-                                        style="font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600; color:#38bdf8; background:rgba(56,189,248,0.08); padding:4px 9px; border-radius:5px; border:1px solid rgba(56,189,248,0.25); white-space:nowrap; display:inline-flex; align-items:center; gap:5px;"
-                                        title="Waktu Eksekusi: {{ b.full_date }}">
-                                        🕒 {{ b.data_range }}
-                                    </span>
+                                    <span title="Waktu Eksekusi: {{ b.full_date }}">{{ b.data_range }}</span>
                                 </td>
                                 <td>
                                     <strong>{{ b.device }}</strong><br>
-                                    <span style="color:#94a3b8; font-size:11px;">{{ b.site }}</span>
+                                    <span class="device-site-sub">{{ b.site }}</span>
                                 </td>
                                 <td>
                                     <span class="badge-category-orange">{{ b.category }}</span>
                                 </td>
                                 <td><code
-                                        style="font-size:11px;">{{ b.file.split('/')[-1] if '/' in b.file else b.file }}</code>
+                                        style="font-size:13px; color:#ffffff;">{{ b.file.split('/')[-1] if '/' in b.file else b.file }}</code>
                                 </td>
                                 <td>{{ b.size }}</td>
                                 <td>
                                     {% if 'Telegram' in b.trigger_by %}
                                     <span
-                                        style="display:inline-flex; align-items:center; gap:4px; font-size:11px; color:#38bdf8;">
+                                        style="display:inline-flex; align-items:center; gap:4px; font-size:13px; color:#ffffff;">
                                         <span>{{ b.trigger_by }}</span>
                                     </span>
                                     {% else %}
                                     <span
-                                        style="display:inline-flex; align-items:center; gap:4px; font-size:11px; color:#94a3b8;">
+                                        style="display:inline-flex; align-items:center; gap:4px; font-size:13px; color:#ffffff;">
                                         <span>{{ b.trigger_by }}</span>
                                     </span>
                                     {% endif %}
@@ -406,11 +494,11 @@
                                 <td>
                                     {% if b.status == 'SUCCESS' %}
                                     <span class="status-badge badge-up">
-                                        <span class="badge-dot-green"></span> SUCCESS
+                                        SUCCESS
                                     </span>
                                     {% else %}
                                     <span class="status-badge badge-down">
-                                        <span class="badge-dot-red"></span> FAILED
+                                        FAILED
                                     </span>
                                     {% endif %}
                                 </td>
@@ -430,24 +518,22 @@
                             <!-- Realistic Default Seed Showcase for 3 Network Devices -->
                             <tr data-category="SYSTEM">
                                 <td>
-                                    <span
-                                        style="font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600; color:#38bdf8; background:rgba(56,189,248,0.08); padding:4px 9px; border-radius:5px; border:1px solid rgba(56,189,248,0.25); white-space:nowrap; display:inline-flex; align-items:center; gap:5px;"
-                                        title="Waktu Eksekusi: 2026-11-02 02:00:10 WIB">🕒
-                                        01/11 02:00:10 — 02/11 02:00:10 WIB</span>
+                                    <span title="Waktu Eksekusi: 2026-11-02 02:00:10 WIB">01/11 02:00:10 — 02/11
+                                        02:00:10 WIB</span>
                                 </td>
                                 <td>
                                     <strong>FW-PA220-1</strong><br>
-                                    <span style="color:#94a3b8; font-size:11px;">HO Gateway</span>
+                                    <span class="device-site-sub">HO Gateway</span>
                                 </td>
                                 <td><span class="badge-category-orange">SYSTEM</span></td>
-                                <td><code style="font-size:11px;">2026-11-02_system.txt</code></td>
+                                <td><code style="font-size:13px;">2026-11-02_system.txt</code></td>
                                 <td>142.5 KB</td>
                                 <td><span
-                                        style="display:inline-flex; align-items:center; gap:4px; font-size:11px; color:#94a3b8;"><span>⏰</span>
+                                        style="display:inline-flex; align-items:center; gap:4px; font-size:13px; color:#ffffff;"><span></span>
                                         Scheduler (02:00 WIB)</span></td>
                                 <td>
                                     <span class="status-badge badge-up">
-                                        <span class="badge-dot-green"></span> SUCCESS
+                                        SUCCESS
                                     </span>
                                 </td>
                                 <td class="text-center">
@@ -463,24 +549,22 @@
                             </tr>
                             <tr data-category="CONFIG">
                                 <td>
-                                    <span
-                                        style="font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600; color:#38bdf8; background:rgba(56,189,248,0.08); padding:4px 9px; border-radius:5px; border:1px solid rgba(56,189,248,0.25); white-space:nowrap; display:inline-flex; align-items:center; gap:5px;"
-                                        title="Waktu Eksekusi: 2026-11-02 02:00:15 WIB">🕒
-                                        01/11 02:00:15 — 02/11 02:00:15 WIB</span>
+                                    <span title="Waktu Eksekusi: 2026-11-02 02:00:15 WIB">01/11 02:00:15 — 02/11
+                                        02:00:15 WIB</span>
                                 </td>
                                 <td>
                                     <strong>FW-PA220-1</strong><br>
-                                    <span style="color:#94a3b8; font-size:11px;">HO Gateway</span>
+                                    <span class="device-site-sub">HO Gateway</span>
                                 </td>
                                 <td><span class="badge-category-orange">CONFIG</span></td>
-                                <td><code style="font-size:11px;">2026-11-02_config.txt</code></td>
+                                <td><code style="font-size:13px;">2026-11-02_config.txt</code></td>
                                 <td>18.4 KB</td>
                                 <td><span
-                                        style="display:inline-flex; align-items:center; gap:4px; font-size:11px; color:#94a3b8;"><span>⏰</span>
+                                        style="display:inline-flex; align-items:center; gap:4px; font-size:13px; color:#ffffff;"><span>⏰</span>
                                         Scheduler (02:00 WIB)</span></td>
                                 <td>
                                     <span class="status-badge badge-up">
-                                        <span class="badge-dot-green"></span> SUCCESS
+                                        SUCCESS
                                     </span>
                                 </td>
                                 <td class="text-center">
@@ -496,24 +580,22 @@
                             </tr>
                             <tr data-category="TRAFFIC">
                                 <td>
-                                    <span
-                                        style="font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600; color:#38bdf8; background:rgba(56,189,248,0.08); padding:4px 9px; border-radius:5px; border:1px solid rgba(56,189,248,0.25); white-space:nowrap; display:inline-flex; align-items:center; gap:5px;"
-                                        title="Waktu Eksekusi: 2026-11-02 02:00:25 WIB">🕒
-                                        01/11 02:00:25 — 02/11 02:00:25 WIB</span>
+                                    <span title="Waktu Eksekusi: 2026-11-02 02:00:25 WIB">01/11 02:00:25 — 02/11
+                                        02:00:25 WIB</span>
                                 </td>
                                 <td>
                                     <strong>FW-PA220-1</strong><br>
-                                    <span style="color:#94a3b8; font-size:11px;">HO Gateway</span>
+                                    <span class="device-site-sub">HO Gateway</span>
                                 </td>
                                 <td><span class="badge-category-orange">TRAFFIC</span></td>
-                                <td><code style="font-size:11px;">2026-11-02_traffic.txt</code></td>
+                                <td><code style="font-size:13px;">2026-11-02_traffic.txt</code></td>
                                 <td>380.2 KB</td>
                                 <td><span
-                                        style="display:inline-flex; align-items:center; gap:4px; font-size:11px; color:#94a3b8;"><span>⏰</span>
+                                        style="display:inline-flex; align-items:center; gap:4px; font-size:13px; color:#ffffff;"><span>⏰</span>
                                         Scheduler (02:00 WIB)</span></td>
                                 <td>
                                     <span class="status-badge badge-up">
-                                        <span class="badge-dot-green"></span> SUCCESS
+                                        SUCCESS
                                     </span>
                                 </td>
                                 <td class="text-center">
@@ -529,24 +611,22 @@
                             </tr>
                             <tr data-category="THREAT">
                                 <td>
-                                    <span
-                                        style="font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600; color:#38bdf8; background:rgba(56,189,248,0.08); padding:4px 9px; border-radius:5px; border:1px solid rgba(56,189,248,0.25); white-space:nowrap; display:inline-flex; align-items:center; gap:5px;"
-                                        title="Waktu Eksekusi: 2026-11-02 02:00:30 WIB">🕒
-                                        01/11 02:00:30 — 02/11 02:00:30 WIB</span>
+                                    <span title="Waktu Eksekusi: 2026-11-02 02:00:30 WIB">01/11 02:00:30 — 02/11
+                                        02:00:30 WIB</span>
                                 </td>
                                 <td>
                                     <strong>FW-PA220-1</strong><br>
-                                    <span style="color:#94a3b8; font-size:11px;">HO Gateway</span>
+                                    <span class="device-site-sub">HO Gateway</span>
                                 </td>
                                 <td><span class="badge-category-orange">THREAT</span></td>
-                                <td><code style="font-size:11px;">2026-11-02_threat.txt</code></td>
+                                <td><code style="font-size:13px;">2026-11-02_threat.txt</code></td>
                                 <td>24.8 KB</td>
                                 <td><span
-                                        style="display:inline-flex; align-items:center; gap:4px; font-size:11px; color:#94a3b8;"><span>⏰</span>
+                                        style="display:inline-flex; align-items:center; gap:4px; font-size:13px; color:#ffffff;"><span>⏰</span>
                                         Scheduler (02:00 WIB)</span></td>
                                 <td>
                                     <span class="status-badge badge-up">
-                                        <span class="badge-dot-green"></span> SUCCESS
+                                        SUCCESS
                                     </span>
                                 </td>
                                 <td class="text-center">
@@ -562,24 +642,22 @@
                             </tr>
                             <tr data-category="SYSTEM">
                                 <td>
-                                    <span
-                                        style="font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600; color:#38bdf8; background:rgba(56,189,248,0.08); padding:4px 9px; border-radius:5px; border:1px solid rgba(56,189,248,0.25); white-space:nowrap; display:inline-flex; align-items:center; gap:5px;"
-                                        title="Waktu Eksekusi: 2026-11-02 02:01:10 WIB">🕒
-                                        01/11 02:01:10 — 02/11 02:01:10 WIB</span>
+                                    <span title="Waktu Eksekusi: 2026-11-02 02:01:10 WIB">01/11 02:01:10 — 02/11
+                                        02:01:10 WIB</span>
                                 </td>
                                 <td>
                                     <strong>SW-2930F-HO</strong><br>
-                                    <span style="color:#94a3b8; font-size:11px;">HO</span>
+                                    <span class="device-site-sub">HO</span>
                                 </td>
                                 <td><span class="badge-category-orange">SYSTEM</span></td>
-                                <td><code style="font-size:11px;">2026-11-02_system.txt</code></td>
+                                <td><code style="font-size:13px;">2026-11-02_system.txt</code></td>
                                 <td>88.6 KB</td>
                                 <td><span
-                                        style="display:inline-flex; align-items:center; gap:4px; font-size:11px; color:#94a3b8;"><span>⏰</span>
+                                        style="display:inline-flex; align-items:center; gap:4px; font-size:13px; color:#ffffff;"><span>⏰</span>
                                         Scheduler (02:00 WIB)</span></td>
                                 <td>
                                     <span class="status-badge badge-up">
-                                        <span class="badge-dot-green"></span> SUCCESS
+                                        SUCCESS
                                     </span>
                                 </td>
                                 <td class="text-center">
@@ -595,24 +673,22 @@
                             </tr>
                             <tr data-category="CONFIG">
                                 <td>
-                                    <span
-                                        style="font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600; color:#38bdf8; background:rgba(56,189,248,0.08); padding:4px 9px; border-radius:5px; border:1px solid rgba(56,189,248,0.25); white-space:nowrap; display:inline-flex; align-items:center; gap:5px;"
-                                        title="Waktu Eksekusi: 2026-11-02 02:01:20 WIB">🕒
-                                        01/11 02:01:20 — 02/11 02:01:20 WIB</span>
+                                    <span title="Waktu Eksekusi: 2026-11-02 02:01:20 WIB">01/11 02:01:20 — 02/11
+                                        02:01:20 WIB</span>
                                 </td>
                                 <td>
                                     <strong>SW-2930F-HO</strong><br>
-                                    <span style="color:#94a3b8; font-size:11px;">HO</span>
+                                    <span class="device-site-sub">HO</span>
                                 </td>
                                 <td><span class="badge-category-orange">CONFIG</span></td>
-                                <td><code style="font-size:11px;">2026-11-02_config.txt</code></td>
+                                <td><code style="font-size:13px;">2026-11-02_config.txt</code></td>
                                 <td>42.1 KB</td>
                                 <td><span
-                                        style="display:inline-flex; align-items:center; gap:4px; font-size:11px; color:#94a3b8;"><span>⏰</span>
+                                        style="display:inline-flex; align-items:center; gap:4px; font-size:13px; color:#ffffff;"><span>⏰</span>
                                         Scheduler (02:00 WIB)</span></td>
                                 <td>
                                     <span class="status-badge badge-up">
-                                        <span class="badge-dot-green"></span> SUCCESS
+                                        SUCCESS
                                     </span>
                                 </td>
                                 <td class="text-center">
@@ -628,24 +704,22 @@
                             </tr>
                             <tr data-category="TRAFFIC">
                                 <td>
-                                    <span
-                                        style="font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600; color:#38bdf8; background:rgba(56,189,248,0.08); padding:4px 9px; border-radius:5px; border:1px solid rgba(56,189,248,0.25); white-space:nowrap; display:inline-flex; align-items:center; gap:5px;"
-                                        title="Waktu Eksekusi: 2026-11-02 02:01:35 WIB">🕒
-                                        01/11 02:01:35 — 02/11 02:01:35 WIB</span>
+                                    <span title="Waktu Eksekusi: 2026-11-02 02:01:35 WIB">01/11 02:01:35 — 02/11
+                                        02:01:35 WIB</span>
                                 </td>
                                 <td>
                                     <strong>SW-2930F-HO</strong><br>
-                                    <span style="color:#94a3b8; font-size:11px;">HO</span>
+                                    <span class="device-site-sub">HO</span>
                                 </td>
                                 <td><span class="badge-category-orange">TRAFFIC</span></td>
-                                <td><code style="font-size:11px;">2026-11-02_traffic.txt</code></td>
+                                <td><code style="font-size:13px;">2026-11-02_traffic.txt</code></td>
                                 <td>195.4 KB</td>
                                 <td><span
-                                        style="display:inline-flex; align-items:center; gap:4px; font-size:11px; color:#94a3b8;"><span>⏰</span>
+                                        style="display:inline-flex; align-items:center; gap:4px; font-size:13px; color:#ffffff;"><span>⏰</span>
                                         Scheduler (02:00 WIB)</span></td>
                                 <td>
                                     <span class="status-badge badge-up">
-                                        <span class="badge-dot-green"></span> SUCCESS
+                                        SUCCESS
                                     </span>
                                 </td>
                                 <td class="text-center">
@@ -661,24 +735,22 @@
                             </tr>
                             <tr data-category="THREAT">
                                 <td>
-                                    <span
-                                        style="font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600; color:#38bdf8; background:rgba(56,189,248,0.08); padding:4px 9px; border-radius:5px; border:1px solid rgba(56,189,248,0.25); white-space:nowrap; display:inline-flex; align-items:center; gap:5px;"
-                                        title="Waktu Eksekusi: 2026-11-02 02:01:45 WIB">🕒
-                                        01/11 02:01:45 — 02/11 02:01:45 WIB</span>
+                                    <span title="Waktu Eksekusi: 2026-11-02 02:01:45 WIB">01/11 02:01:45 — 02/11
+                                        02:01:45 WIB</span>
                                 </td>
                                 <td>
                                     <strong>SW-2930F-HO</strong><br>
-                                    <span style="color:#94a3b8; font-size:11px;">HO</span>
+                                    <span class="device-site-sub">HO</span>
                                 </td>
                                 <td><span class="badge-category-orange">THREAT</span></td>
-                                <td><code style="font-size:11px;">2026-11-02_threat.txt</code></td>
+                                <td><code style="font-size:13px;">2026-11-02_threat.txt</code></td>
                                 <td>14.2 KB</td>
                                 <td><span
-                                        style="display:inline-flex; align-items:center; gap:4px; font-size:11px; color:#94a3b8;"><span>⏰</span>
+                                        style="display:inline-flex; align-items:center; gap:4px; font-size:13px; color:#ffffff;"><span>⏰</span>
                                         Scheduler (02:00 WIB)</span></td>
                                 <td>
                                     <span class="status-badge badge-up">
-                                        <span class="badge-dot-green"></span> SUCCESS
+                                        SUCCESS
                                     </span>
                                 </td>
                                 <td class="text-center">
@@ -694,24 +766,22 @@
                             </tr>
                             <tr data-category="SYSTEM">
                                 <td>
-                                    <span
-                                        style="font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600; color:#38bdf8; background:rgba(56,189,248,0.08); padding:4px 9px; border-radius:5px; border:1px solid rgba(56,189,248,0.25); white-space:nowrap; display:inline-flex; align-items:center; gap:5px;"
-                                        title="Waktu Eksekusi: 2026-11-02 02:02:05 WIB">🕒
-                                        01/11 02:02:05 — 02/11 02:02:05 WIB</span>
+                                    <span title="Waktu Eksekusi: 2026-11-02 02:02:05 WIB">01/11 02:02:05 — 02/11
+                                        02:02:05 WIB</span>
                                 </td>
                                 <td>
                                     <strong>SW-S5735-CORNER</strong><br>
-                                    <span style="color:#94a3b8; font-size:11px;">Corner</span>
+                                    <span class="device-site-sub">Corner</span>
                                 </td>
                                 <td><span class="badge-category-orange">SYSTEM</span></td>
-                                <td><code style="font-size:11px;">2026-11-02_system.txt</code></td>
+                                <td><code style="font-size:13px;">2026-11-02_system.txt</code></td>
                                 <td>112.4 KB</td>
                                 <td><span
-                                        style="display:inline-flex; align-items:center; gap:4px; font-size:11px; color:#94a3b8;"><span>⏰</span>
+                                        style="display:inline-flex; align-items:center; gap:4px; font-size:13px; color:#ffffff;"><span>⏰</span>
                                         Scheduler (02:00 WIB)</span></td>
                                 <td>
                                     <span class="status-badge badge-up">
-                                        <span class="badge-dot-green"></span> SUCCESS
+                                        SUCCESS
                                     </span>
                                 </td>
                                 <td class="text-center">
@@ -727,24 +797,22 @@
                             </tr>
                             <tr data-category="CONFIG">
                                 <td>
-                                    <span
-                                        style="font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600; color:#38bdf8; background:rgba(56,189,248,0.08); padding:4px 9px; border-radius:5px; border:1px solid rgba(56,189,248,0.25); white-space:nowrap; display:inline-flex; align-items:center; gap:5px;"
-                                        title="Waktu Eksekusi: 2026-11-02 02:02:18 WIB">🕒
-                                        01/11 02:02:18 — 02/11 02:02:18 WIB</span>
+                                    <span title="Waktu Eksekusi: 2026-11-02 02:02:18 WIB">01/11 02:02:18 — 02/11
+                                        02:02:18 WIB</span>
                                 </td>
                                 <td>
                                     <strong>SW-S5735-CORNER</strong><br>
-                                    <span style="color:#94a3b8; font-size:11px;">Corner</span>
+                                    <span class="device-site-sub">Corner</span>
                                 </td>
                                 <td><span class="badge-category-orange">CONFIG</span></td>
-                                <td><code style="font-size:11px;">2026-11-02_config.txt</code></td>
+                                <td><code style="font-size:13px;">2026-11-02_config.txt</code></td>
                                 <td>64.3 KB</td>
                                 <td><span
-                                        style="display:inline-flex; align-items:center; gap:4px; font-size:11px; color:#94a3b8;"><span>⏰</span>
+                                        style="display:inline-flex; align-items:center; gap:4px; font-size:13px; color:#ffffff;"><span>⏰</span>
                                         Scheduler (02:00 WIB)</span></td>
                                 <td>
                                     <span class="status-badge badge-up">
-                                        <span class="badge-dot-green"></span> SUCCESS
+                                        SUCCESS
                                     </span>
                                 </td>
                                 <td class="text-center">
@@ -760,24 +828,22 @@
                             </tr>
                             <tr data-category="TRAFFIC">
                                 <td>
-                                    <span
-                                        style="font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600; color:#38bdf8; background:rgba(56,189,248,0.08); padding:4px 9px; border-radius:5px; border:1px solid rgba(56,189,248,0.25); white-space:nowrap; display:inline-flex; align-items:center; gap:5px;"
-                                        title="Waktu Eksekusi: 2026-11-02 02:02:30 WIB">🕒
-                                        01/11 02:02:30 — 02/11 02:02:30 WIB</span>
+                                    <span title="Waktu Eksekusi: 2026-11-02 02:02:30 WIB">01/11 02:02:30 — 02/11
+                                        02:02:30 WIB</span>
                                 </td>
                                 <td>
                                     <strong>SW-S5735-CORNER</strong><br>
-                                    <span style="color:#94a3b8; font-size:11px;">Corner</span>
+                                    <span class="device-site-sub">Corner</span>
                                 </td>
                                 <td><span class="badge-category-orange">TRAFFIC</span></td>
-                                <td><code style="font-size:11px;">2026-11-02_traffic.txt</code></td>
+                                <td><code style="font-size:13px;">2026-11-02_traffic.txt</code></td>
                                 <td>220.8 KB</td>
                                 <td><span
-                                        style="display:inline-flex; align-items:center; gap:4px; font-size:11px; color:#94a3b8;"><span>⏰</span>
+                                        style="display:inline-flex; align-items:center; gap:4px; font-size:13px; color:#ffffff;"><span>⏰</span>
                                         Scheduler (02:00 WIB)</span></td>
                                 <td>
                                     <span class="status-badge badge-up">
-                                        <span class="badge-dot-green"></span> SUCCESS
+                                        SUCCESS
                                     </span>
                                 </td>
                                 <td class="text-center">
@@ -793,24 +859,22 @@
                             </tr>
                             <tr data-category="THREAT">
                                 <td>
-                                    <span
-                                        style="font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600; color:#38bdf8; background:rgba(56,189,248,0.08); padding:4px 9px; border-radius:5px; border:1px solid rgba(56,189,248,0.25); white-space:nowrap; display:inline-flex; align-items:center; gap:5px;"
-                                        title="Waktu Eksekusi: 2026-11-02 02:02:40 WIB">🕒
-                                        01/11 02:02:40 — 02/11 02:02:40 WIB</span>
+                                    <span title="Waktu Eksekusi: 2026-11-02 02:02:40 WIB">01/11 02:02:40 — 02/11
+                                        02:02:40 WIB</span>
                                 </td>
                                 <td>
                                     <strong>SW-S5735-CORNER</strong><br>
-                                    <span style="color:#94a3b8; font-size:11px;">Corner</span>
+                                    <span class="device-site-sub">Corner</span>
                                 </td>
                                 <td><span class="badge-category-orange">THREAT</span></td>
-                                <td><code style="font-size:11px;">2026-11-02_threat.txt</code></td>
+                                <td><code style="font-size:13px;">2026-11-02_threat.txt</code></td>
                                 <td>16.5 KB</td>
                                 <td><span
-                                        style="display:inline-flex; align-items:center; gap:4px; font-size:11px; color:#94a3b8;"><span>⏰</span>
+                                        style="display:inline-flex; align-items:center; gap:4px; font-size:13px; color:#ffffff;"><span>⏰</span>
                                         Scheduler (02:00 WIB)</span></td>
                                 <td>
                                     <span class="status-badge badge-up">
-                                        <span class="badge-dot-green"></span> SUCCESS
+                                        SUCCESS
                                     </span>
                                 </td>
                                 <td class="text-center">
@@ -855,9 +919,6 @@
                 <span id="modalTimestamp"
                     style="font-size:12px; color:#94a3b8; font-family:'JetBrains Mono', monospace;"></span>
                 <div style="display:flex; gap:10px; align-items:center;">
-                    <button type="button" id="btnModalPull" class="btn-action"
-                        style="display:none; padding:6px 14px !important; font-size:12px !important; background:#E8A576; color:#0f172a;"
-                        onclick="pullLiveBackupFromModal()">⚡ Tarik Log Langsung dari Switch</button>
                     <button type="button" class="btn-secondary" onclick="copyModalContent()">Salin Teks</button>
                     <button type="button" class="btn-action"
                         style="padding:6px 16px !important; font-size:12px !important;"
@@ -895,6 +956,36 @@
             }, 250);
         }
 
+        function updateCategoryCounts() {
+            const rows = document.querySelectorAll('#backupsTableBody tr');
+            let total = 0, sys = 0, cfg = 0, trf = 0, thr = 0;
+            rows.forEach(r => {
+                if (r.querySelector('td[colspan]')) return;
+                total++;
+                const cat = (r.getAttribute('data-category') || '').toUpperCase();
+                if (cat === 'SYSTEM') sys++;
+                else if (cat === 'CONFIG') cfg++;
+                else if (cat === 'TRAFFIC') trf++;
+                else if (cat === 'THREAT') thr++;
+            });
+
+            const countAllEl = document.getElementById('count-all');
+            const countSysEl = document.getElementById('count-system');
+            const countCfgEl = document.getElementById('count-config');
+            const countTrfEl = document.getElementById('count-traffic');
+            const countThrEl = document.getElementById('count-threat');
+
+            if (countAllEl) countAllEl.textContent = `(${total})`;
+            if (countSysEl) countSysEl.textContent = `(${sys})`;
+            if (countCfgEl) countCfgEl.textContent = `(${cfg})`;
+            if (countTrfEl) countTrfEl.textContent = `(${trf})`;
+            if (countThrEl) countThrEl.textContent = `(${thr})`;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updateCategoryCounts();
+        });
+
         let currentCategoryFilter = 'ALL';
 
         function setCategoryFilter(cat, btn) {
@@ -927,9 +1018,6 @@
             const pathEl = document.getElementById('modalFilePath');
             const codeBox = document.getElementById('modalContentBox');
             const timeEl = document.getElementById('modalTimestamp');
-            const btnPull = document.getElementById('btnModalPull');
-
-            if (btnPull) btnPull.style.display = 'none';
 
             titleEl.textContent = devName ? `Berkas Arsip - ${devName}` : 'Viewer Berkas';
             catBadge.textContent = category ? category.toUpperCase() : 'SYSTEM';
@@ -945,14 +1033,8 @@
                         if (data.success) {
                             codeBox.textContent = data.content || '(Berkas kosong)';
                             timeEl.textContent = `Pencadangan: ${data.date} • Ukuran: ${data.file_size}`;
-                            if (btnPull) btnPull.style.display = 'none';
                         } else {
-                            codeBox.textContent = `[Info] ${data.error || 'Gagal memuat isi berkas.'}\n\nLokasi: ${data.file_path || filePath}\nStatus: Berkas fisik belum ada di disk server.\n\nKlik tombol di bawah atau ketik /backup ${devName} di Telegram untuk menarik langsung via SSH/API!`;
-                            if (btnPull) {
-                                btnPull.style.display = 'inline-block';
-                                btnPull.disabled = false;
-                                btnPull.textContent = `⚡ Tarik ${category.toUpperCase()} dari ${devName}`;
-                            }
+                            codeBox.textContent = `[Info] ${data.error || 'Gagal memuat isi berkas.'}\n\nLokasi: ${data.file_path || filePath}\nStatus: Berkas fisik belum ada di disk server.\n\nKetik /backup ${devName} di Telegram bot untuk menarik berkas langsung via SSH/API.`;
                         }
                     })
                     .catch(err => {
@@ -961,45 +1043,6 @@
             } else {
                 codeBox.textContent = `// CONTOH TAMPILAN BERKAS LOG / KONFIGURASI\n// Perangkat : ${devName}\n// Kategori  : ${category}\n// Jalur     : ${filePath}\n\n======================================================================\nAGIVA NOC LOG ARCHIVE [${category ? category.toUpperCase() : 'SYSTEM'}]\n======================================================================\nI 11/02/26 02:00:12 ports: port 1 is now on-line (1000FDx)\nI 11/02/26 02:00:15 ssh: SSH client 192.168.1.50 logged in for user admin\nW 11/02/26 02:00:18 ST-P: CST Root changed from 32768:00... to 32768:11...\n\n[INFO] Jalankan perintah /backup ${devName} di Telegram bot untuk menarik log riil langsung dari perangkat!`;
             }
-        }
-
-        function pullLiveBackupFromModal() {
-            if (!currentModalDevice) return;
-            const btnPull = document.getElementById('btnModalPull');
-            const codeBox = document.getElementById('modalContentBox');
-            if (btnPull) {
-                btnPull.disabled = true;
-                btnPull.textContent = '⏳ Menghubungi Perangkat via SSH/API...';
-            }
-            codeBox.textContent = `⏳ Sedang menghubungi ${currentModalDevice} via SSH/API...\nMengekstrak log [${currentModalCategory}]...\nMohon tunggu beberapa detik...`;
-
-            fetch(`/api/backup/trigger/${encodeURIComponent(currentModalDevice)}?category=${encodeURIComponent(currentModalCategory)}`, { method: 'POST' })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        showToast(`✅ Berhasil menarik berkas dari ${currentModalDevice}!`);
-                        if (currentModalBackupId) {
-                            setTimeout(() => {
-                                viewConfig(currentModalBackupId, currentModalDevice, currentModalCategory, '');
-                            }, 500);
-                        } else {
-                            setTimeout(() => window.location.reload(), 1200);
-                        }
-                    } else {
-                        codeBox.textContent = `❌ Gagal menarik log dari ${currentModalDevice}:\n${data.error || 'Koneksi timeout/ditolak.'}`;
-                        if (btnPull) {
-                            btnPull.disabled = false;
-                            btnPull.textContent = 'Coba Lagi';
-                        }
-                    }
-                })
-                .catch(err => {
-                    codeBox.textContent = `❌ Terjadi kesalahan saat memicu backup: ${err}`;
-                    if (btnPull) {
-                        btnPull.disabled = false;
-                        btnPull.textContent = 'Coba Lagi';
-                    }
-                });
         }
 
         function closeConfigModal() {
