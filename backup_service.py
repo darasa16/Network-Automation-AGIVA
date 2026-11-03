@@ -2,12 +2,12 @@
 AGIVA NOC - Network Backup & Log Archiving Service
 Mendukung pencadangan multi-vendor:
 - Palo Alto PA-220 (System, Config, Traffic, Threat)
-- Aruba 2930F (System, Config)
-- Huawei S5735 (System, Config)
+- Aruba 2930F (System, Config, Traffic, Threat)
+- Huawei S5735 (System, Config, Traffic, Threat)
 
 Format Penyimpanan:
-/backups/{site}/{device_name}/{YYYY-MM-DD}_{category.lower()}.txt
-Mendukung Initial Full Pull & Incremental Pull (via Checkpoint State).
+/backups/{site}/{device_name}/{YYYY-MM-DD_HHmmss}_{category.lower()}.txt
+Mendukung Initial Pull & Point-in-Time Audit Trail Logging (Opsi 2).
 """
 
 import os
@@ -92,8 +92,8 @@ def format_file_size(size_bytes: int) -> str:
 
 # ==================== VENDOR BACKUP EXECUTORS ====================
 
-def fetch_aruba_log_or_config(ip: str, user: str, pwd: str, category: str, is_incremental: bool, last_sync: str) -> str:
-    """Ekstraksi log/config Aruba 2930F via SSH Netmiko dengan fallback Paramiko (Anti-Paging / no page)."""
+def fetch_aruba_log_or_config(ip: str, user: str, pwd: str, category: str, *args, **kwargs) -> str:
+    """Ekstraksi raw snapshot log/config Aruba 2930F via SSH Netmiko/Paramiko (Anti-Paging / no page)."""
     cat_lower = (category or "").lower()
     if cat_lower == "system":
         cmd = "show log"
@@ -184,8 +184,8 @@ def fetch_aruba_log_or_config(ip: str, user: str, pwd: str, category: str, is_in
 
     raise Exception(f"Koneksi SSH Aruba gagal: {last_err}")
 
-def fetch_huawei_log_or_config(ip: str, user: str, pwd: str, category: str, is_incremental: bool, last_sync: str) -> str:
-    """Ekstraksi log/config Huawei CloudEngine S5735 via Paramiko/Netmiko."""
+def fetch_huawei_log_or_config(ip: str, user: str, pwd: str, category: str, *args, **kwargs) -> str:
+    """Ekstraksi raw snapshot log/config Huawei CloudEngine S5735 via Paramiko/Netmiko."""
     cat_lower = (category or "").lower()
     if cat_lower == "system":
         cmd = "display logbuffer"
@@ -223,16 +223,16 @@ def fetch_huawei_log_or_config(ip: str, user: str, pwd: str, category: str, is_i
     except Exception as e:
         raise Exception(f"Koneksi SSH Huawei gagal: {e}")
 
-def fetch_palo_alto_log_or_config(ip: str, user: str, pwd: str, category: str, is_incremental: bool, last_sync: str) -> str:
+def fetch_palo_alto_log_or_config(ip: str, user: str, pwd: str, category: str, *args, **kwargs) -> str:
     """
-    Ekstraksi log/config Palo Alto PA-220 via PAN-OS XML API / SSH.
+    Ekstraksi raw snapshot log/config Palo Alto PA-220 via PAN-OS XML API / SSH.
     Mendukung kategori: System, Config, Traffic, Threat.
     """
     api_key = os.getenv("PA_API_KEY", "LUFRPT1mOVAwR1h3bzFrTFNnQjI4WkF3L0h5UVg5Z3c9VDZ2TVVXS2ZmODdwUVRkbDdvcGdJSW1WUkJWVnFCWWdUWWhZV3J4SnhoWFdLalNySkpoRmI0enhVWkdNZjBBdw==")
     cat_lower = category.lower()
 
     if cat_lower == "config":
-        # Ambil running configuration lengkap atau config audit log
+        # Ambil running configuration lengkap
         try:
             r = requests.get(f"https://{ip}/api/?type=config&action=show&key={api_key}", verify=False, timeout=12)
             if r.status_code == 200 and r.text.strip():
@@ -240,17 +240,24 @@ def fetch_palo_alto_log_or_config(ip: str, user: str, pwd: str, category: str, i
         except Exception:
             pass
 
-    # Kategori log: system, config, traffic, threat
-    # Incremental query jika sudah ada checkpoint
-    query_str = ""
-    if is_incremental and last_sync:
-        query_str = f"&query=(receive_time geq '{last_sync}')"
-
-    # API request (Ambil 500 log terkini hari ini agar ringan di VPS)
+    # Kategori log: system, config, traffic, threat (500 log terbaru saat ini)
     try:
-        url = f"https://{ip}/api/?type=log&log-type={cat_lower}&key={api_key}&nlogs=500{query_str}"
+        url = f"https://{ip}/api/?type=log&log-type={cat_lower}&key={api_key}&nlogs=500"
         r = requests.get(url, verify=False, timeout=15)
-        if r.status_code == 200:
+        if r.status_code == 200 and r.text:
+            # Jika PAN-OS mengembalikan asynchronous query job (<job>123</job>)
+            job_match = re.search(r'<job>(\d+)</job>', r.text)
+            if job_match:
+                job_id = job_match.group(1)
+                for _ in range(5):
+                    time.sleep(1)
+                    poll_url = f"https://{ip}/api/?type=log&action=get&job-id={job_id}&key={api_key}"
+                    pr = requests.get(poll_url, verify=False, timeout=15)
+                    if pr.status_code == 200 and pr.text:
+                        if "<status>FIN</status>" in pr.text or "<logs" in pr.text:
+                            return pr.text
+                if pr and pr.text and ("<status>FIN</status>" in pr.text or "<logs" in pr.text):
+                    return pr.text
             return r.text
     except Exception as e:
         logger.warning(f"PAN-OS XML API gagal, mencoba fallback SSH: {e}")
@@ -267,8 +274,6 @@ def fetch_palo_alto_log_or_config(ip: str, user: str, pwd: str, category: str, i
         with ConnectHandler(**device_params) as net_connect:
             net_connect.send_command("set cli pager off")
             cmd = f"show log {cat_lower} direction equal backward lines 500"
-            if is_incremental and last_sync:
-                cmd += f" query \"( receive_time geq '{last_sync}' )\""
             output = net_connect.send_command(cmd)
             return output
     except Exception as e:
@@ -278,31 +283,23 @@ def fetch_palo_alto_log_or_config(ip: str, user: str, pwd: str, category: str, i
 
 def run_single_backup(device: Device, category: str, trigger_by: str = "Scheduler (02:00 WIB)", session=None) -> dict:
     """
-    Mengeksekusi pencadangan 1 perangkat untuk 1 kategori spesifik.
-    Mengatur initial full vs incremental, penyimpanan file, dan commit database.
+    Mengeksekusi pencadangan 1 perangkat untuk 1 kategori spesifik (Raw Snapshot Murni).
+    Setiap eksekusi mengambil output mentah CLI/API saat itu juga dan menghasilkan berkas mandiri.
     """
     now = get_now_wib()
-    date_str = now.strftime("%Y-%m-%d")
-    now_sync_time = now.strftime("%Y/%m/%d %H:%M:%S")
+    time_str = now.strftime("%Y-%m-%d_%H%M%S")
 
     site_clean = normalize_site_name(device.site or "HO")
     dev_name = device.name
     vendor_clean = device.vendor.lower() if device.vendor else ""
     ip = device.ip_address
 
-    # Cek apakah sudah pernah ditarik sebelumnya (Checkpoint)
-    checkpoints = load_checkpoints()
-    chk_key = f"{dev_name}_{category}"
-    last_sync = checkpoints.get(chk_key)
-    is_incremental = bool(last_sync)
-
     # Direktori tujuan: /backups/{site}/{device_name}/
     target_dir = os.path.join(BACKUP_BASE_DIR, site_clean, dev_name)
     os.makedirs(target_dir, exist_ok=True)
 
-    # Nama file: {YYYY-MM-DD}_{category.lower()}.txt
-    # Contoh: 2026-10-29_system.txt, 2026-10-29_config.txt
-    file_name = f"{date_str}_{category.lower()}.txt"
+    # Nama file unik berbasis timestamp detik: {YYYY-MM-DD_HHmmss}_{category.lower()}.txt
+    file_name = f"{time_str}_{category.lower()}.txt"
     abs_file_path = os.path.join(target_dir, file_name)
     rel_file_path = f"/backups/{site_clean}/{dev_name}/{file_name}".replace("\\", "/")
 
@@ -312,34 +309,38 @@ def run_single_backup(device: Device, category: str, trigger_by: str = "Schedule
     content = ""
 
     try:
-        logger.info(f"Memulai backup [{category}] untuk {dev_name} ({ip}) [Incremental: {is_incremental}]...")
+        logger.info(f"Memulai raw snapshot [{category}] untuk {dev_name} ({ip}) [Pemicu: {trigger_by}]...")
         
         if "palo" in vendor_clean or "pan" in vendor_clean or "11" in ip:
-            content = fetch_palo_alto_log_or_config(ip, user, pwd, category, is_incremental, last_sync)
+            content = fetch_palo_alto_log_or_config(ip, user, pwd, category)
         elif "aruba" in vendor_clean or "hp" in vendor_clean or "10" in ip:
-            content = fetch_aruba_log_or_config(ip, user, pwd, category, is_incremental, last_sync)
+            content = fetch_aruba_log_or_config(ip, user, pwd, category)
         elif "huawei" in vendor_clean or "155" in ip:
-            content = fetch_huawei_log_or_config(ip, user, pwd, category, is_incremental, last_sync)
+            content = fetch_huawei_log_or_config(ip, user, pwd, category)
         else:
             raise Exception(f"Vendor '{device.vendor}' belum didukung.")
 
     except Exception as e:
-        logger.error(f"Gagal mengambil backup {dev_name} [{category}]: {e}")
+        logger.error(f"Gagal mengambil raw snapshot {dev_name} [{category}]: {e}")
         status = "FAILED"
         error_msg = str(e)
         content = f"// BACKUP ERROR [{now.strftime('%Y-%m-%d %H:%M:%S WIB')}]\n// Perangkat: {dev_name} ({ip})\n// Kategori: {category}\n// Error: {error_msg}\n"
 
-    # Penulisan / Append ke berkas
-    header_info = f"\n\n{'='*70}\nAGIVA NOC LOG ARCHIVE [{category.upper()}] - {now.strftime('%Y-%m-%d %H:%M:%S WIB')}\n{'='*70}\n"
-    if is_incremental and os.path.exists(abs_file_path):
-        write_mode = "a"
-        write_data = header_info + content
-    else:
-        write_mode = "w"
-        write_data = f"{'='*70}\nAGIVA NOC INITIAL FULL BACKUP [{category.upper()}] - {now.strftime('%Y-%m-%d %H:%M:%S WIB')}\n{'='*70}\n" + content
+    # Penulisan berkas mandiri (Pure Raw Snapshot)
+    header_info = (
+        f"{'='*70}\n"
+        f"AGIVA NOC RAW SNAPSHOT [{category.upper()}]\n"
+        f"Waktu Eksekusi: {now.strftime('%Y-%m-%d %H:%M:%S WIB')}\n"
+        f"Perangkat     : {dev_name} ({ip})\n"
+        f"Site          : {device.site or '-'}\n"
+        f"Kategori      : {category}\n"
+        f"Pemicu        : {trigger_by}\n"
+        f"{'='*70}\n\n"
+    )
+    write_data = header_info + content
 
     try:
-        with open(abs_file_path, write_mode, encoding="utf-8") as f:
+        with open(abs_file_path, "w", encoding="utf-8") as f:
             f.write(write_data)
         file_size_bytes = os.path.getsize(abs_file_path)
         file_size_str = format_file_size(file_size_bytes)
@@ -348,50 +349,29 @@ def run_single_backup(device: Device, category: str, trigger_by: str = "Schedule
         file_size_str = "0 B"
         status = "FAILED"
 
-    # Menentukan rentang periode data 24 jam (dari kemarin jam eksekusi sampai jam eksekusi sekarang)
-    yesterday = now - timedelta(days=1)
-    data_range = f"{yesterday.strftime('%d/%m %H:%M:%S')} — {now.strftime('%d/%m %H:%M:%S WIB')}"
+    # Rentang data: Snapshot waktu eksekusi saat itu
+    data_range = f"Snapshot: {now.strftime('%d/%m/%Y %H:%M:%S WIB')}"
 
-    # Simpan checkpoint jika berhasil
-    if status == "SUCCESS":
-        save_checkpoint(dev_name, category, now_sync_time)
-
-    # Catat riwayat ke Database
+    # Catat riwayat ke Database sebagai baris baru (Audit Trail Murni)
     close_session_at_end = False
     if session is None:
         session = db_session()
         close_session_at_end = True
 
     try:
-        # Cek apakah sudah ada row untuk file yang sama hari ini, jika ada update size, trigger & timestamp
-        existing_history = session.query(BackupHistory).filter(
-            BackupHistory.device_id == device.device_id,
-            BackupHistory.category == category,
-            BackupHistory.file_path == rel_file_path
-        ).first()
-
-        if existing_history:
-            existing_history.timestamp = now
-            existing_history.file_size = file_size_str
-            existing_history.trigger_by = trigger_by
-            existing_history.data_range = data_range
-            existing_history.status = status
-            history_id = existing_history.backup_id
-        else:
-            bh = BackupHistory(
-                device_id=device.device_id,
-                category=category,
-                timestamp=now,
-                file_path=rel_file_path,
-                file_size=file_size_str,
-                trigger_by=trigger_by,
-                data_range=data_range,
-                status=status
-            )
-            session.add(bh)
-            session.flush()
-            history_id = bh.backup_id
+        bh = BackupHistory(
+            device_id=device.device_id,
+            category=category,
+            timestamp=now,
+            file_path=rel_file_path,
+            file_size=file_size_str,
+            trigger_by=trigger_by,
+            data_range=data_range,
+            status=status
+        )
+        session.add(bh)
         session.commit()
+        history_id = bh.backup_id
     except Exception as e:
         logger.error(f"Gagal mencatat backup ke database: {e}")
         session.rollback()
@@ -411,7 +391,7 @@ def run_single_backup(device: Device, category: str, trigger_by: str = "Schedule
         "data_range": data_range,
         "status": status,
         "error": error_msg,
-        "is_incremental": is_incremental
+        "is_incremental": False
     }
 
 def get_categories_for_device(vendor: str = "") -> list:

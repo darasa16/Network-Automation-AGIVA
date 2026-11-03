@@ -660,16 +660,15 @@ def backups_page():
         date_str = b.timestamp.strftime("%d/%m/%Y") if b.timestamp else "-"
         full_date_str = b.timestamp.strftime("%Y-%m-%d %H:%M:%S WIB") if b.timestamp else "-"
 
-        # Format rentang waktu 24 jam (dari 24 jam sebelumnya sampai jam eksekusi)
-        if b.timestamp:
+        # Format rentang waktu
+        raw_range = getattr(b, 'data_range', None)
+        if raw_range and ('—' in raw_range or '-' in raw_range) and 'Snapshot' not in raw_range:
+            range_str = raw_range
+        elif b.timestamp:
             yesterday = b.timestamp - timedelta(days=1)
             range_str = f"{yesterday.strftime('%d/%m %H:%M:%S')} — {b.timestamp.strftime('%d/%m %H:%M:%S WIB')}"
         else:
-            raw_range = getattr(b, 'data_range', None)
-            if raw_range and '—' in raw_range and 'Snapshot' not in raw_range:
-                range_str = raw_range
-            else:
-                range_str = "01/11 02:00:00 — 02/11 02:00:00 WIB"
+            range_str = "01/11 02:00:00 — 02/11 02:00:00 WIB"
 
         backups_data.append({
             "id": b.backup_id,

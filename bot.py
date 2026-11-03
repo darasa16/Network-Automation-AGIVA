@@ -838,7 +838,7 @@ async def backup_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         sz = it.get("size", "0 B")
         st = it.get("status", "SUCCESS")
         fname = it.get("file", "-")
-        mode = "Update Baru" if it.get("is_incremental") else "Full Awal"
+        mode = "Raw Snapshot"
         drange = it.get("data_range", "")
         if st == "SUCCESS":
             icon = "✅"

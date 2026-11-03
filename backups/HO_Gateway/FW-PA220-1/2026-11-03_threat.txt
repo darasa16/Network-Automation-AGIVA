@@ -2,3 +2,8 @@
 AGIVA NOC INITIAL FULL BACKUP [THREAT] - 2026-11-03 15:50:22 WIB
 ======================================================================
 <response status="success" code="19"><result><msg><line>query job enqueued with jobid 264</line></msg><job>264</job></result></response>
+
+======================================================================
+AGIVA NOC LOG ARCHIVE [THREAT] - 2026-11-03 17:00:49 WIB
+======================================================================
+<response status="success" code="19"><result><msg><line>query job enqueued with jobid 265</line></msg><job>265</job></result></response>
