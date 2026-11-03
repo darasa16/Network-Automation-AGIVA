@@ -418,7 +418,8 @@
                 <div class="panel-header" style="flex-wrap: wrap; gap: 12px;">
                     <div>
                         <h3 class="panel-title">Riwayat Backup Konfigurasi & Log Audit</h3>
-                        <span class="panel-sub">Pencatatan real-time hasil eksekusi otomatis maupun manual Telegram &bull; Retensi Data 30 Hari (Safety Net DR Aktif)</span>
+                        <span class="panel-sub">Pencatatan real-time hasil eksekusi otomatis maupun manual Telegram
+                            retensi data 30 hari</span>
                     </div>
                     <div class="table-actions" style="display: flex; align-items: center; gap: 10px;">
                         <button class="btn-refresh" onclick="refreshBackups(this)">
@@ -435,15 +436,21 @@
                 <!-- Category Filter Pills Bar -->
                 <div class="category-filters-container">
                     <button type="button" class="category-filter-btn active" data-cat="ALL"
-                        onclick="setCategoryFilter('ALL', this)"><span>All</span> <span class="filter-count" id="count-all">({{ category_counts.all if category_counts else (backups|length if backups else 12) }})</span></button>
+                        onclick="setCategoryFilter('ALL', this)"><span>All</span> <span class="filter-count"
+                            id="count-all">({{ category_counts.all if category_counts else (backups|length if backups
+                            else 12) }})</span></button>
                     <button type="button" class="category-filter-btn" data-cat="SYSTEM"
-                        onclick="setCategoryFilter('SYSTEM', this)"><span>System</span> <span class="filter-count" id="count-system">({{ category_counts.system if category_counts else 3 }})</span></button>
+                        onclick="setCategoryFilter('SYSTEM', this)"><span>System</span> <span class="filter-count"
+                            id="count-system">({{ category_counts.system if category_counts else 3 }})</span></button>
                     <button type="button" class="category-filter-btn" data-cat="CONFIG"
-                        onclick="setCategoryFilter('CONFIG', this)"><span>Config</span> <span class="filter-count" id="count-config">({{ category_counts.config if category_counts else 3 }})</span></button>
+                        onclick="setCategoryFilter('CONFIG', this)"><span>Config</span> <span class="filter-count"
+                            id="count-config">({{ category_counts.config if category_counts else 3 }})</span></button>
                     <button type="button" class="category-filter-btn" data-cat="TRAFFIC"
-                        onclick="setCategoryFilter('TRAFFIC', this)"><span>Traffic</span> <span class="filter-count" id="count-traffic">({{ category_counts.traffic if category_counts else 3 }})</span></button>
+                        onclick="setCategoryFilter('TRAFFIC', this)"><span>Traffic</span> <span class="filter-count"
+                            id="count-traffic">({{ category_counts.traffic if category_counts else 3 }})</span></button>
                     <button type="button" class="category-filter-btn" data-cat="THREAT"
-                        onclick="setCategoryFilter('THREAT', this)"><span>Threat</span> <span class="filter-count" id="count-threat">({{ category_counts.threat if category_counts else 3 }})</span></button>
+                        onclick="setCategoryFilter('THREAT', this)"><span>Threat</span> <span class="filter-count"
+                            id="count-threat">({{ category_counts.threat if category_counts else 3 }})</span></button>
                 </div>
 
                 <div class="table-responsive">
