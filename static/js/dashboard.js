@@ -43,7 +43,7 @@ function saveDashboardDataToStorage(data) {
             saveChartHistoryToStorage(data.range || currentDashboardRange, data.history);
         }
     } catch (e) {
-        console.warn('Gagal menyimpan cache dashboard ke localStorage:', e);
+        console.warn('Failed to save dashboard cache to localStorage:', e);
     }
 }
 
@@ -52,7 +52,7 @@ function saveChartHistoryToStorage(range, history) {
     try {
         localStorage.setItem(STORAGE_KEYS.CHART_PREFIX + range, JSON.stringify(history));
     } catch (e) {
-        console.warn('Gagal menyimpan cache chart:', e);
+        console.warn('Failed to save chart cache:', e);
     }
 }
 
@@ -120,7 +120,7 @@ function restoreDashboardFromStorageIfEmpty() {
 
     const kpiTot = document.getElementById('kpiTotal');
     const tbody = document.getElementById('deviceTableBody');
-    const isEmptyTable = !tbody || tbody.children.length === 0 || (tbody.children.length === 1 && tbody.children[0].textContent.includes('Belum ada perangkat'));
+    const isEmptyTable = !tbody || tbody.children.length === 0 || (tbody.children.length === 1 && tbody.children[0].textContent.includes('No devices'));
 
     if (isEmptyTable || (kpiTot && (kpiTot.textContent === '0' || !kpiTot.textContent.trim()))) {
         updateDashboardView(cachedData);
@@ -578,7 +578,7 @@ function updateDashboardView(data) {
         const filterAll = document.querySelector('.badge-filter[data-filter="all"]');
         const filterUp = document.querySelector('.badge-filter[data-filter="UP"]');
         const filterDown = document.querySelector('.badge-filter[data-filter="DOWN"]');
-        if (filterAll) filterAll.textContent = `Semua (${data.summary.total_devices})`;
+        if (filterAll) filterAll.textContent = `All (${data.summary.total_devices})`;
         if (filterUp) filterUp.textContent = `Online (${data.summary.devices_online})`;
         if (filterDown) filterDown.textContent = `Offline (${data.summary.devices_offline})`;
     }
@@ -676,8 +676,8 @@ function renderAlertsStream(alerts) {
                     <polyline points="22 4 12 14.01 9 11.01" stroke-width="2" stroke-linecap="round"
                         stroke-linejoin="round" />
                 </svg>
-                <p style="font-size: 0.9rem; font-weight: 500; color: #94a3b8; margin: 0 0 4px 0;">Semua Sistem Normal</p>
-                <span style="font-size: 0.75rem; color: #64748b;">Tidak ada alert aktif yang memerlukan mitigasi</span>
+                <p style="font-size: 0.9rem; font-weight: 500; color: #94a3b8; margin: 0 0 4px 0;">All Systems Operational</p>
+                <span style="font-size: 0.75rem; color: #64748b;">No active alerts requiring mitigation</span>
             </div>
         `;
         return;
@@ -705,9 +705,9 @@ function renderAlertsStream(alerts) {
             <div class="alert-footer">
                 ${isAck ? `
                     <span class="badge-ack-state text-success">✓ Acknowledged</span>
-                    <span class="text-muted-xs">${escapeHtml(alert.acknowledged_by || 'Terkonfirmasi')}</span>
+                    <span class="text-muted-xs">${escapeHtml(alert.acknowledged_by || 'Confirmed')}</span>
                 ` : `
-                    <span class="badge-ack-state text-warning">Menunggu ACK</span>
+                    <span class="badge-ack-state text-warning">Pending ACK</span>
                 `}
             </div>
         </div>`;
@@ -737,7 +737,7 @@ async function acknowledgeAlert(alertId) {
         if (footer) {
             footer.innerHTML = `
                 <span class="badge-ack-state text-success">✓ Acknowledged</span>
-                <span class="text-muted-xs">Terkonfirmasi</span>
+                <span class="text-muted-xs">Confirmed</span>
             `;
         }
     }
@@ -748,7 +748,7 @@ async function acknowledgeAlert(alertId) {
         if (current > 0) kpiAlerts.textContent = current - 1;
     }
 
-    showToast(`Alert #${alertId} berhasil di-acknowledge.`);
+    showToast(`Alert #${alertId} successfully acknowledged.`);
 }
 
 /* --------------------------------------------------------------------------
@@ -818,7 +818,7 @@ function updateSearchDropdown(query) {
 
         dropdown.innerHTML = `
             <div class="search-dropdown-header">
-                <span>Ditemukan ${matches.length} Perangkat</span>
+                <span>${matches.length} Devices Found</span>
             </div>
             <ul class="search-dropdown-list">
                 ${itemsHtml}
@@ -828,10 +828,10 @@ function updateSearchDropdown(query) {
     } else {
         dropdown.innerHTML = `
             <div class="search-dropdown-header">
-                <span>Ditemukan 0 Perangkat</span>
+                <span>0 Devices Found</span>
             </div>
             <div class="search-dropdown-empty">
-                Tidak ada perangkat dengan vendor atau site "<strong>${escapeHtml(query)}</strong>".
+                No devices found matching vendor or site "<strong>${escapeHtml(query)}</strong>".
             </div>
         `;
         dropdown.style.display = 'block';
@@ -870,9 +870,9 @@ function applyTableFilters() {
     const tbody = document.getElementById('deviceTableBody');
     let emptyRow = document.getElementById('noResultsRow');
     if (visibleCount === 0 && rows.length > 0) {
-        let emptyMessage = statusFilter === 'DOWN' ? 'Tidak ada perangkat yang sedang offline.' :
-                           statusFilter === 'UP' ? 'Tidak ada perangkat yang sedang online.' :
-                           'Tidak ada perangkat yang tersedia.';
+        let emptyMessage = statusFilter === 'DOWN' ? 'No devices currently offline.' :
+                           statusFilter === 'UP' ? 'No devices currently online.' :
+                           'No devices available.';
 
         if (!emptyRow && tbody) {
             emptyRow = document.createElement('tr');

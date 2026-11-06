@@ -224,7 +224,7 @@ def get_aruba_telemetry(ip_address="192.168.1.10"):
             "ip_address": st.get("current_ip_address", {}).get("octets", ip_address),
             "total_ram": f"{round(st.get('total_memory_in_bytes', 333492736) / (1024*1024))} MB",
             "poe_consumption": f"{st.get('total_poe_consumption', 45)} W (Active)",
-            "fan_status": "Normal" if not st.get("sys_fan_status") else "Tidak Normal",
+            "fan_status": "Normal" if not st.get("sys_fan_status") else "Abnormal",
             "uplink_port": f"Port {st.get('uplink_port', '1')}",
             "dns_servers": ", ".join(dns_servers) if dns_servers else "192.168.1.1, 203.142.84.222",
             "dns_mode": dns.get("dns_config_mode", "DHCP").replace("DCM_", "")
@@ -714,7 +714,7 @@ def _fetch_huawei_hardware_ssh(ip_address="192.168.1.155"):
         m_fan = re.findall(r'FAN\d+\s+\[\s*\d+\s*\]\s+\w+\s+\w+\s+(\w+)', out)
         if m_fan:
             all_ok = all(s.lower() == 'normal' for s in m_fan)
-            parsed['fan_status'] = "Normal" if all_ok else "Tidak Normal"
+            parsed['fan_status'] = "Normal" if all_ok else "Abnormal"
 
         # 8. Uplink Port & LLDP
         m_up = re.search(r'10GE1/0/1\s+\d+\s+([^\s]+)\s+([^\r\n]+)', out)
@@ -1204,7 +1204,7 @@ def _fetch_paloalto_hardware_api(ip_address="192.168.1.11"):
                             temp_core = round(float(deg), 1)
                 
                 has_alarm = any(entry.findtext('alarm', '').lower() == 'true' for entry in e_root.findall('.//thermal/Slot1/entry'))
-                status_fan = 'OK' if not has_alarm else 'Tidak Normal'
+                status_fan = 'OK' if not has_alarm else 'Abnormal'
                 t_u_str = f"{temp_u49}°C" if temp_u49 is not None else "41.5°C"
                 t_c_str = f"{temp_core}°C" if temp_core is not None else "46.0°C"
                 parsed["fan_status"] = f"Fanless Passive Cooling (Temp: {t_u_str} / Core: {t_c_str} {status_fan})"

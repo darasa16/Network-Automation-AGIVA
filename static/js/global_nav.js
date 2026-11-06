@@ -62,10 +62,10 @@
                         <circle cx="11" cy="11" r="8"></circle>
                         <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                     </svg>
-                    Tidak ditemukan perangkat, alert, insiden/cooldown, backup, bot telegram, atau menu dengan kata kunci "<strong>${escapeHtml(query)}</strong>"
+                    No devices, alerts, incidents, backups, or commands found matching "<strong>${escapeHtml(query)}</strong>"
                 </div>
                 <div class="search-dropdown-footer">
-                    <span>Tekan <kbd class="search-kbd-key">ESC</kbd> untuk menutup</span>
+                    <span>Press <kbd class="search-kbd-key">ESC</kbd> to close</span>
                 </div>
             `;
             dropdown.style.display = 'block';
@@ -78,7 +78,7 @@
         if (devices.length > 0) {
             html += `
                 <div class="search-group-header">
-                    <span>Perangkat Jaringan</span>
+                    <span>Network Devices</span>
                     <span class="search-group-count">${devices.length}</span>
                 </div>
             `;
@@ -124,7 +124,7 @@
         if (alerts.length > 0) {
             html += `
                 <div class="search-group-header">
-                    <span>Alerts Aktif (Memerlukan Intervensi)</span>
+                    <span>Active Alerts (Action Required)</span>
                     <span class="search-group-count">${alerts.length}</span>
                 </div>
             `;
@@ -204,11 +204,11 @@
                             <div class="search-item-text">
                                 <div class="search-item-title">${escapeHtml(inc.code)} • ${escapeHtml(inc.type)} - ${escapeHtml(inc.device_name)}</div>
                                 <div class="search-item-desc">
-                                    <span>Puncak: ${escapeHtml(inc.peak_metric)}</span>
+                                    <span>Peak: ${escapeHtml(inc.peak_metric)}</span>
                                     <span>•</span>
-                                    <span>Durasi: ${escapeHtml(inc.duration)}</span>
+                                    <span>Duration: ${escapeHtml(inc.duration)}</span>
                                     <span>•</span>
-                                    <span>Mulai: ${escapeHtml(inc.started_at)}</span>
+                                    <span>Started: ${escapeHtml(inc.started_at)}</span>
                                 </div>
                             </div>
                         </div>
@@ -224,7 +224,7 @@
         if (backups.length > 0) {
             html += `
                 <div class="search-group-header">
-                    <span>Backup Konfigurasi</span>
+                    <span>Configuration Backups</span>
                     <span class="search-group-count">${backups.length}</span>
                 </div>
             `;
@@ -267,7 +267,7 @@
         if (telegram.length > 0) {
             html += `
                 <div class="search-group-header">
-                    <span>Integrasi Bot Telegram</span>
+                    <span>Telegram Bot Integration</span>
                     <span class="search-group-count">${telegram.length}</span>
                 </div>
             `;
@@ -308,7 +308,7 @@
         if (navItems.length > 0) {
             html += `
                 <div class="search-group-header">
-                    <span>Navigasi Menu</span>
+                    <span>Navigation Menu</span>
                     <span class="search-group-count">${navItems.length}</span>
                 </div>
             `;
@@ -342,12 +342,12 @@
         html += `
             <div class="search-dropdown-footer">
                 <div class="search-kbd-guide">
-                    <kbd class="search-kbd-key">↑</kbd> <kbd class="search-kbd-key">↓</kbd> Navigasi
+                    <kbd class="search-kbd-key">↑</kbd> <kbd class="search-kbd-key">↓</kbd> Navigate
                     <span style="margin: 0 4px;">•</span>
-                    <kbd class="search-kbd-key">↵</kbd> Pilih
+                    <kbd class="search-kbd-key">↵</kbd> Select
                 </div>
                 <div>
-                    <kbd class="search-kbd-key">ESC</kbd> Tutup
+                    <kbd class="search-kbd-key">ESC</kbd> Close
                 </div>
             </div>
         `;

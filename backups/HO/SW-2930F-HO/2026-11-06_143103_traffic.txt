@@ -1,0 +1,10 @@
+======================================================================
+AGIVA NOC RAW SNAPSHOT [TRAFFIC]
+Waktu Eksekusi: 2026-11-06 14:31:03 WIB
+Perangkat     : SW-2930F-HO (192.168.1.10)
+Site          : HO
+Kategori      : Traffic
+Pemicu        : Telegram (@Dara Samsara)
+======================================================================
+
+Module not present for port or invalid port: statistics

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
@@ -31,8 +31,8 @@
                     <circle cx="11" cy="11" r="8"></circle>
                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                 </svg>
-                <input type="text" id="globalSearch" placeholder="Cari perangkat, alert, data" autocomplete="off" />
-                <button type="button" id="clearSearchBtn" class="search-clear-btn" title="Reset pencarian">&times;</button>
+                <input type="text" id="globalSearch" placeholder="Search devices, alerts, data..." autocomplete="off" />
+                <button type="button" id="clearSearchBtn" class="search-clear-btn" title="Clear search">&times;</button>
                 <div id="searchResultsDropdown" class="search-results-dropdown" style="display: none;"></div>
             </div>
         </div>
@@ -67,7 +67,7 @@
                     <span class="user-name">{{ session.get('username', 'Administrator') }}</span>
                     <span class="user-role">{{ session.get('role', 'Administrator') }}</span>
                 </div>
-                <a href="{{ url_for('logout') }}" class="btn-logout" title="Sign Out / Keluar Sesi">
+                <a href="{{ url_for('logout') }}" class="btn-logout" title="Sign Out">
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                         <polyline points="16 17 21 12 16 7"></polyline>
@@ -91,7 +91,7 @@
         // Update live clock display
         function updateClock() {
             const now = new Date();
-            const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' WIB';
+            const timeStr = now.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' WIB';
             const clockEl = document.getElementById('clockDisplay');
             if (clockEl) clockEl.textContent = timeStr;
         }

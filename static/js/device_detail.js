@@ -194,7 +194,7 @@ function saveDeviceMetricsToStorage(devId, range, data) {
         localStorage.setItem(`agiva_device_${devId}_latest_${range}`, JSON.stringify(data));
         localStorage.setItem(`agiva_device_${devId}_latest_general`, JSON.stringify(data));
     } catch (e) {
-        console.warn('Gagal menyimpan cache device ke localStorage:', e);
+        console.warn('Failed to save device cache to localStorage:', e);
     }
 }
 
@@ -319,7 +319,7 @@ function showToast(message, type = 'success') {
     toast.innerHTML = `
         <span style="font-size: 16px;">${icon}</span>
         <div class="toast-content" style="flex:1;">
-            <div class="toast-title">${type === 'success' ? 'Berhasil' : 'Peringatan'}</div>
+            <div class="toast-title">${type === 'success' ? 'Success' : 'Warning'}</div>
             <div class="toast-message">${message}</div>
         </div>
         <button class="toast-close" onclick="this.parentElement.remove()">&times;</button>
@@ -345,7 +345,7 @@ async function fetchDeviceMetrics(isManual = false) {
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" style="display:inline-block; vertical-align:middle; margin-right:4px; animation: spin 0.8s linear infinite;">
                 <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
             </svg>
-            <span>Memperbarui...</span>
+            <span>Refreshing...</span>
         `;
     }
 
@@ -361,7 +361,7 @@ async function fetchDeviceMetrics(isManual = false) {
             if (isManual && btn) {
                 btn.disabled = false;
                 btn.innerHTML = originalBtnHtml;
-                showToast('Endpoint backend offline. Menampilkan data snapshot terakhir.', 'warning');
+                showToast('Backend offline. Displaying latest snapshot data.', 'warning');
             }
             return;
         }
@@ -376,7 +376,7 @@ async function fetchDeviceMetrics(isManual = false) {
                 <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#ffffff" stroke-width="2.5" style="display:inline-block; vertical-align:middle; margin-right:4px;">
                     <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
-                <span style="color: #ffffff;">Terperbarui</span>
+                <span style="color: #ffffff;">Updated</span>
             `;
             setTimeout(() => {
                 btn.disabled = false;
@@ -392,7 +392,7 @@ async function fetchDeviceMetrics(isManual = false) {
         if (isManual && btn) {
             btn.disabled = false;
             btn.innerHTML = originalBtnHtml;
-            showToast('Backend server offline. Menampilkan data snapshot terakhir.', 'warning');
+            showToast('Backend server offline. Displaying latest snapshot data.', 'warning');
         }
     }
 }

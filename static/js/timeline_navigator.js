@@ -54,11 +54,11 @@ class TimelineNavigator {
                 <canvas class="timeline-nav-canvas"></canvas>
                 <div class="timeline-nav-curtain curtain-left"></div>
                 <div class="timeline-nav-brush">
-                    <div class="timeline-nav-handle handle-left" title="Tarik untuk memperluas / mempersempit batas kiri">
+                    <div class="timeline-nav-handle handle-left" title="Drag to expand / contract left boundary">
                         <span class="handle-bar"></span>
                     </div>
-                    <div class="timeline-nav-window" title="Geser ke kiri / kanan untuk menyisir waktu kejadian"></div>
-                    <div class="timeline-nav-handle handle-right" title="Tarik untuk memperluas / mempersempit batas kanan">
+                    <div class="timeline-nav-window" title="Drag to scrub timeline range"></div>
+                    <div class="timeline-nav-handle handle-right" title="Drag to expand / contract right boundary">
                         <span class="handle-bar"></span>
                     </div>
                 </div>

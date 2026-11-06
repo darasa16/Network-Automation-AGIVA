@@ -163,7 +163,7 @@ def check_authentication():
     if not flask_session.get('logged_in'):
         # Jika request API/AJAX, kembalikan response 401 JSON
         if request.path.startswith('/api/'):
-            return jsonify({'error': 'Unauthorized', 'message': 'Sesi login telah berakhir'}), 401
+            return jsonify({'error': 'Unauthorized', 'message': 'Login session expired'}), 401
         # Redirect ke halaman login dengan parameter next
         return redirect(url_for('login', next=request.full_path if request.query_string else request.path))
 
@@ -189,7 +189,7 @@ def login():
                 return redirect(next_url)
             return redirect(url_for('dashboard'))
         else:
-            error = 'Username atau password tidak sesuai. Silakan periksa kembali.'
+            error = 'Invalid username or password. Please verify your credentials.'
 
     return render_template('login.html', error=error)
 
@@ -349,7 +349,7 @@ def api_ack_alert(alert_id):
     alert = session.query(Alert).filter(Alert.alert_id == alert_id).first()
     if not alert:
         session.close()
-        return jsonify({"success": False, "message": "Alert ID tidak ditemukan"}), 404
+        return jsonify({"success": False, "message": "Alert ID not found"}), 404
 
     alert.acknowledged = True
     alert.acknowledged_by = "Web NOC Admin"
@@ -374,7 +374,7 @@ def api_ack_alert(alert_id):
     return jsonify({
         "success": True,
         "alert_id": alert_id,
-        "message": f"Alert #{alert_id} berhasil di-acknowledge dan dicatat ke basis data."
+        "message": f"Alert #{alert_id} acknowledged successfully and recorded to database."
     })
 
 @app.route('/api/resolve/<int:alert_id>', methods=['POST'])
@@ -383,7 +383,7 @@ def api_resolve_alert(alert_id):
     alert = session.query(Alert).filter(Alert.alert_id == alert_id).first()
     if not alert:
         session.close()
-        return jsonify({"success": False, "message": "Alert ID tidak ditemukan"}), 404
+        return jsonify({"success": False, "message": "Alert ID not found"}), 404
 
     now = datetime.now()
     alert.resolved_at = now
@@ -440,7 +440,7 @@ def api_resolve_alert(alert_id):
         "success": True,
         "alert_id": alert_id,
         "incident_id": inc_id,
-        "message": f"Alert #{alert_id} berhasil di-resolve dan dipindahkan ke Incident Log."
+        "message": f"Alert #{alert_id} resolved successfully and moved to Incident Log."
     })
 
 # 3. TELEGRAM BOT INTEGRATION ROUTES
@@ -532,16 +532,16 @@ def telegram_page():
     }
 
     commands = [
-        {"command": "/start", "params": "-", "desc": "Memulai interaksi bot dan menampilkan panduan operasional perintah."},
-        {"command": "/status", "params": "-", "desc": "Melihat ringkasan status kesehatan seluruh perangkat jaringan dan alert aktif."},
-        {"command": "/devices", "params": "-", "desc": "Menampilkan tabel inventaris seluruh perangkat jaringan."},
-        {"command": "/device", "params": "<nama_device>", "desc": "Melihat metrik real-time CPU, RAM, & Uptime suatu device tertentu."},
-        {"command": "/alerts", "params": "-", "desc": "Menampilkan daftar gangguan dan anomali jaringan aktif yang memerlukan mitigasi."},
-        {"command": "/ack", "params": "<alert_id>", "desc": "Melakukan konfirmasi penanganan alert anomali oleh teknisi bertugas."},
-        {"command": "/resolve", "params": "<alert_id>", "desc": "Menandai bahwa gangguan jaringan telah selesai ditangani."},
-        {"command": "/backup", "params": "<nama_device> [kategori]", "desc": "Memicu backup manual konfigurasi & log audit (pilihan: all, system, config, traffic, threat)."},
-        {"command": "/user", "params": "-", "desc": "Melihat profil teknisi, Chat ID Telegram, dan verifikasi status otorisasi Whitelist."},
-        {"command": "/approve", "params": "<username> [role]", "desc": "(Khusus Admin) Menyetujui akses teknisi baru dengan role pilihan."}
+        {"command": "/start", "params": "-", "desc": "Start bot interaction and show operational command guide."},
+        {"command": "/status", "params": "-", "desc": "View health summary of all network devices and active alerts."},
+        {"command": "/devices", "params": "-", "desc": "Display inventory table of all registered network devices."},
+        {"command": "/device", "params": "<device_name>", "desc": "View real-time CPU, RAM, & Uptime telemetry for a specific device."},
+        {"command": "/alerts", "params": "-", "desc": "Display list of active network anomalies requiring mitigation."},
+        {"command": "/ack", "params": "<alert_id>", "desc": "Acknowledge anomaly alert handling by duty engineer."},
+        {"command": "/resolve", "params": "<alert_id>", "desc": "Mark network incident as resolved and move to log."},
+        {"command": "/backup", "params": "<device_name> [category]", "desc": "Trigger manual backup for config & audit logs (options: all, system, config, traffic, threat)."},
+        {"command": "/user", "params": "-", "desc": "View engineer profile, Telegram Chat ID, and Whitelist authorization status."},
+        {"command": "/approve", "params": "<username> [role]", "desc": "(Admin only) Approve new engineer access with specified role."}
     ]
 
     return render_template(
@@ -600,9 +600,9 @@ def api_test_telegram_alert():
     
     msg_content = (
         "*TEST CONNECTIVITY*\n\n"
-        "Ini adalah pesan diagnostik uji coba Ping dari Dashboard.\n"
-        "Jalur komunikasi Telegram Bot berfungsi dengan sangat baik.\n"
-        f"Waktu: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} WIB"
+        "This is a diagnostic Ping test message from the Dashboard.\n"
+        "Telegram Bot communication channel is operational.\n"
+        f"Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} WIB"
     )
     
     ok, delivery_status = send_telegram_broadcast(msg_content)
@@ -621,9 +621,9 @@ def api_test_telegram_alert():
     session.close()
 
     if ok:
-        return jsonify({"success": True, "message": "Pesan Test Connectivity berhasil dikirim!"})
+        return jsonify({"success": True, "message": "Test connectivity message sent successfully!"})
     else:
-        return jsonify({"success": False, "message": f"Gagal: {delivery_status}"}), 500
+        return jsonify({"success": False, "message": f"Failed: {delivery_status}"}), 500
 
 # 4. BACKUP ROUTE
 
@@ -659,16 +659,7 @@ def backups_page():
         time_str = b.timestamp.strftime("%H:%M:%S WIB") if b.timestamp else "-"
         date_str = b.timestamp.strftime("%d/%m/%Y") if b.timestamp else "-"
         full_date_str = b.timestamp.strftime("%Y-%m-%d %H:%M:%S WIB") if b.timestamp else "-"
-
-        # Format rentang waktu
-        raw_range = getattr(b, 'data_range', None)
-        if raw_range and ('—' in raw_range or '-' in raw_range) and 'Snapshot' not in raw_range:
-            range_str = raw_range
-        elif b.timestamp:
-            yesterday = b.timestamp - timedelta(days=1)
-            range_str = f"{yesterday.strftime('%d/%m %H:%M:%S')} — {b.timestamp.strftime('%d/%m %H:%M:%S WIB')}"
-        else:
-            range_str = "01/11 02:00:00 — 02/11 02:00:00 WIB"
+        timestamp_str = b.timestamp.strftime("%d/%m/%Y %H:%M:%S WIB") if b.timestamp else "-"
 
         backups_data.append({
             "id": b.backup_id,
@@ -678,10 +669,10 @@ def backups_page():
             "time": time_str,
             "date": date_str,
             "full_date": full_date_str,
+            "timestamp": timestamp_str,
             "file": b.file_path,
             "size": b.file_size,
             "trigger_by": getattr(b, 'trigger_by', 'Scheduler (02:00 WIB)') or 'Scheduler (02:00 WIB)',
-            "data_range": range_str,
             "status": b.status
         })
 
@@ -725,7 +716,7 @@ def api_backup_download(backup_id):
     try:
         b = session.query(BackupHistory).filter(BackupHistory.backup_id == backup_id).first()
         if not b:
-            return jsonify({"error": "Data backup tidak ditemukan"}), 404
+            return jsonify({"error": "Backup data not found"}), 404
         
         clean_path = b.file_path.strip("/\\")
         parts = clean_path.split("/")
@@ -734,7 +725,7 @@ def api_backup_download(backup_id):
         
         abs_path = os.path.join(BACKUP_BASE_DIR, *parts)
         if not os.path.exists(abs_path):
-            return jsonify({"error": "Berkas fisik belum tersimpan di disk server"}), 404
+            return jsonify({"error": "Physical file not yet stored on server disk"}), 404
             
         filename = os.path.basename(abs_path)
         return send_file(abs_path, as_attachment=True, download_name=filename)
@@ -847,17 +838,17 @@ def api_search():
         status_raw = (inc.status or "").lower()
         peak_metric_val = (inc.peak_metric or "").lower()
         
-        # Label representatif
+        # Representative label
         if inc.status == 'AUTO_COOLDOWN':
             status_label = "Cooldown"
         elif inc.status == 'RESOLVED_ALERT':
             status_label = "Resolved"
         elif inc.status == 'ACTIVE_MONITORING':
-            status_label = "Pemantauan"
+            status_label = "Monitoring"
         elif inc.status in ['ACTIVE_ALERT', 'ESCALATED_TO_ALERT']:
-            status_label = "Alert Aktif"
+            status_label = "Active Alert"
         else:
-            status_label = inc.status or "Insiden"
+            status_label = inc.status or "Incident"
 
         if (clean_q in inc_code or 
             clean_q == str(inc.incident_id) or
@@ -870,19 +861,19 @@ def api_search():
             ql in peak_metric_val or
             (ql == "cooldown" and inc.status == 'AUTO_COOLDOWN') or
             (ql == "resolved" and inc.status == 'RESOLVED_ALERT') or
-            (ql in ["alert aktif", "active_alert", "alert"] and inc.status in ['ACTIVE_ALERT', 'ESCALATED_TO_ALERT']) or
-            (ql in ["insiden", "incident"])):
+            (ql in ["active alert", "active_alert", "alert"] and inc.status in ['ACTIVE_ALERT', 'ESCALATED_TO_ALERT']) or
+            (ql in ["incident", "incidents"])):
             
             dur_str = "-"
             if inc.duration_seconds and inc.duration_seconds > 0:
                 m, s = divmod(inc.duration_seconds, 60)
                 h, m = divmod(m, 60)
                 if h > 0:
-                    dur_str = f"{h}j {m}m"
+                    dur_str = f"{h}h {m}m"
                 elif m > 0:
-                    dur_str = f"{m}m {s}d"
+                    dur_str = f"{m}m {s}s"
                 else:
-                    dur_str = f"{s} dtk"
+                    dur_str = f"{s}s"
 
             matched_incidents.append({
                 "id": inc.incident_id,
@@ -944,16 +935,16 @@ def api_search():
                 break
 
     tg_commands = [
-        {"cmd": "/start", "desc": "Memulai interaksi bot & panduan operasional"},
-        {"cmd": "/status", "desc": "Ringkasan status kesehatan seluruh perangkat"},
-        {"cmd": "/devices", "desc": "Tabel inventaris seluruh perangkat jaringan"},
-        {"cmd": "/device", "desc": "Metrik real-time CPU, RAM, & Uptime suatu device"},
-        {"cmd": "/alerts", "desc": "Daftar gangguan & anomali jaringan aktif"},
-        {"cmd": "/ack", "desc": "Konfirmasi penanganan alert oleh teknisi"},
-        {"cmd": "/resolve", "desc": "Tandai gangguan jaringan telah selesai"},
-        {"cmd": "/backup", "desc": "Memicu backup running-config manual"},
-        {"cmd": "/user", "desc": "Profil teknisi & verifikasi Whitelist"},
-        {"cmd": "/approve", "desc": "Menyetujui akses teknisi baru"}
+        {"cmd": "/start", "desc": "Start bot interaction & operational guide"},
+        {"cmd": "/status", "desc": "Health summary of all network devices"},
+        {"cmd": "/devices", "desc": "Inventory table of all network devices"},
+        {"cmd": "/device", "desc": "Real-time CPU, RAM, & Uptime for a device"},
+        {"cmd": "/alerts", "desc": "List of active network anomalies & alerts"},
+        {"cmd": "/ack", "desc": "Acknowledge alert handling by engineer"},
+        {"cmd": "/resolve", "desc": "Mark network incident as resolved"},
+        {"cmd": "/backup", "desc": "Trigger manual running-config backup"},
+        {"cmd": "/user", "desc": "Engineer profile & Whitelist verification"},
+        {"cmd": "/approve", "desc": "Approve new engineer access role"}
     ]
     for c in tg_commands:
         if len(matched_telegram) >= 6:
@@ -964,7 +955,7 @@ def api_search():
             clean_cmd = c["cmd"].replace('/', '')
             matched_telegram.append({
                 "id": c["cmd"],
-                "title": f"Perintah Bot: {c['cmd']}",
+                "title": f"Bot Command: {c['cmd']}",
                 "desc": c["desc"],
                 "status": "COMMAND",
                 "url": f"/telegram#cmd-row-{clean_cmd}"
@@ -993,31 +984,31 @@ def api_search():
     # 5. Quick Navigation Menus
     navigation_items = [
         {
-            "title": "Dashboard Monitoring",
-            "desc": "Grafik metrik real-time dan inventaris seluruh perangkat",
-            "category": "Menu Navigasi",
-            "keywords": ["dashboard", "monitoring", "home", "beranda", "grafik", "metrik", "switch", "traffic", "cpu"],
+            "title": "Monitoring Dashboard",
+            "desc": "Real-time metrics and full device inventory",
+            "category": "Navigation Menu",
+            "keywords": ["dashboard", "monitoring", "home", "graph", "metrics", "switch", "traffic", "cpu"],
             "url": "/"
         },
         {
-            "title": "Pusat Alert & Insiden",
-            "desc": "Daftar alarm aktif, riwayat incident log, dan cooldown perangkat",
-            "category": "Menu Navigasi",
-            "keywords": ["alert", "alerts", "insiden", "incident", "alarm", "anomali", "ack", "notif", "peringatan", "cooldown", "resolved"],
+            "title": "Alert & Incident Center",
+            "desc": "Active alarms, incident log history, and device cooldown",
+            "category": "Navigation Menu",
+            "keywords": ["alert", "alerts", "incident", "alarm", "anomaly", "ack", "notif", "warning", "cooldown", "resolved"],
             "url": "/alerts"
         },
         {
-            "title": "Backup Konfigurasi",
-            "desc": "Manajemen riwayat file backup running-config perangkat",
-            "category": "Menu Navigasi",
-            "keywords": ["backup", "backups", "cadangan", "config", "konfigurasi", "file", "download", "diff"],
+            "title": "Configuration Backups",
+            "desc": "Manage device running-config backups and audit archives",
+            "category": "Navigation Menu",
+            "keywords": ["backup", "backups", "config", "configuration", "file", "download", "diff"],
             "url": "/backups"
         },
         {
-            "title": "Integrasi Bot Telegram",
-            "desc": "Panel kontrol bot, whitelist teknisi, dan audit log dispatch",
-            "category": "Menu Navigasi",
-            "keywords": ["telegram", "bot", "whitelist", "chat", "command", "perintah", "teknisi", "noc"],
+            "title": "Telegram Bot Integration",
+            "desc": "Bot control center, technician whitelist, and dispatch audit logs",
+            "category": "Navigation Menu",
+            "keywords": ["telegram", "bot", "whitelist", "chat", "command", "engineer", "noc"],
             "url": "/telegram"
         }
     ]

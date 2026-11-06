@@ -1302,6 +1302,40 @@ tr.search-target-highlight td:first-child {
     background: rgba(255, 255, 255, 0.03);
 }
 
+.data-table tbody tr.empty-state-row:hover {
+    background: transparent !important;
+}
+
+/* Universal Empty State for Data Tables (Matches All Systems Operational style) */
+.empty-state-row td {
+    text-align: center !important;
+    padding: 40px 10px !important;
+    white-space: normal !important;
+    background: transparent !important;
+}
+
+.empty-state-row td p,
+.empty-state-row td .empty-title {
+    font-size: 0.9rem !important;
+    font-weight: 500 !important;
+    color: #94a3b8 !important;
+    margin: 0 0 4px 0 !important;
+}
+
+.empty-state-row td span,
+.empty-state-row td .empty-sub {
+    font-size: 0.75rem !important;
+    color: #64748b !important;
+    display: inline-block;
+}
+
+.empty-state-row td svg {
+    margin: 0 auto 8px auto;
+    display: block;
+    color: #10b981 !important;
+    stroke: #10b981 !important;
+}
+
 .device-name-wrap {
     display: flex;
     align-items: center;

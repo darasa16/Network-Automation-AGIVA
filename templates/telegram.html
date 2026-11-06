@@ -9,8 +9,8 @@
     <div class="page-header-row">
         <div>
             <h2>Telegram Bot Integration & Notification</h2>
-            <p class="sub-text">Panel integrasi Bot Telegram untuk eskalasi notifikasi insiden jaringan, kontrol
-                otorisasi teknisi, dan audit riwayat dispatch log</p>
+            <p class="sub-text">Telegram Bot integration panel for network incident escalation, technician authorization controls, and dispatch audit logs
+</p>
         </div>
         <div class="header-tools">
             <button class="btn-action btn-send-test" onclick="simulateTelegramAlert()">
@@ -42,14 +42,14 @@
 
         <div class="kpi-card">
             <div class="kpi-info">
-                <span class="kpi-label">Koneksi Bot API</span>
+                <span class="kpi-label">Bot API Connection</span>
                 <div id="bot-status-container">
                     {% if bot.is_online %}
                     <h3 style="color: #fff; margin: 6px 0;">Online</h3>
-                    <span class="kpi-sub">Polling Aktif</span>
+                    <span class="kpi-sub">Active Polling</span>
                     {% else %}
                     <h3 style="color: #fff; margin: 6px 0;">Offline</h3>
-                    <span class="kpi-sub">Polling Tidak Aktif</span>
+                    <span class="kpi-sub">Inactive Polling</span>
                     {% endif %}
                 </div>
             </div>
@@ -69,7 +69,7 @@
 
             <div class="kpi-card">
                 <div class="kpi-info">
-                    <span class="kpi-label">Target Broadcast Grup</span>
+                    <span class="kpi-label">Broadcast Target Group</span>
                     <h3 style="color: #fff; margin: 6px 0;">{{ bot.chat_group }}</h3>
                     <span class="kpi-sub">Chat ID: <code>{{ bot.chat_id }}</code></span>
                 </div>
@@ -85,10 +85,10 @@
 
             <div class="kpi-card">
                 <div class="kpi-info">
-                    <span class="kpi-label">Total Alert Terkirim</span>
+                    <span class="kpi-label">Total Alerts Dispatched</span>
                     <h3 id="active-alerts-pushed" style="color: #fff; margin: 6px 0;">{{ bot.active_alerts_pushed }}
-                        Pesan</h3>
-                    <span class="kpi-sub">Anti-spam Cooldown Aktif</span>
+                        Messages</h3>
+                    <span class="kpi-sub">Anti-spam Cooldown Active</span>
                 </div>
                 <div class="kpi-icon-box icon-red">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -116,7 +116,7 @@
                             <tr>
                                 <th>Chat ID</th>
                                 <th>Username</th>
-                                <th>Nama Teknisi</th>
+                                <th>Technician Name</th>
                                 <th>Role</th>
                                 <th>Status</th>
                             </tr>
@@ -129,7 +129,7 @@
 
                 <!-- Pagination Bar for Whitelist -->
                 <div class="pagination-container" id="tgWhitelistPaginationContainer">
-                    <div id="tgWhitelistPageInfo" class="pagination-info">Menampilkan 0 engineer</div>
+                    <div id="tgWhitelistPageInfo" class="pagination-info">Showing 0 engineers</div>
                     <div class="pagination-controls" id="tgWhitelistPaginationControls"></div>
                 </div>
             </div>
@@ -138,17 +138,17 @@
             <div class="table-panel">
                 <div class="panel-header">
                     <div>
-                        <h3 class="panel-title">Daftar Perintah Agiva Network Automation Channel</h3>
-                        <span class="panel-sub">Perintah interaktif yang dapat diketik oleh user</span>
+                        <h3 class="panel-title">Agiva Network Automation Command Reference</h3>
+                        <span class="panel-sub">Interactive commands available for engineers</span>
                     </div>
                 </div>
                 <div class="table-responsive table-no-scroll">
                     <table class="data-table" id="tgCommandsTable">
                         <thead>
                             <tr>
-                                <th>Perintah</th>
-                                <th>Parameter</th>
-                                <th>Fungsi Operasional</th>
+                                <th>Command</th>
+                                <th>Parameters</th>
+                                <th>Operational Function</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -157,6 +157,19 @@
                                 <td><code style="color:#10b981; font-weight:700;">{{ c.command }}</code></td>
                                 <td><code>{{ c.params }}</code></td>
                                 <td class="col-desc">{{ c.desc }}</td>
+                            </tr>
+                            {% else %}
+                            <tr class="empty-state-row">
+                                <td colspan="3" style="text-align: center; padding: 40px 10px;">
+                                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;">
+                                        <svg style="width: 40px; height: 40px; stroke: #10b981; color: #10b981; fill: none; margin: 0 auto 8px auto; display: block;" viewBox="0 0 24 24" stroke-width="1.5">
+                                            <polyline points="4 17 10 11 4 5"></polyline>
+                                            <line x1="12" y1="19" x2="20" y2="19"></line>
+                                        </svg>
+                                        <p style="font-size: 0.9rem; font-weight: 500; color: #94a3b8; margin: 0 0 4px 0;">No Commands Available</p>
+                                        <span style="font-size: 0.75rem; color: #64748b;">No interactive bot automation commands registered</span>
+                                    </div>
+                                </td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -169,9 +182,9 @@
         <div class="table-panel">
             <div class="panel-header">
                 <div>
-                    <h3 class="panel-title">Riwayat Pengiriman Pesan & Notifikasi Telegram</h3>
-                    <span class="panel-sub">Catatan audit log pengiriman alert anomali dan respon command selama 30
-                        hari</span>
+                    <h3 class="panel-title">Telegram Message & Notification Dispatch History</h3>
+                    <span class="panel-sub">30-day audit log of anomaly alerts and command responses
+</span>
                 </div>
                 <button class="btn-refresh" onclick="refreshTelegram(this)">
                     <svg class="refresh-icon" viewBox="0 0 24 24" width="14" height="14" fill="none"
@@ -186,11 +199,11 @@
                 <table class="data-table" id="tgLogsTable">
                     <thead>
                         <tr>
-                            <th>Waktu</th>
-                            <th>Tipe Pesan</th>
+                            <th>Timestamp</th>
+                            <th>Message Type</th>
                             <th>Target Chat ID</th>
-                            <th>Isi Pesan Notifikasi</th>
-                            <th>Status Pengiriman</th>
+                            <th>Message Content</th>
+                            <th>Delivery Status</th>
                         </tr>
                     </thead>
                     <tbody id="tgLogsBody">
@@ -201,7 +214,7 @@
 
             <!-- Pagination Bar -->
             <div class="pagination-container" id="tgPaginationContainer">
-                <div id="tgPageInfo" class="pagination-info">Menampilkan 0 log</div>
+                <div id="tgPageInfo" class="pagination-info">Showing 0 logs</div>
                 <div class="pagination-controls" id="tgPaginationControls"></div>
             </div>
         </div>
@@ -417,7 +430,20 @@
             const totalWhitelist = allWhitelist.length;
 
             if (totalWhitelist === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 25px; color: #94a3b8;">Belum ada akun engineer yang terdaftar di whitelist.</td></tr>`;
+                tbody.innerHTML = `<tr class="empty-state-row">
+                    <td colspan="5" style="text-align:center; padding: 40px 10px;">
+                        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;">
+                            <svg style="width: 40px; height: 40px; stroke: #10b981; color: #10b981; fill: none; margin: 0 auto 8px auto; display: block;" viewBox="0 0 24 24" stroke-width="1.5">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="9" cy="7" r="4"></circle>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                            </svg>
+                            <p style="font-size: 0.9rem; font-weight: 500; color: #94a3b8; margin: 0 0 4px 0;">No Engineers Whitelisted</p>
+                            <span style="font-size: 0.75rem; color: #64748b;">No engineer accounts registered in Telegram bot whitelist</span>
+                        </div>
+                    </td>
+                </tr>`;
                 if (paginationContainer) paginationContainer.style.display = 'none';
                 return;
             }
@@ -454,7 +480,7 @@
             tbody.innerHTML = html;
 
             if (pageInfo) {
-                pageInfo.innerText = `Menampilkan ${startIndex + 1} - ${endIndex} dari ${totalWhitelist} engineer (Halaman ${currentWhitelistPage} dari ${totalPages})`;
+                pageInfo.innerText = `Showing ${startIndex + 1} - ${endIndex} of ${totalWhitelist} engineers (Page ${currentWhitelistPage} of ${totalPages})`;
             }
 
             renderWhitelistPaginationButtons(totalPages);
@@ -585,7 +611,18 @@
             const totalLogs = allLogs.length;
 
             if (totalLogs === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 25px; color: #94a3b8;">Belum ada riwayat pengiriman pesan dalam 30 hari terakhir.</td></tr>`;
+                tbody.innerHTML = `<tr class="empty-state-row">
+                    <td colspan="5" style="text-align:center; padding: 40px 10px;">
+                        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;">
+                            <svg style="width: 40px; height: 40px; stroke: #10b981; color: #10b981; fill: none; margin: 0 auto 8px auto; display: block;" viewBox="0 0 24 24" stroke-width="1.5">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                            <p style="font-size: 0.9rem; font-weight: 500; color: #94a3b8; margin: 0 0 4px 0;">No Dispatch History</p>
+                            <span style="font-size: 0.75rem; color: #64748b;">No message dispatch history recorded in the last 30 days</span>
+                        </div>
+                    </td>
+                </tr>`;
                 if (paginationContainer) paginationContainer.style.display = 'none';
                 return;
             }
@@ -612,7 +649,7 @@
                 const isSuccess = rawStatus.toUpperCase() === 'SENT' || rawStatus.toUpperCase() === 'SUCCESS';
                 const badgeClass = isSuccess ? 'badge-up' : 'badge-down';
                 const displayStatus = isSuccess ? 'SENT' : 'FAILED';
-                const statusTitle = isSuccess ? 'Pesan berhasil terkirim' : `Gagal: ${rawStatus}`;
+                const statusTitle = isSuccess ? 'Message sent successfully' : `Failed: ${rawStatus}`;
 
                 html += `
                 <tr id="msglog-row-${l.id}">
@@ -630,7 +667,7 @@
             tbody.innerHTML = html;
 
             if (pageInfo) {
-                pageInfo.innerText = `Menampilkan ${startIndex + 1} - ${endIndex} dari ${totalLogs} log (Halaman ${currentLogPage} dari ${totalPages})`;
+                pageInfo.innerText = `Showing ${startIndex + 1} - ${endIndex} of ${totalLogs} logs (Page ${currentLogPage} of ${totalPages})`;
             }
 
             renderPaginationButtons(totalPages);
@@ -732,19 +769,19 @@
             try {
                 const btn = document.querySelector('.btn-send-test');
                 btn.disabled = true;
-                btn.innerHTML = 'Mengirim...';
+                btn.innerHTML = 'Sending...';
 
                 const res = await fetch('/api/telegram/test-alert', { method: 'POST' });
                 const data = await res.json();
 
                 if (data.success) {
-                    showToast(data.message || 'Alert simulasi berhasil dikirim ke Telegram!', 'success');
+                    showToast(data.message || 'Simulated alert sent to Telegram successfully!', 'success');
                     setTimeout(() => fetchTelegramLogs(), 800);
                 } else {
-                    showToast(data.message || 'Gagal mengirim alert', 'error');
+                    showToast(data.message || 'Failed to send alert', 'error');
                 }
             } catch (err) {
-                showToast('Error koneksi saat kirim alert', 'error');
+                showToast('Connection error while sending alert', 'error');
             } finally {
                 const btn = document.querySelector('.btn-send-test');
                 if (btn) {
@@ -767,7 +804,7 @@
                     <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" style="display:inline-block; vertical-align:middle; margin-right:4px; animation: spin 0.8s linear infinite;">
                         <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
                     </svg>
-                    <span>Memperbarui...</span>
+                    <span>Refreshing...</span>
                 `;
             }
             setTimeout(() => {
@@ -782,7 +819,7 @@
 
                 const alertsCountElem = document.getElementById('active-alerts-pushed');
                 if (alertsCountElem && data.active_alerts_pushed !== undefined) {
-                    alertsCountElem.innerText = data.active_alerts_pushed + ' Pesan';
+                    alertsCountElem.innerText = data.active_alerts_pushed + ' Messages';
                 }
 
                 if (data.logs) {
@@ -794,10 +831,10 @@
                 const iconBox = document.getElementById('bot-icon-box');
                 if (statusContainer && data.bot_is_online !== undefined) {
                     if (data.bot_is_online) {
-                        statusContainer.innerHTML = '<h3 style="color: #fff; margin: 6px 0;">Online</h3><span class="kpi-sub">Polling Aktif</span>';
+                        statusContainer.innerHTML = '<h3 style="color: #fff; margin: 6px 0;">Online</h3><span class="kpi-sub">Active Polling</span>';
                         if (iconBox) iconBox.className = 'kpi-icon-box icon-green';
                     } else {
-                        statusContainer.innerHTML = '<h3 style="color: #fff; margin: 6px 0;">Offline</h3><span class="kpi-sub">Polling Tidak Aktif</span>';
+                        statusContainer.innerHTML = '<h3 style="color: #fff; margin: 6px 0;">Offline</h3><span class="kpi-sub">Inactive Polling</span>';
                         if (iconBox) iconBox.className = 'kpi-icon-box icon-red';
                     }
                 }

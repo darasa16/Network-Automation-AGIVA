@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
@@ -190,9 +190,9 @@
                     <circle cx="11" cy="11" r="8"></circle>
                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                 </svg>
-                <input type="text" id="globalSearch" placeholder="Cari perangkat, alert, data" autocomplete="off" />
+                <input type="text" id="globalSearch" placeholder="Search devices, alerts, data..." autocomplete="off" />
                 <button type="button" id="clearSearchBtn" class="search-clear-btn"
-                    title="Reset pencarian">&times;</button>
+                    title="Clear search">&times;</button>
                 <div id="searchResultsDropdown" class="search-results-dropdown" style="display: none;"></div>
             </div>
         </div>
@@ -217,7 +217,7 @@
                     <span class="user-name">{{ session.get('username', 'Administrator') }}</span>
                     <span class="user-role">{{ session.get('role', 'Administrator') }}</span>
                 </div>
-                <a href="{{ url_for('logout') }}" class="btn-logout" title="Sign Out / Keluar Sesi">
+                <a href="{{ url_for('logout') }}" class="btn-logout" title="Sign Out">
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                         <polyline points="16 17 21 12 16 7"></polyline>
@@ -238,7 +238,7 @@
             <div class="page-header-row">
                 <div>
                     <h2>Active & Sustained Alerts</h2>
-                    <p class="sub-text">Peringatan telemetri 30 hari terakhir dengan retensi data dan status penanganan operasional.</p>
+                    <p class="sub-text">Telemetry alerts from the last 30 days with data retention and operational handling status.</p>
                 </div>
                 <div class="header-tools">
                     <button class="btn-refresh" onclick="refreshAlerts(this)">
@@ -254,9 +254,9 @@
 
             <!-- Alert Filters -->
             <div class="filter-bar" id="alertsFilterBar">
-                <button class="filter-tab active" data-filter="all">Semua Alert ({{ total_alerts }})</button>
-                <button class="filter-tab" data-filter="pending">Belum ACK ({{ pending_alerts }})</button>
-                <button class="filter-tab" data-filter="acked">Sudah ACK ({{ acked_alerts }})</button>
+                <button class="filter-tab active" data-filter="all">All Alerts ({{ total_alerts }})</button>
+                <button class="filter-tab" data-filter="pending">Pending ACK ({{ pending_alerts }})</button>
+                <button class="filter-tab" data-filter="acked">Acknowledged ({{ acked_alerts }})</button>
                 <button class="filter-tab" data-filter="resolved">Resolved ({{ resolved_alerts }})</button>
             </div>
 
@@ -268,12 +268,12 @@
                             <tr>
                                 <th>ID</th>
                                 <th>Severity</th>
-                                <th>Perangkat</th>
+                                <th>Device</th>
                                 <th>IP Address</th>
-                                <th>Tipe Anomali</th>
-                                <th>Deskripsi Masalah</th>
-                                <th>Waktu Kejadian</th>
-                                <th>Status Penanganan</th>
+                                <th>Anomaly Type</th>
+                                <th>Issue Description</th>
+                                <th>Timestamp</th>
+                                <th>Resolution Status</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -302,8 +302,7 @@
                                     <span class="status-text-cell"
                                         style="color: var(--color-copper);">Acknowledged</span>
                                     {% else %}
-                                    <span class="status-text-cell" style="color: var(--color-copper);">Menunggu
-                                        ACK</span>
+                                    <span class="status-text-cell" style="color: var(--color-copper);">Pending ACK</span>
                                     {% endif %}
                                 </td>
                             </tr>
@@ -311,18 +310,18 @@
                             {% endif %}
                             <tr class="empty-state-row" id="alertsEmptyState"{% if alerts %} style="display: none;"{% endif %}>
                                 <td colspan="8" class="text-center py-4"
-                                    style="padding: 2.5rem; color: #6b7280; text-align: center;">
+                                    style="padding: 40px 10px; text-align: center;">
                                     <div
-                                        style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;">
+                                        style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;">
                                         <svg width="40" height="40" viewBox="0 0 24 24" fill="none"
                                             stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
-                                            stroke-linejoin="round" style="color: #10b981;">
+                                            stroke-linejoin="round" style="color: #10b981; margin: 0 auto 8px auto; display: block;">
                                             <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
                                             <polyline points="22 4 12 14.01 9 11.01"></polyline>
                                         </svg>
                                         <p id="alertsEmptyTitle"
-                                            style="margin: 0; font-size: 1rem; color: #9ca3af; font-weight: 500;">Semua
-                                            Sistem Normal</p>
+                                            style="margin: 0 0 4px 0; font-size: 0.9rem; color: #94a3b8; font-weight: 500;">All Systems Operational</p>
+                                        <span id="alertsEmptySub" style="font-size: 0.75rem; color: #64748b;">No active alerts requiring mitigation</span>
                                     </div>
                                 </td>
                             </tr>
@@ -332,7 +331,7 @@
 
                 <!-- Pagination Bar for Active & Sustained Alerts -->
                 <div class="pagination-container" id="alertsPaginationContainer">
-                    <div id="alertsPageInfo" class="pagination-info">Menampilkan 0 log</div>
+                    <div id="alertsPageInfo" class="pagination-info">Showing 0 logs</div>
                     <div class="pagination-controls" id="alertsPaginationControls"></div>
                 </div>
             </div>
@@ -344,15 +343,15 @@
                 <div class="page-header-row">
                     <div>
                         <h2>Incident Log & Cooldown History</h2>
-                        <p class="sub-text">Catatan insiden log dan cooldown perangkat selama 30 hari.</p>
+                        <p class="sub-text">30-day device incident and cooldown logs.</p>
                     </div>
                 </div>
 
                 <!-- Incident Filters -->
                 <div class="filter-bar" id="incidentsFilterBar">
-                    <button class="filter-tab active" data-inc-filter="all">Semua Insiden ({{ total_incidents }})</button>
+                    <button class="filter-tab active" data-inc-filter="all">All Incidents ({{ total_incidents }})</button>
                     <button class="filter-tab" data-inc-filter="cooldown">Cooldown ({{ cooldown_incidents }})</button>
-                    <button class="filter-tab" data-inc-filter="resolved">Resolved Alert ({{ resolved_incidents }})</button>
+                    <button class="filter-tab" data-inc-filter="resolved">Resolved Alerts ({{ resolved_incidents }})</button>
                 </div>
 
                 <!-- Incidents Table Panel (Tanpa Kolom Message sesuai request) -->
@@ -363,14 +362,14 @@
                                 <tr>
                                     <th>Incident ID</th>
                                     <th>Severity</th>
-                                    <th>Perangkat</th>
+                                    <th>Device</th>
                                     <th>IP Address</th>
-                                    <th>Tipe Kejadian</th>
-                                    <th>Nilai Puncak</th>
-                                    <th>Waktu Mulai</th>
-                                    <th>Waktu Selesai</th>
-                                    <th>Durasi Total</th>
-                                    <th>Status Insiden</th>
+                                    <th>Incident Type</th>
+                                    <th>Peak Value</th>
+                                    <th>Start Time</th>
+                                    <th>End Time</th>
+                                    <th>Total Duration</th>
+                                    <th>Incident Status</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -395,16 +394,16 @@
                                     <td>
                                         {% if inc.status == 'AUTO_COOLDOWN' %}
                                         <span class="status-text-cell"
-                                            style="color: var(--color-copper);">cooldown</span>
+                                            style="color: var(--color-copper);">Cooldown</span>
                                         {% elif inc.status == 'RESOLVED_ALERT' %}
                                         <span class="status-text-cell"
                                             style="color: var(--color-copper);">Resolved</span>
                                         {% elif inc.status == 'ACTIVE_MONITORING' %}
                                         <span class="status-text-cell"
-                                            style="color: var(--color-copper);">Pemantauan</span>
+                                            style="color: var(--color-copper);">Active Monitoring</span>
                                         {% elif inc.status in ['ACTIVE_ALERT', 'ESCALATED_TO_ALERT'] %}
                                         <span class="status-text-cell"
-                                            style="color: var(--color-copper);">Alert Aktif</span>
+                                            style="color: var(--color-copper);">Active Alert</span>
                                         {% else %}
                                         <span class="status-text-cell" style="color: var(--color-copper);">{{ inc.status
                                             }}</span>
@@ -415,18 +414,19 @@
                                 {% endif %}
                                 <tr class="empty-state-row" id="incidentsEmptyState"{% if incidents %} style="display: none;"{% endif %}>
                                     <td colspan="10" class="text-center py-4"
-                                        style="padding: 2.5rem; color: #6b7280; text-align: center;">
+                                        style="padding: 40px 10px; text-align: center;">
                                         <div
-                                            style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;">
+                                            style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;">
                                             <svg width="40" height="40" viewBox="0 0 24 24" fill="none"
                                                 stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
-                                                stroke-linejoin="round" style="color: #10b981;">
+                                                stroke-linejoin="round" style="color: #10b981; margin: 0 auto 8px auto; display: block;">
                                                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
                                                 <polyline points="9 12 11 14 15 10"></polyline>
                                             </svg>
                                             <p id="incidentsEmptyTitle"
-                                                style="margin: 0; font-size: 1rem; color: #9ca3af; font-weight: 500;">
-                                                Belum Ada Riwayat Insiden</p>
+                                                style="margin: 0 0 4px 0; font-size: 0.9rem; color: #94a3b8; font-weight: 500;">
+                                                No Incident History Recorded</p>
+                                            <span id="incidentsEmptySub" style="font-size: 0.75rem; color: #64748b;">All past network incidents have been resolved</span>
                                         </div>
                                     </td>
                                 </tr>
@@ -436,7 +436,7 @@
 
                     <!-- Pagination Bar for Incident Log & Cooldown History -->
                     <div class="pagination-container" id="incidentsPaginationContainer">
-                        <div id="incidentsPageInfo" class="pagination-info">Menampilkan 0 log</div>
+                        <div id="incidentsPageInfo" class="pagination-info">Showing 0 logs</div>
                         <div class="pagination-controls" id="incidentsPaginationControls"></div>
                     </div>
                 </div>
@@ -451,7 +451,7 @@
     <script>
         function updateClock() {
             const now = new Date();
-            const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' WIB';
+            const timeStr = now.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' WIB';
             const clockEl = document.getElementById('clockDisplay');
             if (clockEl) clockEl.textContent = timeStr;
         }
@@ -501,19 +501,24 @@
             const pageInfo = document.getElementById('alertsPageInfo');
             const emptyRow = document.getElementById('alertsEmptyState');
             const titleEl = document.getElementById('alertsEmptyTitle');
+            const subEl = document.getElementById('alertsEmptySub');
 
             if (totalAlerts === 0) {
                 rows.forEach(r => r.style.display = 'none');
                 if (emptyRow) emptyRow.style.display = '';
                 if (titleEl) {
                     if (currentAlertFilter === 'pending') {
-                        titleEl.textContent = 'Tidak Ada Alert Menunggu ACK';
+                        titleEl.textContent = 'No Pending ACK Alerts';
+                        if (subEl) subEl.textContent = 'All active alerts have been acknowledged';
                     } else if (currentAlertFilter === 'acked') {
-                        titleEl.textContent = 'Tidak Ada Alert yang Telah di-ACK';
+                        titleEl.textContent = 'No Acknowledged Alerts';
+                        if (subEl) subEl.textContent = 'No acknowledged alerts pending mitigation';
                     } else if (currentAlertFilter === 'resolved') {
-                        titleEl.textContent = 'Tidak Ada Alert yang Telah di-Resolve';
+                        titleEl.textContent = 'No Resolved Alerts';
+                        if (subEl) subEl.textContent = 'No resolved alert history available in this view';
                     } else {
-                        titleEl.textContent = 'Semua Sistem Normal';
+                        titleEl.textContent = 'All Systems Operational';
+                        if (subEl) subEl.textContent = 'No active alerts requiring mitigation';
                     }
                 }
                 if (paginationContainer) paginationContainer.style.display = 'none';
@@ -536,7 +541,7 @@
             });
 
             if (pageInfo) {
-                pageInfo.innerText = `Menampilkan ${startIndex + 1} - ${endIndex} dari ${totalAlerts} log (Halaman ${currentAlertsPage} dari ${totalPages})`;
+                pageInfo.innerText = `Showing ${startIndex + 1} - ${endIndex} of ${totalAlerts} logs (Page ${currentAlertsPage} of ${totalPages})`;
             }
 
             renderAlertsPaginationButtons(totalPages);
@@ -549,20 +554,19 @@
 
             let btnHtml = '';
 
-            // Tombol Prev (‹ Prev)
+            // Prev Button
             btnHtml += `<button class="pagination-nav-btn ${currentAlertsPage === 1 ? 'disabled' : ''}" 
                          onclick="gotoAlertPage(${currentAlertsPage - 1})" ${currentAlertsPage === 1 ? 'disabled' : ''}>
                          <span>&#8249;</span> <span>Prev</span>
                         </button>`;
 
-            // Penomoran Halaman dengan format cerdas (1 ... 9 [10] 11 ... 20)
+            // Smart page numbering
             if (totalPages <= 7) {
                 for (let p = 1; p <= totalPages; p++) {
                     btnHtml += `<button class="pagination-num-btn ${p === currentAlertsPage ? 'active' : ''}" 
                                  onclick="gotoAlertPage(${p})">${p}</button>`;
                 }
             } else {
-                // Selalu tampilkan halaman 1
                 btnHtml += `<button class="pagination-num-btn ${currentAlertsPage === 1 ? 'active' : ''}" 
                              onclick="gotoAlertPage(1)">1</button>`;
 
@@ -590,12 +594,11 @@
                     btnHtml += `<span class="pagination-dots">...</span>`;
                 }
 
-                // Selalu tampilkan halaman terakhir
                 btnHtml += `<button class="pagination-num-btn ${currentAlertsPage === totalPages ? 'active' : ''}" 
                              onclick="gotoAlertPage(${totalPages})">${totalPages}</button>`;
             }
 
-            // Tombol Next (Next ›)
+            // Next Button
             btnHtml += `<button class="pagination-nav-btn ${currentAlertsPage === totalPages ? 'disabled' : ''}" 
                          onclick="gotoAlertPage(${currentAlertsPage + 1})" ${currentAlertsPage === totalPages ? 'disabled' : ''}>
                          <span>Next</span> <span>&#8250;</span>
@@ -676,17 +679,21 @@
             const pageInfo = document.getElementById('incidentsPageInfo');
             const emptyRow = document.getElementById('incidentsEmptyState');
             const titleEl = document.getElementById('incidentsEmptyTitle');
+            const subEl = document.getElementById('incidentsEmptySub');
 
             if (totalIncidents === 0) {
                 rows.forEach(r => r.style.display = 'none');
                 if (emptyRow) emptyRow.style.display = '';
                 if (titleEl) {
                     if (currentIncidentFilter === 'cooldown') {
-                        titleEl.textContent = 'Tidak Ada Data Cooldown';
+                        titleEl.textContent = 'No Cooldown Data Available';
+                        if (subEl) subEl.textContent = 'No interfaces currently undergoing flapping cooldown';
                     } else if (currentIncidentFilter === 'resolved') {
-                        titleEl.textContent = 'Belum Ada Riwayat Resolved Alert';
+                        titleEl.textContent = 'No Resolved Alert History';
+                        if (subEl) subEl.textContent = 'No historical resolved incidents recorded';
                     } else {
-                        titleEl.textContent = 'Belum Ada Riwayat Insiden';
+                        titleEl.textContent = 'No Incident History Recorded';
+                        if (subEl) subEl.textContent = 'All past network incidents have been resolved';
                     }
                 }
                 if (paginationContainer) paginationContainer.style.display = 'none';
@@ -709,7 +716,7 @@
             });
 
             if (pageInfo) {
-                pageInfo.innerText = `Menampilkan ${startIndex + 1} - ${endIndex} dari ${totalIncidents} log (Halaman ${currentIncidentsPage} dari ${totalPages})`;
+                pageInfo.innerText = `Showing ${startIndex + 1} - ${endIndex} of ${totalIncidents} logs (Page ${currentIncidentsPage} of ${totalPages})`;
             }
 
             renderIncidentsPaginationButtons(totalPages);
@@ -722,20 +729,19 @@
 
             let btnHtml = '';
 
-            // Tombol Prev (‹ Prev)
+            // Prev Button
             btnHtml += `<button class="pagination-nav-btn ${currentIncidentsPage === 1 ? 'disabled' : ''}" 
                          onclick="gotoIncidentPage(${currentIncidentsPage - 1})" ${currentIncidentsPage === 1 ? 'disabled' : ''}>
                          <span>&#8249;</span> <span>Prev</span>
                         </button>`;
 
-            // Penomoran Halaman dengan format cerdas (1 ... 9 [10] 11 ... 20)
+            // Smart page numbering
             if (totalPages <= 7) {
                 for (let p = 1; p <= totalPages; p++) {
                     btnHtml += `<button class="pagination-num-btn ${p === currentIncidentsPage ? 'active' : ''}" 
                                  onclick="gotoIncidentPage(${p})">${p}</button>`;
                 }
             } else {
-                // Selalu tampilkan halaman 1
                 btnHtml += `<button class="pagination-num-btn ${currentIncidentsPage === 1 ? 'active' : ''}" 
                              onclick="gotoIncidentPage(1)">1</button>`;
 
@@ -763,12 +769,11 @@
                     btnHtml += `<span class="pagination-dots">...</span>`;
                 }
 
-                // Selalu tampilkan halaman terakhir
                 btnHtml += `<button class="pagination-num-btn ${currentIncidentsPage === totalPages ? 'active' : ''}" 
                              onclick="gotoIncidentPage(${totalPages})">${totalPages}</button>`;
             }
 
-            // Tombol Next (Next ›)
+            // Next Button
             btnHtml += `<button class="pagination-nav-btn ${currentIncidentsPage === totalPages ? 'disabled' : ''}" 
                          onclick="gotoIncidentPage(${currentIncidentsPage + 1})" ${currentIncidentsPage === totalPages ? 'disabled' : ''}>
                          <span>Next</span> <span>&#8250;</span>
@@ -843,7 +848,7 @@
                     <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" style="display:inline-block; vertical-align:middle; margin-right:4px; animation: spin 0.8s linear infinite;">
                         <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
                     </svg>
-                    <span>Memperbarui...</span>
+                    <span>Refreshing...</span>
                 `;
             }
             setTimeout(() => {
@@ -860,13 +865,13 @@
                 });
                 const data = await res.json();
                 if (data.success) {
-                    showToast(`Alert #${alertId} berhasil di-ACK!`);
+                    showToast(`Alert #${alertId} acknowledged successfully!`);
                     setTimeout(() => window.location.reload(), 800);
                 } else {
-                    showToast(data.message || 'Gagal ACK alert', true);
+                    showToast(data.message || 'Failed to acknowledge alert', true);
                 }
             } catch (err) {
-                showToast('Terjadi kesalahan jaringan saat ACK alert.', true);
+                showToast('Network error while acknowledging alert.', true);
             }
         }
 

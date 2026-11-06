@@ -418,7 +418,7 @@ def run_device_backup(device_name_query: str, category_filter: str = None, trigg
         if not dev:
             return {
                 "success": False,
-                "error": f"Perangkat '{device_name_query}' tidak ditemukan di database inventaris."
+                "error": f"Device '{device_name_query}' not found in inventory database."
             }
 
         avail_categories = get_categories_for_device(dev.vendor)
@@ -474,7 +474,7 @@ def get_backup_content(backup_id: int) -> dict:
     try:
         b = session.query(BackupHistory).filter(BackupHistory.backup_id == backup_id).first()
         if not b:
-            return {"success": False, "error": "Data backup tidak ditemukan."}
+            return {"success": False, "error": "Backup data not found."}
 
         # Convert /backups/... relative path to absolute local filesystem path
         clean_path = b.file_path.strip("/\\")
@@ -507,12 +507,12 @@ def get_backup_content(backup_id: int) -> dict:
                         "file_path": f"/backups/{site_clean}/{dev_name}/{target_file}".replace("\\", "/"),
                         "file_size": format_file_size(os.path.getsize(fallback_abs)),
                         "date": b.timestamp.strftime("%Y-%m-%d %H:%M:%S WIB"),
-                        "content": f"// [Catatan: Berkas arsip tanggal {b.timestamp.strftime('%Y-%m-%d')} tidak ditemukan di disk lokal]\n// [Menampilkan berkas arsip yang tersedia: {target_file}]\n\n" + fallback_content
+                        "content": f"// [Note: Archive file dated {b.timestamp.strftime('%Y-%m-%d')} not found on local disk]\n// [Displaying available archive file: {target_file}]\n\n" + fallback_content
                     }
 
             return {
                 "success": False,
-                "error": f"Berkas fisik belum tersimpan di disk server ({abs_path}).",
+                "error": f"Physical file not yet stored on server disk ({abs_path}).",
                 "file_path": b.file_path,
                 "device": dev_name,
                 "category": category

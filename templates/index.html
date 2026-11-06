@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
@@ -31,9 +31,9 @@
                     <circle cx="11" cy="11" r="8"></circle>
                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                 </svg>
-                <input type="text" id="globalSearch" placeholder="Cari perangkat, alert, data" autocomplete="off" />
+                <input type="text" id="globalSearch" placeholder="Search devices, alerts, data..." autocomplete="off" />
                 <button type="button" id="clearSearchBtn" class="search-clear-btn"
-                    title="Reset pencarian">&times;</button>
+                    title="Clear search">&times;</button>
                 <div id="searchResultsDropdown" class="search-results-dropdown" style="display: none;"></div>
             </div>
         </div>
@@ -58,7 +58,7 @@
                     <span class="user-name">{{ session.get('username', 'Administrator') }}</span>
                     <span class="user-role">{{ session.get('role', 'Administrator') }}</span>
                 </div>
-                <a href="{{ url_for('logout') }}" class="btn-logout" title="Sign Out / Keluar Sesi">
+                <a href="{{ url_for('logout') }}" class="btn-logout" title="Sign Out">
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                         <polyline points="16 17 21 12 16 7"></polyline>
@@ -79,7 +79,7 @@
                     <div class="kpi-info">
                         <span class="kpi-label">Total Devices</span>
                         <h2 class="kpi-value" id="kpiTotal">{{ total_devices }}</h2>
-                        <span class="kpi-sub">Inventaris Jaringan Aktif</span>
+                        <span class="kpi-sub">Active Network Inventory</span>
                     </div>
                     <div class="kpi-icon-box icon-magenta">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -122,7 +122,7 @@
                     <div class="kpi-info">
                         <span class="kpi-label">Active Alerts</span>
                         <h2 class="kpi-value" id="kpiAlerts">{{ active_alerts_count }}</h2>
-                        <span class="kpi-sub">Memerlukan Penanganan</span>
+                        <span class="kpi-sub">Action Required</span>
                     </div>
                     <div class="kpi-icon-box icon-amber">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -144,20 +144,20 @@
                     <!-- Charts Header Bar with Time-Range Selector -->
                     <div class="charts-header-bar">
                         <div class="charts-header-info">
-                            <span class="charts-header-badge">Performa Jaringan</span>
+                            <span class="charts-header-badge">Network Performance</span>
                         </div>
                         <div class="time-range-selector" id="dashboardTimeRange">
-                            <span class="time-range-label">Rentang:</span>
+                            <span class="time-range-label">Range:</span>
                             <button class="time-range-btn active" data-range="live"
-                                title="Real-time live stream sinkron database per 2 menit">
+                                title="Real-time live sync every 2 minutes">
                                 <span class="live-dot"></span> Live
                             </button>
                             <button class="time-range-btn" data-range="1h"
-                                title="Riwayat tren 1 jam kebelakang (tiap 2 menit)">1 Jam</button>
+                                title="1-hour historical trend (every 2 min)">1 Hour</button>
                             <button class="time-range-btn" data-range="12h"
-                                title="Riwayat tren 12 jam kebelakang (tiap 2 menit)">12 Jam</button>
+                                title="12-hour historical trend (every 2 min)">12 Hours</button>
                             <button class="time-range-btn" data-range="24h"
-                                title="Riwayat tren 24 jam kebelakang (tiap 2 menit)">24 Jam</button>
+                                title="24-hour historical trend (every 2 min)">24 Hours</button>
                         </div>
                     </div>
 
@@ -168,7 +168,7 @@
                             <div class="panel-header">
                                 <div>
                                     <h3 class="panel-title">CPU & Memory Utilization (%)</h3>
-                                    <span class="panel-sub">Rata-rata metrik perangkat aktif</span>
+                                    <span class="panel-sub">Average active device metrics</span>
                                 </div>
                                 <div class="chart-legend-custom">
                                     <span class="legend-tag tag-cpu"><span class="legend-color bg-cyan"></span> CPU
@@ -188,7 +188,7 @@
                             <div class="panel-header">
                                 <div>
                                     <h3 class="panel-title">Network Interface Traffic (Mbps)</h3>
-                                    <span class="panel-sub">Total throughput perangkat aktif</span>
+                                    <span class="panel-sub">Total active device throughput</span>
                                 </div>
                                 <div class="chart-legend-custom">
                                     <span class="legend-tag"><span class="legend-color bg-cyan"></span> Ingress</span>
@@ -208,10 +208,10 @@
                         <div class="panel-header table-header-flex">
                             <div>
                                 <h3 class="panel-title">Monitored Devices</h3>
-                                <span class="panel-sub">Daftar perangkat yang terpantau</span>
+                                <span class="panel-sub">List of monitored devices</span>
                             </div>
                             <div class="table-actions">
-                                <span class="badge-filter active" data-filter="all">Semua ({{ total_devices }})</span>
+                                <span class="badge-filter active" data-filter="all">All ({{ total_devices }})</span>
                                 <span class="badge-filter" data-filter="UP">Online ({{ devices_online }})</span>
                                 <span class="badge-filter" data-filter="DOWN">Offline ({{ devices_offline }})</span>
                             </div>
@@ -228,7 +228,7 @@
                                         <th class="col-status">Status</th>
                                         <th class="col-metrics">CPU &amp; RAM</th>
                                         <th class="col-uptime">Uptime</th>
-                                        <th class="col-action text-center">Aksi</th>
+                                        <th class="col-action text-center">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody id="deviceTableBody">
@@ -278,13 +278,21 @@
                                         </td>
                                         <td class="col-uptime">{{ dev.uptime }}</td>
                                         <td class="col-action text-center">
-                                            <a href="/device/{{ dev.id }}" class="btn-action btn-detail">Detail</a>
+                                            <a href="/device/{{ dev.id }}" class="btn-action btn-detail">Details</a>
                                         </td>
                                     </tr>
                                     {% else %}
-                                    <tr>
-                                        <td colspan="8" class="text-center text-muted" style="padding: 30px;">
-                                            Belum ada perangkat yang terdaftar di database.
+                                    <tr class="empty-state-row">
+                                        <td colspan="8" style="text-align: center; padding: 40px 10px;">
+                                            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;">
+                                                <svg style="width: 40px; height: 40px; stroke: #10b981; color: #10b981; fill: none; margin: 0 auto 8px auto; display: block;" viewBox="0 0 24 24" stroke-width="1.5">
+                                                    <circle cx="12" cy="12" r="10"></circle>
+                                                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                                                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                                                </svg>
+                                                <p style="font-size: 0.9rem; font-weight: 500; color: #94a3b8; margin: 0 0 4px 0;">No Devices Found</p>
+                                                <span style="font-size: 0.75rem; color: #64748b;">No network devices registered in database</span>
+                                            </div>
                                         </td>
                                     </tr>
                                     {% endfor %}
@@ -297,9 +305,9 @@
                     <div class="panel-header alerts-sidebar-header">
                         <div>
                             <h3 class="panel-title">Active & Recent Alerts</h3>
-                            <span class="panel-sub">Peringatan anomali perangkat</span>
+                            <span class="panel-sub">Device anomaly alerts</span>
                         </div>
-                        <a href="alerts.html" class="link-view-all">Lihat Semua &rarr;</a>
+                        <a href="alerts.html" class="link-view-all">View All &rarr;</a>
                     </div>
 
                     <div class="alerts-stream" id="alertsStream">
@@ -323,9 +331,9 @@
                                                         {% if alert.acknowledged %}
                                                         <span class="badge-ack-state text-success">✓ Acknowledged</span>
                                                         <span class="text-muted-xs">{{ alert.acknowledged_by or
-                                                            'Terkonfirmasi' }}</span>
+                                                            'Confirmed' }}</span>
                                                         {% else %}
-                                                        <span class="badge-ack-state text-warning">Menunggu ACK</span>
+                                                        <span class="badge-ack-state text-warning">Pending ACK</span>
                                                         {% endif %}
                                                     </div>
                                                 </div>
@@ -340,9 +348,9 @@
                                                     </svg>
                                                     <p
                                                         style="font-size: 0.9rem; font-weight: 500; color: #94a3b8; margin: 0 0 4px 0;">
-                                                        Semua Sistem Normal</p>
-                                                    <span style="font-size: 0.75rem; color: #64748b;">Tidak ada alert
-                                                        aktif yang memerlukan mitigasi</span>
+                                                        All Systems Operational</p>
+                                                    <span style="font-size: 0.75rem; color: #64748b;">No active alerts
+                                                        requiring mitigation</span>
                                                 </div>
                                                 {% endfor %}
                                             </div>
@@ -358,7 +366,7 @@
     <script>
         function updateClock() {
             const now = new Date();
-            const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' WIB';
+            const timeStr = now.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' WIB';
             const clockEl = document.getElementById('clockDisplay');
             if (clockEl) clockEl.textContent = timeStr;
         }

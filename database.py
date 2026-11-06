@@ -289,7 +289,7 @@ def seed_demo_data(session):
             "alert_id": None,
             "chat_id": lead_chat_id,
             "type": "COMMAND_REPLY",
-            "content": "Status Ringkasan: Total 8 Devices (6 Online, 2 Offline). Active Alerts: 2 pending.",
+            "content": "Status Summary: Total 8 Devices (6 Online, 2 Offline). Active Alerts: 2 pending.",
             "status": "SENT",
             "offset": 5
         },
@@ -297,7 +297,7 @@ def seed_demo_data(session):
             "alert_id": alert_objects[2].alert_id,
             "chat_id": lead_chat_id,
             "type": "COMMAND_REPLY",
-            "content": f"Alert #{alert_objects[2].alert_id} berhasil di-acknowledge oleh @darasamsara (Lead Engineer).",
+            "content": f"Alert #{alert_objects[2].alert_id} acknowledged successfully by @darasamsara (Lead Engineer).",
             "status": "SENT",
             "offset": 45
         }

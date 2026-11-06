@@ -141,18 +141,18 @@ def trigger_alert_with_antispam(session, device, alert_type, severity, message, 
         should_send = is_early_warning_telegram_enabled(alert_type)
 
         if should_send:
-            # Format pesan Real-Time Early Warning ke Telegram
+            # Format real-time early warning message to Telegram
             early_msg = (
-                f"⚡ <b>[NOC AGIVA - DETEKSI ANOMALI REAL-TIME]</b> ⚡\n\n"
-                f"📌 <b>Perangkat:</b> {device.name} ({device.ip_address})\n"
+                f"⚡ <b>[AGIVA NOC - REAL-TIME ANOMALY DETECTED]</b> ⚡\n\n"
+                f"📌 <b>Device:</b> {device.name} ({device.ip_address})\n"
                 f"📌 <b>Vendor / Site:</b> {device.vendor} ({device.site})\n"
-                f"📌 <b>Tipe Anomali:</b> {alert_type}\n"
-                f"📌 <b>Tingkat:</b> {severity}\n"
-                f"📌 <b>Nilai Metrik:</b> {metric_display}\n"
-                f"📌 <b>Waktu Deteksi:</b> {now.strftime('%Y-%m-%d %H:%M:%S')} WIB\n"
-                f"📌 <b>Status:</b> Pemantauan Aktif (Jendela Evaluasi 10 Menit)\n\n"
-                f"💡 <i>Jika pulih &lt; 10 menit, anomali dicatat ke Incident Log (Cooldown). "
-                f"Jika bertahan ≥ 10 menit, sistem akan mengeskalasi ke Active Alerts.</i>"
+                f"📌 <b>Anomaly Type:</b> {alert_type}\n"
+                f"📌 <b>Severity:</b> {severity}\n"
+                f"📌 <b>Metric Value:</b> {metric_display}\n"
+                f"📌 <b>Detection Time:</b> {now.strftime('%Y-%m-%d %H:%M:%S')} WIB\n"
+                f"📌 <b>Status:</b> Active Monitoring (10-Minute Evaluation Window)\n\n"
+                f"💡 <i>If recovered in &lt; 10 mins, anomaly is logged to Incident Log (Cooldown). "
+                f"If persistent for ≥ 10 mins, system escalates to Active Alerts.</i>"
             )
 
             ok, delivery_status = send_telegram_broadcast(early_msg, parse_mode='HTML')
@@ -213,18 +213,18 @@ def trigger_alert_with_antispam(session, device, alert_type, severity, message, 
         else:
             alert_id = existing_alert.alert_id
 
-        # Format pesan Eskalasi Darurat ke Telegram
+        # Format emergency escalation message to Telegram
         dur_mins = int(elapsed_seconds // 60)
         escalate_msg = (
-            f"🚨 <b>[NOC AGIVA - {severity} ALERT (≥ 10 MENIT)]</b> 🚨\n\n"
+            f"🚨 <b>[AGIVA NOC - {severity} ALERT (≥ 10 MINS)]</b> 🚨\n\n"
             f"📌 <b>Alert ID:</b> #{alert_id}\n"
-            f"📌 <b>Perangkat:</b> {device.name} ({device.ip_address})\n"
+            f"📌 <b>Device:</b> {device.name} ({device.ip_address})\n"
             f"📌 <b>Vendor / Site:</b> {device.vendor} ({device.site})\n"
-            f"📌 <b>Tipe Anomali:</b> {alert_type}\n"
-            f"📌 <b>Detail Masalah:</b> {message}\n"
-            f"📌 <b>Durasi Gangguan:</b> Telah berlangsung {dur_mins} menit (sejak {active_incident.started_at.strftime('%H:%M:%S')} WIB)\n"
-            f"📌 <b>Status:</b> Alert Aktif (Memerlukan Tindakan)\n\n"
-            f"💡 <i>Ketik /ack {alert_id} di Telegram Bot untuk konfirmasi penanganan tiket operasional.</i>"
+            f"📌 <b>Anomaly Type:</b> {alert_type}\n"
+            f"📌 <b>Issue Detail:</b> {message}\n"
+            f"📌 <b>Incident Duration:</b> Active for {dur_mins} mins (since {active_incident.started_at.strftime('%H:%M:%S')} WIB)\n"
+            f"📌 <b>Status:</b> Active Alert (Action Required)\n\n"
+            f"💡 <i>Type /ack {alert_id} in Telegram Bot to acknowledge operational ticket handling.</i>"
         )
 
         ok, delivery_status = send_telegram_broadcast(escalate_msg, parse_mode='HTML')
@@ -288,11 +288,11 @@ def auto_resolve_alert(session, device, alert_type, recovery_message=None):
     m, s = divmod(dur_sec, 60)
     h, m = divmod(m, 60)
     if h > 0:
-        dur_str = f"{h} jam {m} menit {s} detik"
+        dur_str = f"{h}h {m}m {s}s"
     elif m > 0:
-        dur_str = f"{m} menit {s} detik"
+        dur_str = f"{m}m {s}s"
     else:
-        dur_str = f"{s} detik"
+        dur_str = f"{s}s"
 
     is_cooldown = active_incident and (active_incident.status == 'ACTIVE_MONITORING') and (dur_sec < 600)
 
@@ -310,15 +310,15 @@ def auto_resolve_alert(session, device, alert_type, recovery_message=None):
 
         if should_send:
             cooldown_msg = (
-                f"⚡ <b>[NOC AGIVA - ANOMALI PULIH / COOLDOWN]</b> ⚡\n\n"
-                f"📌 <b>Perangkat:</b> {device.name} ({device.ip_address})\n"
+                f"⚡ <b>[AGIVA NOC - ANOMALY RECOVERED / COOLDOWN]</b> ⚡\n\n"
+                f"📌 <b>Device:</b> {device.name} ({device.ip_address})\n"
                 f"📌 <b>Vendor / Site:</b> {device.vendor} ({device.site})\n"
-                f"📌 <b>Tipe Kejadian:</b> {alert_type}\n"
-                f"📌 <b>Metrik Puncak:</b> {active_incident.peak_metric or '-'}\n"
-                f"📌 <b>Durasi Anomali:</b> {dur_str} (Pulih &lt; 10 Menit)\n"
-                f"📌 <b>Waktu Pulih:</b> {now.strftime('%Y-%m-%d %H:%M:%S')} WIB\n"
-                f"📌 <b>Status:</b> Auto-Cooldown (Dicatat ke Incident Log #{active_incident.incident_id})\n\n"
-                f"💡 <i>Lonjakan sesaat telah mereda secara normal tanpa eskalasi tiket.</i>"
+                f"📌 <b>Event Type:</b> {alert_type}\n"
+                f"📌 <b>Peak Metric:</b> {active_incident.peak_metric or '-'}\n"
+                f"📌 <b>Anomaly Duration:</b> {dur_str} (Recovered &lt; 10 Mins)\n"
+                f"📌 <b>Recovery Time:</b> {now.strftime('%Y-%m-%d %H:%M:%S')} WIB\n"
+                f"📌 <b>Status:</b> Auto-Cooldown (Recorded to Incident Log #{active_incident.incident_id})\n\n"
+                f"💡 <i>Transient spike subsided normally without ticket escalation.</i>"
             )
 
             ok, delivery_status = send_telegram_broadcast(cooldown_msg, parse_mode='HTML')
@@ -362,15 +362,15 @@ def auto_resolve_alert(session, device, alert_type, recovery_message=None):
         session.commit()
 
         recovery_msg = (
-            f"✅ <b>[NOC AGIVA - GANGGUAN PULIH (≥ 10 MENIT)]</b> ✅\n\n"
+            f"✅ <b>[AGIVA NOC - INCIDENT RESOLVED (≥ 10 MINS)]</b> ✅\n\n"
             f"📌 <b>Alert ID:</b> {alert_ref}\n"
-            f"📌 <b>Perangkat:</b> {device.name} ({device.ip_address})\n"
+            f"📌 <b>Device:</b> {device.name} ({device.ip_address})\n"
             f"📌 <b>Vendor / Site:</b> {device.vendor} ({device.site})\n"
-            f"📌 <b>Tipe Gangguan:</b> {alert_type}\n"
-            f"📌 <b>Total Durasi Gangguan:</b> {dur_str}\n"
-            f"📌 <b>Waktu Pemulihan:</b> {now.strftime('%Y-%m-%d %H:%M:%S')} WIB\n"
-            f"📌 <b>Status:</b> Resolved (Normal Kembali)\n\n"
-            f"💡 <i>{recovery_message or 'Metrik jaringan telah kembali normal ke ambang aman.'}</i>"
+            f"📌 <b>Incident Type:</b> {alert_type}\n"
+            f"📌 <b>Total Incident Duration:</b> {dur_str}\n"
+            f"📌 <b>Recovery Time:</b> {now.strftime('%Y-%m-%d %H:%M:%S')} WIB\n"
+            f"📌 <b>Status:</b> Resolved (Operational)\n\n"
+            f"💡 <i>{recovery_message or 'Network metrics returned to normal thresholds.'}</i>"
         )
 
         ok, delivery_status = send_telegram_broadcast(recovery_msg, parse_mode='HTML')
@@ -399,7 +399,7 @@ def evaluate_device_rules(session, device, metrics):
             device=device,
             alert_type="HOST_DOWN",
             severity="CRITICAL",
-            message=f"Perangkat {device.name} ({device.ip_address}) tidak merespons polling ICMP/SSH/API.",
+            message=f"Device {device.name} ({device.ip_address}) is not responding to ICMP/SSH/API polling.",
             peak_metric_val="DOWN (Unreachable)"
         )
     else:
@@ -407,7 +407,7 @@ def evaluate_device_rules(session, device, metrics):
             session=session,
             device=device,
             alert_type="HOST_DOWN",
-            recovery_message=f"Koneksi ke {device.name} ({device.ip_address}) berhasil dipulihkan (STATUS: UP)."
+            recovery_message=f"Connection to {device.name} ({device.ip_address}) restored successfully (STATUS: UP)."
         )
 
     cpu_val = float(device.cpu_usage or 0.0)
@@ -418,7 +418,7 @@ def evaluate_device_rules(session, device, metrics):
             device=device,
             alert_type="CPU_OVERLOAD",
             severity=severity,
-            message=f"Penggunaan CPU melonjak mencapai {cpu_val:.1f}% (Ambang batas: 90%).",
+            message=f"CPU utilization spiked to {cpu_val:.1f}% (Threshold: 90%).",
             peak_metric_val=f"{cpu_val:.1f}%"
         )
     elif cpu_val <= 80.0:
@@ -427,7 +427,7 @@ def evaluate_device_rules(session, device, metrics):
             session=session,
             device=device,
             alert_type="CPU_OVERLOAD",
-            recovery_message=f"Beban CPU {device.name} telah kembali normal ({cpu_val:.1f}%)."
+            recovery_message=f"CPU load on {device.name} normalized ({cpu_val:.1f}%)."
         )
 
     # 3. Evaluasi Penggunaan Memori (RAM)
@@ -439,7 +439,7 @@ def evaluate_device_rules(session, device, metrics):
             device=device,
             alert_type="MEMORY_OVERLOAD",
             severity=severity,
-            message=f"Penggunaan Memory melonjak mencapai {mem_val:.1f}% (Ambang batas: 90%).",
+            message=f"Memory utilization spiked to {mem_val:.1f}% (Threshold: 90%).",
             peak_metric_val=f"{mem_val:.1f}%"
         )
     elif mem_val <= 80.0:
@@ -448,7 +448,7 @@ def evaluate_device_rules(session, device, metrics):
             session=session,
             device=device,
             alert_type="MEMORY_OVERLOAD",
-            recovery_message=f"Penggunaan Memory {device.name} telah kembali normal ({mem_val:.1f}%)."
+            recovery_message=f"Memory utilization on {device.name} normalized ({mem_val:.1f}%)."
         )
 
     # 4. Evaluasi Latency ICMP (ms)
@@ -461,7 +461,7 @@ def evaluate_device_rules(session, device, metrics):
                 device=device,
                 alert_type="HIGH_LATENCY",
                 severity=severity,
-                message=f"Latency respons ICMP ke {device.name} melonjak mencapai {lat_val:.1f} ms (Batas normal: 5 ms).",
+                message=f"ICMP response latency to {device.name} spiked to {lat_val:.1f} ms (Normal limit: 5 ms).",
                 peak_metric_val=f"{lat_val:.1f} ms"
             )
         elif lat_val <= 5.0:
@@ -469,7 +469,7 @@ def evaluate_device_rules(session, device, metrics):
                 session=session,
                 device=device,
                 alert_type="HIGH_LATENCY",
-                recovery_message=f"Latency {device.name} telah kembali normal ({lat_val:.1f} ms)."
+                recovery_message=f"Latency to {device.name} normalized ({lat_val:.1f} ms)."
             )
 
     # 5. Evaluasi Ping Drop / Packet Loss (%)
@@ -483,7 +483,7 @@ def evaluate_device_rules(session, device, metrics):
                 device=device,
                 alert_type="PACKET_LOSS",
                 severity=severity,
-                message=f"Terdeteksi ping drop / packet loss sebesar {loss_val:.1f}% ke {device.name} (Batas normal: 5%).",
+                message=f"Detected packet loss of {loss_val:.1f}% to {device.name} (Normal limit: 5%).",
                 peak_metric_val=f"{loss_val:.1f}%"
             )
         elif loss_val <= 0.0:
@@ -491,5 +491,5 @@ def evaluate_device_rules(session, device, metrics):
                 session=session,
                 device=device,
                 alert_type="PACKET_LOSS",
-                recovery_message=f"Koneksi ke {device.name} stabil tanpa packet loss (0.0%)."
+                recovery_message=f"Connection to {device.name} stable without packet loss (0.0%)."
             )

@@ -456,7 +456,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = build_start_view()
     await update.message.reply_text(text, parse_mode=ParseMode.HTML)
     u_name = update.effective_user.username or update.effective_user.first_name if update.effective_user else "User"
-    log_telegram_message(update.effective_chat.id, "COMMAND_REPLY", f"Respon /start: Panduan operasional bot dikirim ke @{u_name}")
+    log_telegram_message(update.effective_chat.id, "COMMAND_REPLY", f"Response /start: Operational bot guide sent to @{u_name}")
 
 async def status_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Command /status: Ringkasan Telemetri Kesehatan Jaringan"""
@@ -464,7 +464,7 @@ async def status_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = build_status_view()
     await update.message.reply_text(text, parse_mode=ParseMode.HTML)
     u_name = update.effective_user.username or update.effective_user.first_name if update.effective_user else "User"
-    log_telegram_message(update.effective_chat.id, "COMMAND_REPLY", f"Respon /status: Ringkasan telemetri dikirim ke @{u_name}")
+    log_telegram_message(update.effective_chat.id, "COMMAND_REPLY", f"Response /status: Telemetry health summary sent to @{u_name}")
 
 async def devices_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Command /devices: Daftar Inventaris Seluruh Node"""
@@ -472,7 +472,7 @@ async def devices_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = build_devices_view()
     await update.message.reply_text(text, parse_mode=ParseMode.HTML)
     u_name = update.effective_user.username or update.effective_user.first_name if update.effective_user else "User"
-    log_telegram_message(update.effective_chat.id, "COMMAND_REPLY", f"Respon /devices: Inventaris node dikirim ke @{u_name}")
+    log_telegram_message(update.effective_chat.id, "COMMAND_REPLY", f"Response /devices: Node inventory list sent to @{u_name}")
 
 async def device_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Command /device <nama>: Status Detail Satu Node"""
@@ -491,7 +491,7 @@ async def device_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = build_device_detail_view(device_name)
     await update.message.reply_text(text, parse_mode=ParseMode.HTML)
     u_name = update.effective_user.username or update.effective_user.first_name if update.effective_user else "User"
-    log_telegram_message(update.effective_chat.id, "COMMAND_REPLY", f"Respon /device: Detail telemetri {device_name} dikirim ke @{u_name}")
+    log_telegram_message(update.effective_chat.id, "COMMAND_REPLY", f"Response /device: Telemetry details for {device_name} sent to @{u_name}")
 
 async def alerts_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Command /alerts: Tampilan Daftar Insiden Jaringan"""
@@ -499,7 +499,7 @@ async def alerts_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = build_alerts_view()
     await update.message.reply_text(text, parse_mode=ParseMode.HTML)
     u_name = update.effective_user.username or update.effective_user.first_name if update.effective_user else "User"
-    log_telegram_message(update.effective_chat.id, "COMMAND_REPLY", f"Respon /alerts: Daftar gangguan dikirim ke @{u_name}")
+    log_telegram_message(update.effective_chat.id, "COMMAND_REPLY", f"Response /alerts: Active alerts list sent to @{u_name}")
 
 async def ack_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Command /ack <alert_id>: Acknowledge Alert (DB + Fallback)"""
@@ -573,7 +573,7 @@ async def ack_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         log_telegram_message(
             chat_id=str(update.effective_chat.id),
             message_type="COMMAND_REPLY",
-            content=f"Alert #{alert_id_val} ({dev_name}) di-acknowledge oleh @{handler_user}.",
+            content=f"Alert #{alert_id_val} ({dev_name}) acknowledged by @{handler_user}.",
             status="SENT"
         )
         return
@@ -608,7 +608,7 @@ async def ack_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     log_telegram_message(
         chat_id=str(update.effective_chat.id),
         message_type="COMMAND_REPLY",
-        content=f"Alert #{alert['id']} ({alert['device']}) berhasil di-acknowledge oleh @{handler_user}.",
+        content=f"Alert #{alert['id']} ({alert['device']}) acknowledged successfully by @{handler_user}.",
         status="SENT"
     )
 
@@ -715,7 +715,7 @@ async def resolve_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         log_telegram_message(
             chat_id=str(update.effective_chat.id),
             message_type="COMMAND_REPLY",
-            content=f"Alert #{alert_id_val} ({dev_name}) berhasil di-resolve oleh @{handler_user} dan dipindahkan ke Incident Log.",
+            content=f"Alert #{alert_id_val} ({dev_name}) resolved by @{handler_user} and moved to Incident Log.",
             status="SENT"
         )
         return
@@ -762,7 +762,7 @@ async def resolve_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     log_telegram_message(
         chat_id=str(update.effective_chat.id),
         message_type="COMMAND_REPLY",
-        content=f"Alert #{alert['id']} ({alert['device']}) berhasil di-resolve oleh @{handler_user}.",
+        content=f"Alert #{alert['id']} ({alert['device']}) resolved successfully by @{handler_user}.",
         status="SENT"
     )
 
@@ -867,7 +867,7 @@ async def backup_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     log_telegram_message(
         chat_id=str(update.effective_chat.id),
         message_type="COMMAND_REPLY",
-        content=f"Backup & Log Archive {device_name} selesai dieksekusi oleh @{operator_user}.",
+        content=f"Backup & Log Archive for {device_name} executed by @{operator_user}.",
         status="SENT"
     )
 
@@ -922,7 +922,7 @@ async def user_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "• Ditolak: -\n\n"
                 f"Terdaftar sejak: <code>{entry.registered_at.strftime('%Y-%m-%d')}</code>"
             )
-            log_telegram_message(update.effective_chat.id, "COMMAND_REPLY", f"Respon /user: Pengecekan profil teknisi @{raw_username or full_name} (ID: {user_id})")
+            log_telegram_message(update.effective_chat.id, "COMMAND_REPLY", f"Response /user: Engineer profile check for @{raw_username or full_name} (ID: {user_id})")
             await update.message.reply_text(reply_msg, parse_mode=ParseMode.HTML)
             return
 
@@ -1048,7 +1048,7 @@ async def approve_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         msg = f"Akun {html.escape(username_tag)} berhasil di-approve sebagai {html.escape(eng_role)}."
         await update.message.reply_text(msg)
-        log_telegram_message(update.effective_chat.id, "COMMAND_REPLY", f"Respon /approve: Akun {username_tag} di-approve sebagai {eng_role} oleh Admin")
+        log_telegram_message(update.effective_chat.id, "COMMAND_REPLY", f"Response /approve: Account {username_tag} approved as {eng_role} by Admin")
 
     except Exception as e:
         try:

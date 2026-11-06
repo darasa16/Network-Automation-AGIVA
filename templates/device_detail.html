@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detail Perangkat - {{ device.name }}</title>
+    <title>Device Details - {{ device.name }}</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -32,9 +32,9 @@
                     <circle cx="11" cy="11" r="8"></circle>
                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                 </svg>
-                <input type="text" id="globalSearch" placeholder="Cari perangkat, alert, data" autocomplete="off" />
+                <input type="text" id="globalSearch" placeholder="Search devices, alerts, data..." autocomplete="off" />
                 <button type="button" id="clearSearchBtn" class="search-clear-btn"
-                    title="Reset pencarian">&times;</button>
+                    title="Clear search">&times;</button>
                 <div id="searchResultsDropdown" class="search-results-dropdown" style="display: none;"></div>
             </div>
         </div>
@@ -59,7 +59,7 @@
                     <span class="user-name">{{ session.get('username', 'Administrator') }}</span>
                     <span class="user-role">{{ session.get('role', 'Administrator') }}</span>
                 </div>
-                <a href="{{ url_for('logout') }}" class="btn-logout" title="Sign Out / Keluar Sesi">
+                <a href="{{ url_for('logout') }}" class="btn-logout" title="Sign Out">
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                         <polyline points="16 17 21 12 16 7"></polyline>
@@ -74,7 +74,7 @@
     <main class="main-container">
         <div class="detail-container">
             <div class="page-top-nav">
-                <a href="/" class="back-link">&larr; Kembali ke Dashboard</a>
+                <a href="/" class="back-link">&larr; Back to Dashboard</a>
                 <div class="device-actions">
                     <button class="btn-refresh" id="btnRefreshDevice" onclick="fetchDeviceMetrics(true)">
                         <svg class="refresh-icon" viewBox="0 0 24 24" width="14" height="14" fill="none"
@@ -134,22 +134,21 @@
             <div class="specs-panel">
                 <div class="panel-header">
                     <div>
-                        <h3 class="panel-title">Spesifikasi Sistem</h3>
-                        <span class="panel-sub">Informasi identitas hardware, firmware, dan operasional perangkat
-                            fisik</span>
+                        <h3 class="panel-title">System Specifications</h3>
+                        <span class="panel-sub">Hardware identity, firmware, and operational specs of physical device</span>
                     </div>
                 </div>
                 <div class="specs-grid">
                     <div class="spec-item">
-                        <span class="spec-label">Model Perangkat</span>
+                        <span class="spec-label">Device Model</span>
                         <span class="spec-value" id="specModel">{{ specs.model or '-' }}</span>
                     </div>
                     <div class="spec-item">
-                        <span class="spec-label">Nomor Seri (Serial No.)</span>
+                        <span class="spec-label">Serial Number</span>
                         <span class="spec-value" id="specSerial">{{ specs.serial or '-' }}</span>
                     </div>
                     <div class="spec-item">
-                        <span class="spec-label">Versi Firmware (OS)</span>
+                        <span class="spec-label">Firmware Version (OS)</span>
                         <span class="spec-value" id="specFirmware">{{ specs.firmware or '-' }}</span>
                     </div>
                     <div class="spec-item">
@@ -157,27 +156,27 @@
                         <span class="spec-value" id="specHwRev">{{ specs.hardware_rev or '-' }}</span>
                     </div>
                     <div class="spec-item">
-                        <span class="spec-label">Total RAM Sistem</span>
+                        <span class="spec-label">Total System RAM</span>
                         <span class="spec-value" id="specRam">{{ specs.total_ram or '-' }}</span>
                     </div>
                     <div class="spec-item">
-                        <span class="spec-label">Total Konsumsi PoE</span>
+                        <span class="spec-label">Total PoE Consumption</span>
                         <span class="spec-value text-amber" id="specPoe">{{ specs.poe_consumption or '-' }}</span>
                     </div>
                     <div class="spec-item">
-                        <span class="spec-label">Status Pendingin (Fan)</span>
+                        <span class="spec-label">Cooling Fan Status</span>
                         <span class="spec-value" id="specFan">{{ specs.fan_status or 'Normal (OK)' }}</span>
                     </div>
                     <div class="spec-item">
-                        <span class="spec-label">Port Uplink Utama</span>
+                        <span class="spec-label">Primary Uplink Port</span>
                         <span class="spec-value" id="specUplink">{{ specs.uplink_port or '-' }}</span>
                     </div>
                     <div class="spec-item">
-                        <span class="spec-label">Server DNS</span>
+                        <span class="spec-label">DNS Servers</span>
                         <span class="spec-value" id="specDns">{{ specs.dns_servers or '-' }}</span>
                     </div>
                     <div class="spec-item">
-                        <span class="spec-label">Mode Konfigurasi DNS</span>
+                        <span class="spec-label">DNS Configuration Mode</span>
                         <span class="spec-value" id="specDnsMode">{{ specs.dns_mode or 'DHCP' }}</span>
                     </div>
                 </div>
@@ -242,20 +241,20 @@
             <div class="resource-graphs-section">
                 <div class="charts-header-bar">
                     <div class="charts-header-info">
-                        <span class="charts-header-badge">Performa &amp; Diagnostik {{ dev_type }}</span>
+                        <span class="charts-header-badge">{{ dev_type }} Performance &amp; Diagnostics</span>
                     </div>
                     <div class="time-range-selector" id="deviceTimeRange">
-                        <span class="time-range-label">Rentang:</span>
+                        <span class="time-range-label">Range:</span>
                         <button class="time-range-btn active" data-range="live"
-                            title="Real-time live stream sinkron database per 2 menit">
+                            title="Real-time live sync every 2 minutes">
                             <span class="live-dot"></span> Live
                         </button>
                         <button class="time-range-btn" data-range="1h"
-                            title="Riwayat tren 1 jam kebelakang (tiap 2 menit)">1 Jam</button>
+                            title="1-hour historical trend (every 2 min)">1 Hour</button>
                         <button class="time-range-btn" data-range="12h"
-                            title="Riwayat tren 12 jam kebelakang (tiap 2 menit)">12 Jam</button>
+                            title="12-hour historical trend (every 2 min)">12 Hours</button>
                         <button class="time-range-btn" data-range="24h"
-                            title="Riwayat tren 24 jam kebelakang (tiap 2 menit)">24 Jam</button>
+                            title="24-hour historical trend (every 2 min)">24 Hours</button>
                     </div>
                 </div>
 
@@ -274,9 +273,9 @@
                                 </h3>
                                 <span class="panel-sub">
                                     {% if 'palo' in device.vendor.lower() %}
-                                    Utilisasi prosesor inspeksi paket trafik (Data Plane) &amp; alokasi OS RAM
+                                    Packet inspection processing utilization (Data Plane) &amp; OS RAM allocation
                                     {% else %}
-                                    Utilisasi beban komputasi inti &amp; alokasi OS RAM (termasuk buffer/cache kernel)
+                                    Core computational load &amp; OS RAM allocation (including kernel buffer/cache)
                                     {% endif %}
                                 </span>
                             </div>
@@ -304,8 +303,7 @@
                                     Throughput Uplink - Port 1
                                     {% endif %}
                                 </h3>
-                                <span class="panel-sub">Lalu lintas antarmuka jalur utama backbone (Ingress &amp;
-                                    Egress)</span>
+                                <span class="panel-sub">Backbone uplink traffic (Ingress &amp; Egress)</span>
                             </div>
                             <div class="chart-legend-custom">
                                 <span class="legend-tag"><span class="legend-color bg-cyan"></span> Ingress</span>
@@ -325,14 +323,14 @@
                     <div class="chart-panel">
                         <div class="panel-header">
                             <div>
-                                <h3 class="panel-title">Buffer Hardware {{ dev_type }}</h3>
+                                <h3 class="panel-title">{{ dev_type }} Hardware Buffer</h3>
                                 <span class="panel-sub">
                                     {% if 'huawei' in device.vendor.lower() %}
-                                    Utilisasi antrean QoS buffer ASIC (Current vs Peak Watermark)
+                                    ASIC QoS buffer queue utilization (Current vs Peak Watermark)
                                     {% elif 'palo' in device.vendor.lower() %}
-                                    Utilisasi antrean packet buffer on-chip &amp; packet descriptor pool
+                                    On-chip packet buffer queue &amp; packet descriptor pool utilization
                                     {% else %}
-                                    Utilisasi antrean packet buffer ASIC &amp; buffer control plane
+                                    ASIC packet buffer queue &amp; control plane buffer utilization
                                     {% endif %}
                                 </span>
                             </div>
@@ -351,9 +349,9 @@
                     <div class="chart-panel">
                         <div class="panel-header">
                             <div>
-                                <h3 class="panel-title">Integritas Transmisi Fisik</h3>
-                                <span class="panel-sub">Monitoring anomali transmisi frame error &amp; antrean drop
-                                    (Akumulasi {{ summary.total_ports or 28 }} Port)</span>
+                                <h3 class="panel-title">Physical Transmission Integrity</h3>
+                                <span class="panel-sub">Frame error transmission anomaly &amp; queue drop monitoring
+                                    (Accumulated {{ summary.total_ports or 28 }} Ports)</span>
                             </div>
                             <div class="chart-legend-custom">
                                 <span class="legend-tag"><span class="legend-color bg-cyan"></span> TX Errors</span>
@@ -374,8 +372,8 @@
                     <div class="chart-panel">
                         <div class="panel-header">
                             <div>
-                                <h3 class="panel-title">Latensi Jaringan (ICMP Ping RTT)</h3>
-                                <span class="panel-sub">Waktu respons transmisi bolak-balik (Round-Trip Time) via ICMP Echo Request</span>
+                                <h3 class="panel-title">Network Latency (ICMP Ping RTT)</h3>
+                                <span class="panel-sub">Round-Trip Time (RTT) response via ICMP Echo Request</span>
                             </div>
                             <div class="chart-legend-custom">
                                 <span class="legend-tag"><span class="legend-color bg-cyan"></span> RTT (ms)</span>
@@ -391,8 +389,8 @@
                     <div class="chart-panel">
                         <div class="panel-header">
                             <div>
-                                <h3 class="panel-title">Ping Drop / Packet Loss (%)</h3>
-                                <span class="panel-sub">Persentase kegagalan pengiriman paket ICMP (Request Time Out / Anomali Jalur)</span>
+                                <h3 class="panel-title">Packet Loss / Ping Drop (%)</h3>
+                                <span class="panel-sub">ICMP packet failure rate (Request Time Out / Path Anomaly)</span>
                             </div>
                             <div class="chart-legend-custom">
                                 <span class="legend-tag"><span class="legend-color bg-orange"></span> Drop (%)</span>
@@ -411,18 +409,18 @@
                 <div class="panel-header" style="flex-direction: column; align-items: flex-start; gap: 4px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                         <div>
-                            <h3 class="panel-title">Status Seluruh Port Perangkat</h3>
+                            <h3 class="panel-title">Device Port Status Overview</h3>
                         </div>
                     </div>
 
                     <!-- Port Filter Tabs & Search Controls -->
                     <div class="table-controls-row" style="width: 100%;">
                         <div class="port-filter-tabs" id="portFilterTabs">
-                            <button class="port-filter-btn active" data-filter="all">Semua Port ({{ summary.total_ports
+                            <button class="port-filter-btn active" data-filter="all">All Ports ({{ summary.total_ports
                                 or 28 }})</button>
-                            <button class="port-filter-btn" data-filter="UP">Port Up ({{ summary.up_ports or 22
+                            <button class="port-filter-btn" data-filter="UP">Ports Up ({{ summary.up_ports or 22
                                 }})</button>
-                            <button class="port-filter-btn" data-filter="DOWN">Port Down ({{ summary.down_ports or 6
+                            <button class="port-filter-btn" data-filter="DOWN">Ports Down ({{ summary.down_ports or 6
                                 }})</button>
                             {% if 'palo' not in device.vendor.lower() %}
                             <button class="port-filter-btn" data-filter="sfp">Fiber 10G SFP+ ({{ summary.sfp_ports or 4
@@ -441,15 +439,15 @@
                         <thead>
                             <tr>
                                 <th>Interface</th>
-                                <th>Tipe</th>
-                                <th>Status Operasional</th>
-                                <th>Perangkat Terhubung (LLDP Neighbor)</th>
+                                <th>Type</th>
+                                <th>Operational Status</th>
+                                <th>Connected Neighbor (LLDP)</th>
                                 <th>Speed</th>
                                 <th>Throughput Tx</th>
                                 <th>Throughput Rx</th>
-                                <th title="Total akumulasi byte fisik register hardware sejak perangkat boot / counter di-reset">Bytes Tx / Rx (Kumulatif)</th>
+                                <th title="Total physical hardware register byte accumulation since device boot / counter reset">Bytes Tx / Rx (Cumulative)</th>
                                 <th>PoE Power</th>
-                                <th title="Counter fisik register hardware: Tx Error (Kirim) / Rx Error (Terima) / Tx Drops (Buffer Egress)">Errors (Tx / Rx) / Drops</th>
+                                <th title="Physical hardware register counter: Tx Error (Send) / Rx Error (Receive) / Tx Drops (Buffer Egress)">Errors (Tx / Rx) / Drops</th>
                             </tr>
                         </thead>
                         <tbody id="portsTableBody">
@@ -526,6 +524,19 @@
                                 </td>
                                 <td><span>{{ "{:,}".format(p.errors_tx).replace(',', '.') }} / {{ "{:,}".format(p.errors_rx).replace(',', '.') }} / {{ "{:,}".format(p.drops_tx).replace(',', '.') }}</span></td>
                             </tr>
+                            {% else %}
+                            <tr class="empty-state-row">
+                                <td colspan="9" style="text-align: center; padding: 40px 10px;">
+                                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;">
+                                        <svg style="width: 40px; height: 40px; stroke: #10b981; color: #10b981; fill: none; margin: 0 auto 8px auto; display: block;" viewBox="0 0 24 24" stroke-width="1.5">
+                                            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                                            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                                        </svg>
+                                        <p style="font-size: 0.9rem; font-weight: 500; color: #94a3b8; margin: 0 0 4px 0;">No Interfaces Found</p>
+                                        <span style="font-size: 0.75rem; color: #64748b;">No network interface telemetry available for this device</span>
+                                    </div>
+                                </td>
+                            </tr>
                             {% endfor %}
                         </tbody>
                     </table>
@@ -540,7 +551,7 @@
     <script>
         function updateClock() {
             const now = new Date();
-            const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' WIB';
+            const timeStr = now.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' WIB';
             const clockEl = document.getElementById('clockDisplay');
             if (clockEl) clockEl.textContent = timeStr;
         }
