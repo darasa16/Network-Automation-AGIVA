@@ -100,7 +100,7 @@ def fetch_aruba_log_or_config(ip: str, user: str, pwd: str, category: str, *args
     elif cat_lower == "config":
         cmd = "show running-config"
     elif cat_lower == "traffic":
-        cmd = "show interfaces statistics"
+        cmd = "show interfaces"
     elif cat_lower == "threat":
         cmd = "show port-security"
     else:
@@ -273,7 +273,7 @@ def fetch_palo_alto_log_or_config(ip: str, user: str, pwd: str, category: str, *
         }
         with ConnectHandler(**device_params) as net_connect:
             net_connect.send_command("set cli pager off")
-            cmd = f"show log {cat_lower} direction equal backward lines 500"
+            cmd = f"show log {cat_lower} direction equal backward"
             output = net_connect.send_command(cmd)
             return output
     except Exception as e:
