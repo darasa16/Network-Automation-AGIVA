@@ -1,10 +1,10 @@
 ======================================================================
 AGIVA NOC RAW SNAPSHOT [SYSTEM]
-Waktu Eksekusi: 2026-11-06 14:16:11 WIB
-Perangkat     : FW-PA220-1 (192.168.1.11)
+Execution Time: 2026-11-06 14:16:11 WIB
+Device        : FW-PA220-1 (192.168.1.11)
 Site          : HO Gateway
-Kategori      : System
-Pemicu        : Telegram (@Dara Samsara)
+Category      : System
+Triggered By  : Telegram (@Dara Samsara)
 ======================================================================
 
 <response status="success"><result>

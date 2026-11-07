@@ -1,22 +1,20 @@
 ======================================================================
 AGIVA NOC RAW SNAPSHOT [THREAT]
-Waktu Eksekusi: 2026-11-06 14:35:09 WIB
-Perangkat     : SW-S5735-CORNER (192.168.1.155)
+Execution Time: 2026-11-06 14:35:09 WIB
+Device        : SW-S5735-CORNER (192.168.1.155)
 Site          : Corner
-Kategori      : Threat
-Pemicu        : Telegram (@Dara Samsara)
+Category      : Threat
+Triggered By  : Telegram (@Dara Samsara)
 ======================================================================
 
-
-Info: The max number of VTY users is 5, the number of current VTY users online is 1, and total number of terminal users online is 1.
-      The current login time is 2026-11-06 14:34:56+07:00.
-<SW-S5735-CORNER>screen-length 0 temporary
-Info: The configuration takes effect on the current user terminal interface only.
-<SW-S5735-CORNER>display port-security
---------------------------------------------------------------------------------
-SecurePort           MaxSecureAddr CurrentAddr SecurityViolation ProtectAction
-                           (count)     (count)           (count)
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-Total Secured MAC Addresses in System: 0
-<SW-S5735-CORNER>
+--------------------------------------------------------------------------------
+
+SecurePort           MaxSecureAddr CurrentAddr SecurityViolation ProtectAction
+
+                           (count)     (count)           (count)
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+
+Total Secured MAC Addresses in System: 0

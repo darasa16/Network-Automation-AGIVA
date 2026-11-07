@@ -122,7 +122,7 @@ def init_db():
             conn.execute(text("ALTER TABLE device_status_logs ADD COLUMN IF NOT EXISTS packet_loss FLOAT DEFAULT 0.0;"))
             conn.execute(text("ALTER TABLE backup_history ADD COLUMN IF NOT EXISTS category VARCHAR(50) DEFAULT 'System';"))
             conn.execute(text("ALTER TABLE backup_history ADD COLUMN IF NOT EXISTS trigger_by VARCHAR(100) DEFAULT 'Scheduler (02:00 WIB)';"))
-            conn.execute(text("ALTER TABLE backup_history ADD COLUMN IF NOT EXISTS data_range VARCHAR(100) DEFAULT '01/11 02:00:00 — 02/11 02:00:00 WIB';"))
+            conn.execute(text("ALTER TABLE backup_history ADD COLUMN IF NOT EXISTS data_range VARCHAR(100) DEFAULT 'Snapshot';"))
             conn.execute(text("UPDATE backup_history SET data_range = TO_CHAR(COALESCE(timestamp, NOW()) - INTERVAL '1 day', 'DD/MM HH24:MI:SS') || ' — ' || TO_CHAR(COALESCE(timestamp, NOW()), 'DD/MM HH24:MI:SS') || ' WIB' WHERE data_range IS NULL OR data_range = '24 Jam Terakhir' OR data_range LIKE 'Snapshot%' OR data_range NOT LIKE '%:%';"))
             conn.commit()
     except Exception as e:
@@ -145,194 +145,41 @@ def init_db():
         session.close()
 
 def seed_demo_data(session):
+    import yaml
     from models import Device, DeviceStatusLog, Alert, TelegramWhitelist, TelegramMessageLog, BackupHistory
 
-    # 1. Seed Network Devices (MikroTik RouterOS & Cisco IOS)
-    devices_data = [
-        {"name": "Router-Core-01", "ip": "192.168.1.1", "vendor": "MikroTik", "site": "Data Center HQ", "status": "UP", "cpu": 34.5, "mem": 48.2, "trf": 145.2, "uptime": "42 days, 14 hours"},
-        {"name": "Switch-Dist-01", "ip": "192.168.1.2", "vendor": "Cisco", "site": "Data Center HQ", "status": "UP", "cpu": 22.0, "mem": 39.1, "trf": 88.4, "uptime": "89 days, 06 hours"},
-        {"name": "Router-Edge-01", "ip": "192.168.1.3", "vendor": "MikroTik", "site": "Gateway IDC", "status": "UP", "cpu": 58.7, "mem": 64.3, "trf": 210.8, "uptime": "15 days, 02 hours"},
-        {"name": "Router-Branch-Sby", "ip": "10.10.20.1", "vendor": "MikroTik", "site": "Surabaya Branch", "status": "UP", "cpu": 18.2, "mem": 31.0, "trf": 45.6, "uptime": "4 days, 11 hours"},
-        {"name": "Switch-Access-Bdg", "ip": "10.20.30.2", "vendor": "Cisco", "site": "Bandung Site", "status": "DOWN", "cpu": 0.0, "mem": 0.0, "trf": 0.0, "uptime": "Offline"},
-        {"name": "Router-Backup-01", "ip": "192.168.1.254", "vendor": "Cisco", "site": "Data Center HQ", "status": "UP", "cpu": 12.4, "mem": 28.5, "trf": 12.1, "uptime": "120 days, 18 hours"},
-        {"name": "Firewall-Ext-01", "ip": "192.168.100.1", "vendor": "Cisco", "site": "DMZ Gateway", "status": "DOWN", "cpu": 0.0, "mem": 0.0, "trf": 0.0, "uptime": "Offline"},
-        {"name": "Router-Distribution-02", "ip": "10.10.10.1", "vendor": "MikroTik", "site": "Medan Branch", "status": "UP", "cpu": 41.2, "mem": 52.8, "trf": 64.0, "uptime": "28 days, 09 hours"}
-    ]
-
+    # 1. Sync Network Devices from devices.yaml
+    yaml_path = os.path.join(os.path.dirname(__file__), 'devices.yaml')
     dev_objects = []
-    for d in devices_data:
-        dev = Device(
-            name=d["name"],
-            ip_address=d["ip"],
-            vendor=d["vendor"],
-            site=d["site"],
-            status=d["status"],
-            cpu_usage=d["cpu"],
-            mem_usage=d["mem"],
-            traffic_mbps=d["trf"],
-            uptime=d["uptime"]
-        )
-        session.add(dev)
-        dev_objects.append(dev)
-    
-    session.flush()
+    if os.path.exists(yaml_path):
+        with open(yaml_path, 'r') as file:
+            data = yaml.safe_load(file)
+            if data and 'devices' in data:
+                for d_info in data['devices']:
+                    existing = session.query(Device).filter_by(ip_address=d_info.get('ip_address')).first()
+                    if not existing:
+                        new_dev = Device(
+                            name=d_info.get('name'),
+                            ip_address=d_info.get('ip_address'),
+                            vendor=d_info.get('vendor'),
+                            site=d_info.get('site', 'HO'),
+                            credential_ref=d_info.get('credential_ref', 'env_vault'),
+                            status='UP',
+                            cpu_usage=12.0,
+                            mem_usage=45.0,
+                            latency_ms=2.5,
+                            packet_loss=0.0,
+                            uptime='30 hari, 12 jam'
+                        )
+                        session.add(new_dev)
+                        dev_objects.append(new_dev)
+                    else:
+                        dev_objects.append(existing)
+        session.commit()
 
-    # 2. Seed 12-hour historical logs for charts
-    now = datetime.now()
-    for dev in dev_objects:
-        if dev.status == 'UP':
-            for i in range(12, 0, -1):
-                t = now - timedelta(hours=i)
-                log = DeviceStatusLog(
-                    device_id=dev.device_id,
-                    timestamp=t,
-                    status='UP',
-                    cpu_usage=round(max(5.0, min(95.0, dev.cpu_usage + random.uniform(-15.0, 15.0))), 1),
-                    mem_usage=round(max(10.0, min(90.0, dev.mem_usage + random.uniform(-6.0, 6.0))), 1),
-                    traffic_mbps=round(max(10.0, min(350.0, dev.traffic_mbps + random.uniform(-30.0, 30.0))), 1)
-                )
-                session.add(log)
-
-    # 3. Seed Alerts (Matching LLD Rule Engine triggers)
-    alerts_data = [
-        {
-            "device_id": dev_objects[2].device_id, # Router-Edge-01
-            "type": "CPU_THRESHOLD_EXCEEDED",
-            "severity": "WARNING",
-            "message": "High CPU utilization detected (> 85%) on Core CPU 0.",
-            "time_offset": 12,
-            "ack": False,
-            "ack_by": None
-        },
-        {
-            "device_id": dev_objects[4].device_id, # Switch-Access-Bdg
-            "type": "HOST_UNREACHABLE",
-            "severity": "CRITICAL",
-            "message": "Device unreachable after 2 consecutive polling attempts (ICMP/SSH Timeout).",
-            "time_offset": 25,
-            "ack": False,
-            "ack_by": None
-        },
-        {
-            "device_id": dev_objects[6].device_id, # Firewall-Ext-01
-            "type": "INTERFACE_DOWN",
-            "severity": "CRITICAL",
-            "message": "Interface GigabitEthernet0/1 changed state to administratively down.",
-            "time_offset": 55,
-            "ack": True,
-            "ack_by": "@agiva_noc_lead via Telegram"
-        }
-    ]
-
-    alert_objects = []
-    for a in alerts_data:
-        alt = Alert(
-            device_id=a["device_id"],
-            type=a["type"],
-            severity=a["severity"],
-            message=a["message"],
-            triggered_at=now - timedelta(minutes=a["time_offset"]),
-            acknowledged=a["ack"],
-            acknowledged_by=a["ack_by"]
-        )
-        session.add(alt)
-        alert_objects.append(alt)
-    
-    session.flush()
-
-    # 4. Seed Telegram Whitelist (NOC Engineers & Groups)
-    whitelist_data = [
-        {"chat_id": "-1004429503436", "username": "@Agiva_Network_Automation_Bot", "name": "Agiva Network Automation Channel", "role": "Broadcast Group"},
-        {"chat_id": "5419251159", "username": "@darasamsara", "name": "Dara Samsara", "role": "Admin"},
-        {"chat_id": "1849201941", "username": "@budi_noc", "name": "Budi Santoso", "role": "Lead NOC Engineer"},
-        {"chat_id": "1849201942", "username": "@andi_net", "name": "Andi Pratama", "role": "Senior Network Engineer"},
-        {"chat_id": "1849201943", "username": "@citra_sec", "name": "Citra Lestari", "role": "Cybersecurity Analyst"},
-        {"chat_id": "1849201944", "username": "@reza_ops", "name": "Reza Kurniawan", "role": "Network Operations"},
-        {"chat_id": "1849201945", "username": "@dewi_infra", "name": "Dewi Anggraini", "role": "Infrastructure Engineer"},
-        {"chat_id": "1849201946", "username": "@fajar_sys", "name": "Fajar Hidayat", "role": "Systems Engineer"},
-        {"chat_id": "1849201947", "username": "@maya_netops", "name": "Maya Putri", "role": "NOC Technician"},
-        {"chat_id": "1849201948", "username": "@eko_cloud", "name": "Eko Prasetyo", "role": "Cloud Network Specialist"},
-        {"chat_id": "1849201949", "username": "@rina_mon", "name": "Rina Marlina", "role": "Monitoring Specialist"},
-        {"chat_id": "1849201950", "username": "@gilang_core", "name": "Gilang Ramadhan", "role": "Core IP Engineer"}
-    ]
-    for w in whitelist_data:
-        entry = TelegramWhitelist(
-            chat_id=w["chat_id"],
-            telegram_username=w["username"],
-            engineer_name=w["name"],
-            role=w["role"],
-            is_active=True
-        )
-        session.add(entry)
-
-    # 5. Seed Telegram Message Logs
-    target_channel_id = os.getenv("NOC_TELEGRAM_CHAT_ID", "-1004429503436")
-    lead_chat_id = os.getenv("TELEGRAM_CHAT_ID", "5419251159")
-    telegram_logs = [
-        {
-            "alert_id": alert_objects[0].alert_id,
-            "chat_id": target_channel_id,
-            "type": "ALERT_NOTIFICATION",
-            "content": f"[WARNING] #{alert_objects[0].alert_id}: High CPU utilization on Router-Edge-01 (192.168.1.3). Type /ack {alert_objects[0].alert_id} to confirm.",
-            "status": "SENT",
-            "offset": 12
-        },
-        {
-            "alert_id": alert_objects[1].alert_id,
-            "chat_id": target_channel_id,
-            "type": "ALERT_NOTIFICATION",
-            "content": f"[CRITICAL] #{alert_objects[1].alert_id}: Host Switch-Access-Bdg (10.20.30.2) UNREACHABLE. Type /ack {alert_objects[1].alert_id} to confirm.",
-            "status": "SENT",
-            "offset": 25
-        },
-        {
-            "alert_id": None,
-            "chat_id": lead_chat_id,
-            "type": "COMMAND_REPLY",
-            "content": "Status Summary: Total 8 Devices (6 Online, 2 Offline). Active Alerts: 2 pending.",
-            "status": "SENT",
-            "offset": 5
-        },
-        {
-            "alert_id": alert_objects[2].alert_id,
-            "chat_id": lead_chat_id,
-            "type": "COMMAND_REPLY",
-            "content": f"Alert #{alert_objects[2].alert_id} acknowledged successfully by @darasamsara (Lead Engineer).",
-            "status": "SENT",
-            "offset": 45
-        }
-    ]
-    for tl in telegram_logs:
-        log_entry = TelegramMessageLog(
-            alert_id=tl["alert_id"],
-            chat_id=tl["chat_id"],
-            message_type=tl["type"],
-            content=tl["content"],
-            status=tl["status"],
-            sent_at=now - timedelta(minutes=tl["offset"])
-        )
-        session.add(log_entry)
-
-    # 6. Seed Backup History
-    backups_data = [
-        {"device_id": dev_objects[0].device_id, "path": "/backups/HQ/Router-Core-01/2026-09-28_config.txt", "size": "45.2 KB", "status": "SUCCESS"},
-        {"device_id": dev_objects[1].device_id, "path": "/backups/HQ/Switch-Dist-01/2026-09-28_config.txt", "size": "128.6 KB", "status": "SUCCESS"},
-        {"device_id": dev_objects[2].device_id, "path": "/backups/Gateway/Router-Edge-01/2026-09-28_config.txt", "size": "56.8 KB", "status": "SUCCESS"},
-        {"device_id": dev_objects[4].device_id, "path": "-", "size": "0 KB", "status": "FAILED"}
-    ]
-    for b in backups_data:
-        bh = BackupHistory(
-            device_id=b["device_id"],
-            category=b.get("category", "Config"),
-            file_path=b["path"],
-            file_size=b["size"],
-            status=b["status"],
-            timestamp=now - timedelta(hours=8)
-        )
-        session.add(bh)
-
-    session.commit()
-    print("[*] Database seeded successfully with realistic NOC data.")
+    # 2. Seed Telegram Whitelist
+    seed_whitelist_only(session)
+    print("[*] Database synchronized successfully with production network devices.")
 
 def seed_whitelist_only(session):
     import os

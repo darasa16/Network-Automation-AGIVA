@@ -319,6 +319,110 @@
             transform: translateY(-1px) !important;
             box-shadow: 0 4px 12px rgba(232, 165, 118, 0.45) !important;
         }
+        .toast-container {
+            z-index: 100000 !important;
+        }
+
+        #btnCopyModal.btn-copied {
+            background: linear-gradient(135deg, #10b981, #059669) !important;
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.45) !important;
+            color: #ffffff !important;
+            transform: translateY(-1px) !important;
+        }
+
+        /* Pagination Bar & Controls */
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(15, 12, 34, 0.35);
+            font-size: 13px;
+            color: #94a3b8;
+            flex-wrap: wrap;
+            gap: 14px;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+            border-bottom-left-radius: 12px;
+            border-bottom-right-radius: 12px;
+        }
+
+        .pagination-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .pagination-nav-btn {
+            background: transparent;
+            border: none;
+            color: #818cf8;
+            padding: 4px 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+        }
+
+        .pagination-nav-btn:hover:not(.disabled) {
+            color: #ffffff;
+            transform: translateY(-1px);
+        }
+
+        .pagination-nav-btn.disabled {
+            opacity: 0.25;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .pagination-num-btn {
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            min-width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 4px;
+            transition: all 0.2s ease;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+        }
+
+        .pagination-num-btn:hover:not(.active) {
+            color: #ffffff;
+            background: rgba(99, 102, 241, 0.15);
+        }
+
+        .pagination-num-btn.active {
+            background: #6366f1;
+            color: #ffffff;
+            font-weight: 700;
+            box-shadow: 0 0 12px rgba(99, 102, 241, 0.45);
+        }
+
+        .pagination-dots {
+            color: #64748b;
+            padding: 0 2px;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            user-select: none;
+        }
+
+        .pagination-info {
+            font-size: 12px;
+            color: #94a3b8;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+        }
     </style>
 </head>
 
@@ -337,8 +441,7 @@
                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                 </svg>
                 <input type="text" id="globalSearch" placeholder="Search devices, alerts, data..." autocomplete="off" />
-                <button type="button" id="clearSearchBtn" class="search-clear-btn"
-                    title="Clear search">&times;</button>
+                <button type="button" id="clearSearchBtn" class="search-clear-btn" title="Clear search">&times;</button>
                 <div id="searchResultsDropdown" class="search-results-dropdown" style="display: none;"></div>
             </div>
         </div>
@@ -380,7 +483,8 @@
             <div class="page-header-row">
                 <div>
                     <h2>Network Configuration & Log Backups</h2>
-                    <p class="sub-text">Automated and manual multi-vendor configuration & audit log backups via Telegram bot</p>
+                    <p class="sub-text">Automated and manual multi-vendor configuration & audit log backups via Telegram
+                        bot</p>
                 </div>
                 <div class="header-tools" style="display:flex; align-items:center; gap:12px;">
                     <span class="cron-badge">Automated Schedule: Daily at 02:00 WIB</span>
@@ -423,7 +527,8 @@
                     <div class="kpi-info">
                         <span class="kpi-label">Last Cycle Status</span>
                         <h3 style="color: #ffffff; margin: 6px 0; font-weight: 700;">
-                            {% if backups %}{{ success_count }} Succeeded / {{ failed_count }} Failed{% else %}No Records{% endif %}
+                            {% if backups %}{{ success_count }} Succeeded / {{ failed_count }} Failed{% else %}No
+                            Records{% endif %}
                         </h3>
                         <span class="kpi-sub">Notifications dispatched via Telegram</span>
                     </div>
@@ -458,7 +563,8 @@
                 <div class="panel-header" style="flex-wrap: wrap; gap: 12px;">
                     <div>
                         <h3 class="panel-title">Configuration Backup & Audit Log History</h3>
-                        <span class="panel-sub">Real-time records of automated and manual Telegram executions (30-day retention)</span>
+                        <span class="panel-sub">Real-time records of automated and manual Telegram executions (30 day
+                            retention)</span>
                     </div>
                     <div class="table-actions" style="display: flex; align-items: center; gap: 10px;">
                         <button class="btn-refresh" onclick="refreshBackups(this)">
@@ -507,73 +613,15 @@
                             </tr>
                         </thead>
                         <tbody id="backupsTableBody">
-                            {% if backups %}
-                            {% for b in backups %}
-                            <tr id="backup-row-{{ b.id }}" data-category="{{ b.category | upper }}">
-                                <td>
-                                    <span title="Execution Time: {{ b.full_date }}">{{ b.timestamp }}</span>
-                                </td>
-                                <td>
-                                    <strong>{{ b.device }}</strong><br>
-                                    <span class="device-site-sub">{{ b.site }}</span>
-                                </td>
-                                <td>
-                                    <span class="badge-category-orange">{{ b.category }}</span>
-                                </td>
-                                <td><code
-                                        style="font-size:13px; color:#ffffff;">{{ b.file.split('/')[-1] if '/' in b.file else b.file }}</code>
-                                </td>
-                                <td>{{ b.size }}</td>
-                                <td>
-                                    {% if 'Telegram' in b.trigger_by %}
-                                    <span
-                                        style="display:inline-flex; align-items:center; gap:4px; font-size:13px; color:#ffffff;">
-                                        <span>{{ b.trigger_by }}</span>
-                                    </span>
-                                    {% else %}
-                                    <span
-                                        style="display:inline-flex; align-items:center; gap:4px; font-size:13px; color:#ffffff;">
-                                        <span>{{ b.trigger_by }}</span>
-                                    </span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    {% if b.status == 'SUCCESS' %}
-                                    <span class="status-badge badge-up">
-                                        SUCCESS
-                                    </span>
-                                    {% else %}
-                                    <span class="status-badge badge-down">
-                                        FAILED
-                                    </span>
-                                    {% endif %}
-                                </td>
-                                <td class="text-center">
-                                    <div style="display:inline-flex; gap:6px;">
-                                        <button class="btn-action"
-                                            style="padding: 4px 10px !important; font-size: 11px !important;"
-                                            onclick="viewConfig('{{ b.id }}', '{{ b.device }}', '{{ b.category }}', '{{ b.file }}')">View</button>
-                                        <a href="/api/backup/download/{{ b.id }}" class="btn-secondary"
-                                            style="padding: 4px 10px !important; font-size: 11px !important; text-decoration:none; display:inline-flex; align-items:center;"
-                                            title="Download .txt File">Download</a>
-                                    </div>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                            {% endif %}
-                            <tr id="backupsEmptyState" class="empty-state-row"{% if backups %} style="display: none;"{% endif %}>
-                                <td colspan="8" style="text-align: center; padding: 40px 10px;">
-                                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;">
-                                        <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="#10b981" stroke-width="1.5" style="margin: 0 auto 8px auto; display: block; color: #10b981;">
-                                            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
-                                        </svg>
-                                        <p id="backupsEmptyTitle" class="empty-title" style="font-size: 0.9rem; font-weight: 500; color: #94a3b8; margin: 0 0 4px 0;">No Backup Records Found</p>
-                                        <span id="backupsEmptySub" class="empty-sub" style="font-size: 0.75rem; color: #64748b;">Scheduled daily backups or manual triggers via Telegram will appear here</span>
-                                    </div>
-                                </td>
-                            </tr>
+                            <!-- Populated dynamically by JavaScript -->
                         </tbody>
                     </table>
+                </div>
+
+                <!-- Pagination Bar for Configuration Backup & Audit Log History -->
+                <div class="pagination-container" id="backupsPaginationContainer">
+                    <div id="backupsPageInfo" class="pagination-info">Showing 0 records</div>
+                    <div class="pagination-controls" id="backupsPaginationControls"></div>
                 </div>
             </div>
         </div>
@@ -602,8 +650,20 @@
                 <span id="modalTimestamp"
                     style="font-size:12px; color:#94a3b8; font-family:'JetBrains Mono', monospace;"></span>
                 <div style="display:flex; gap:10px; align-items:center;">
-                    <button type="button" class="btn-modal" onclick="copyModalContent()">Copy Text</button>
-                    <button type="button" class="btn-modal" onclick="closeConfigModal()">Close</button>
+                    <button type="button" class="btn-modal" id="btnCopyModal" onclick="copyModalContent(this)">
+                        <svg class="copy-icon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:6px;">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                        <span>Copy Text</span>
+                    </button>
+                    <button type="button" class="btn-modal" onclick="closeConfigModal()">
+                        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                        <span>Close</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -612,6 +672,7 @@
     <!-- Toast Notification Container -->
     <div id="toastContainer" class="toast-container"></div>
 
+<script id="backupsData" type="application/json">{{ backups | tojson }}</script>
     <script>
         function updateClock() {
             const now = new Date();
@@ -637,13 +698,33 @@
             }, 250);
         }
 
+        let allBackups = [];
+        try {
+            const rawEl = document.getElementById('backupsData');
+            allBackups = rawEl ? JSON.parse(rawEl.textContent || '[]') : [];
+        } catch (e) {
+            allBackups = [];
+        }
+
+        let currentBackupPage = 1;
+        const backupsPerPage = 20;
+        let currentCategoryFilter = 'ALL';
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            return String(text)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
         function updateCategoryCounts() {
-            const rows = document.querySelectorAll('#backupsTableBody tr');
-            let total = 0, sys = 0, cfg = 0, trf = 0, thr = 0;
-            rows.forEach(r => {
-                if (r.querySelector('td[colspan]')) return;
-                total++;
-                const cat = (r.getAttribute('data-category') || '').toUpperCase();
+            let total = allBackups.length;
+            let sys = 0, cfg = 0, trf = 0, thr = 0;
+            allBackups.forEach(b => {
+                const cat = (b.category || '').toUpperCase();
                 if (cat === 'SYSTEM') sys++;
                 else if (cat === 'CONFIG') cfg++;
                 else if (cat === 'TRAFFIC') trf++;
@@ -663,55 +744,230 @@
             if (countThrEl) countThrEl.textContent = `(${thr})`;
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            updateCategoryCounts();
-            applyCombinedFilters();
-        });
-
-        let currentCategoryFilter = 'ALL';
-
-        function setCategoryFilter(cat, btn) {
-            currentCategoryFilter = cat;
-            document.querySelectorAll('.category-filter-btn').forEach(b => b.classList.remove('active'));
-            if (btn) btn.classList.add('active');
-            applyCombinedFilters();
-        }
-
-        function applyCombinedFilters() {
-            const dataRows = Array.from(document.querySelectorAll('#backupsTableBody tr')).filter(r => !r.classList.contains('empty-state-row') && !r.querySelector('td[colspan]'));
-            let visibleCount = 0;
-
-            dataRows.forEach(row => {
-                const rowCat = (row.getAttribute('data-category') || '').toUpperCase();
-                const matchesCat = (currentCategoryFilter === 'ALL' || rowCat === currentCategoryFilter);
-                if (matchesCat) {
-                    row.style.display = '';
-                    visibleCount++;
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-
-            const emptyRow = document.getElementById('backupsEmptyState');
-            const titleEl = document.getElementById('backupsEmptyTitle');
-            const subEl = document.getElementById('backupsEmptySub');
-
-            if (visibleCount === 0) {
-                if (emptyRow) emptyRow.style.display = '';
-                if (titleEl) {
-                    if (currentCategoryFilter === 'ALL') {
-                        titleEl.textContent = 'No Backup Records Found';
-                        if (subEl) subEl.textContent = 'Scheduled daily backups or manual triggers via Telegram will appear here';
-                    } else {
-                        const catCapitalized = currentCategoryFilter.charAt(0).toUpperCase() + currentCategoryFilter.slice(1).toLowerCase();
-                        titleEl.textContent = `No ${catCapitalized} Backup Records Found`;
-                        if (subEl) subEl.textContent = `No backup history records available for ${catCapitalized.toLowerCase()} category`;
+        function checkTargetBackupPage(targetRowId) {
+            let rowId = targetRowId;
+            if (!rowId && window.location.hash) {
+                rowId = window.location.hash.replace('#', '');
+            }
+            if (rowId && rowId.startsWith('backup-row-')) {
+                const targetId = parseInt(rowId.replace('backup-row-', ''), 10);
+                if (!isNaN(targetId) && allBackups && allBackups.length > 0) {
+                    currentCategoryFilter = 'ALL';
+                    document.querySelectorAll('.category-filter-btn').forEach(b => {
+                        b.classList.toggle('active', b.getAttribute('data-cat') === 'ALL');
+                    });
+                    const idx = allBackups.findIndex(b => Number(b.id) === targetId);
+                    if (idx !== -1) {
+                        currentBackupPage = Math.floor(idx / backupsPerPage) + 1;
+                        return true;
                     }
                 }
-            } else {
-                if (emptyRow) emptyRow.style.display = 'none';
             }
+            return false;
         }
+        window.checkTargetBackupPage = checkTargetBackupPage;
+
+        function renderBackupsTable(targetRowId) {
+            if (targetRowId) {
+                checkTargetBackupPage(targetRowId);
+            }
+            const tbody = document.getElementById('backupsTableBody');
+            const paginationContainer = document.getElementById('backupsPaginationContainer');
+            const pageInfo = document.getElementById('backupsPageInfo');
+            if (!tbody) return;
+
+            const filteredBackups = allBackups.filter(b => {
+                const cat = (b.category || '').toUpperCase();
+                return (currentCategoryFilter === 'ALL' || cat === currentCategoryFilter);
+            });
+
+            const totalBackups = filteredBackups.length;
+
+            if (totalBackups === 0) {
+                const catCapitalized = currentCategoryFilter === 'ALL'
+                    ? 'Backup'
+                    : currentCategoryFilter.charAt(0).toUpperCase() + currentCategoryFilter.slice(1).toLowerCase() + ' Backup';
+                tbody.innerHTML = `
+                    <tr class="empty-state-row" id="backupsEmptyState">
+                        <td colspan="8" style="text-align: center; padding: 40px 10px;">
+                            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;">
+                                <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="#10b981"
+                                    stroke-width="1.5" style="margin: 0 auto 8px auto; display: block; color: #10b981;">
+                                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                                </svg>
+                                <p id="backupsEmptyTitle" class="empty-title" style="font-size: 0.9rem; font-weight: 500; color: #94a3b8; margin: 0 0 4px 0;">
+                                    No ${escapeHtml(catCapitalized)} Records Found
+                                </p>
+                                <span id="backupsEmptySub" class="empty-sub" style="font-size: 0.75rem; color: #64748b;">
+                                    Scheduled daily backups or manual triggers via Telegram will appear here
+                                </span>
+                            </div>
+                        </td>
+                    </tr>`;
+                if (paginationContainer) paginationContainer.style.display = 'none';
+                return;
+            }
+
+            if (paginationContainer) paginationContainer.style.display = 'flex';
+
+            const totalPages = Math.ceil(totalBackups / backupsPerPage) || 1;
+            if (currentBackupPage > totalPages) currentBackupPage = totalPages;
+            if (currentBackupPage < 1) currentBackupPage = 1;
+
+            const startIndex = (currentBackupPage - 1) * backupsPerPage;
+            const endIndex = Math.min(startIndex + backupsPerPage, totalBackups);
+            const pageData = filteredBackups.slice(startIndex, endIndex);
+
+            let html = '';
+            for (const b of pageData) {
+                const isSuccess = (b.status || 'SUCCESS').toUpperCase() === 'SUCCESS';
+                const badgeClass = isSuccess ? 'badge-up' : 'badge-down';
+                const displayStatus = isSuccess ? 'SUCCESS' : 'FAILED';
+                const rawFile = b.file || '';
+                const fileName = rawFile ? (rawFile.includes('/') ? rawFile.split('/').pop() : (rawFile.includes('\\') ? rawFile.split('\\').pop() : rawFile)) : '-';
+
+                html += `
+                <tr id="backup-row-${b.id}" data-category="${escapeHtml((b.category || '').toUpperCase())}">
+                    <td>
+                        <span title="Execution Time: ${escapeHtml(b.full_date || '')}">${escapeHtml(b.timestamp || '')}</span>
+                    </td>
+                    <td>
+                        <strong>${escapeHtml(b.device || 'Unknown')}</strong><br>
+                        <span class="device-site-sub">${escapeHtml(b.site || '-')}</span>
+                    </td>
+                    <td>
+                        <span class="badge-category-orange">${escapeHtml(b.category || '')}</span>
+                    </td>
+                    <td><code style="font-size:13px; color:#ffffff;">${escapeHtml(fileName)}</code></td>
+                    <td>${escapeHtml(b.size || '-')}</td>
+                    <td>
+                        <span style="display:inline-flex; align-items:center; gap:4px; font-size:13px; color:#ffffff;">
+                            <span>${escapeHtml(b.trigger_by || '-')}</span>
+                        </span>
+                    </td>
+                    <td>
+                        <span class="status-badge ${badgeClass}">${displayStatus}</span>
+                    </td>
+                    <td class="text-center">
+                        <div style="display:inline-flex; gap:6px;">
+                            <button type="button" class="btn-action"
+                                style="padding: 4px 10px !important; font-size: 11px !important;"
+                                onclick="viewConfig('${b.id}', '${escapeHtml(b.device || '')}', '${escapeHtml(b.category || '')}', '${escapeHtml(b.file || '')}')">View</button>
+                            <a href="/api/backup/download/${b.id}" class="btn-secondary"
+                                style="padding: 4px 10px !important; font-size: 11px !important; text-decoration:none; display:inline-flex; align-items:center;"
+                                title="Download .txt File">Download</a>
+                        </div>
+                    </td>
+                </tr>`;
+            }
+            tbody.innerHTML = html;
+
+            if (pageInfo) {
+                pageInfo.innerText = `Showing ${startIndex + 1} - ${endIndex} of ${totalBackups} records (Page ${currentBackupPage} of ${totalPages})`;
+            }
+
+            renderBackupsPaginationButtons(totalPages);
+        }
+        window.renderBackupsTable = renderBackupsTable;
+
+        function renderBackupsPaginationButtons(totalPages) {
+            const controls = document.getElementById('backupsPaginationControls');
+            if (!controls) return;
+
+            let btnHtml = '';
+
+            // Tombol Prev (‹ Prev)
+            btnHtml += `<button type="button" class="pagination-nav-btn ${currentBackupPage === 1 ? 'disabled' : ''}" 
+                         onclick="gotoBackupPage(${currentBackupPage - 1})" ${currentBackupPage === 1 ? 'disabled' : ''}>
+                         <span>&#8249;</span> <span>Prev</span>
+                        </button>`;
+
+            // Penomoran Halaman dengan format cerdas (1 ... 9 [10] 11 ... 20)
+            if (totalPages <= 7) {
+                for (let p = 1; p <= totalPages; p++) {
+                    btnHtml += `<button type="button" class="pagination-num-btn ${p === currentBackupPage ? 'active' : ''}" 
+                                 onclick="gotoBackupPage(${p})">${p}</button>`;
+                }
+            } else {
+                // Selalu tampilkan halaman 1
+                btnHtml += `<button type="button" class="pagination-num-btn ${currentBackupPage === 1 ? 'active' : ''}" 
+                             onclick="gotoBackupPage(1)">1</button>`;
+
+                if (currentBackupPage > 3) {
+                    btnHtml += `<span class="pagination-dots">...</span>`;
+                }
+
+                let start = Math.max(2, currentBackupPage - 1);
+                let end = Math.min(totalPages - 1, currentBackupPage + 1);
+
+                if (currentBackupPage <= 3) {
+                    start = 2;
+                    end = 4;
+                } else if (currentBackupPage >= totalPages - 2) {
+                    start = totalPages - 3;
+                    end = totalPages - 1;
+                }
+
+                for (let p = start; p <= end; p++) {
+                    btnHtml += `<button type="button" class="pagination-num-btn ${p === currentBackupPage ? 'active' : ''}" 
+                                 onclick="gotoBackupPage(${p})">${p}</button>`;
+                }
+
+                if (currentBackupPage < totalPages - 2) {
+                    btnHtml += `<span class="pagination-dots">...</span>`;
+                }
+
+                // Selalu tampilkan halaman terakhir
+                btnHtml += `<button type="button" class="pagination-num-btn ${currentBackupPage === totalPages ? 'active' : ''}" 
+                             onclick="gotoBackupPage(${totalPages})">${totalPages}</button>`;
+            }
+
+            // Tombol Next (Next ›)
+            btnHtml += `<button type="button" class="pagination-nav-btn ${currentBackupPage === totalPages ? 'disabled' : ''}" 
+                         onclick="gotoBackupPage(${currentBackupPage + 1})" ${currentBackupPage === totalPages ? 'disabled' : ''}>
+                         <span>Next</span> <span>&#8250;</span>
+                        </button>`;
+
+            controls.innerHTML = btnHtml;
+        }
+
+        function gotoBackupPage(page) {
+            const filteredBackups = allBackups.filter(b => {
+                const cat = (b.category || '').toUpperCase();
+                return (currentCategoryFilter === 'ALL' || cat === currentCategoryFilter);
+            });
+            const totalPages = Math.ceil(filteredBackups.length / backupsPerPage) || 1;
+            if (page < 1 || page > totalPages) return;
+            currentBackupPage = page;
+            // Clear anchor hash if present so pagination is not locked to a search target
+            if (window.location.hash && window.location.hash.startsWith('#backup-row-')) {
+                history.replaceState(null, '', window.location.pathname + window.location.search);
+            }
+            renderBackupsTable();
+        }
+        window.gotoBackupPage = gotoBackupPage;
+
+        function setCategoryFilter(cat, btn) {
+            currentCategoryFilter = (cat || 'ALL').toUpperCase();
+            currentBackupPage = 1;
+            if (window.location.hash && window.location.hash.startsWith('#backup-row-')) {
+                history.replaceState(null, '', window.location.pathname + window.location.search);
+            }
+            document.querySelectorAll('.category-filter-btn').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            renderBackupsTable();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updateCategoryCounts();
+            checkTargetBackupPage();
+            renderBackupsTable();
+        });
+
+        window.addEventListener('hashchange', () => {
+            checkTargetBackupPage();
+            renderBackupsTable();
+        });
 
         let currentModalDevice = '';
         let currentModalCategory = 'SYSTEM';
@@ -760,14 +1016,60 @@
             if (modal) modal.style.display = 'none';
         }
 
-        function copyModalContent() {
+        function copyModalContent(btn) {
             const codeBox = document.getElementById('modalContentBox');
             if (!codeBox) return;
-            navigator.clipboard.writeText(codeBox.textContent).then(() => {
-                showToast('Log content copied to clipboard!');
-            }).catch(() => {
-                showToast('Failed to copy text.');
-            });
+            const textToCopy = codeBox.textContent;
+            const targetBtn = btn || document.getElementById('btnCopyModal');
+
+            function triggerSuccess() {
+                if (targetBtn) {
+                    targetBtn.classList.add('btn-copied');
+                    targetBtn.innerHTML = `
+                        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:6px;">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <span>Copied!</span>
+                    `;
+                    setTimeout(() => {
+                        targetBtn.classList.remove('btn-copied');
+                        targetBtn.innerHTML = `
+                            <svg class="copy-icon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:6px;">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                            <span>Copy Text</span>
+                        `;
+                    }, 2200);
+                }
+            }
+
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(textToCopy).then(triggerSuccess).catch(() => {
+                    fallbackCopy(textToCopy, triggerSuccess);
+                });
+            } else {
+                fallbackCopy(textToCopy, triggerSuccess);
+            }
+        }
+
+        function fallbackCopy(text, onSuccess) {
+            try {
+                const textArea = document.createElement("textarea");
+                textArea.value = text;
+                textArea.style.position = "fixed";
+                textArea.style.left = "-999999px";
+                textArea.style.top = "-999999px";
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                const successful = document.execCommand('copy');
+                document.body.removeChild(textArea);
+                if (successful && onSuccess) onSuccess();
+                else showToast('Failed to copy text.', true);
+            } catch (err) {
+                showToast('Failed to copy text.', true);
+            }
         }
 
         // Close on ESC key or backdrop click
@@ -779,15 +1081,21 @@
             if (e.target === modal) closeConfigModal();
         });
 
-        function showToast(message) {
+        function showToast(message, isError = false) {
             const container = document.getElementById('toastContainer');
             if (!container) return;
             const toast = document.createElement('div');
             toast.className = 'toast';
-            toast.style.borderLeft = '4px solid #E8A576';
-            toast.innerHTML = `<span>💾</span><span>${message}</span>`;
+            toast.style.borderLeft = isError ? '4px solid #ef4444' : '4px solid #10b981';
+            const icon = isError ? '⚠️' : '✅';
+            toast.innerHTML = `<span style="font-size:15px;">${icon}</span><span style="font-weight:500;">${message}</span>`;
             container.appendChild(toast);
-            setTimeout(() => toast.remove(), 3500);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+                toast.style.transition = 'all 0.3s ease-out';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
         }
 
     </script>

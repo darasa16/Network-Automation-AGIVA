@@ -1,10 +1,10 @@
 ======================================================================
 AGIVA NOC RAW SNAPSHOT [SYSTEM]
-Waktu Eksekusi: 2026-11-03 17:46:25 WIB
-Perangkat     : FW-PA220-1 (192.168.1.11)
+Execution Time: 2026-11-03 17:46:25 WIB
+Device        : FW-PA220-1 (192.168.1.11)
 Site          : HO Gateway
-Kategori      : System
-Pemicu        : Raw Snapshot Verification
+Category      : System
+Triggered By  : Raw Snapshot Verification
 ======================================================================
 
 <response status="success"><result>

@@ -1,10 +1,10 @@
 ======================================================================
 AGIVA NOC RAW SNAPSHOT [CONFIG]
-Waktu Eksekusi: 2026-11-06 14:16:14 WIB
-Perangkat     : FW-PA220-1 (192.168.1.11)
+Execution Time: 2026-11-06 14:16:14 WIB
+Device        : FW-PA220-1 (192.168.1.11)
 Site          : HO Gateway
-Kategori      : Config
-Pemicu        : Telegram (@Dara Samsara)
+Category      : Config
+Triggered By  : Telegram (@Dara Samsara)
 ======================================================================
 
 <response status="success"><result><config version="10.2.0" urldb="paloaltonetworks" detail-version="10.2.16">

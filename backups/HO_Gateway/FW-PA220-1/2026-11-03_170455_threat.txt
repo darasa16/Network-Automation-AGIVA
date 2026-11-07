@@ -1,10 +1,10 @@
 ======================================================================
 AGIVA NOC BACKUP ARCHIVE [THREAT]
-Waktu Eksekusi: 2026-11-03 17:04:55 WIB
-Perangkat     : FW-PA220-1 (192.168.1.11)
+Execution Time: 2026-11-03 17:04:55 WIB
+Device        : FW-PA220-1 (192.168.1.11)
 Site          : HO Gateway
-Kategori      : Threat
-Pemicu        : Test Verification
+Category      : Threat
+Triggered By  : Test Verification
 ======================================================================
 
 <response status="success"><result>

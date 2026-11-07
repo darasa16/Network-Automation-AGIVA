@@ -22,7 +22,7 @@ from telegram.ext import (
 )
 import re
 from database import db_session
-from models import TelegramWhitelist, TelegramMessageLog, Alert, IncidentLog, Device
+from models import TelegramWhitelist, TelegramMessageLog, Alert, IncidentLog, Device, BackupHistory
 
 # Set terminal encoding to UTF-8
 sys.stdout.reconfigure(encoding='utf-8')
@@ -58,79 +58,10 @@ def get_current_date() -> str:
     except Exception:
         return datetime.now().strftime("%Y-%m-%d")
 
-# ==================== DATA MODEL (LLD SPECIFICATION) ====================
-# Simulasi Data Inventaris & Telemetri Perangkat Sesuai Dokumen LLD PT Agiva Indonesia
-DEVICES = {
-    "RTR-Core-01": {
-        "ip": "192.168.1.1",
-        "vendor": "Cisco IOS-XE (ISR 4451)",
-        "site": "HQ - Cyber 2 Tower (Jakarta)",
-        "status": "UP",
-        "cpu": 34,
-        "mem": 60,
-        "uptime": "42 hari, 14 jam",
-        "last_backup": "2026-09-29 02:00 WIB",
-        "backup_path": "/backups/HQ/RTR-Core-01"
-    },
-    "SW-Dist-Lt2": {
-        "ip": "192.168.1.10",
-        "vendor": "MikroTik RouterOS v7 (CRS326)",
-        "site": "HQ - Cyber 2 Tower (Jakarta)",
-        "status": "UP",
-        "cpu": 18,
-        "mem": 40,
-        "uptime": "15 hari, 06 jam",
-        "last_backup": "2026-09-29 02:05 WIB",
-        "backup_path": "/backups/HQ/SW-Dist-Lt2"
-    },
-    "FW-Perimeter": {
-        "ip": "10.10.0.1",
-        "vendor": "Huawei USG6000V Next-Gen FW",
-        "site": "DC - DCI Cibitung (Tier IV)",
-        "status": "UP",
-        "cpu": 88,
-        "mem": 74,
-        "uptime": "90 hari, 22 jam",
-        "last_backup": "2026-09-29 02:10 WIB",
-        "backup_path": "/backups/DC/FW-Perimeter"
-    },
-    "RTR-Branch-BDG": {
-        "ip": "172.16.5.1",
-        "vendor": "Cisco IOS (Catalyst 8300)",
-        "site": "Branch - Bandung Data Center",
-        "status": "DOWN",
-        "cpu": 0,
-        "mem": 0,
-        "uptime": "0 hari (Offline / Link Down)",
-        "last_backup": "2026-09-28 02:00 WIB",
-        "backup_path": "/backups/Branch-BDG/RTR-Branch-BDG"
-    },
-}
-
-ALERTS = {
-    "101": {
-        "id": "ALT-101",
-        "device": "RTR-Branch-BDG",
-        "severity": "Critical",
-        "issue": "Device Unreachable (ICMP Timeout / Loss 100%)",
-        "site": "Branch - Bandung Data Center",
-        "status": "Open",
-        "triggered_at": "2026-09-29 14:15:00 WIB",
-        "acknowledged_by": None,
-        "acknowledged_at": None
-    },
-    "102": {
-        "id": "ALT-102",
-        "device": "FW-Perimeter",
-        "severity": "Warning",
-        "issue": "Penggunaan CPU Melebihi Batas (88% > 80%)",
-        "site": "DC - DCI Cibitung (Tier IV)",
-        "status": "Open",
-        "triggered_at": "2026-09-29 15:02:10 WIB",
-        "acknowledged_by": None,
-        "acknowledged_at": None
-    }
-}
+# ==================== DATA MODEL ====================
+# Data inventaris, telemetri, dan alert diproses langsung secara riil dari database PostgreSQL
+DEVICES = {}
+ALERTS = {}
 
 # ==================== FORMATTING & HELPERS ====================
 
@@ -219,203 +150,295 @@ def log_telegram_message(chat_id: str, message_type: str, content: str, status: 
 # ==================== VIEW BUILDERS (FORMAL CORPORATE TEMPLATES) ====================
 
 def build_status_view() -> str:
-    """Tampilan Ringkasan Status NOC"""
-    total = len(DEVICES)
-    up_count = sum(1 for d in DEVICES.values() if d.get("status", "").upper() == "UP")
-    down_count = total - up_count
-    active_alerts = [a for a in ALERTS.values() if a.get("status", "").upper() == "OPEN"]
-    alert_count = len(active_alerts)
-    uptime_ratio = (up_count / total) * 100 if total > 0 else 0
-
-    overall_health = "Normal" if down_count == 0 and alert_count == 0 else ("Peringatan" if down_count > 0 else "Waspada")
-
-    msg = (
-        "<b>NETWORK AUTOMATION PT AGIVA INDONESIA</b>\n\n"
-        f"Waktu Sistem: <code>{get_current_time_wib()}</code>\n"
-        f"Kondisi Jaringan: {overall_health}\n"
-        f"Tingkat Ketersediaan: <code>{uptime_ratio:.1f}% Online</code>\n\n"
-        "<pre>\n"
-        f"Total Perangkat   : {total} Unit\n"
-        f"Perangkat Normal  : {up_count} Unit\n"
-        f"Perangkat Gangguan: {down_count} Unit\n"
-        f"Alert Terbuka     : {alert_count} Kasus\n"
-        "</pre>\n"
-    )
-
-    if down_count > 0:
-        down_devices = [k for k, v in DEVICES.items() if v["status"] == "DOWN"]
-        msg += f"Perangkat tidak terjangkau: <code>{', '.join(down_devices)}</code>\n\n"
-    else:
-        msg += "Seluruh perangkat beroperasi normal.\n\n"
-
-    msg += (
-        "Perintah yang tersedia:\n"
-        "/start - Panduan operasional bot\n"
-        "/devices - Daftar seluruh perangkat\n"
-        "/device [nama_perangkat] - Rincian telemetri perangkat\n"
-        "/alerts - Daftar gangguan aktif\n"
-        "/ack [id_alert] - Konfirmasi penanganan alert\n"
-        "/resolve [id_alert] - Selesaikan dan pulihkan gangguan\n"
-        "/backup [nama_perangkat] [kategori] - Backup manual konfigurasi & log audit\n"
-        "/user - Profil & status hak akses akun\n"
-        "/approve @username [role] - (Khusus Admin) Menyetujui akses teknisi baru."
-    )
-    return msg
-
-def build_devices_view() -> str:
-    """Tampilan Daftar Inventaris Perangkat"""
-    msg = (
-        "<b>INVENTARIS PERANGKAT JARINGAN</b>\n\n"
-        f"Total Perangkat Terdata : {len(DEVICES)} Unit\n"
-        "<pre>\n"
-        "NAMA PERANGKAT  VENDOR    STATUS   LOKASI\n"
-    )
-    for name, dev in DEVICES.items():
-        v_short = dev["vendor"].split()[0]
-        status_txt = "UP" if dev["status"] == "UP" else "DOWN"
-        site_short = dev["site"].split()[0]
-        msg += f"{name:<15} {v_short:<9} {status_txt:<8} {site_short}\n"
-    msg += "</pre>\n\n"
-    msg += "Ketik /device [nama_perangkat] untuk melihat telemetri lengkap. Contoh: /device RTR-Core-01"
-    return msg
-
-def build_device_detail_view(device_name: str) -> str:
-    """Tampilan Detail Telemetri Satu Perangkat"""
-    session = db_session()
-    db_dev = None
+    """Tampilan Ringkasan Status NOC Riil dari Database"""
+    session = None
     try:
-        from models import Device
-        db_dev = session.query(Device).filter(Device.name.ilike(f"%{device_name}%")).first()
-    except Exception:
-        pass
-    finally:
-        session.close()
+        session = db_session()
+        devices = session.query(Device).order_by(Device.device_id.asc()).all()
+        active_alerts = session.query(Alert).filter(Alert.resolved_at == None).all()
 
-    dev = DEVICES.get(device_name)
-    if not dev and not db_dev:
-        return (
-            "<b>PERANGKAT TIDAK DITEMUKAN</b>\n\n"
-            f"Perangkat <code>{html.escape(device_name)}</code> tidak terdaftar dalam inventaris.\n"
-            "Gunakan perintah /devices untuk melihat daftar perangkat yang tersedia."
+        total = len(devices)
+        up_count = sum(1 for d in devices if (d.status or "").upper() == "UP")
+        down_count = total - up_count
+        alert_count = len(active_alerts)
+        uptime_ratio = (up_count / total) * 100 if total > 0 else 0
+
+        overall_health = "Normal" if down_count == 0 and alert_count == 0 else ("Peringatan" if down_count > 0 else "Waspada")
+
+        msg = (
+            "<b>NETWORK AUTOMATION PT AGIVA INDONESIA</b>\n\n"
+            f"Waktu Sistem: <code>{get_current_time_wib()}</code>\n"
+            f"Kondisi Jaringan: {overall_health}\n"
+            f"Tingkat Ketersediaan: <code>{uptime_ratio:.1f}% Online</code>\n\n"
+            "<pre>\n"
+            f"Total Perangkat   : {total} Unit\n"
+            f"Perangkat Normal  : {up_count} Unit\n"
+            f"Perangkat Gangguan: {down_count} Unit\n"
+            f"Alert Terbuka     : {alert_count} Kasus\n"
+            "</pre>\n"
         )
 
-    d_name = db_dev.name if db_dev else device_name
-    d_status = db_dev.status if db_dev else dev.get("status", "UP")
-    d_ip = db_dev.ip_address if db_dev else dev.get("ip", "-")
-    d_vendor = db_dev.vendor if db_dev else dev.get("vendor", "-")
-    d_site = db_dev.site if db_dev else dev.get("site", "-")
-    d_uptime = db_dev.uptime if db_dev else dev.get("uptime", "-")
-    cpu_val = int(db_dev.cpu_usage or 0) if db_dev else int(dev.get("cpu", 0))
-    mem_val = int(db_dev.mem_usage or 0) if db_dev else int(dev.get("mem", 0))
-    lat_val = round(db_dev.latency_ms or 0.0, 1) if db_dev else 0.0
-    loss_val = round(db_dev.packet_loss or 0.0, 1) if db_dev else 0.0
+        if down_count > 0:
+            down_devices = [d.name for d in devices if (d.status or "").upper() == "DOWN"]
+            msg += f"Perangkat tidak terjangkau: <code>{', '.join(down_devices)}</code>\n\n"
+        else:
+            msg += "Seluruh perangkat beroperasi normal.\n\n"
 
-    status_badge = "UP" if d_status == "UP" else "DOWN"
+        msg += (
+            "Perintah yang tersedia:\n"
+            "/start - Panduan operasional bot\n"
+            "/devices - Daftar seluruh perangkat\n"
+            "/device [nama_perangkat] - Rincian telemetri perangkat\n"
+            "/alerts - Daftar gangguan aktif\n"
+            "/ack [id_alert] - Konfirmasi penanganan alert\n"
+            "/resolve [id_alert] - Selesaikan dan pulihkan gangguan\n"
+            "/backup [nama_perangkat] [kategori] - Backup manual konfigurasi & log audit\n"
+            "/user - Profil & status hak akses akun\n"
+            "/approve @username [role] - (Khusus Admin) Menyetujui akses teknisi baru."
+        )
+        return msg
+    except Exception as e:
+        logger.error(f"Error in build_status_view: {e}")
+        return "Gagal memuat status sistem jaringan dari database."
+    finally:
+        if session:
+            session.close()
+        db_session.remove()
 
-    cpu_bar = make_progress_bar(cpu_val, 10)
-    mem_bar = make_progress_bar(mem_val, 10)
+def build_devices_view() -> str:
+    """Tampilan Daftar Inventaris Perangkat Riil dari Database"""
+    session = None
+    try:
+        session = db_session()
+        devices = session.query(Device).order_by(Device.device_id.asc()).all()
 
-    cpu_label = "Kritis" if cpu_val >= 85 else ("Tinggi" if cpu_val >= 70 else "Normal")
-    mem_label = "Kritis" if mem_val >= 85 else ("Tinggi" if mem_val >= 70 else "Normal")
+        msg = (
+            "<b>INVENTARIS PERANGKAT JARINGAN</b>\n\n"
+            f"Total Perangkat Terdata : {len(devices)} Unit\n"
+            "<pre>\n"
+            "NAMA PERANGKAT     VENDOR      STATUS   LOKASI\n"
+        )
+        for dev in devices:
+            d_name = (dev.name or "-")[:18]
+            v_name = (dev.vendor or "-")[:11]
+            status_txt = "UP" if (dev.status or "").upper() == "UP" else "DOWN"
+            site_name = (dev.site or "-")[:12]
+            msg += f"{d_name:<18} {v_name:<11} {status_txt:<8} {site_name}\n"
+        msg += "</pre>\n\n"
+        example_name = devices[0].name if devices else "SW-2930F-HO"
+        msg += f"Ketik /device [nama_perangkat] untuk melihat telemetri lengkap. Contoh: /device {example_name}"
+        return msg
+    except Exception as e:
+        logger.error(f"Error in build_devices_view: {e}")
+        return "Gagal memuat daftar perangkat dari database."
+    finally:
+        if session:
+            session.close()
+        db_session.remove()
 
-    last_b = dev.get("last_backup", "-") if dev else "-"
-    b_path = dev.get("backup_path", "-") if dev else "-"
+def build_device_detail_view(device_name: str) -> str:
+    """Tampilan Detail Telemetri Satu Perangkat Riil dari Database"""
+    session = None
+    try:
+        session = db_session()
+        clean_name = device_name.strip()
+        db_dev = session.query(Device).filter(Device.name.ilike(f"%{clean_name}%")).first()
+        if not db_dev:
+            db_dev = session.query(Device).filter(Device.ip_address == clean_name).first()
 
-    msg = (
-        "<b>INFORMASI PERANGKAT\n\n"
-        f"Nama Device: {html.escape(d_name)}\n"
-        f"Status Operasional: {status_badge}\n"
-        f"Alamat IP: <code>{d_ip}</code>\n"
-        f"Vendor: {d_vendor}\n"
-        f"Lokasi: {d_site}\n"
-        f"Latency: <code>{lat_val} ms</code> | Ping Drop: <code>{loss_val}%</code>\n"
-        f"Waktu Aktif: <code>{d_uptime}</code>\n\n"
-        "Penggunaan Sumber Daya:\n"
-        f"<code>CPU [{cpu_bar}] {cpu_val:>2}% ({cpu_label})</code>\n"
-        f"<code>MEM [{mem_bar}] {mem_val:>2}% ({mem_label})</code>\n\n"
-        "Manajemen Konfigurasi:\n"
-        f"• Backup Terakhir: <code>{last_b}</code>\n"
-        f"• Jalur Direktori: <code>{b_path}</code>\n\n"
-        f"Ketik /backup {html.escape(d_name)} untuk melakukan backup konfigurasi manual."
-    )
-    return msg
+        if not db_dev:
+            return (
+                "<b>PERANGKAT TIDAK DITEMUKAN</b>\n\n"
+                f"Perangkat <code>{html.escape(device_name)}</code> tidak terdaftar dalam inventaris.\n"
+                "Gunakan perintah /devices untuk melihat daftar perangkat yang tersedia."
+            )
+
+        d_name = db_dev.name
+        d_status = db_dev.status or "UP"
+        d_ip = db_dev.ip_address or "-"
+        d_vendor = db_dev.vendor or "-"
+        d_site = db_dev.site or "-"
+        d_uptime = db_dev.uptime or "-"
+        cpu_val = int(db_dev.cpu_usage or 0)
+        mem_val = int(db_dev.mem_usage or 0)
+        lat_val = round(db_dev.latency_ms or 0.0, 1)
+        loss_val = round(db_dev.packet_loss or 0.0, 1)
+
+        status_badge = "UP" if d_status == "UP" else "DOWN"
+
+        cpu_bar = make_progress_bar(cpu_val, 10)
+        mem_bar = make_progress_bar(mem_val, 10)
+
+        cpu_label = "Kritis" if cpu_val >= 85 else ("Tinggi" if cpu_val >= 70 else "Normal")
+        mem_label = "Kritis" if mem_val >= 85 else ("Tinggi" if mem_val >= 70 else "Normal")
+
+        # Ambil riwayat backup terakhir riil dari BackupHistory
+        last_bkp = session.query(BackupHistory).filter(
+            BackupHistory.device_id == db_dev.device_id,
+            BackupHistory.status == 'SUCCESS'
+        ).order_by(BackupHistory.timestamp.desc()).first()
+
+        site_clean = str(d_site).replace(" ", "_")
+        if last_bkp and last_bkp.timestamp:
+            last_b = last_bkp.timestamp.strftime("%Y-%m-%d %H:%M WIB")
+            b_path = os.path.dirname(last_bkp.file_path).replace("\\", "/") if last_bkp.file_path else f"/backups/{site_clean}/{d_name}"
+        else:
+            last_b = "Belum Ada Backup"
+            b_path = f"/backups/{site_clean}/{d_name}"
+
+        msg = (
+            "<b>INFORMASI PERANGKAT</b>\n\n"
+            f"Nama Device: {html.escape(d_name)}\n"
+            f"Status Operasional: {status_badge}\n"
+            f"Alamat IP: <code>{d_ip}</code>\n"
+            f"Vendor: {d_vendor}\n"
+            f"Lokasi: {d_site}\n"
+            f"Latency: <code>{lat_val} ms</code> | Ping Drop: <code>{loss_val}%</code>\n"
+            f"Waktu Aktif: <code>{d_uptime}</code>\n\n"
+            "Penggunaan Sumber Daya:\n"
+            f"<code>CPU [{cpu_bar}] {cpu_val:>2}% ({cpu_label})</code>\n"
+            f"<code>MEM [{mem_bar}] {mem_val:>2}% ({mem_label})</code>\n\n"
+            "Manajemen Konfigurasi:\n"
+            f"• Backup Terakhir: <code>{last_b}</code>\n"
+            f"• Jalur Direktori: <code>{b_path}</code>\n\n"
+            f"Ketik /backup {html.escape(d_name)} untuk melakukan backup konfigurasi manual."
+        )
+        return msg
+    except Exception as e:
+        logger.error(f"Error in build_device_detail_view: {e}")
+        return f"Gagal memuat telemetri perangkat {html.escape(device_name)} dari database."
+    finally:
+        if session:
+            session.close()
+        db_session.remove()
 
 def build_alerts_view() -> str:
-    """Tampilan Daftar Incident & Alert Aktif dari Database"""
-    session = db_session()
+    """Tampilan Daftar Incident & Alert Aktif dari Database sesuai Format Resmi AGIVA"""
+    session = None
     try:
+        session = db_session()
         db_alerts = session.query(Alert).filter(Alert.resolved_at == None).order_by(Alert.triggered_at.desc()).all()
         open_alerts = [a for a in db_alerts if not a.acknowledged]
         ack_alerts = [a for a in db_alerts if a.acknowledged]
-        
+
         today_start = datetime.combine(datetime.now().date(), datetime.min.time())
         resolved_count = session.query(IncidentLog).filter(
             IncidentLog.status == 'RESOLVED_ALERT',
             IncidentLog.resolved_at >= today_start
         ).count()
 
-        msg = (
-            "<b>DAFTAR ACTIVE ALERTS JARINGAN</b>\n\n"
-            f"Status Antrean: {len(open_alerts)} Menunggu ACK | {len(ack_alerts)} Sedang Ditangani (ACK) | {resolved_count} Resolved Hari Ini\n"
-            f"Waktu Data: <code>{get_current_time_wib()}</code>\n\n"
-        )
+        time_wib = get_current_time_wib()
 
+        # Format 1: Jika tidak ada gangguan aktif
         if not db_alerts:
-            msg += "✅ Tidak ada gangguan aktif saat ini. Seluruh alert berstatus Resolved.\n"
-        else:
-            for a in db_alerts:
-                status_tag = "Sedang Ditangani (Acknowledged)" if a.acknowledged else "Menunggu ACK"
-                dev_name = a.device.name if a.device else f"Perangkat #{a.device_id}"
-                ip_addr = a.device.ip_address if a.device else "-"
-                time_str = a.triggered_at.strftime('%Y-%m-%d %H:%M:%S') if a.triggered_at else "-"
-
-                msg += (
-                    f"<b>[#{a.alert_id}] {a.severity} — {dev_name}</b> ({ip_addr})\n"
-                    f"• Tipe Anomali: {a.type}\n"
-                    f"• Deskripsi: {a.message}\n"
-                    f"• Waktu: <code>{time_str}</code>\n"
-                    f"• Status ACK: <b>{status_tag}</b>\n"
-                )
-                if a.acknowledged:
-                    msg += f"• Petugas: {a.acknowledged_by or 'NOC Team'}\n"
-                msg += "\n"
-
-            msg += (
-                "Perintah tindak lanjut:\n"
-                "• <code>/ack [id]</code> - Konfirmasi penanganan alert\n"
-                "• <code>/resolve [id]</code> - Selesaikan dan pindahkan ke Incident Log"
+            msg = (
+                "<b>ACTIVE ALERTS</b>\n"
+                f"As of {time_wib}\n\n"
+                "<pre>\n"
+                f"{'Unacknowledged':<17} {len(open_alerts)}\n"
+                f"{'Acknowledged':<17} {len(ack_alerts)}\n"
+                f"{'Resolved today':<17} {resolved_count}\n"
+                "</pre>\n\n"
+                "No active incidents."
             )
+            return msg
+
+        # Format 2: Jika ada gangguan aktif (Tabel Status)
+        type_map = {
+            "HOST_DOWN": "HOST DOWN",
+            "CPU_OVERLOAD": "HIGH CPU",
+            "MEMORY_OVERLOAD": "HIGH MEM",
+            "HIGH_LATENCY": "HIGH LAT",
+            "PACKET_LOSS": "PACKET LOSS"
+        }
+
+        now = datetime.now()
+        table_lines = [
+            f"{'ID':<4} {'SEV':<9} {'DEVICE':<14} {'TYPE':<11} {'AGE':<5} {'STATE'}"
+        ]
+
+        for a in db_alerts:
+            id_str = f"#{a.alert_id}"
+            sev_str = (a.severity or "WARNING").upper()[:8]
+            dev_name = a.device.name if a.device else f"DEV-{a.device_id}"
+            dev_str = dev_name[:14]
+            t_raw = a.type or "INCIDENT"
+            type_str = type_map.get(t_raw, t_raw.replace("_", " ").upper())[:11]
+
+            if a.triggered_at:
+                dur_sec = max(0, int((now - a.triggered_at).total_seconds()))
+                if dur_sec < 3600:
+                    age_str = f"{dur_sec // 60}m"
+                elif dur_sec < 86400:
+                    age_str = f"{dur_sec // 3600}h"
+                else:
+                    age_str = f"{dur_sec // 86400}d"
+            else:
+                age_str = "-"
+
+            state_str = "ACK" if a.acknowledged else "UNACK"
+            table_lines.append(f"{id_str:<4} {sev_str:<9} {dev_str:<14} {type_str:<11} {age_str:<5} {state_str}")
+
+        msg = (
+            "<b>ACTIVE ALERTS</b>\n"
+            f"As of {time_wib}\n\n"
+            "<pre>\n"
+            f"{'Unacknowledged':<17} {len(open_alerts)}\n"
+            f"{'Acknowledged':<17} {len(ack_alerts)}\n"
+            f"{'Resolved today':<17} {resolved_count}\n\n"
+            + "\n".join(table_lines) + "\n"
+            "</pre>\n\n"
+            "Acknowledge: /ack &lt;id&gt;"
+        )
         return msg
     except Exception as e:
         logger.error(f"Error in build_alerts_view: {e}")
         return "Gagal memuat daftar alert dari database."
     finally:
-        session.close()
+        if session:
+            session.close()
+        db_session.remove()
 
 def build_backup_report(device_name: str, operator_name: str) -> str:
-    """Laporan Hasil Eksekusi Backup Konfigurasi"""
-    dev = DEVICES[device_name]
-    today_str = get_current_date()
-    backup_file = f"{dev['backup_path']}/{today_str}_config.txt"
-    job_id = f"BKP-{datetime.now().strftime('%Y%m%d')}-{random.randint(1000, 9999)}"
-    commit_hash = hashlib.sha1(f"{device_name}{datetime.now()}".encode()).hexdigest()[:7]
-    dummy_checksum = hashlib.sha256(f"{backup_file}".encode()).hexdigest()[:16]
+    """Laporan Hasil Eksekusi Backup Konfigurasi Terakhir dari Database"""
+    session = None
+    try:
+        session = db_session()
+        clean_name = device_name.strip()
+        db_dev = session.query(Device).filter(Device.name.ilike(f"%{clean_name}%")).first()
+        if not db_dev:
+            return f"Perangkat <code>{html.escape(device_name)}</code> tidak ditemukan dalam inventaris."
 
-    return (
-        "<b>LAPORAN HASIL BACKUP KONFIGURASI</b>\n\n"
-        f"ID Pekerjaan: <code>{job_id}</code>\n"
-        f"Perangkat: <code>{device_name}</code> ({dev['ip']})\n"
-        f"Vendor: {dev['vendor']}\n"
-        f"Operator: @{html.escape(operator_name)}\n"
-        f"Waktu Eksekusi: <code>{get_current_time_wib()}</code>\n\n"
-        "Rincian Pengarsipan:\n"
-        "• Metode Ekstraksi: Netmiko SSH Automated Collector\n"
-        f"• Lokasi Berkas:\n  <code>{backup_file}</code>\n"
-        "• Ukuran Berkas: 48.6 KB\n"
-        f"• Checksum SHA-256: <code>{dummy_checksum}...</code>\n"
-        f"• Version Control: Commit Git dibuat (hash: <code>{commit_hash}</code>)\n"
-        "• Status Akhir: Sukses (Waktu eksekusi: 2.18 detik)"
-    )
+        last_bkp = session.query(BackupHistory).filter(
+            BackupHistory.device_id == db_dev.device_id
+        ).order_by(BackupHistory.timestamp.desc()).first()
+
+        time_str = last_bkp.timestamp.strftime("%Y-%m-%d %H:%M:%S WIB") if last_bkp and last_bkp.timestamp else get_current_time_wib()
+        f_path = last_bkp.file_path if last_bkp else f"/backups/{db_dev.site}/{db_dev.name}/"
+        f_size = last_bkp.file_size if last_bkp else "-"
+        st = "Sukses" if (last_bkp and last_bkp.status == 'SUCCESS') else ("Gagal" if last_bkp else "Belum Ada Riwayat")
+        cat = last_bkp.category if last_bkp else "Config"
+
+        return (
+            "<b>LAPORAN HASIL BACKUP KONFIGURASI</b>\n\n"
+            f"Perangkat: <code>{db_dev.name}</code> ({db_dev.ip_address})\n"
+            f"Vendor: {db_dev.vendor}\n"
+            f"Site: {db_dev.site}\n"
+            f"Operator: @{html.escape(operator_name)}\n"
+            f"Waktu Eksekusi: <code>{time_str}</code>\n\n"
+            "Rincian Pengarsipan:\n"
+            f"• Kategori: {cat}\n"
+            f"• Lokasi Berkas:\n  <code>{f_path}</code>\n"
+            f"• Ukuran Berkas: {f_size}\n"
+            f"• Status Akhir: {st}"
+        )
+    except Exception as e:
+        logger.error(f"Error in build_backup_report: {e}")
+        return "Gagal memuat laporan backup dari database."
+    finally:
+        if session:
+            session.close()
+        db_session.remove()
 
 def build_start_view() -> str:
     """Panduan & Dokumentasi Operasional NOC saat /start"""
@@ -429,15 +452,15 @@ def build_start_view() -> str:
         "Menampilkan tabel inventaris seluruh perangkat yang dipantau.\n\n"
         "• /device [nama_perangkat]\n"
         "Menampilkan rincian telemetri satu perangkat (CPU, Memori, Uptime, Status Backup).\n"
-        "Contoh: /device RTR-Core-01\n\n"
+        "Contoh: /device SW-2930F-HO\n\n"
         "• /alerts\n"
         "Menampilkan daftar gangguan dan anomali jaringan yang memerlukan mitigasi.\n\n"
         "• /ack [id_alert]\n"
         "Konfirmasi penanganan alert oleh engineer yang bertugas.\n"
-        "Contoh: /ack 101\n\n"
+        "Contoh: /ack 17\n\n"
         "• /resolve [id_alert]\n"
         "Selesaikan dan pulihkan gangguan secara manual.\n"
-        "Contoh: /resolve 101\n\n"
+        "Contoh: /resolve 17\n\n"
         "• /backup [nama_perangkat] [kategori]\n"
         "Memicu penarikan konfigurasi & log audit multi-vendor (pilihan: all, system, config, traffic, threat).\n"
         "Contoh: /backup FW-PA220-1 (semua kategori) atau /backup SW-2930F-HO config\n\n"
@@ -481,7 +504,7 @@ async def device_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         text = build_devices_view()
         await update.message.reply_text(
             "Parameter Perangkat Diperlukan. Gunakan format: <code>/device &lt;nama_perangkat&gt;</code>\n"
-            "Contoh: <code>/device RTR-Core-01</code>\n\n"
+            "Contoh: <code>/device SW-2930F-HO</code>\n\n"
             + text,
             parse_mode=ParseMode.HTML
         )
@@ -502,7 +525,7 @@ async def alerts_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     log_telegram_message(update.effective_chat.id, "COMMAND_REPLY", f"Response /alerts: Active alerts list sent to @{u_name}")
 
 async def ack_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Command /ack <alert_id>: Acknowledge Alert (DB + Fallback)"""
+    """Command /ack <alert_id>: Acknowledge Alert (Database Riil)"""
     user_id = update.effective_user.id
     if not is_whitelisted(user_id):
         logger.warning(f"Unauthorized /ack command by user {user_id}")
@@ -525,7 +548,7 @@ async def ack_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         text = build_alerts_view()
         await update.message.reply_text(
             "<b>PARAMETER ALERT DIPERLUKAN</b>\n\n"
-            "Gunakan format: <code>/ack &lt;id_alert&gt;</code> (contoh: <code>/ack 10</code>)\n\n"
+            "Gunakan format: <code>/ack &lt;id_alert&gt;</code> (contoh: <code>/ack 17</code>)\n\n"
             + text,
             parse_mode=ParseMode.HTML
         )
@@ -534,83 +557,57 @@ async def ack_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     alert_id_clean = raw_id.lstrip('#').replace('ALT-', '').strip()
     handler_user = update.effective_user.username or update.effective_user.first_name
 
-    # 1. Cek di Database PostgreSQL
-    session = db_session()
+    session = None
     db_alert = None
     try:
+        session = db_session()
         if alert_id_clean.isdigit():
             db_alert = session.query(Alert).filter(Alert.alert_id == int(alert_id_clean)).first()
-    except Exception as e:
-        logger.error(f"Error querying alert in DB: {e}")
 
-    if db_alert:
-        if db_alert.resolved_at:
-            session.close()
-            await update.message.reply_text(f"⚠️ Alert #{db_alert.alert_id} sudah dalam status <b>Resolved</b> sebelumnya.", parse_mode=ParseMode.HTML)
+        if db_alert:
+            if db_alert.resolved_at:
+                await update.message.reply_text(f"<b>PEMBERITAHUAN</b>\n\nAlert #{db_alert.alert_id} sudah dalam status Resolved sebelumnya.", parse_mode=ParseMode.HTML)
+                return
+
+            alert_id_val = db_alert.alert_id
+            dev_name = db_alert.device.name if db_alert.device else f"Perangkat #{db_alert.device_id}"
+            severity_val = db_alert.severity
+
+            db_alert.acknowledged = True
+            db_alert.acknowledged_by = f"@{handler_user}"
+            session.commit()
+
+            ack_report = (
+                "<b>KONFIRMASI PENANGANAN ALERT</b>\n\n"
+                f"Referensi Alert: <code>#{alert_id_val}</code>\n"
+                f"Perangkat: <code>{dev_name}</code>\n"
+                f"Tingkat Bahaya: {severity_val}\n"
+                f"Petugas: @{html.escape(handler_user)}\n"
+                f"Waktu Konfirmasi: <code>{get_current_time_wib()}</code>\n"
+                "Status ACK: Acknowledged (Sedang Ditangani)\n\n"
+                f"Ketik <code>/resolve {alert_id_val}</code> untuk menyelesaikan gangguan dan memindahkannya ke Incident Log."
+            )
+            ACTIVE_CHATS.add(update.effective_chat.id)
+            await update.message.reply_text(ack_report, parse_mode=ParseMode.HTML)
+            log_telegram_message(
+                chat_id=str(update.effective_chat.id),
+                message_type="COMMAND_REPLY",
+                content=f"Alert #{alert_id_val} ({dev_name}) acknowledged by @{handler_user}.",
+                status="SENT"
+            )
             return
 
-        alert_id_val = db_alert.alert_id
-        dev_name = db_alert.device.name if db_alert.device else f"Perangkat #{db_alert.device_id}"
-        severity_val = db_alert.severity
-
-        db_alert.acknowledged = True
-        db_alert.acknowledged_by = f"@{handler_user}"
-        session.commit()
-        session.close()
-
-        ack_report = (
-            "<b>KONFIRMASI PENANGANAN ALERT</b>\n\n"
-            f"Referensi Alert: <code>#{alert_id_val}</code>\n"
-            f"Perangkat: <code>{dev_name}</code>\n"
-            f"Tingkat Bahaya: {severity_val}\n"
-            f"Petugas: @{html.escape(handler_user)}\n"
-            f"Waktu Konfirmasi: <code>{get_current_time_wib()}</code>\n"
-            "Status ACK: <b>Acknowledged (Sedang Ditangani)</b>\n\n"
-            f"Ketik <code>/resolve {alert_id_val}</code> untuk menyelesaikan gangguan dan memindahkannya ke Incident Log."
-        )
-        ACTIVE_CHATS.add(update.effective_chat.id)
-        await update.message.reply_text(ack_report, parse_mode=ParseMode.HTML)
-        log_telegram_message(
-            chat_id=str(update.effective_chat.id),
-            message_type="COMMAND_REPLY",
-            content=f"Alert #{alert_id_val} ({dev_name}) acknowledged by @{handler_user}.",
-            status="SENT"
-        )
-        return
-
-    session.close()
-
-    # 2. Fallback in-memory ALERTS
-    alert = ALERTS.get(alert_id_clean)
-    if not alert:
         await update.message.reply_text(
-            f"<b>ALERT ID TIDAK DITEMUKAN</b>\n\nAlert <code>{html.escape(raw_id)}</code> tidak terdaftar dalam antrean aktif.",
+            f"<b>ALERT ID TIDAK DITEMUKAN</b>\n\nAlert <code>{html.escape(raw_id)}</code> tidak terdaftar dalam antrean aktif database.",
             parse_mode=ParseMode.HTML
         )
-        return
-
-    alert["status"] = "Acknowledged"
-    alert["acknowledged_by"] = handler_user
-    alert["acknowledged_at"] = get_current_time_wib()
-    ACTIVE_CHATS.add(update.effective_chat.id)
-
-    ack_report = (
-        "<b>KONFIRMASI PENANGANAN ALERT</b>\n\n"
-        f"Referensi Alert: <code>{alert['id']}</code>\n"
-        f"Perangkat: <code>{alert['device']}</code>\n"
-        f"Tingkat Bahaya: {alert['severity']}\n"
-        f"Petugas: @{html.escape(handler_user)}\n"
-        f"Waktu Konfirmasi: <code>{alert['acknowledged_at']}</code>\n"
-        "Status ACK: <b>Acknowledged (Sedang Ditangani)</b>\n\n"
-        f"Ketik <code>/resolve {alert['id']}</code> jika gangguan telah diperbaiki."
-    )
-    await update.message.reply_text(ack_report, parse_mode=ParseMode.HTML)
-    log_telegram_message(
-        chat_id=str(update.effective_chat.id),
-        message_type="COMMAND_REPLY",
-        content=f"Alert #{alert['id']} ({alert['device']}) acknowledged successfully by @{handler_user}.",
-        status="SENT"
-    )
+    except Exception as e:
+        logger.error(f"Error handling /ack command: {e}")
+        await update.message.reply_text(f"Gagal memproses acknowledge: {e}")
+    finally:
+        if session:
+            session.close()
+        db_session.remove()
 
 async def resolve_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Command /resolve <alert_id>: Resolve Alert secara manual & pindahkan ke Incident Log"""
@@ -636,7 +633,7 @@ async def resolve_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         text = build_alerts_view()
         await update.message.reply_text(
             "<b>PARAMETER ALERT DIPERLUKAN</b>\n\n"
-            "Gunakan format: <code>/resolve &lt;id_alert&gt;</code> (contoh: <code>/resolve 10</code>)\n\n"
+            "Gunakan format: <code>/resolve &lt;id_alert&gt;</code> (contoh: <code>/resolve 17</code>)\n\n"
             + text,
             parse_mode=ParseMode.HTML
         )
@@ -645,126 +642,99 @@ async def resolve_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     alert_id_clean = raw_id.lstrip('#').replace('ALT-', '').strip()
     handler_user = update.effective_user.username or update.effective_user.first_name
 
-    # 1. Cek di Database PostgreSQL
-    session = db_session()
+    session = None
     db_alert = None
     try:
+        session = db_session()
         if alert_id_clean.isdigit():
             db_alert = session.query(Alert).filter(Alert.alert_id == int(alert_id_clean)).first()
-    except Exception as e:
-        logger.error(f"Error querying alert in DB: {e}")
 
-    if db_alert:
-        if db_alert.resolved_at:
-            session.close()
-            await update.message.reply_text(f"⚠️ Alert #{db_alert.alert_id} sudah terselesaikan sebelumnya (Status: Resolved).")
+        if db_alert:
+            if db_alert.resolved_at:
+                await update.message.reply_text(f"<b>PEMBERITAHUAN</b>\n\nAlert #{db_alert.alert_id} sudah terselesaikan sebelumnya (Status: Resolved).", parse_mode=ParseMode.HTML)
+                return
+
+            # VALIDASI KETAT PER SOP PT AGIVA: Wajib /ack terlebih dahulu sebelum /resolve
+            if not db_alert.acknowledged:
+                dev_name = db_alert.device.name if db_alert.device else f"Perangkat #{db_alert.device_id}"
+                await update.message.reply_text(
+                    f"<b>ALERT BELUM DI-ACKNOWLEDGE</b>\n\n"
+                    f"Alert <code>#{db_alert.alert_id}</code> ({html.escape(dev_name)}) harus di-acknowledge terlebih dahulu sebelum dapat diselesaikan per SOP NOC PT AGIVA.\n\n"
+                    f"Silakan ketik <code>/ack {db_alert.alert_id}</code> terlebih dahulu untuk mengonfirmasi penanganan.",
+                    parse_mode=ParseMode.HTML
+                )
+                return
+
+            alert_id_val = db_alert.alert_id
+            dev_name = db_alert.device.name if db_alert.device else f"Perangkat #{db_alert.device_id}"
+            severity_val = db_alert.severity
+
+            now = datetime.now()
+            db_alert.resolved_at = now
+            db_alert.acknowledged = True
+
+            # Pindahkan / sinkronkan ke Incident Log dengan status RESOLVED_ALERT
+            active_inc = session.query(IncidentLog).filter(
+                IncidentLog.device_id == db_alert.device_id,
+                IncidentLog.type == db_alert.type,
+                IncidentLog.resolved_at == None
+            ).first()
+
+            if active_inc:
+                dur_sec = max(1, int((now - active_inc.started_at).total_seconds()))
+                active_inc.resolved_at = now
+                active_inc.duration_seconds = dur_sec
+                active_inc.status = 'RESOLVED_ALERT'
+                inc_id = active_inc.incident_id
+            else:
+                dur_sec = max(1, int((now - db_alert.triggered_at).total_seconds())) if db_alert.triggered_at else 600
+                new_inc = IncidentLog(
+                    device_id=db_alert.device_id,
+                    type=db_alert.type,
+                    severity=severity_val,
+                    peak_metric="-",
+                    started_at=db_alert.triggered_at or now,
+                    resolved_at=now,
+                    duration_seconds=dur_sec,
+                    status='RESOLVED_ALERT'
+                )
+                session.add(new_inc)
+                session.flush()
+                inc_id = new_inc.incident_id
+
+            session.commit()
+
+            ACTIVE_CHATS.add(update.effective_chat.id)
+            resolve_report = (
+                "<b>KONFIRMASI PENYELESAIAN ALERT</b>\n\n"
+                f"Referensi Alert: <code>#{alert_id_val}</code>\n"
+                f"Perangkat: <code>{dev_name}</code>\n"
+                f"Tingkat Bahaya: {severity_val}\n"
+                f"Diselesaikan oleh: @{html.escape(handler_user)}\n"
+                f"Waktu Selesai: <code>{get_current_time_wib()}</code>\n"
+                f"Status Insiden: Resolved (Tercatat di Incident Log #INC-{inc_id})\n\n"
+                "Perangkat telah pulih. Alert berhasil ditutup dan dipindahkan dari tabel Active Alerts ke tabel Incident Log & Cooldown History."
+            )
+            await update.message.reply_text(resolve_report, parse_mode=ParseMode.HTML)
+            log_telegram_message(
+                chat_id=str(update.effective_chat.id),
+                message_type="COMMAND_REPLY",
+                content=f"Alert #{alert_id_val} ({dev_name}) resolved by @{handler_user} and moved to Incident Log.",
+                status="SENT"
+            )
             return
 
-        alert_id_val = db_alert.alert_id
-        dev_name = db_alert.device.name if db_alert.device else f"Perangkat #{db_alert.device_id}"
-        severity_val = db_alert.severity
-
-        now = datetime.now()
-        db_alert.resolved_at = now
-        db_alert.acknowledged = True
-
-        # Pindahkan / sinkronkan ke Incident Log dengan status RESOLVED_ALERT
-        active_inc = session.query(IncidentLog).filter(
-            IncidentLog.device_id == db_alert.device_id,
-            IncidentLog.type == db_alert.type,
-            IncidentLog.resolved_at == None
-        ).first()
-
-        if active_inc:
-            dur_sec = max(1, int((now - active_inc.started_at).total_seconds()))
-            active_inc.resolved_at = now
-            active_inc.duration_seconds = dur_sec
-            active_inc.status = 'RESOLVED_ALERT'
-            inc_id = active_inc.incident_id
-        else:
-            dur_sec = max(1, int((now - db_alert.triggered_at).total_seconds())) if db_alert.triggered_at else 600
-            new_inc = IncidentLog(
-                device_id=db_alert.device_id,
-                type=db_alert.type,
-                severity=severity_val,
-                peak_metric="-",
-                started_at=db_alert.triggered_at or now,
-                resolved_at=now,
-                duration_seconds=dur_sec,
-                status='RESOLVED_ALERT'
-            )
-            session.add(new_inc)
-            session.flush()
-            inc_id = new_inc.incident_id
-
-        session.commit()
-        session.close()
-
-        ACTIVE_CHATS.add(update.effective_chat.id)
-        resolve_report = (
-            "<b>KONFIRMASI PENYELESAIAN ALERT</b>\n\n"
-            f"Referensi Alert: <code>#{alert_id_val}</code>\n"
-            f"Perangkat: <code>{dev_name}</code>\n"
-            f"Tingkat Bahaya: {severity_val}\n"
-            f"Diselesaikan oleh: @{html.escape(handler_user)}\n"
-            f"Waktu Selesai: <code>{get_current_time_wib()}</code>\n"
-            f"Status Insiden: <b>Resolved</b> (Tercatat di Incident Log #INC-{inc_id})\n\n"
-            "✅ Perangkat telah pulih. Alert berhasil ditutup dan dipindahkan dari tabel Active Alerts ke tabel Incident Log & Cooldown History."
-        )
-        await update.message.reply_text(resolve_report, parse_mode=ParseMode.HTML)
-        log_telegram_message(
-            chat_id=str(update.effective_chat.id),
-            message_type="COMMAND_REPLY",
-            content=f"Alert #{alert_id_val} ({dev_name}) resolved by @{handler_user} and moved to Incident Log.",
-            status="SENT"
-        )
-        return
-
-    session.close()
-
-    # 2. Fallback in-memory ALERTS
-    alert = ALERTS.get(alert_id_clean)
-    if not alert:
         await update.message.reply_text(
-            f"<b>ALERT ID TIDAK DITEMUKAN</b>\n\nAlert <code>{html.escape(raw_id)}</code> tidak terdaftar dalam antrean.",
+            f"<b>ALERT ID TIDAK DITEMUKAN</b>\n\nAlert <code>{html.escape(raw_id)}</code> tidak terdaftar dalam antrean aktif database.",
             parse_mode=ParseMode.HTML
         )
-        return
-
-    if alert.get("status", "").upper() == "RESOLVED":
-        await update.message.reply_text("Alert ini sudah dalam status Resolved.")
-        return
-
-    dev_name = alert["device"]
-    if dev_name in DEVICES:
-        if DEVICES[dev_name]["status"] == "DOWN":
-            DEVICES[dev_name]["status"] = "UP"
-            DEVICES[dev_name]["uptime"] = "1 menit (Baru Pulih)"
-        elif alert_id_clean == "102":
-            DEVICES[dev_name]["cpu"] = 24
-
-    alert["status"] = "Resolved"
-    alert["resolved_at"] = get_current_time_wib()
-    ACTIVE_CHATS.add(update.effective_chat.id)
-
-    resolve_report = (
-        "<b>KONFIRMASI PENYELESAIAN ALERT</b>\n\n"
-        f"Referensi Alert: <code>{alert['id']}</code>\n"
-        f"Perangkat: <code>{alert['device']}</code>\n"
-        f"Tingkat Bahaya: {alert['severity']}\n"
-        f"Diselesaikan oleh: @{html.escape(handler_user)}\n"
-        f"Waktu Selesai: <code>{alert['resolved_at']}</code>\n"
-        "Status Insiden: <b>Resolved</b>\n\n"
-        "Perangkat telah dipulihkan dan alert ditutup."
-    )
-    await update.message.reply_text(resolve_report, parse_mode=ParseMode.HTML)
-    
-    log_telegram_message(
-        chat_id=str(update.effective_chat.id),
-        message_type="COMMAND_REPLY",
-        content=f"Alert #{alert['id']} ({alert['device']}) resolved successfully by @{handler_user}.",
-        status="SENT"
-    )
+    except Exception as e:
+        logger.error(f"Error handling /resolve command: {e}")
+        await update.message.reply_text(f"Gagal memproses penyelesaian alert: {e}")
+    finally:
+        if session:
+            session.close()
+        db_session.remove()
 
 async def backup_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Command /backup <nama>: Trigger Backup & Log Archive Manual Riil"""
@@ -782,8 +752,8 @@ async def backup_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(
             "<b>PARAMETER PERANGKAT DIPERLUKAN</b>\n\n"
             "Gunakan format: <code>/backup &lt;nama_perangkat&gt; [kategori]</code>\n\n"
-            "<b>Pilihan Kategori:</b> <code>all</code>, <code>system</code>, <code>config</code>, <code>traffic</code>, <code>threat</code>\n\n"
-            "<b>Contoh:</b>\n"
+            "Pilihan Kategori: <code>all</code>, <code>system</code>, <code>config</code>, <code>traffic</code>, <code>threat</code>\n\n"
+            "Contoh:\n"
             "• <code>/backup FW-PA220-1</code> (Tarik semua kategori)\n"
             "• <code>/backup FW-PA220-1 traffic</code> (Hanya Traffic)\n"
             "• <code>/backup SW-2930F-HO config</code> (Hanya Running Config)\n\n"
@@ -796,12 +766,33 @@ async def backup_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     category_param = context.args[1].strip().lower() if len(context.args) > 1 else None
     operator_user = update.effective_user.username or update.effective_user.first_name
 
-    cat_desc = f"kategori <b>{category_param.upper()}</b>" if category_param and category_param != "all" else "semua kategori"
+    cat_desc = f"kategori {category_param.upper()}" if category_param and category_param != "all" else "semua kategori"
+
+    # Deteksi protokol komunikasi perangkat riil dari database (SSH vs API)
+    method = "SSH"
+    session_check = None
+    try:
+        session_check = db_session()
+        db_dev = session_check.query(Device).filter(Device.name.ilike(f"%{device_name}%")).first()
+        if not db_dev:
+            db_dev = session_check.query(Device).filter(Device.ip_address == device_name).first()
+        if db_dev and db_dev.vendor:
+            v_low = db_dev.vendor.lower()
+            if "palo" in v_low or "pan" in v_low:
+                method = "API"
+            elif "aruba" in v_low or "huawei" in v_low or "cisco" in v_low:
+                method = "SSH"
+    except Exception:
+        pass
+    finally:
+        if session_check:
+            session_check.close()
+        db_session.remove()
 
     progress_msg = await update.message.reply_text(
-        f"⏳ <b>MEMPROSES PENCADANGAN...</b>\n\n"
-        f"Menghubungi <code>{html.escape(device_name)}</code> via SSH/API.\n"
-        f"Mengekstrak berkas {cat_desc}...",
+        "<b>MEMPROSES PENCADANGAN</b>\n\n"
+        f"Menghubungi <code>{html.escape(device_name)}</code> via {method}.\n"
+        f"Mengekstrak berkas {cat_desc}.",
         parse_mode=ParseMode.HTML
     )
 
@@ -818,7 +809,7 @@ async def backup_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if not backup_result.get("success"):
         await progress_msg.edit_text(
-            f"❌ <b>GAGAL MENGEKSEKUSI PENCADANGAN</b>\n\n"
+            f"<b>GAGAL MENGEKSEKUSI PENCADANGAN</b>\n\n"
             f"Perangkat: <code>{html.escape(device_name)}</code>\n"
             f"Keterangan: {html.escape(backup_result.get('error', 'Terjadi kesalahan internal.'))}",
             parse_mode=ParseMode.HTML
@@ -831,37 +822,58 @@ async def backup_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     vendor_res = backup_result.get("vendor", "-")
     items = backup_result.get("results", [])
 
-    lines = []
-    has_failed = False
+    total = len(items)
+    succeeded = sum(1 for it in items if it.get("status") == "SUCCESS")
+    has_failed = succeeded < total
+
+    header = "<b>BACKUP COMPLETED WITH ERRORS</b>" if has_failed else "<b>BACKUP COMPLETED</b>"
+    time_wib = get_current_time_wib()
+
+    lines_meta = [
+        f"{'Device':<10} {dev_name_res}",
+        f"{'IP':<10} {ip_res}",
+        f"{'Vendor':<10} {vendor_res}",
+        f"{'Site':<10} {site_res}",
+        f"{'Operator':<10} @{operator_user}",
+        f"{'Executed':<10} {time_wib}",
+    ]
+
+    lines_art = [
+        f"{'Artifact':<10} {'Status':<8} Size"
+    ]
+    files = []
+    errors = []
+
     for it in items:
-        cat = it.get("category", "Log").upper()
-        sz = it.get("size", "0 B")
-        st = it.get("status", "SUCCESS")
-        fname = it.get("file", "-")
-        mode = "Raw Snapshot"
-        drange = it.get("data_range", "")
-        if st == "SUCCESS":
-            icon = "✅"
-        else:
-            icon = "⚠️"
-            has_failed = True
-        range_label = f"\n   ↳ 🕒 <i>{html.escape(drange)}</i>" if drange else ""
-        lines.append(f"• <b>[{cat}]</b> {icon} <code>{fname}</code> ({sz}) - <i>{mode}</i>{range_label}")
+        cat = it.get("category", "CONFIG").upper()
+        is_ok = (it.get("status") == "SUCCESS")
+        st_label = "OK" if is_ok else "FAILED"
+        sz = it.get("size", "0 B") if is_ok else "-"
+        lines_art.append(f"{cat:<10} {st_label:<8} {sz}")
+        fname = it.get("file")
+        if is_ok and fname and fname != "-":
+            files.append(fname)
+        if not is_ok:
+            err_msg = it.get("error") or "Unknown error"
+            errors.append(f"{cat}: {err_msg}")
 
-    overall_status = "⚠️ Selesai dengan beberapa catatan" if has_failed else "✅ Sukses Penuh"
+    res_str = f"{succeeded} of {total} succeeded"
+    site_clean_dir = str(site_res).replace(" ", "_")
+    loc_str = f"/backups/{site_clean_dir}/{dev_name_res}/"
 
-    report_text = (
-        "<b>LAPORAN HASIL BACKUP & LOG ARCHIVE</b>\n\n"
-        f"Perangkat: <b>{html.escape(dev_name_res)}</b> (<code>{ip_res}</code>)\n"
-        f"Site: {html.escape(site_res)} | Vendor: {html.escape(vendor_res)}\n"
-        f"Operator: @{html.escape(operator_user)}\n"
-        f"Waktu Eksekusi: <code>{get_current_time_wib()}</code>\n\n"
-        "<b>Rincian Pengarsipan per Kategori:</b>\n"
-        + "\n".join(lines) + "\n\n"
-        f"Direktori: <code>/backups/{html.escape(site_res)}/{html.escape(dev_name_res)}/</code>\n"
-        f"Status Akhir: <b>{overall_status}</b>\n"
-        "<i>Tercatat di dashboard web: /backups</i>"
+    files_block = "\n".join(files) if files else "None"
+    errors_block = "\n".join(errors) if errors else "None"
+
+    body_content = (
+        "\n".join(lines_meta) + "\n\n"
+        + "\n".join(lines_art) + "\n\n"
+        + f"{'Result':<10} {res_str}\n"
+        + f"{'Location':<10} {loc_str}\n\n"
+        + "Files\n" + files_block + "\n\n"
+        + "Errors\n" + errors_block
     )
+
+    report_text = f"{header}\n\n<pre>\n{body_content}\n</pre>"
 
     await progress_msg.edit_text(report_text, parse_mode=ParseMode.HTML)
     log_telegram_message(
@@ -1068,6 +1080,20 @@ async def global_error_handler(update: object, context: ContextTypes.DEFAULT_TYP
     """Menangkap semua exception agar bot tetap berjalan tanpa crash"""
     logger.error(f"Global Error Handler caught: {context.error}")
 
+import atexit
+
+def mark_bot_offline():
+    """Menulis status OFFLINE ke heartbeat file agar dashboard segera mendeteksi bot mati"""
+    try:
+        hb_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'logs', 'bot_heartbeat.json')
+        if os.path.exists(hb_path):
+            with open(hb_path, 'w') as f:
+                json.dump({'timestamp': 0, 'status': 'OFFLINE', 'pid': None}, f)
+    except Exception:
+        pass
+
+atexit.register(mark_bot_offline)
+
 def start_local_heartbeat():
     """Menulis heartbeat file lokal agar dashboard lokal dapat memantau status bot saat dijalankan di lokal"""
     def _worker():
@@ -1124,7 +1150,13 @@ def main():
     # Global Error Handler
     app.add_error_handler(global_error_handler)
 
-    app.run_polling()
+    try:
+        app.run_polling()
+    except (KeyboardInterrupt, SystemExit):
+        print("\n[*] Bot engine dihentikan oleh pengguna.")
+    finally:
+        mark_bot_offline()
+        print("[*] Status bot dicatat sebagai OFFLINE.")
 
 if __name__ == "__main__":
     main()

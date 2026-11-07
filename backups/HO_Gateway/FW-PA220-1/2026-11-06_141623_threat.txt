@@ -1,10 +1,10 @@
 ======================================================================
 AGIVA NOC RAW SNAPSHOT [THREAT]
-Waktu Eksekusi: 2026-11-06 14:16:23 WIB
-Perangkat     : FW-PA220-1 (192.168.1.11)
+Execution Time: 2026-11-06 14:16:23 WIB
+Device        : FW-PA220-1 (192.168.1.11)
 Site          : HO Gateway
-Kategori      : Threat
-Pemicu        : Telegram (@Dara Samsara)
+Category      : Threat
+Triggered By  : Telegram (@Dara Samsara)
 ======================================================================
 
 <response status="success"><result>

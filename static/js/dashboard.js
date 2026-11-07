@@ -716,40 +716,9 @@ function renderAlertsStream(alerts) {
 }
 
 /* --------------------------------------------------------------------------
-   Acknowledge (ACK) Alert Action
+   SOP PT AGIVA: Acknowledge (ACK) Alert via Web dinonaktifkan secara ketat.
+   Acknowledge HANYA boleh dilakukan oleh petugas melalui Telegram Bot: /ack <alert_id>
    -------------------------------------------------------------------------- */
-async function acknowledgeAlert(alertId) {
-    // If online server is running
-    if (window.location.protocol !== 'file:') {
-        try {
-            const response = await fetch(`/api/ack/${alertId}`, { method: 'POST' });
-            const resData = await response.json();
-        } catch (e) {
-            console.warn('API error, using local UI update:', e);
-        }
-    }
-
-    // Immediate UI update in both offline and online mode
-    const card = document.getElementById(`alert-card-${alertId}`);
-    if (card) {
-        card.classList.add('is-ack');
-        const footer = card.querySelector('.alert-footer');
-        if (footer) {
-            footer.innerHTML = `
-                <span class="badge-ack-state text-success">✓ Acknowledged</span>
-                <span class="text-muted-xs">Confirmed</span>
-            `;
-        }
-    }
-
-    const kpiAlerts = document.getElementById('kpiAlerts');
-    if (kpiAlerts) {
-        let current = parseInt(kpiAlerts.textContent, 10);
-        if (current > 0) kpiAlerts.textContent = current - 1;
-    }
-
-    showToast(`Alert #${alertId} successfully acknowledged.`);
-}
 
 /* --------------------------------------------------------------------------
    Table & Search Filters

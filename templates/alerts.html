@@ -238,7 +238,7 @@
             <div class="page-header-row">
                 <div>
                     <h2>Active & Sustained Alerts</h2>
-                    <p class="sub-text">Telemetry alerts from the last 30 days with data retention and operational handling status.</p>
+                    <p class="sub-text">Active operational alerts requiring mitigation. Resolved incidents are archived in the Incident Log below.</p>
                 </div>
                 <div class="header-tools">
                     <button class="btn-refresh" onclick="refreshAlerts(this)">
@@ -254,10 +254,9 @@
 
             <!-- Alert Filters -->
             <div class="filter-bar" id="alertsFilterBar">
-                <button class="filter-tab active" data-filter="all">All Alerts ({{ total_alerts }})</button>
+                <button class="filter-tab active" data-filter="all">All Active Alerts ({{ total_alerts }})</button>
                 <button class="filter-tab" data-filter="pending">Pending ACK ({{ pending_alerts }})</button>
                 <button class="filter-tab" data-filter="acked">Acknowledged ({{ acked_alerts }})</button>
-                <button class="filter-tab" data-filter="resolved">Resolved ({{ resolved_alerts }})</button>
             </div>
 
             <!-- Alerts Table Panel -->
@@ -273,58 +272,11 @@
                                 <th>Anomaly Type</th>
                                 <th>Issue Description</th>
                                 <th>Timestamp</th>
-                                <th>Resolution Status</th>
+                                <th>Handling Status</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            {% if alerts %}
-                            {% for a in alerts %}
-                            <tr class="alert-row {% if a.resolved_at %}filter-row-resolved{% elif a.acknowledged %}filter-row-acked{% else %}filter-row-pending{% endif %}"
-                                id="alert-row-{{ a.id }}">
-                                <td>#{{ a.id }}</td>
-                                <td>
-                                    {% if a.severity == 'CRITICAL' %}
-                                    <span class="alert-severity-badge badge-crit">CRITICAL</span>
-                                    {% else %}
-                                    <span class="alert-severity-badge badge-warn">{{ a.severity }}</span>
-                                    {% endif %}
-                                </td>
-                                <td><strong>{{ a.device_name }}</strong></td>
-                                <td>{{ a.ip }}</td>
-                                <td>{{ a.type }}</td>
-                                <td class="col-desc">{{ a.message }}</td>
-                                <td class="col-time">{{ a.triggered_at }}</td>
-                                <td>
-                                    {% if a.resolved_at %}
-                                    <span class="status-text-cell"
-                                        style="color: var(--color-copper);">Resolved</span>
-                                    {% elif a.acknowledged %}
-                                    <span class="status-text-cell"
-                                        style="color: var(--color-copper);">Acknowledged</span>
-                                    {% else %}
-                                    <span class="status-text-cell" style="color: var(--color-copper);">Pending ACK</span>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                            {% endfor %}
-                            {% endif %}
-                            <tr class="empty-state-row" id="alertsEmptyState"{% if alerts %} style="display: none;"{% endif %}>
-                                <td colspan="8" class="text-center py-4"
-                                    style="padding: 40px 10px; text-align: center;">
-                                    <div
-                                        style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;">
-                                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none"
-                                            stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
-                                            stroke-linejoin="round" style="color: #10b981; margin: 0 auto 8px auto; display: block;">
-                                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                                            <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                                        </svg>
-                                        <p id="alertsEmptyTitle"
-                                            style="margin: 0 0 4px 0; font-size: 0.9rem; color: #94a3b8; font-weight: 500;">All Systems Operational</p>
-                                        <span id="alertsEmptySub" style="font-size: 0.75rem; color: #64748b;">No active alerts requiring mitigation</span>
-                                    </div>
-                                </td>
-                            </tr>
+                        <tbody id="alertsTableBody">
+                            <!-- Populated dynamically by JavaScript -->
                         </tbody>
                     </table>
                 </div>
@@ -350,6 +302,7 @@
                 <!-- Incident Filters -->
                 <div class="filter-bar" id="incidentsFilterBar">
                     <button class="filter-tab active" data-inc-filter="all">All Incidents ({{ total_incidents }})</button>
+                    <button class="filter-tab" data-inc-filter="monitoring">Active Monitoring ({{ monitoring_incidents }})</button>
                     <button class="filter-tab" data-inc-filter="cooldown">Cooldown ({{ cooldown_incidents }})</button>
                     <button class="filter-tab" data-inc-filter="resolved">Resolved Alerts ({{ resolved_incidents }})</button>
                 </div>
@@ -372,64 +325,8 @@
                                     <th>Incident Status</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                {% if incidents %}
-                                {% for inc in incidents %}
-                                <tr class="incident-row filter-inc-{{ inc.status|lower }}" id="inc-row-{{ inc.id }}">
-                                    <td>#INC-{{ inc.id }}</td>
-                                    <td>
-                                        {% if inc.severity == 'CRITICAL' %}
-                                        <span class="alert-severity-badge badge-crit">CRITICAL</span>
-                                        {% else %}
-                                        <span class="alert-severity-badge badge-warn">{{ inc.severity }}</span>
-                                        {% endif %}
-                                    </td>
-                                    <td><strong>{{ inc.device_name }}</strong></td>
-                                    <td>{{ inc.ip }}</td>
-                                    <td>{{ inc.type }}</td>
-                                    <td>{{ inc.peak_metric }}</td>
-                                    <td class="col-time">{{ inc.started_at }}</td>
-                                    <td class="col-time">{{ inc.resolved_at }}</td>
-                                    <td>{{ inc.duration }}</td>
-                                    <td>
-                                        {% if inc.status == 'AUTO_COOLDOWN' %}
-                                        <span class="status-text-cell"
-                                            style="color: var(--color-copper);">Cooldown</span>
-                                        {% elif inc.status == 'RESOLVED_ALERT' %}
-                                        <span class="status-text-cell"
-                                            style="color: var(--color-copper);">Resolved</span>
-                                        {% elif inc.status == 'ACTIVE_MONITORING' %}
-                                        <span class="status-text-cell"
-                                            style="color: var(--color-copper);">Active Monitoring</span>
-                                        {% elif inc.status in ['ACTIVE_ALERT', 'ESCALATED_TO_ALERT'] %}
-                                        <span class="status-text-cell"
-                                            style="color: var(--color-copper);">Active Alert</span>
-                                        {% else %}
-                                        <span class="status-text-cell" style="color: var(--color-copper);">{{ inc.status
-                                            }}</span>
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                                {% endif %}
-                                <tr class="empty-state-row" id="incidentsEmptyState"{% if incidents %} style="display: none;"{% endif %}>
-                                    <td colspan="10" class="text-center py-4"
-                                        style="padding: 40px 10px; text-align: center;">
-                                        <div
-                                            style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;">
-                                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none"
-                                                stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
-                                                stroke-linejoin="round" style="color: #10b981; margin: 0 auto 8px auto; display: block;">
-                                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                                                <polyline points="9 12 11 14 15 10"></polyline>
-                                            </svg>
-                                            <p id="incidentsEmptyTitle"
-                                                style="margin: 0 0 4px 0; font-size: 0.9rem; color: #94a3b8; font-weight: 500;">
-                                                No Incident History Recorded</p>
-                                            <span id="incidentsEmptySub" style="font-size: 0.75rem; color: #64748b;">All past network incidents have been resolved</span>
-                                        </div>
-                                    </td>
-                                </tr>
+                            <tbody id="incidentsTableBody">
+                                <!-- Populated dynamically by JavaScript -->
                             </tbody>
                         </table>
                     </div>
@@ -448,6 +345,8 @@
     <!-- Toast Notification Container -->
     <div id="toastContainer" class="toast-container"></div>
 
+    <script id="alertsData" type="application/json">{{ alerts | tojson }}</script>
+    <script id="incidentsData" type="application/json">{{ incidents | tojson }}</script>
     <script>
         function updateClock() {
             const now = new Date();
@@ -458,8 +357,34 @@
         setInterval(updateClock, 1000);
         updateClock();
 
+        let allAlerts = [];
+        try {
+            const rawAl = document.getElementById('alertsData');
+            allAlerts = rawAl ? JSON.parse(rawAl.textContent || '[]') : [];
+        } catch (e) {
+            allAlerts = [];
+        }
+
+        let allIncidents = [];
+        try {
+            const rawInc = document.getElementById('incidentsData');
+            allIncidents = rawInc ? JSON.parse(rawInc.textContent || '[]') : [];
+        } catch (e) {
+            allIncidents = [];
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            return String(text)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
         // =========================================================================
-        // 1. ACTIVE & SUSTAINED ALERTS TABLE PAGINATION & FILTERING (20 items/page)
+        // 1. ACTIVE & SUSTAINED ALERTS TABLE (Data-Driven Paging 20 items/page)
         // =========================================================================
         let currentAlertsPage = 1;
         const alertsPerPage = 20;
@@ -471,61 +396,69 @@
                 rowId = window.location.hash.replace('#', '');
             }
             if (rowId && (rowId.startsWith('alert-row-') || rowId.startsWith('alert-'))) {
-                const rows = Array.from(document.querySelectorAll('#alertsTable .alert-row'));
-                const idx = rows.findIndex(r => r.id === rowId);
-                if (idx !== -1) {
+                const targetId = parseInt(rowId.replace(/^(alert-row-|alert-)/, ''), 10);
+                if (!isNaN(targetId) && allAlerts && allAlerts.length > 0) {
                     currentAlertFilter = 'all';
                     document.querySelectorAll('#alertsFilterBar .filter-tab').forEach(t => {
                         t.classList.toggle('active', t.getAttribute('data-filter') === 'all');
                     });
-                    currentAlertsPage = Math.floor(idx / alertsPerPage) + 1;
-                    return true;
+                    const idx = allAlerts.findIndex(a => Number(a.id) === targetId);
+                    if (idx !== -1) {
+                        currentAlertsPage = Math.floor(idx / alertsPerPage) + 1;
+                        return true;
+                    }
                 }
             }
             return false;
         }
         window.checkTargetAlertPage = checkTargetAlertPage;
 
-        function renderAlertsPagination() {
-            const rows = Array.from(document.querySelectorAll('#alertsTable .alert-row'));
-            const filteredRows = rows.filter(row => {
+        function renderAlertsTable(targetRowId) {
+            if (targetRowId) {
+                checkTargetAlertPage(targetRowId);
+            }
+            const tbody = document.getElementById('alertsTableBody');
+            const paginationContainer = document.getElementById('alertsPaginationContainer');
+            const pageInfo = document.getElementById('alertsPageInfo');
+            if (!tbody) return;
+
+            const filteredAlerts = allAlerts.filter(a => {
                 if (currentAlertFilter === 'all') return true;
-                if (currentAlertFilter === 'pending') return row.classList.contains('filter-row-pending');
-                if (currentAlertFilter === 'acked') return row.classList.contains('filter-row-acked');
-                if (currentAlertFilter === 'resolved') return row.classList.contains('filter-row-resolved');
+                if (currentAlertFilter === 'pending') return !a.acknowledged;
+                if (currentAlertFilter === 'acked') return a.acknowledged;
                 return true;
             });
 
-            const totalAlerts = filteredRows.length;
-            const paginationContainer = document.getElementById('alertsPaginationContainer');
-            const pageInfo = document.getElementById('alertsPageInfo');
-            const emptyRow = document.getElementById('alertsEmptyState');
-            const titleEl = document.getElementById('alertsEmptyTitle');
-            const subEl = document.getElementById('alertsEmptySub');
+            const totalAlerts = filteredAlerts.length;
 
             if (totalAlerts === 0) {
-                rows.forEach(r => r.style.display = 'none');
-                if (emptyRow) emptyRow.style.display = '';
-                if (titleEl) {
-                    if (currentAlertFilter === 'pending') {
-                        titleEl.textContent = 'No Pending ACK Alerts';
-                        if (subEl) subEl.textContent = 'All active alerts have been acknowledged';
-                    } else if (currentAlertFilter === 'acked') {
-                        titleEl.textContent = 'No Acknowledged Alerts';
-                        if (subEl) subEl.textContent = 'No acknowledged alerts pending mitigation';
-                    } else if (currentAlertFilter === 'resolved') {
-                        titleEl.textContent = 'No Resolved Alerts';
-                        if (subEl) subEl.textContent = 'No resolved alert history available in this view';
-                    } else {
-                        titleEl.textContent = 'All Systems Operational';
-                        if (subEl) subEl.textContent = 'No active alerts requiring mitigation';
-                    }
+                let emptyTitle = 'All Systems Operational';
+                let emptySub = 'No active alerts requiring mitigation';
+                if (currentAlertFilter === 'pending') {
+                    emptyTitle = 'No Pending ACK Alerts';
+                    emptySub = 'All active alerts have been acknowledged';
+                } else if (currentAlertFilter === 'acked') {
+                    emptyTitle = 'No Acknowledged Alerts';
+                    emptySub = 'No acknowledged alerts pending mitigation';
                 }
+
+                tbody.innerHTML = `
+                    <tr class="empty-state-row" id="alertsEmptyState">
+                        <td colspan="8" class="text-center py-4" style="padding: 40px 10px; text-align: center;">
+                            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;">
+                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color: #10b981; margin: 0 auto 8px auto; display: block;">
+                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                </svg>
+                                <p id="alertsEmptyTitle" style="margin: 0 0 4px 0; font-size: 0.9rem; color: #94a3b8; font-weight: 500;">${emptyTitle}</p>
+                                <span id="alertsEmptySub" style="font-size: 0.75rem; color: #64748b;">${emptySub}</span>
+                            </div>
+                        </td>
+                    </tr>`;
                 if (paginationContainer) paginationContainer.style.display = 'none';
                 return;
             }
 
-            if (emptyRow) emptyRow.style.display = 'none';
             if (paginationContainer) paginationContainer.style.display = 'flex';
 
             const totalPages = Math.ceil(totalAlerts / alertsPerPage) || 1;
@@ -534,11 +467,32 @@
 
             const startIndex = (currentAlertsPage - 1) * alertsPerPage;
             const endIndex = Math.min(startIndex + alertsPerPage, totalAlerts);
+            const pageData = filteredAlerts.slice(startIndex, endIndex);
 
-            rows.forEach(r => r.style.display = 'none');
-            filteredRows.slice(startIndex, endIndex).forEach(r => {
-                r.style.display = '';
-            });
+            let html = '';
+            for (const a of pageData) {
+                const isCrit = (a.severity || '').toUpperCase() === 'CRITICAL';
+                const badgeClass = isCrit ? 'badge-crit' : 'badge-warn';
+                const rowClass = a.acknowledged ? 'filter-row-acked' : 'filter-row-pending';
+                const ackStatusText = a.acknowledged ? 'Acknowledged' : 'Pending ACK';
+
+                html += `
+                <tr class="alert-row ${rowClass}" id="alert-row-${a.id}">
+                    <td>#${a.id}</td>
+                    <td>
+                        <span class="alert-severity-badge ${badgeClass}">${escapeHtml(a.severity || '')}</span>
+                    </td>
+                    <td><strong>${escapeHtml(a.device_name || 'Unknown')}</strong></td>
+                    <td>${escapeHtml(a.ip || '-')}</td>
+                    <td>${escapeHtml(a.type || '-')}</td>
+                    <td class="col-desc">${escapeHtml(a.message || '-')}</td>
+                    <td class="col-time">${escapeHtml(a.triggered_at || '-')}</td>
+                    <td>
+                        <span class="status-text-cell" style="color: var(--color-copper);">${ackStatusText}</span>
+                    </td>
+                </tr>`;
+            }
+            tbody.innerHTML = html;
 
             if (pageInfo) {
                 pageInfo.innerText = `Showing ${startIndex + 1} - ${endIndex} of ${totalAlerts} logs (Page ${currentAlertsPage} of ${totalPages})`;
@@ -546,7 +500,7 @@
 
             renderAlertsPaginationButtons(totalPages);
         }
-        window.renderAlertsPagination = renderAlertsPagination;
+        window.renderAlertsTable = renderAlertsTable;
 
         function renderAlertsPaginationButtons(totalPages) {
             const controls = document.getElementById('alertsPaginationControls');
@@ -554,20 +508,20 @@
 
             let btnHtml = '';
 
-            // Prev Button
-            btnHtml += `<button class="pagination-nav-btn ${currentAlertsPage === 1 ? 'disabled' : ''}" 
+            // Tombol Prev (‹ Prev)
+            btnHtml += `<button type="button" class="pagination-nav-btn ${currentAlertsPage === 1 ? 'disabled' : ''}" 
                          onclick="gotoAlertPage(${currentAlertsPage - 1})" ${currentAlertsPage === 1 ? 'disabled' : ''}>
                          <span>&#8249;</span> <span>Prev</span>
                         </button>`;
 
-            // Smart page numbering
+            // Penomoran Halaman dengan format cerdas (1 ... 9 [10] 11 ... 20)
             if (totalPages <= 7) {
                 for (let p = 1; p <= totalPages; p++) {
-                    btnHtml += `<button class="pagination-num-btn ${p === currentAlertsPage ? 'active' : ''}" 
+                    btnHtml += `<button type="button" class="pagination-num-btn ${p === currentAlertsPage ? 'active' : ''}" 
                                  onclick="gotoAlertPage(${p})">${p}</button>`;
                 }
             } else {
-                btnHtml += `<button class="pagination-num-btn ${currentAlertsPage === 1 ? 'active' : ''}" 
+                btnHtml += `<button type="button" class="pagination-num-btn ${currentAlertsPage === 1 ? 'active' : ''}" 
                              onclick="gotoAlertPage(1)">1</button>`;
 
                 if (currentAlertsPage > 3) {
@@ -586,7 +540,7 @@
                 }
 
                 for (let p = start; p <= end; p++) {
-                    btnHtml += `<button class="pagination-num-btn ${p === currentAlertsPage ? 'active' : ''}" 
+                    btnHtml += `<button type="button" class="pagination-num-btn ${p === currentAlertsPage ? 'active' : ''}" 
                                  onclick="gotoAlertPage(${p})">${p}</button>`;
                 }
 
@@ -594,12 +548,12 @@
                     btnHtml += `<span class="pagination-dots">...</span>`;
                 }
 
-                btnHtml += `<button class="pagination-num-btn ${currentAlertsPage === totalPages ? 'active' : ''}" 
+                btnHtml += `<button type="button" class="pagination-num-btn ${currentAlertsPage === totalPages ? 'active' : ''}" 
                              onclick="gotoAlertPage(${totalPages})">${totalPages}</button>`;
             }
 
-            // Next Button
-            btnHtml += `<button class="pagination-nav-btn ${currentAlertsPage === totalPages ? 'disabled' : ''}" 
+            // Tombol Next (Next ›)
+            btnHtml += `<button type="button" class="pagination-nav-btn ${currentAlertsPage === totalPages ? 'disabled' : ''}" 
                          onclick="gotoAlertPage(${currentAlertsPage + 1})" ${currentAlertsPage === totalPages ? 'disabled' : ''}>
                          <span>Next</span> <span>&#8250;</span>
                         </button>`;
@@ -608,21 +562,19 @@
         }
 
         function gotoAlertPage(page) {
-            const rows = Array.from(document.querySelectorAll('#alertsTable .alert-row'));
-            const filteredRows = rows.filter(row => {
+            const filteredAlerts = allAlerts.filter(a => {
                 if (currentAlertFilter === 'all') return true;
-                if (currentAlertFilter === 'pending') return row.classList.contains('filter-row-pending');
-                if (currentAlertFilter === 'acked') return row.classList.contains('filter-row-acked');
-                if (currentAlertFilter === 'resolved') return row.classList.contains('filter-row-resolved');
+                if (currentAlertFilter === 'pending') return !a.acknowledged;
+                if (currentAlertFilter === 'acked') return a.acknowledged;
                 return true;
             });
-            const totalPages = Math.ceil(filteredRows.length / alertsPerPage) || 1;
+            const totalPages = Math.ceil(filteredAlerts.length / alertsPerPage) || 1;
             if (page < 1 || page > totalPages) return;
             currentAlertsPage = page;
             if (window.location.hash && (window.location.hash.startsWith('#alert-row-') || window.location.hash.startsWith('#alert-'))) {
                 history.replaceState(null, '', window.location.pathname + window.location.search);
             }
-            renderAlertsPagination();
+            renderAlertsTable();
         }
         window.gotoAlertPage = gotoAlertPage;
 
@@ -633,12 +585,15 @@
                 tab.classList.add('active');
                 currentAlertFilter = tab.getAttribute('data-filter') || 'all';
                 currentAlertsPage = 1;
-                renderAlertsPagination();
+                if (window.location.hash && (window.location.hash.startsWith('#alert-row-') || window.location.hash.startsWith('#alert-'))) {
+                    history.replaceState(null, '', window.location.pathname + window.location.search);
+                }
+                renderAlertsTable();
             });
         });
 
         // =========================================================================
-        // 2. INCIDENT LOG & COOLDOWN HISTORY PAGINATION & FILTERING (20 items/page)
+        // 2. INCIDENT LOG & COOLDOWN HISTORY (Data-Driven Paging 20 items/page)
         // =========================================================================
         let currentIncidentsPage = 1;
         const incidentsPerPage = 20;
@@ -649,58 +604,75 @@
             if (!rowId && window.location.hash) {
                 rowId = window.location.hash.replace('#', '');
             }
-            if (rowId && (rowId.startsWith('inc-row-') || rowId.startsWith('inc-'))) {
-                const rows = Array.from(document.querySelectorAll('#incidentsTable .incident-row'));
-                const idx = rows.findIndex(r => r.id === rowId);
-                if (idx !== -1) {
+            if (rowId && (rowId.startsWith('inc-row-') || rowId.startsWith('incident-row-') || rowId.startsWith('inc-'))) {
+                const targetId = parseInt(rowId.replace(/^(inc-row-|incident-row-|inc-)/, ''), 10);
+                if (!isNaN(targetId) && allIncidents && allIncidents.length > 0) {
                     currentIncidentFilter = 'all';
                     document.querySelectorAll('#incidentsFilterBar .filter-tab').forEach(t => {
                         t.classList.toggle('active', t.getAttribute('data-inc-filter') === 'all');
                     });
-                    currentIncidentsPage = Math.floor(idx / incidentsPerPage) + 1;
-                    return true;
+                    const idx = allIncidents.findIndex(inc => Number(inc.id) === targetId);
+                    if (idx !== -1) {
+                        currentIncidentsPage = Math.floor(idx / incidentsPerPage) + 1;
+                        return true;
+                    }
                 }
             }
             return false;
         }
         window.checkTargetIncidentPage = checkTargetIncidentPage;
 
-        function renderIncidentsPagination() {
-            const rows = Array.from(document.querySelectorAll('#incidentsTable .incident-row'));
-            const filteredRows = rows.filter(row => {
+        function renderIncidentsTable(targetRowId) {
+            if (targetRowId) {
+                checkTargetIncidentPage(targetRowId);
+            }
+            const tbody = document.getElementById('incidentsTableBody');
+            const paginationContainer = document.getElementById('incidentsPaginationContainer');
+            const pageInfo = document.getElementById('incidentsPageInfo');
+            if (!tbody) return;
+
+            const filteredIncidents = allIncidents.filter(inc => {
+                const st = (inc.status || '').toUpperCase();
                 if (currentIncidentFilter === 'all') return true;
-                if (currentIncidentFilter === 'cooldown') return row.classList.contains('filter-inc-auto_cooldown');
-                if (currentIncidentFilter === 'resolved') return row.classList.contains('filter-inc-resolved_alert');
+                if (currentIncidentFilter === 'monitoring') return st === 'ACTIVE_MONITORING';
+                if (currentIncidentFilter === 'cooldown') return st === 'AUTO_COOLDOWN';
+                if (currentIncidentFilter === 'resolved') return st === 'RESOLVED_ALERT';
                 return true;
             });
 
-            const totalIncidents = filteredRows.length;
-            const paginationContainer = document.getElementById('incidentsPaginationContainer');
-            const pageInfo = document.getElementById('incidentsPageInfo');
-            const emptyRow = document.getElementById('incidentsEmptyState');
-            const titleEl = document.getElementById('incidentsEmptyTitle');
-            const subEl = document.getElementById('incidentsEmptySub');
+            const totalIncidents = filteredIncidents.length;
 
             if (totalIncidents === 0) {
-                rows.forEach(r => r.style.display = 'none');
-                if (emptyRow) emptyRow.style.display = '';
-                if (titleEl) {
-                    if (currentIncidentFilter === 'cooldown') {
-                        titleEl.textContent = 'No Cooldown Data Available';
-                        if (subEl) subEl.textContent = 'No interfaces currently undergoing flapping cooldown';
-                    } else if (currentIncidentFilter === 'resolved') {
-                        titleEl.textContent = 'No Resolved Alert History';
-                        if (subEl) subEl.textContent = 'No historical resolved incidents recorded';
-                    } else {
-                        titleEl.textContent = 'No Incident History Recorded';
-                        if (subEl) subEl.textContent = 'All past network incidents have been resolved';
-                    }
+                let emptyTitle = 'No Incident History Recorded';
+                let emptySub = 'All past network incidents have been resolved';
+                if (currentIncidentFilter === 'monitoring') {
+                    emptyTitle = 'No Active Monitoring';
+                    emptySub = 'No anomalies currently in the 10-minute evaluation window';
+                } else if (currentIncidentFilter === 'cooldown') {
+                    emptyTitle = 'No Cooldown Data Available';
+                    emptySub = 'No interfaces currently undergoing flapping cooldown';
+                } else if (currentIncidentFilter === 'resolved') {
+                    emptyTitle = 'No Resolved Alert History';
+                    emptySub = 'No historical resolved incidents recorded';
                 }
+
+                tbody.innerHTML = `
+                    <tr class="empty-state-row" id="incidentsEmptyState">
+                        <td colspan="10" class="text-center py-4" style="padding: 40px 10px; text-align: center;">
+                            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;">
+                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color: #10b981; margin: 0 auto 8px auto; display: block;">
+                                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                                    <polyline points="9 12 11 14 15 10"></polyline>
+                                </svg>
+                                <p id="incidentsEmptyTitle" style="margin: 0 0 4px 0; font-size: 0.9rem; color: #94a3b8; font-weight: 500;">${emptyTitle}</p>
+                                <span id="incidentsEmptySub" style="font-size: 0.75rem; color: #64748b;">${emptySub}</span>
+                            </div>
+                        </td>
+                    </tr>`;
                 if (paginationContainer) paginationContainer.style.display = 'none';
                 return;
             }
 
-            if (emptyRow) emptyRow.style.display = 'none';
             if (paginationContainer) paginationContainer.style.display = 'flex';
 
             const totalPages = Math.ceil(totalIncidents / incidentsPerPage) || 1;
@@ -709,11 +681,39 @@
 
             const startIndex = (currentIncidentsPage - 1) * incidentsPerPage;
             const endIndex = Math.min(startIndex + incidentsPerPage, totalIncidents);
+            const pageData = filteredIncidents.slice(startIndex, endIndex);
 
-            rows.forEach(r => r.style.display = 'none');
-            filteredRows.slice(startIndex, endIndex).forEach(r => {
-                r.style.display = '';
-            });
+            let html = '';
+            for (const inc of pageData) {
+                const isCrit = (inc.severity || '').toUpperCase() === 'CRITICAL';
+                const badgeClass = isCrit ? 'badge-crit' : 'badge-warn';
+                const statusLower = (inc.status || '').toLowerCase();
+
+                let statusText = inc.status || '-';
+                if (inc.status === 'AUTO_COOLDOWN') statusText = 'Cooldown';
+                else if (inc.status === 'RESOLVED_ALERT') statusText = 'Resolved';
+                else if (inc.status === 'ACTIVE_MONITORING') statusText = 'Active Monitoring';
+                else if (inc.status === 'ACTIVE_ALERT' || inc.status === 'ESCALATED_TO_ALERT') statusText = 'Active Alert';
+
+                html += `
+                <tr class="incident-row filter-inc-${escapeHtml(statusLower)}" id="inc-row-${inc.id}">
+                    <td>#INC-${inc.id}</td>
+                    <td>
+                        <span class="alert-severity-badge ${badgeClass}">${escapeHtml(inc.severity || '')}</span>
+                    </td>
+                    <td><strong>${escapeHtml(inc.device_name || 'Unknown')}</strong></td>
+                    <td>${escapeHtml(inc.ip || '-')}</td>
+                    <td>${escapeHtml(inc.type || '-')}</td>
+                    <td>${escapeHtml(inc.peak_metric || '-')}</td>
+                    <td class="col-time">${escapeHtml(inc.started_at || '-')}</td>
+                    <td class="col-time">${escapeHtml(inc.resolved_at || '-')}</td>
+                    <td>${escapeHtml(inc.duration || '-')}</td>
+                    <td>
+                        <span class="status-text-cell" style="color: var(--color-copper);">${escapeHtml(statusText)}</span>
+                    </td>
+                </tr>`;
+            }
+            tbody.innerHTML = html;
 
             if (pageInfo) {
                 pageInfo.innerText = `Showing ${startIndex + 1} - ${endIndex} of ${totalIncidents} logs (Page ${currentIncidentsPage} of ${totalPages})`;
@@ -721,7 +721,7 @@
 
             renderIncidentsPaginationButtons(totalPages);
         }
-        window.renderIncidentsPagination = renderIncidentsPagination;
+        window.renderIncidentsTable = renderIncidentsTable;
 
         function renderIncidentsPaginationButtons(totalPages) {
             const controls = document.getElementById('incidentsPaginationControls');
@@ -729,20 +729,20 @@
 
             let btnHtml = '';
 
-            // Prev Button
-            btnHtml += `<button class="pagination-nav-btn ${currentIncidentsPage === 1 ? 'disabled' : ''}" 
+            // Tombol Prev (‹ Prev)
+            btnHtml += `<button type="button" class="pagination-nav-btn ${currentIncidentsPage === 1 ? 'disabled' : ''}" 
                          onclick="gotoIncidentPage(${currentIncidentsPage - 1})" ${currentIncidentsPage === 1 ? 'disabled' : ''}>
                          <span>&#8249;</span> <span>Prev</span>
                         </button>`;
 
-            // Smart page numbering
+            // Penomoran Halaman dengan format cerdas (1 ... 9 [10] 11 ... 20)
             if (totalPages <= 7) {
                 for (let p = 1; p <= totalPages; p++) {
-                    btnHtml += `<button class="pagination-num-btn ${p === currentIncidentsPage ? 'active' : ''}" 
+                    btnHtml += `<button type="button" class="pagination-num-btn ${p === currentIncidentsPage ? 'active' : ''}" 
                                  onclick="gotoIncidentPage(${p})">${p}</button>`;
                 }
             } else {
-                btnHtml += `<button class="pagination-num-btn ${currentIncidentsPage === 1 ? 'active' : ''}" 
+                btnHtml += `<button type="button" class="pagination-num-btn ${currentIncidentsPage === 1 ? 'active' : ''}" 
                              onclick="gotoIncidentPage(1)">1</button>`;
 
                 if (currentIncidentsPage > 3) {
@@ -761,7 +761,7 @@
                 }
 
                 for (let p = start; p <= end; p++) {
-                    btnHtml += `<button class="pagination-num-btn ${p === currentIncidentsPage ? 'active' : ''}" 
+                    btnHtml += `<button type="button" class="pagination-num-btn ${p === currentIncidentsPage ? 'active' : ''}" 
                                  onclick="gotoIncidentPage(${p})">${p}</button>`;
                 }
 
@@ -769,12 +769,12 @@
                     btnHtml += `<span class="pagination-dots">...</span>`;
                 }
 
-                btnHtml += `<button class="pagination-num-btn ${currentIncidentsPage === totalPages ? 'active' : ''}" 
+                btnHtml += `<button type="button" class="pagination-num-btn ${currentIncidentsPage === totalPages ? 'active' : ''}" 
                              onclick="gotoIncidentPage(${totalPages})">${totalPages}</button>`;
             }
 
-            // Next Button
-            btnHtml += `<button class="pagination-nav-btn ${currentIncidentsPage === totalPages ? 'disabled' : ''}" 
+            // Tombol Next (Next ›)
+            btnHtml += `<button type="button" class="pagination-nav-btn ${currentIncidentsPage === totalPages ? 'disabled' : ''}" 
                          onclick="gotoIncidentPage(${currentIncidentsPage + 1})" ${currentIncidentsPage === totalPages ? 'disabled' : ''}>
                          <span>Next</span> <span>&#8250;</span>
                         </button>`;
@@ -783,20 +783,21 @@
         }
 
         function gotoIncidentPage(page) {
-            const rows = Array.from(document.querySelectorAll('#incidentsTable .incident-row'));
-            const filteredRows = rows.filter(row => {
+            const filteredIncidents = allIncidents.filter(inc => {
+                const st = (inc.status || '').toUpperCase();
                 if (currentIncidentFilter === 'all') return true;
-                if (currentIncidentFilter === 'cooldown') return row.classList.contains('filter-inc-auto_cooldown');
-                if (currentIncidentFilter === 'resolved') return row.classList.contains('filter-inc-resolved_alert');
+                if (currentIncidentFilter === 'monitoring') return st === 'ACTIVE_MONITORING';
+                if (currentIncidentFilter === 'cooldown') return st === 'AUTO_COOLDOWN';
+                if (currentIncidentFilter === 'resolved') return st === 'RESOLVED_ALERT';
                 return true;
             });
-            const totalPages = Math.ceil(filteredRows.length / incidentsPerPage) || 1;
+            const totalPages = Math.ceil(filteredIncidents.length / incidentsPerPage) || 1;
             if (page < 1 || page > totalPages) return;
             currentIncidentsPage = page;
-            if (window.location.hash && (window.location.hash.startsWith('#inc-row-') || window.location.hash.startsWith('#inc-'))) {
+            if (window.location.hash && (window.location.hash.startsWith('#inc-row-') || window.location.hash.startsWith('#incident-row-') || window.location.hash.startsWith('#inc-'))) {
                 history.replaceState(null, '', window.location.pathname + window.location.search);
             }
-            renderIncidentsPagination();
+            renderIncidentsTable();
         }
         window.gotoIncidentPage = gotoIncidentPage;
 
@@ -807,7 +808,10 @@
                 tab.classList.add('active');
                 currentIncidentFilter = tab.getAttribute('data-inc-filter') || 'all';
                 currentIncidentsPage = 1;
-                renderIncidentsPagination();
+                if (window.location.hash && (window.location.hash.startsWith('#inc-row-') || window.location.hash.startsWith('#incident-row-') || window.location.hash.startsWith('#inc-'))) {
+                    history.replaceState(null, '', window.location.pathname + window.location.search);
+                }
+                renderIncidentsTable();
             });
         });
 
@@ -816,10 +820,10 @@
         // =========================================================================
         function initPagination() {
             checkTargetAlertPage();
-            renderAlertsPagination();
+            renderAlertsTable();
 
             checkTargetIncidentPage();
-            renderIncidentsPagination();
+            renderIncidentsTable();
         }
 
         if (document.readyState === 'loading') {
@@ -829,16 +833,13 @@
         }
 
         window.addEventListener('hashchange', () => {
-            if (checkTargetAlertPage()) {
-                renderAlertsPagination();
-            }
-            if (checkTargetIncidentPage()) {
-                renderIncidentsPagination();
-            }
+            checkTargetAlertPage();
+            renderAlertsTable();
+            checkTargetIncidentPage();
+            renderIncidentsTable();
         });
 
-        // =========================================================================
-        // 4. ACTION HANDLERS (Refresh Data & Quick ACK via API)
+        // 4. ACTION HANDLERS (Refresh Data)
         // =========================================================================
         // Refresh Data with spinning animation
         function refreshAlerts(btn) {
@@ -854,25 +855,6 @@
             setTimeout(() => {
                 window.location.reload();
             }, 250);
-        }
-
-        // Quick ACK via API
-        async function ackAlert(alertId) {
-            try {
-                const res = await fetch(`/api/ack/${alertId}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-                const data = await res.json();
-                if (data.success) {
-                    showToast(`Alert #${alertId} acknowledged successfully!`);
-                    setTimeout(() => window.location.reload(), 800);
-                } else {
-                    showToast(data.message || 'Failed to acknowledge alert', true);
-                }
-            } catch (err) {
-                showToast('Network error while acknowledging alert.', true);
-            }
         }
 
         function showToast(message, isError = false) {

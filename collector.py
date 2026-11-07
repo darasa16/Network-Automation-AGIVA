@@ -20,7 +20,7 @@ import xml.etree.ElementTree as ET
 from database import db_session
 from models import Device, DeviceStatusLog, IncidentLog
 from rule_engine import evaluate_device_rules, trigger_alert_with_antispam
-from logger_config import get_configured_logger, log_and_telegram_critical_error
+from logger_config import get_configured_logger
 
 logger = get_configured_logger("DataCollector")
 
@@ -603,11 +603,7 @@ def poll_device(device):
             if attempt < max_retries:
                 time.sleep(1)
             else:
-                log_and_telegram_critical_error(
-                    logger,
-                    f"Koneksi polling ke {device.name} ({device.ip_address}) gagal setelah {max_retries}x percobaan: {e}",
-                    module_name="DataCollector"
-                )
+                logger.error(f"[DataCollector] Koneksi polling ke {device.name} ({device.ip_address}) gagal setelah {max_retries}x percobaan: {e}")
                 return {
                     "status": "DOWN",
                     "cpu": 0.0,

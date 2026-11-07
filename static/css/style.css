@@ -919,10 +919,16 @@ tr.search-target-highlight td:first-child {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
 }
 
+.pagination-info {
+    white-space: nowrap;
+}
+
 .pagination-controls {
     display: flex;
     align-items: center;
     gap: 12px;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .pagination-nav-btn {
@@ -936,6 +942,7 @@ tr.search-target-highlight td:first-child {
     display: inline-flex;
     align-items: center;
     gap: 6px;
+    white-space: nowrap;
     transition: all 0.2s ease;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
 }
@@ -2749,7 +2756,7 @@ code {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    z-index: 999;
+    z-index: 100000;
 }
 
 .toast {

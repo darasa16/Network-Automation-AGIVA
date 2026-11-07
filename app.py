@@ -33,9 +33,10 @@ def shutdown_session(exception=None):
 @app.context_processor
 def inject_global_vars():
     session = db_session()
-    active_alerts_count = session.query(Alert).filter(Alert.acknowledged == False).count()
+    active_alerts_count = session.query(Alert).filter(Alert.resolved_at == None).count()
     devices = session.query(Device).order_by(Device.device_id.asc()).all()
     nav_devices = [d.to_dict() for d in devices]
+    session.close()
     return dict(
         active_alerts_count=active_alerts_count,
         nav_devices=nav_devices
@@ -209,16 +210,17 @@ def dashboard():
     """
     session = db_session()
     devices = session.query(Device).order_by(Device.device_id.asc()).all()
-    alerts = session.query(Alert).order_by(Alert.triggered_at.desc()).limit(10).all()
+    alerts = session.query(Alert).filter(Alert.resolved_at == None).order_by(Alert.triggered_at.desc()).limit(10).all()
 
     total_devices = len(devices)
     devices_online = sum(1 for d in devices if d.status == 'UP')
     devices_offline = sum(1 for d in devices if d.status == 'DOWN')
-    active_alerts_count = session.query(Alert).filter(Alert.acknowledged == False).count()
+    active_alerts_count = session.query(Alert).filter(Alert.resolved_at == None).count()
 
     device_list = [d.to_dict() for d in devices]
     alert_list = [a.to_dict() for a in alerts]
-    initial_chart_history = get_aggregated_chart_history()
+    initial_chart_history = get_aggregated_chart_history(session=session)
+    session.close()
 
     return render_template(
         'index.html',
@@ -243,7 +245,7 @@ def device_detail(device_id=1):
     if not device:
         return "Device not found", 404
 
-    device_alerts = session.query(Alert).filter(Alert.device_id == device.device_id).all()
+    device_alerts = session.query(Alert).filter(Alert.device_id == device.device_id, Alert.resolved_at == None).all()
     alerts_data = [a.to_dict() for a in device_alerts]
 
     telemetry = get_device_full_telemetry(device)
@@ -263,6 +265,8 @@ def device_detail(device_id=1):
                     p["rx_mbps"] = round(float(latest_log.ingress_mbps), 2)
                 if latest_log.egress_mbps is not None:
                     p["tx_mbps"] = round(float(latest_log.egress_mbps), 2)
+
+    session.close()
 
     return render_template(
         'device_detail.html',
@@ -299,29 +303,26 @@ def alerts_page():
     session = db_session()
     cutoff_30d = datetime.now() - timedelta(days=30)
     
-    # 1. Alert yang belum di-resolve (Menunggu ACK & Acknowledged) TIDAK AKAN HILANG meski lewat 30 hari
-    # 2. Alert yang SUDAH Resolved HANYA bertahan selama 30 hari terakhir sejak di-resolve / kejadian
+    # 1. Tabel Atas (Active & Sustained Alerts): Hanya menampilkan alert yang BELUM di-resolve
+    # Alert yang sudah Resolved otomatis pindah dan diarsipkan di tabel bawah (Incident Log & Cooldown History)
     alerts = session.query(Alert).filter(
-        or_(
-            Alert.resolved_at == None,
-            Alert.resolved_at >= cutoff_30d,
-            Alert.triggered_at >= cutoff_30d
-        )
+        Alert.resolved_at == None
     ).order_by(Alert.triggered_at.desc()).all()
     alerts_data = [a.to_dict() for a in alerts]
     
-    # 2. Ambil Incident Log (30 hari terakhir sesuai retensi)
+    # 2. Tabel Bawah (Incident Log & Cooldown History): 30 hari terakhir sesuai retensi
     incidents = session.query(IncidentLog).filter(
         IncidentLog.started_at >= cutoff_30d
     ).order_by(IncidentLog.started_at.desc()).all()
     incidents_data = [inc.to_dict() for inc in incidents]
     
     total_alerts = len(alerts)
-    pending_alerts = sum(1 for a in alerts if not a.acknowledged and not a.resolved_at)
-    acked_alerts = sum(1 for a in alerts if a.acknowledged and not a.resolved_at)
-    resolved_alerts = sum(1 for a in alerts if a.resolved_at is not None)
+    pending_alerts = sum(1 for a in alerts if not a.acknowledged)
+    acked_alerts = sum(1 for a in alerts if a.acknowledged)
+    resolved_alerts = 0
 
     total_incidents = len(incidents)
+    monitoring_incidents = sum(1 for inc in incidents if inc.status == 'ACTIVE_MONITORING')
     cooldown_incidents = sum(1 for inc in incidents if inc.status == 'AUTO_COOLDOWN')
     resolved_incidents = sum(1 for inc in incidents if inc.status == 'RESOLVED_ALERT')
     
@@ -338,6 +339,7 @@ def alerts_page():
         acked_alerts=acked_alerts,
         resolved_alerts=resolved_alerts,
         total_incidents=total_incidents,
+        monitoring_incidents=monitoring_incidents,
         cooldown_incidents=cooldown_incidents,
         resolved_incidents=resolved_incidents,
         active_alerts_count=active_alerts_count
@@ -345,107 +347,31 @@ def alerts_page():
 
 @app.route('/api/ack/<int:alert_id>', methods=['POST'])
 def api_ack_alert(alert_id):
-    session = db_session()
-    alert = session.query(Alert).filter(Alert.alert_id == alert_id).first()
-    if not alert:
-        session.close()
-        return jsonify({"success": False, "message": "Alert ID not found"}), 404
-
-    alert.acknowledged = True
-    alert.acknowledged_by = "Web NOC Admin"
-
-    target_chat_id = os.getenv('NOC_TELEGRAM_CHAT_ID', '-1004429503436')
-    ack_content = f"✅ *[NOC AGIVA - ALERT ACKNOWLEDGED]*\n\nAlert #{alert.alert_id} ({alert.type}) pada `{alert.device.name if alert.device else 'Device'}` telah di-acknowledge oleh Web NOC Admin."
-    send_telegram_broadcast(ack_content)
-
-    # Catat ke log bot Telegram bahwa alert telah di-ACK
-    tg_log = TelegramMessageLog(
-        alert_id=alert.alert_id,
-        chat_id=target_chat_id,
-        message_type="COMMAND_REPLY",
-        content=ack_content,
-        status="SENT",
-        sent_at=datetime.now()
-    )
-    session.add(tg_log)
-    session.commit()
-    session.close()
-
+    """
+    SOP PT AGIVA: Acknowledge tiket via Web dinonaktifkan secara ketat.
+    Tiket Active Alerts HANYA boleh di-acknowledge melalui Telegram Bot (/ack <id>)
+    oleh Administrator / Duty Engineer yang terdaftar di Whitelist.
+    """
     return jsonify({
-        "success": True,
-        "alert_id": alert_id,
-        "message": f"Alert #{alert_id} acknowledged successfully and recorded to database."
-    })
+        "success": False,
+        "message": "Acknowledge via Web dinonaktifkan per SOP PT AGIVA. Gunakan perintah Telegram: /ack <alert_id> oleh Duty Engineer resmi."
+    }), 403
 
 @app.route('/api/resolve/<int:alert_id>', methods=['POST'])
 def api_resolve_alert(alert_id):
-    session = db_session()
-    alert = session.query(Alert).filter(Alert.alert_id == alert_id).first()
-    if not alert:
-        session.close()
-        return jsonify({"success": False, "message": "Alert ID not found"}), 404
-
-    now = datetime.now()
-    alert.resolved_at = now
-    alert.acknowledged = True
-
-    # Pindahkan ke tabel IncidentLog dengan status RESOLVED_ALERT
-    active_inc = session.query(IncidentLog).filter(
-        IncidentLog.device_id == alert.device_id,
-        IncidentLog.type == alert.type,
-        IncidentLog.resolved_at == None
-    ).first()
-
-    dev_name = alert.device.name if alert.device else "Device"
-
-    if active_inc:
-        dur_sec = max(1, int((now - active_inc.started_at).total_seconds()))
-        active_inc.resolved_at = now
-        active_inc.duration_seconds = dur_sec
-        active_inc.status = 'RESOLVED_ALERT'
-        inc_id = active_inc.incident_id
-    else:
-        dur_sec = max(1, int((now - alert.triggered_at).total_seconds())) if alert.triggered_at else 600
-        new_inc = IncidentLog(
-            device_id=alert.device_id,
-            type=alert.type,
-            severity=alert.severity,
-            peak_metric="-",
-            started_at=alert.triggered_at or now,
-            resolved_at=now,
-            duration_seconds=dur_sec,
-            status='RESOLVED_ALERT'
-        )
-        session.add(new_inc)
-        session.flush()
-        inc_id = new_inc.incident_id
-
-    target_chat_id = os.getenv('NOC_TELEGRAM_CHAT_ID', '-1004429503436')
-    res_content = f"✅ *[NOC AGIVA - ALERT RESOLVED]*\n\nAlert #{alert.alert_id} ({alert.type}) pada `{dev_name}` telah diselesaikan (Resolved) via Web NOC Admin dan dipindahkan ke Incident Log."
-    send_telegram_broadcast(res_content)
-
-    tg_log = TelegramMessageLog(
-        alert_id=alert.alert_id,
-        chat_id=target_chat_id,
-        message_type="COMMAND_REPLY",
-        content=res_content,
-        status="SENT",
-        sent_at=now
-    )
-    session.add(tg_log)
-    session.commit()
-    session.close()
-
+    """
+    SOP PT AGIVA: Resolusi tiket via Web dinonaktifkan secara ketat.
+    Tiket Active Alerts HANYA boleh diselesaikan melalui Telegram Bot (/resolve <id>)
+    oleh Administrator / Duty Engineer yang terdaftar di Whitelist.
+    """
     return jsonify({
-        "success": True,
-        "alert_id": alert_id,
-        "incident_id": inc_id,
-        "message": f"Alert #{alert_id} resolved successfully and moved to Incident Log."
-    })
+        "success": False,
+        "message": "Resolusi tiket via Web dinonaktifkan. tiket hanya dapat diselesaikan melalui Telegram Bot (/resolve <id>) oleh admin terverifikasi."
+    }), 403
 
 # 3. TELEGRAM BOT INTEGRATION ROUTES
 
-# Cache untuk status Telegram Bot agar tidak membebani network / API setiap request
+# Cache untuk status Telegram Bot agar tidak membebani I/O setiap request
 _telegram_bot_status_cache = {
     "timestamp": 0,
     "is_online": False
@@ -453,13 +379,16 @@ _telegram_bot_status_cache = {
 
 def is_telegram_bot_online():
     """
-    Memeriksa apakah koneksi Bot Telegram aktif (mendukung bot di VPS maupun lokal).
-    1. Cek API Telegram resmi (getMe) dengan caching 10 detik agar cepat dan akurat.
-    2. Fallback cek file heartbeat lokal jika server tidak memiliki koneksi internet keluar.
+    Memeriksa apakah proses Bot Telegram (bot.py) benar-benar sedang berjalan aktif:
+    1. Cek file logs/bot_heartbeat.json yang ditulis secara berkala (tiap 5 detik) oleh bot.py.
+       Bot dianggap ONLINE jika status == 'ONLINE' dan timestamp masih segar (<= 15 detik yang lalu).
+    2. Jika proses bot.py dimatikan atau crash, heartbeat tidak akan diperbarui sehingga
+       otomatis terdeteksi sebagai OFFLINE.
+    3. Menggunakan cache pendek (4 detik) agar respon cepat dan hemat resource.
     """
     global _telegram_bot_status_cache
     now = time.time()
-    if now - _telegram_bot_status_cache["timestamp"] < 10:
+    if now - _telegram_bot_status_cache["timestamp"] < 4:
         return _telegram_bot_status_cache["is_online"]
 
     token = os.getenv('TELEGRAM_BOT_TOKEN')
@@ -468,34 +397,36 @@ def is_telegram_bot_online():
         return False
 
     is_online = False
+    heartbeat_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'logs', 'bot_heartbeat.json')
 
-    # 1. Cek langsung ke Telegram Bot API (getMe)
-    try:
-        url = f"https://api.telegram.org/bot{token}/getMe"
-        req = urllib.request.Request(url, headers={'User-Agent': 'AGIVA-NOC-Monitor'})
-        with urllib.request.urlopen(req, timeout=3) as resp:
-            if resp.status == 200:
-                is_online = True
-    except Exception:
-        is_online = False
-
-    # 2. Fallback ke file heartbeat lokal jika ada
-    if not is_online:
-        heartbeat_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'logs', 'bot_heartbeat.json')
-        if os.path.exists(heartbeat_file):
-            try:
-                with open(heartbeat_file, 'r') as f:
-                    hb = json.load(f)
-                    if hb.get('status') == 'ONLINE' and (now - hb.get('timestamp', 0) < 20):
-                        is_online = True
-            except Exception:
-                pass
+    if os.path.exists(heartbeat_file):
+        try:
+            with open(heartbeat_file, 'r') as f:
+                hb = json.load(f)
+                hb_status = hb.get('status', '').upper()
+                hb_timestamp = hb.get('timestamp', 0)
+                # Syarat Online: Status 'ONLINE' dan heartbeat terkirim dalam 15 detik terakhir
+                if hb_status == 'ONLINE' and (now - hb_timestamp <= 15):
+                    is_online = True
+        except Exception:
+            is_online = False
 
     _telegram_bot_status_cache = {
         "timestamp": now,
         "is_online": is_online
     }
     return is_online
+
+def get_active_alerts_pushed_count(session, cutoff_date):
+    """
+    Menghitung total alert yang di-push ke Telegram (>= 10 menit) bertipe ALERT_NOTIFICATION.
+    Semua anomali (HOST_DOWN, CPU, MEMORY, LATENCY, PACKET_LOSS) diperlakukan seragam:
+    hanya dikirim ke Telegram jika anomali bertahan >= 10 menit (anti-spam & anti-flapping).
+    """
+    return session.query(TelegramMessageLog).filter(
+        TelegramMessageLog.message_type == 'ALERT_NOTIFICATION',
+        TelegramMessageLog.sent_at >= cutoff_date
+    ).count()
 
 @app.route('/telegram')
 @app.route('/telegram.html')
@@ -528,7 +459,7 @@ def telegram_page():
         "is_online": bot_is_online,
         "chat_group": os.getenv('TELEGRAM_GROUP_NAME', 'Agiva Network Automation Channel'),
         "chat_id": os.getenv('NOC_TELEGRAM_CHAT_ID', '-1004429503436'),
-        "active_alerts_pushed": session.query(TelegramMessageLog).filter(TelegramMessageLog.message_type == 'ALERT_NOTIFICATION').count()
+        "active_alerts_pushed": get_active_alerts_pushed_count(session, cutoff_date)
     }
 
     commands = [
@@ -566,10 +497,7 @@ def api_telegram_logs():
     msg_logs = session.query(TelegramMessageLog).filter(
         TelegramMessageLog.sent_at >= cutoff_date
     ).order_by(TelegramMessageLog.sent_at.desc(), TelegramMessageLog.id.desc()).all()
-    active_alerts_pushed = session.query(TelegramMessageLog).filter(
-        TelegramMessageLog.message_type == 'ALERT_NOTIFICATION',
-        TelegramMessageLog.sent_at >= cutoff_date
-    ).count()
+    active_alerts_pushed = get_active_alerts_pushed_count(session, cutoff_date)
     
     # Format the logs so it's easier to consume on the frontend
     logs_data = []
@@ -598,14 +526,20 @@ def api_test_telegram_alert():
     session = db_session()
     tg_chat_id = os.getenv('NOC_TELEGRAM_CHAT_ID', '-1004429503436')
     
+    bot_online = is_telegram_bot_online()
+    if bot_online:
+        bot_clause = "Telegram Bot token communication channel is operational, and interactive bot engine (bot.py) is actively running."
+    else:
+        bot_clause = "Telegram Bot token communication channel is operational, but interactive bot engine (bot.py) is currently offline."
+
     msg_content = (
         "*TEST CONNECTIVITY*\n\n"
         "This is a diagnostic Ping test message from the Dashboard.\n"
-        "Telegram Bot communication channel is operational.\n"
+        f"{bot_clause}\n"
         f"Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} WIB"
     )
     
-    ok, delivery_status = send_telegram_broadcast(msg_content)
+    ok, delivery_status = send_telegram_broadcast(msg_content, parse_mode='Markdown')
     
     # Catat ke dispatch log agar terlihat di Dashboard
     log_entry = TelegramMessageLog(
@@ -788,14 +722,9 @@ def api_search():
                 "url": f"/device/{d.device_id}#deviceHeaderCard"
             })
 
-    # 2. Alerts (Belum di-resolve selalu tampil, sedangkan yang sudah Resolved dibatasi 30 hari)
-    cutoff_30d = datetime.now() - timedelta(days=30)
+    # 2. Active & Sustained Alerts (Hanya alert yang belum di-resolve yang tampil di antrean alerts)
     active_alerts = session.query(Alert).filter(
-        or_(
-            Alert.resolved_at == None,
-            Alert.resolved_at >= cutoff_30d,
-            Alert.triggered_at >= cutoff_30d
-        )
+        Alert.resolved_at == None
     ).order_by(Alert.triggered_at.desc()).all()
     matched_alerts = []
     clean_q = ql.replace('#', '').strip()
@@ -1050,7 +979,7 @@ def api_status():
     session = db_session()
     range_mode = request.args.get('range', 'live')
     devices = session.query(Device).order_by(Device.device_id.asc()).all()
-    active_alerts = session.query(Alert).filter(Alert.acknowledged == False).all()
+    active_alerts = session.query(Alert).filter(Alert.resolved_at == None).order_by(Alert.triggered_at.desc()).all()
 
     online_devs = [d for d in devices if d.status == 'UP']
     avg_cpu = round(sum(d.cpu_usage for d in online_devs) / len(online_devs), 1) if online_devs else 0

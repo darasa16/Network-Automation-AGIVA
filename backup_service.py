@@ -182,7 +182,7 @@ def fetch_aruba_log_or_config(ip: str, user: str, pwd: str, category: str, *args
                 last_err = e_pm
                 continue
 
-    raise Exception(f"Koneksi SSH Aruba gagal: {last_err}")
+    raise Exception(f"Aruba SSH connection failed: {last_err}")
 
 def fetch_huawei_log_or_config(ip: str, user: str, pwd: str, category: str, *args, **kwargs) -> str:
     """Ekstraksi raw snapshot log/config Huawei CloudEngine S5735 via Paramiko/Netmiko."""
@@ -218,10 +218,29 @@ def fetch_huawei_log_or_config(ip: str, user: str, pwd: str, category: str, *arg
         client.close()
         
         if output.strip():
-            return output
-        raise Exception("Output kosong dari switch Huawei")
+            # Bersihkan banner login VTY, echo command, dan prompt terminal Huawei
+            cmd_pattern = re.compile(rf'<[^>]+>\s*{re.escape(cmd)}', re.IGNORECASE)
+            match = cmd_pattern.search(output)
+            if match:
+                output = output[match.end():]
+            else:
+                cmd_idx = output.find(cmd)
+                if cmd_idx != -1:
+                    nl_idx = output.find("\n", cmd_idx)
+                    if nl_idx != -1:
+                        output = output[nl_idx + 1:]
+
+            lines = output.splitlines()
+            while lines and not lines[0].strip():
+                lines.pop(0)
+            while lines and (re.match(r'^\s*<[^>]+>\s*$', lines[-1]) or re.match(r'^\s*\[[^\]]+\]\s*$', lines[-1]) or not lines[-1].strip()):
+                lines.pop()
+
+            clean_res = "\n".join(lines).strip()
+            return clean_res if clean_res else output
+        raise Exception("Empty output from Huawei switch")
     except Exception as e:
-        raise Exception(f"Koneksi SSH Huawei gagal: {e}")
+        raise Exception(f"Huawei SSH connection failed: {e}")
 
 def fetch_palo_alto_log_or_config(ip: str, user: str, pwd: str, category: str, *args, **kwargs) -> str:
     """
@@ -277,7 +296,7 @@ def fetch_palo_alto_log_or_config(ip: str, user: str, pwd: str, category: str, *
             output = net_connect.send_command(cmd)
             return output
     except Exception as e:
-        raise Exception(f"Koneksi Palo Alto gagal (API & SSH): {e}")
+        raise Exception(f"Palo Alto connection failed (API & SSH): {e}")
 
 # ==================== MAIN BACKUP CONTROLLER ====================
 
@@ -318,23 +337,23 @@ def run_single_backup(device: Device, category: str, trigger_by: str = "Schedule
         elif "huawei" in vendor_clean or "155" in ip:
             content = fetch_huawei_log_or_config(ip, user, pwd, category)
         else:
-            raise Exception(f"Vendor '{device.vendor}' belum didukung.")
+            raise Exception(f"Vendor '{device.vendor}' is not supported yet.")
 
     except Exception as e:
-        logger.error(f"Gagal mengambil raw snapshot {dev_name} [{category}]: {e}")
+        logger.error(f"Failed to fetch raw snapshot {dev_name} [{category}]: {e}")
         status = "FAILED"
         error_msg = str(e)
-        content = f"// BACKUP ERROR [{now.strftime('%Y-%m-%d %H:%M:%S WIB')}]\n// Perangkat: {dev_name} ({ip})\n// Kategori: {category}\n// Error: {error_msg}\n"
+        content = f"// BACKUP ERROR [{now.strftime('%Y-%m-%d %H:%M:%S WIB')}]\n// Device: {dev_name} ({ip})\n// Category: {category}\n// Error: {error_msg}\n"
 
     # Penulisan berkas mandiri (Pure Raw Snapshot)
     header_info = (
         f"{'='*70}\n"
         f"AGIVA NOC RAW SNAPSHOT [{category.upper()}]\n"
-        f"Waktu Eksekusi: {now.strftime('%Y-%m-%d %H:%M:%S WIB')}\n"
-        f"Perangkat     : {dev_name} ({ip})\n"
+        f"Execution Time: {now.strftime('%Y-%m-%d %H:%M:%S WIB')}\n"
+        f"Device        : {dev_name} ({ip})\n"
         f"Site          : {device.site or '-'}\n"
-        f"Kategori      : {category}\n"
-        f"Pemicu        : {trigger_by}\n"
+        f"Category      : {category}\n"
+        f"Triggered By  : {trigger_by}\n"
         f"{'='*70}\n\n"
     )
     write_data = header_info + content

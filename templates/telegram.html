@@ -13,7 +13,7 @@
 </p>
         </div>
         <div class="header-tools">
-            <button class="btn-action btn-send-test" onclick="simulateTelegramAlert()">
+            <button class="btn-action btn-send-test" onclick="sendTestTelegramAlert()">
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
                     style="margin-right:6px;">
                     <line x1="22" y1="2" x2="11" y2="13"></line>
@@ -235,10 +235,48 @@
             gap: 14px;
         }
 
+        .pagination-info {
+            white-space: nowrap;
+        }
+
         .pagination-controls {
             display: flex;
             align-items: center;
             gap: 12px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        /* Khusus Pagination Whitelist di Dual-Panel agar rapi satu baris & tidak pecah */
+        #tgWhitelistPaginationContainer {
+            padding: 12px 16px;
+            gap: 10px;
+        }
+
+        #tgWhitelistPageInfo {
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        #tgWhitelistPaginationControls {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        #tgWhitelistPaginationControls .pagination-nav-btn {
+            font-size: 12.5px;
+            padding: 3px 6px;
+            gap: 4px;
+            white-space: nowrap;
+        }
+
+        #tgWhitelistPaginationControls .pagination-num-btn {
+            min-width: 26px;
+            height: 26px;
+            font-size: 12px;
         }
 
         .pagination-nav-btn {
@@ -252,6 +290,7 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
+            white-space: nowrap;
             transition: all 0.2s ease;
         }
 
@@ -765,7 +804,7 @@
             }, 4000);
         }
 
-        async function simulateTelegramAlert() {
+        async function sendTestTelegramAlert() {
             try {
                 const btn = document.querySelector('.btn-send-test');
                 btn.disabled = true;
@@ -775,7 +814,7 @@
                 const data = await res.json();
 
                 if (data.success) {
-                    showToast(data.message || 'Simulated alert sent to Telegram successfully!', 'success');
+                    showToast(data.message || 'Test connectivity message sent to Telegram successfully!', 'success');
                     setTimeout(() => fetchTelegramLogs(), 800);
                 } else {
                     showToast(data.message || 'Failed to send alert', 'error');

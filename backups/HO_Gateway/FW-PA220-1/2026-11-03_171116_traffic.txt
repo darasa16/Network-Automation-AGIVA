@@ -1,10 +1,10 @@
 ======================================================================
 AGIVA NOC BACKUP ARCHIVE [TRAFFIC]
-Waktu Eksekusi: 2026-11-03 17:11:16 WIB
-Perangkat     : FW-PA220-1 (192.168.1.11)
+Execution Time: 2026-11-03 17:11:16 WIB
+Device        : FW-PA220-1 (192.168.1.11)
 Site          : HO Gateway
-Kategori      : Traffic
-Pemicu        : Telegram (@Dara Samsara)
+Category      : Traffic
+Triggered By  : Telegram (@Dara Samsara)
 ======================================================================
 
 <response status="success"><result>

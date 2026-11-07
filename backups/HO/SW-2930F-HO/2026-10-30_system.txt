@@ -2,8 +2,8 @@
 AGIVA NOC INITIAL FULL BACKUP [SYSTEM] - 2026-10-30 15:25:47 WIB
 ======================================================================
 // BACKUP ERROR [2026-10-30 15:25:47 WIB]
-// Perangkat: SW-2930F-HO (192.168.1.10)
-// Kategori: System
+// Device: SW-2930F-HO (192.168.1.10)
+// Category: System
 // Error: Koneksi SSH Aruba gagal: 
 Pattern not detected: 'SW\\-2930F\\-HO\\#' in output.
 

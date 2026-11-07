@@ -1,10 +1,10 @@
 ======================================================================
 AGIVA NOC RAW SNAPSHOT [SYSTEM]
-Waktu Eksekusi: 2026-11-06 14:30:25 WIB
-Perangkat     : SW-2930F-HO (192.168.1.10)
+Execution Time: 2026-11-06 14:30:25 WIB
+Device        : SW-2930F-HO (192.168.1.10)
 Site          : HO
-Kategori      : System
-Pemicu        : Telegram (@Dara Samsara)
+Category      : System
+Triggered By  : Telegram (@Dara Samsara)
 ======================================================================
 
  Keys:   W=Warning   I=Information
