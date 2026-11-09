@@ -19,6 +19,7 @@ const MAX_CHART_POINTS = 18;
 const STORAGE_KEYS = {
     DASHBOARD_DATA: 'agiva_dashboard_latest_data',
     CHART_PREFIX: 'agiva_chart_history_', // agiva_chart_history_live, 1h, 12h, 24h
+    WAN_PREFIX: 'agiva_wan_history_',     // agiva_wan_history_live, 1h, 12h, 24h
     LAST_UPDATED: 'agiva_dashboard_last_updated'
 };
 
@@ -31,6 +32,7 @@ function saveDashboardDataToStorage(data) {
         const payload = {
             summary: data.summary,
             metrics: data.metrics,
+            wan: data.wan,
             devices: data.devices,
             alerts: data.alerts,
             timestamp: data.timestamp || new Date().toTimeString().split(' ')[0],
@@ -42,9 +44,33 @@ function saveDashboardDataToStorage(data) {
         if (data.history) {
             saveChartHistoryToStorage(data.range || currentDashboardRange, data.history);
         }
+        if (data.wan_history) {
+            saveWanHistoryToStorage(data.range || currentDashboardRange, data.wan_history);
+        }
     } catch (e) {
         console.warn('Failed to save dashboard cache to localStorage:', e);
     }
+}
+
+function saveWanHistoryToStorage(range, history) {
+    if (!history || !history.labels || history.labels.length === 0) return;
+    try {
+        localStorage.setItem(STORAGE_KEYS.WAN_PREFIX + range, JSON.stringify(history));
+    } catch (e) {
+        console.warn('Failed to save WAN chart cache:', e);
+    }
+}
+
+function loadWanHistoryFromStorage(range) {
+    try {
+        const raw = localStorage.getItem(STORAGE_KEYS.WAN_PREFIX + range);
+        if (raw) return JSON.parse(raw);
+        const liveRaw = localStorage.getItem(STORAGE_KEYS.WAN_PREFIX + 'live');
+        if (liveRaw) return JSON.parse(liveRaw);
+    } catch (e) {
+        console.warn('Error reading localStorage WAN chart:', e);
+    }
+    return null;
 }
 
 function saveChartHistoryToStorage(range, history) {
@@ -93,6 +119,9 @@ async function prefetchHistoricalRanges() {
                     if (data && data.history) {
                         saveChartHistoryToStorage(r, data.history);
                     }
+                    if (data && data.wan_history) {
+                        saveWanHistoryToStorage(r, data.wan_history);
+                    }
                 }
             } catch (e) {
                 // Ignore silent prefetch error
@@ -131,6 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initCharts();
     initTimeRangeSelector();
     setupTableFilters();
+    setupWanActions();
 
     // Restore table data and KPIs from cache if not yet populated
     restoreDashboardFromStorageIfEmpty();
@@ -271,6 +301,10 @@ function initCharts() {
     if (initData && (initData.labels || []).length > 0) {
         applyChartHistory(initData);
     }
+
+    if (window.INITIAL_WAN_SUMMARY && Object.keys(window.INITIAL_WAN_SUMMARY).length > 0) {
+        updateWanCard(window.INITIAL_WAN_SUMMARY);
+    }
 }
 
 function getCommonChartOptions(unit, minVal = 0, initialMax = 50) {
@@ -391,7 +425,7 @@ function applyChartHistory(history) {
             onWindowChange: (startIdx, endIdx) => {
                 if (lastDashboardHistory) {
                     renderDashboardChartsSlice(lastDashboardHistory, startIdx, endIdx);
-                    // Synchronize with CPU slider
+                    // Synchronize with cpu/mem slider
                     if (cpuMemTimelineNav && !cpuMemTimelineNav.isDragging) {
                         cpuMemTimelineNav.updateWindowDOM(trafficTimelineNav.startFrac, trafficTimelineNav.endFrac);
                     }
@@ -583,6 +617,10 @@ function updateDashboardView(data) {
         if (filterDown) filterDown.textContent = `Offline (${data.summary.devices_offline})`;
     }
 
+    if (data.wan) {
+        updateWanCard(data.wan);
+    }
+
     if (data.metrics) {
         // Terapkan seluruh histori riil langsung dari database (seperti di device_detail.js)
         if (data.history) {
@@ -600,6 +638,388 @@ function updateDashboardView(data) {
     if (data.alerts !== undefined) {
         renderAlertsStream(data.alerts);
     }
+}
+
+function updateWanCard(wan) {
+    if (!wan) return;
+    const dlEl = document.getElementById('wanDownloadVal');
+    const ulEl = document.getElementById('wanUploadVal');
+    const dlProg = document.getElementById('wanDlProgress');
+    const ulProg = document.getElementById('wanUlProgress');
+    const dlPctEl = document.getElementById('wanDlUtilPct');
+    const ulPctEl = document.getElementById('wanUlUtilPct');
+    const dlCapEl = document.getElementById('wanDlCapVal');
+    const latEl = document.getElementById('wanLatencyVal');
+    const lossEl = document.getElementById('wanLossVal');
+    const gwLatEl = document.getElementById('wanGwLatencyVal');
+    const errEl = document.getElementById('wanErrorsVal');
+    const qPill = document.getElementById('wanQualityPill');
+    const statusText = document.getElementById('wanStatusText');
+    const statusDot = document.getElementById('wanStatusDot');
+    const linkBadge = document.getElementById('wanLinkBadge');
+    const lastSync = document.getElementById('wanLastSync');
+
+    const dlVal = wan.download_mbps !== undefined ? wan.download_mbps : 0.0;
+    const ulVal = wan.upload_mbps !== undefined ? wan.upload_mbps : 0.0;
+    const cap = wan.capacity_mbps || 100;
+    const utilPct = wan.utilization_pct !== undefined ? wan.utilization_pct : (cap > 0 ? Math.round((dlVal / cap) * 1000) / 10 : 0);
+    const ulUtilPct = cap > 0 ? Math.round((ulVal / cap) * 1000) / 10 : 0;
+
+    if (dlEl) dlEl.textContent = dlVal;
+    if (ulEl) ulEl.textContent = ulVal;
+    if (dlProg) dlProg.style.width = `${Math.min(100, Math.max(0, utilPct))}%`;
+    if (ulProg) ulProg.style.width = `${Math.min(100, Math.max(0, ulUtilPct))}%`;
+
+    // Combined Utilization Row below Download & Upload
+    const utilCombinedVal = document.getElementById('wanUtilCombinedVal');
+    const capValCombined = document.getElementById('wanCapValCombined');
+    if (utilCombinedVal) utilCombinedVal.textContent = `${utilPct}%`;
+    if (capValCombined) capValCombined.textContent = `${cap} Mbps`;
+
+    if (latEl && wan.latency_ms !== undefined) latEl.textContent = `${wan.latency_ms} ms`;
+    if (lossEl && wan.packet_loss !== undefined) lossEl.textContent = `${wan.packet_loss}%`;
+    if (gwLatEl && wan.gateway_latency_ms !== undefined) gwLatEl.textContent = `${wan.gateway_latency_ms} ms`;
+    if (errEl) {
+        const rxErr = wan.rx_errors !== undefined ? wan.rx_errors : 0;
+        const txErr = wan.tx_errors !== undefined ? wan.tx_errors : 0;
+        const totErr = wan.total_errors !== undefined ? wan.total_errors : (rxErr + txErr);
+        errEl.textContent = `${rxErr} / ${txErr} pkts`;
+        errEl.style.color = totErr > 0 ? '#ef4444' : '#10b981';
+    }
+    if (lastSync && wan.last_updated) lastSync.textContent = wan.last_updated;
+
+    if (qPill) {
+        const qLabel = wan.quality_label || (wan.quality_color === 'red' ? 'Koneksi Abnormal' : 'Koneksi Normal');
+        const qColor = wan.quality_color || (wan.status === 'DOWN' ? 'red' : 'green');
+        qPill.textContent = qLabel;
+        qPill.className = `wan-q-pill pill-${qColor}`;
+    }
+
+    const isUp = wan.status === 'UP';
+    if (statusText) {
+        statusText.textContent = `${wan.status || 'UP'} (1 Gbps)`;
+    }
+    if (statusDot) {
+        statusDot.className = `live-dot dot-${isUp ? 'green' : 'red'}`;
+    }
+    if (linkBadge) {
+        linkBadge.className = `wan-badge-status status-${isUp ? 'up' : 'down'}`;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   WAN Actions (Speedtest Real-Time & 24-Hour Polling Logs Modal)
+   -------------------------------------------------------------------------- */
+let currentWanLogs = [];
+let currentWanLogFilter = 'all';
+
+function setupWanActions() {
+    const btnSpeedtest = document.getElementById('btnWanSpeedtest');
+    const btnSeeLog = document.getElementById('btnWanSeeLog');
+    const modalLog = document.getElementById('wanLogModal');
+    const btnCloseLog = document.getElementById('btnWanLogClose');
+    const btnCloseLogFooter = document.getElementById('btnWanLogCloseFooter');
+    const btnRefreshLog = document.getElementById('btnWanLogRefresh');
+    const btnExportLog = document.getElementById('btnWanLogExport');
+
+    // Speedtest Modal elements
+    const modalSt = document.getElementById('wanSpeedtestModal');
+    const btnCloseSt = document.getElementById('btnWanSpeedtestClose');
+    const btnCloseStFooter = document.getElementById('btnWanSpeedtestCloseFooter');
+    const btnRetestSt = document.getElementById('btnStModalRetest');
+
+    if (btnSpeedtest) {
+        btnSpeedtest.addEventListener('click', () => {
+            handleWanSpeedtest();
+        });
+    }
+
+    if (btnRetestSt) {
+        btnRetestSt.addEventListener('click', () => {
+            handleWanSpeedtest();
+        });
+    }
+
+    if (btnCloseSt) btnCloseSt.addEventListener('click', closeWanSpeedtestModal);
+    if (btnCloseStFooter) btnCloseStFooter.addEventListener('click', closeWanSpeedtestModal);
+
+    if (modalSt) {
+        modalSt.addEventListener('click', (e) => {
+            if (e.target === modalSt) closeWanSpeedtestModal();
+        });
+    }
+
+    if (btnSeeLog) {
+        btnSeeLog.addEventListener('click', () => {
+            openWanLogModal();
+        });
+    }
+
+    if (btnCloseLog) btnCloseLog.addEventListener('click', closeWanLogModal);
+    if (btnCloseLogFooter) btnCloseLogFooter.addEventListener('click', closeWanLogModal);
+
+    if (modalLog) {
+        modalLog.addEventListener('click', (e) => {
+            if (e.target === modalLog) closeWanLogModal();
+        });
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            if (modalSt && modalSt.style.display !== 'none') closeWanSpeedtestModal();
+            if (modalLog && modalLog.style.display !== 'none') closeWanLogModal();
+        }
+    });
+
+    if (btnRefreshLog) {
+        btnRefreshLog.addEventListener('click', () => {
+            fetchWanLogs();
+        });
+    }
+
+    if (btnExportLog) {
+        btnExportLog.addEventListener('click', exportWanLogsToCsv);
+    }
+
+    // Modal filter buttons
+    const filterBtns = document.querySelectorAll('.wan-filter-btn');
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            filterBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentWanLogFilter = btn.getAttribute('data-filter') || 'all';
+            renderWanLogTableRows();
+        });
+    });
+}
+
+async function handleWanSpeedtest() {
+    const modal = document.getElementById('wanSpeedtestModal');
+    const loadingState = document.getElementById('speedtestLoadingState');
+    const resultState = document.getElementById('speedtestResultState');
+    const btnRetest = document.getElementById('btnStModalRetest');
+    const btnTrigger = document.getElementById('btnWanSpeedtest');
+
+    if (modal) {
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+    if (loadingState) loadingState.style.display = 'flex';
+    if (resultState) resultState.style.display = 'none';
+    if (btnRetest) btnRetest.disabled = true;
+    if (btnTrigger) btnTrigger.classList.add('loading');
+
+    try {
+        const res = await fetch('/api/wan/speedtest', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await res.json();
+        if (res.ok && data.status === 'success') {
+            const w = data.wan;
+            const stDl = document.getElementById('stModalDlVal');
+            const stUl = document.getElementById('stModalUlVal');
+            const stDlUtil = document.getElementById('stModalDlUtil');
+            const stUlUtil = document.getElementById('stModalUlUtil');
+            const stDlProg = document.getElementById('stModalDlProgress');
+            const stUlProg = document.getElementById('stModalUlProgress');
+            const stLat = document.getElementById('stModalLat');
+            const stGwLat = document.getElementById('stModalGwLat');
+            const stLoss = document.getElementById('stModalLoss');
+            const stQPill = document.getElementById('stModalQualityPill');
+            const stTs = document.getElementById('stModalTimestamp');
+
+            const dlVal = w.download_mbps !== undefined ? w.download_mbps : 0.0;
+            const ulVal = w.upload_mbps !== undefined ? w.upload_mbps : 0.0;
+            const cap = w.capacity_mbps || 100;
+            const utilPct = w.utilization_pct !== undefined ? w.utilization_pct : (cap > 0 ? Math.round((dlVal / cap) * 1000) / 10 : 0);
+            const ulPct = cap > 0 ? Math.round((ulVal / cap) * 1000) / 10 : 0;
+
+            if (stDl) stDl.textContent = dlVal;
+            if (stUl) stUl.textContent = ulVal;
+            if (stDlUtil) stDlUtil.textContent = `${utilPct}% Utilisasi`;
+            if (stUlUtil) stUlUtil.textContent = `${ulPct}% Utilisasi`;
+            if (stDlProg) stDlProg.style.width = `${Math.min(100, Math.max(0, utilPct))}%`;
+            if (stUlProg) stUlProg.style.width = `${Math.min(100, Math.max(0, ulPct))}%`;
+            if (stLat) stLat.textContent = `${w.latency_ms} ms`;
+            if (stGwLat) stGwLat.textContent = `${w.gateway_latency_ms} ms`;
+            if (stLoss) stLoss.textContent = `${w.packet_loss}%`;
+            if (stQPill) {
+                const qColor = w.quality_color || (w.status === 'DOWN' ? 'red' : 'green');
+                stQPill.className = `wan-q-pill pill-${qColor}`;
+                stQPill.textContent = w.quality_label || (qColor === 'red' ? 'Koneksi Abnormal' : 'Koneksi Normal');
+            }
+            if (stTs) stTs.textContent = `${w.last_updated || new Date().toLocaleTimeString('id-ID')} (Real-Time Speedtest)`;
+
+            // Update main dashboard WAN card as well!
+            updateWanCard(w);
+
+            // Hide loading, show results
+            if (loadingState) loadingState.style.display = 'none';
+            if (resultState) resultState.style.display = 'block';
+
+            // If See Log modal is open, refresh logs
+            const logModal = document.getElementById('wanLogModal');
+            if (logModal && logModal.style.display !== 'none') {
+                fetchWanLogs(true);
+            }
+        } else {
+            alert('Gagal menjalankan speedtest: ' + (data.message || 'Error'));
+            closeWanSpeedtestModal();
+        }
+    } catch (e) {
+        console.error('Speedtest error:', e);
+        alert('Terjadi kesalahan saat menjalankan speedtest real-time.');
+        closeWanSpeedtestModal();
+    } finally {
+        if (btnRetest) btnRetest.disabled = false;
+        if (btnTrigger) btnTrigger.classList.remove('loading');
+    }
+}
+
+function closeWanSpeedtestModal() {
+    const modal = document.getElementById('wanSpeedtestModal');
+    if (!modal) return;
+    modal.style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+function openWanLogModal() {
+    const modal = document.getElementById('wanLogModal');
+    if (!modal) return;
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    fetchWanLogs();
+}
+
+function closeWanLogModal() {
+    const modal = document.getElementById('wanLogModal');
+    if (!modal) return;
+    modal.style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+async function fetchWanLogs(silent = false) {
+    const tbody = document.getElementById('wanLogTableBody');
+    if (!silent && tbody) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 32px; color: #94a3b8;">Memuat riwayat log 24 jam...</td></tr>`;
+    }
+
+    try {
+        const res = await fetch('/api/wan/logs', { cache: 'no-store' });
+        if (res.ok) {
+            const data = await res.json();
+            currentWanLogs = data.logs || [];
+            updateWanLogCounts();
+            renderWanLogTableRows();
+        } else if (tbody) {
+            tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 24px; color: #ef4444;">Gagal memuat log (${res.status})</td></tr>`;
+        }
+    } catch (e) {
+        console.error('Error fetching WAN logs:', e);
+        if (tbody) {
+            tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 24px; color: #ef4444;">Terjadi kesalahan jaringan saat memuat log.</td></tr>`;
+        }
+    }
+}
+
+function updateWanLogCounts() {
+    const countAllEl = document.getElementById('wanLogCountAll');
+    const countUpEl = document.getElementById('wanLogCountUp');
+    const countIssueEl = document.getElementById('wanLogCountIssue');
+
+    const total = currentWanLogs.length;
+    const upCount = currentWanLogs.filter(l => l.status === 'UP' && (l.latency_ms <= 45 && l.packet_loss <= 2.0 && (!l.total_errors || l.total_errors === 0))).length;
+    const issueCount = total - upCount;
+
+    if (countAllEl) countAllEl.textContent = total;
+    if (countUpEl) countUpEl.textContent = upCount;
+    if (countIssueEl) countIssueEl.textContent = issueCount;
+}
+
+function renderWanLogTableRows() {
+    const tbody = document.getElementById('wanLogTableBody');
+    if (!tbody) return;
+
+    let filtered = currentWanLogs;
+    if (currentWanLogFilter === 'up') {
+        filtered = currentWanLogs.filter(l => l.status === 'UP' && (l.latency_ms <= 45 && l.packet_loss <= 2.0 && (!l.total_errors || l.total_errors === 0)));
+    } else if (currentWanLogFilter === 'issue') {
+        filtered = currentWanLogs.filter(l => l.status === 'DOWN' || l.latency_ms > 45 || l.packet_loss > 2.0 || (l.total_errors && l.total_errors > 0));
+    }
+
+    if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 28px; color: #94a3b8;">Tidak ada data log yang sesuai filter ini.</td></tr>`;
+        return;
+    }
+
+    const rowsHtml = filtered.map(item => {
+        const totErr = item.total_errors !== undefined ? item.total_errors : ((item.rx_errors || 0) + (item.tx_errors || 0));
+        const isDown = item.status === 'DOWN';
+        const isDegraded = !isDown && (item.latency_ms > 45.0 || item.packet_loss > 3.0 || totErr > 0);
+        const statusClass = isDown ? 'down' : (isDegraded ? 'degraded' : 'up');
+        const statusLabel = isDown ? 'DOWN' : (isDegraded ? 'DEGRADED' : 'UP');
+
+        return `
+            <tr>
+                <td style="color: #cbd5e1; font-weight: 500;">${escapeHtml(item.timestamp)}</td>
+                <td>
+                    <span class="wan-badge-status-sm ${statusClass}">
+                        ${statusLabel}
+                    </span>
+                </td>
+                <td style="color: #06b6d4; font-weight: 700;">${item.download_mbps} <span style="font-size: 0.7em; color: #64748b;">Mbps</span></td>
+                <td style="color: #f97316; font-weight: 700;">${item.upload_mbps} <span style="font-size: 0.7em; color: #64748b;">Mbps</span></td>
+                <td style="color: #e2e8f0;">${item.total_mbps} <span style="font-size: 0.7em; color: #64748b;">Mbps</span></td>
+                <td style="color: ${item.latency_ms > 45 ? '#f59e0b' : '#10b981'}; font-weight: 600;">${item.latency_ms} ms</td>
+                <td style="color: #94a3b8;">${item.gateway_latency_ms} ms</td>
+                <td style="color: ${item.packet_loss > 0 ? '#ef4444' : '#10b981'}; font-weight: 600;">${item.packet_loss}%</td>
+                <td style="color: ${totErr > 0 ? '#ef4444' : '#10b981'}; font-weight: 600;">${item.rx_errors || 0} / ${item.tx_errors || 0} pkts</td>
+            </tr>
+        `;
+    }).join('');
+
+    tbody.innerHTML = rowsHtml;
+}
+
+function exportWanLogsToCsv() {
+    if (!currentWanLogs || currentWanLogs.length === 0) {
+        alert('Tidak ada data log untuk diexport.');
+        return;
+    }
+
+    const headers = ['Timestamp', 'Interface', 'Provider', 'Status', 'Download_Mbps', 'Upload_Mbps', 'Total_Mbps', 'Latency_1.1.1.1_ms', 'Gateway_Latency_ms', 'Packet_Loss_pct', 'Rx_Errors', 'Tx_Errors', 'Total_Errors'];
+    const csvRows = [headers.join(',')];
+
+    currentWanLogs.forEach(r => {
+        const rx = r.rx_errors || 0;
+        const tx = r.tx_errors || 0;
+        const tot = r.total_errors !== undefined ? r.total_errors : (rx + tx);
+        csvRows.push([
+            `"${r.timestamp}"`,
+            `"${r.interface}"`,
+            `"${r.provider}"`,
+            `"${r.status}"`,
+            r.download_mbps,
+            r.upload_mbps,
+            r.total_mbps,
+            r.latency_ms,
+            r.gateway_latency_ms,
+            r.packet_loss,
+            rx,
+            tx,
+            tot
+        ].join(','));
+    });
+
+    const csvContent = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvRows.join('\n'));
+    const link = document.createElement('a');
+    link.setAttribute('href', csvContent);
+    const dateStr = new Date().toISOString().slice(0, 10);
+    link.setAttribute('download', `agiva_biznet_wan_logs_24h_${dateStr}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 }
 
 function renderDeviceTable(devices) {

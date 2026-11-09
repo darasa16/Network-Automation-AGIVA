@@ -13,7 +13,7 @@
         rel="stylesheet">
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
-    <link rel="stylesheet" href="/static/css/style.css?v=10.7">
+    <link rel="stylesheet" href="/static/css/style.css?v=13.0">
 </head>
 
 <body>
@@ -132,6 +132,109 @@
                             <line x1="12" y1="8.5" x2="12" y2="12.5"></line>
                             <circle cx="12" cy="16.5" r="0.65" fill="currentColor"></circle>
                         </svg>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 1b. WAN Link / ISP Biznet (ethernet1/3) Monitoring Banner Card -->
+            <section class="wan-banner-section" id="wanBannerSection">
+                <div class="wan-card" id="wanCard">
+                    <!-- Left: Provider & Interface Info -->
+                    <div class="wan-info-block">
+                        <div class="wan-title-meta">
+                            <div class="wan-tag-row">
+                                <span class="wan-badge-status status-up" id="wanLinkBadge">
+                                    <span class="live-dot dot-green" id="wanStatusDot"></span>
+                                    <span id="wanStatusText">{{ wan.status if wan else 'UP' }} (1 Gbps)</span>
+                                </span>
+                            </div>
+                            <h3 class="wan-title">Biznet Dedicated Internet</h3>
+                            <span class="wan-meta-sub">
+                                <span id="wanDevice">FW-PA220-1</span> &bull; Port: <span id="wanPort">ethernet1/3</span> &bull; IP: <span id="wanIp">{{ wan.ip_address if wan else '192.168.18.226' }}</span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Center: Bandwidth / Realtime Throughput & Combined Utilization -->
+                    <div class="wan-metrics-grid">
+                        <div class="wan-metric-cell">
+                            <span class="wan-metric-lbl">Download (Ingress)</span>
+                            <div class="wan-metric-val-wrap">
+                                <span class="wan-val dl-color" id="wanDownloadVal">{{ wan.download_mbps if wan else '27.4' }}</span>
+                                <span class="wan-unit">Mbps</span>
+                            </div>
+                            <div class="wan-progress-bar">
+                                <div class="wan-progress-fill fill-dl" id="wanDlProgress" style="width: {{ wan.utilization_pct if wan else '27.4' }}%;"></div>
+                            </div>
+                        </div>
+
+                        <div class="wan-metric-cell">
+                            <span class="wan-metric-lbl">Upload (Egress)</span>
+                            <div class="wan-metric-val-wrap">
+                                <span class="wan-val ul-color" id="wanUploadVal">{{ wan.upload_mbps if wan else '3.1' }}</span>
+                                <span class="wan-unit">Mbps</span>
+                            </div>
+                            <div class="wan-progress-bar">
+                                <div class="wan-progress-fill fill-ul" id="wanUlProgress" style="width: {{ ((wan.upload_mbps / (wan.capacity_mbps or 100)) * 100)|round(1) if wan else '3.1' }}%;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Combined Bandwidth Utilization Row across both metrics -->
+                        <div class="wan-util-combined-row">
+                            <span class="wan-util-combined-lbl">Utilisasi Bandwidth:</span>
+                            <strong class="wan-util-combined-val" id="wanUtilCombinedVal">{{ wan.utilization_pct if wan else '27.4' }}%</strong>
+                            <span class="wan-util-combined-sub">dari paket <strong class="wan-util-combined-cap" id="wanCapValCombined">{{ wan.capacity_mbps if wan else '100' }} Mbps</strong></span>
+                        </div>
+                    </div>
+
+                    <!-- Right: Quality Indicators, Double Ping & Actions -->
+                    <div class="wan-quality-block">
+                        <div class="wan-quality-header">
+                            <span class="wan-q-lbl">Kualitas Link ISP:</span>
+                            <span class="wan-q-pill pill-{{ wan.quality_color if wan else 'green' }}" id="wanQualityPill">
+                                {{ wan.quality_label if wan else 'Koneksi Normal' }}
+                            </span>
+                        </div>
+                        <div class="wan-ping-grid">
+                            <div class="wan-ping-item">
+                                <span class="ping-lbl">Ping Internet (1.1.1.1):</span>
+                                <strong class="ping-val" id="wanLatencyVal">{{ wan.latency_ms if wan else '9.5' }} ms</strong>
+                            </div>
+                            <div class="wan-ping-item">
+                                <span class="ping-lbl">Packet Loss:</span>
+                                <strong class="ping-val" id="wanLossVal">{{ wan.packet_loss if wan else '0.0' }}%</strong>
+                            </div>
+                            <div class="wan-ping-item">
+                                <span class="ping-lbl">Modem Gateway (192.168.18.1):</span>
+                                <strong class="ping-val" id="wanGwLatencyVal">{{ wan.gateway_latency_ms if wan else '1.1' }} ms</strong>
+                            </div>
+                            <div class="wan-ping-item">
+                                <span class="ping-lbl">Interface Errors (Rx/Tx):</span>
+                                <strong class="ping-val" id="wanErrorsVal" style="color: {{ '#ef4444' if wan and (wan.total_errors or 0) > 0 else '#10b981' }};">
+                                    {{ wan.rx_errors or 0 }} / {{ wan.tx_errors or 0 }} pkts
+                                </strong>
+                            </div>
+                        </div>
+                        <div class="wan-footer-row">
+                            <span class="wan-sync-time">Last Polled: <span id="wanLastSync">{{ wan.last_updated if wan else 'Just now' }}</span></span>
+                            <div class="wan-actions-row">
+                                <button type="button" id="btnWanSpeedtest" class="btn-wan-action btn-speedtest" title="Jalankan Speedtest Real-Time Sekarang">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" class="btn-icon">
+                                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                                    </svg>
+                                    <span class="btn-wan-text">Speedtest</span>
+                                </button>
+                                <button type="button" id="btnWanSeeLog" class="btn-wan-action btn-seelog" title="Lihat Riwayat Log 24 Jam Biznet">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon">
+                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                        <polyline points="14 2 14 8 20 8"></polyline>
+                                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                                    </svg>
+                                    <span>See Log</span>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -367,6 +470,192 @@
                     </div>
     </main>
 
+    <!-- Modal: Biznet WAN 24-Hour Logs -->
+    <div id="wanLogModal" class="modal-overlay" style="display: none;">
+        <div class="modal-card wan-log-modal-card">
+            <div class="modal-header">
+                <div>
+                    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                        <h3 style="margin: 0; font-size: 17px; font-weight: 700; color: #f8fafc;">Biznet WAN 24-Hour Polling Log</h3>
+                        <span class="wan-badge-isp" style="padding: 2px 8px; font-size: 0.65rem;">ethernet1/3</span>
+                        <span class="wan-log-badge-interval">Interval 2 Menit</span>
+                    </div>
+                    <p style="margin: 4px 0 0; font-size: 12px; color: #94a3b8;">
+                        Riwayat telemetri throughput dan kualitas koneksi ISP Biznet Dedicated Internet (FW-PA220-1)
+                    </p>
+                </div>
+                <button type="button" class="modal-close-btn" id="btnWanLogClose" title="Tutup Modal">&times;</button>
+            </div>
+            
+            <div class="wan-log-modal-toolbar">
+                <div class="wan-log-filter-group">
+                    <button type="button" class="wan-filter-btn active" data-filter="all">Semua (<span id="wanLogCountAll">0</span>)</button>
+                    <button type="button" class="wan-filter-btn" data-filter="up">Normal UP (<span id="wanLogCountUp">0</span>)</button>
+                    <button type="button" class="wan-filter-btn" data-filter="issue">Degraded / Issue (<span id="wanLogCountIssue">0</span>)</button>
+                </div>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <button type="button" class="btn-modal-action" id="btnWanLogRefresh" title="Muat ulang log dari database">
+                        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M23 4v6h-6"></path>
+                            <path d="M1 20v-6h6"></path>
+                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                        </svg>
+                        <span>Refresh</span>
+                    </button>
+                    <button type="button" class="btn-modal-action" id="btnWanLogExport" title="Download data log sebagai file CSV">
+                        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        <span>Export CSV</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="modal-body wan-log-modal-body">
+                <div class="wan-log-table-wrap">
+                    <table class="wan-log-table" id="wanLogTable">
+                        <thead>
+                            <tr>
+                                <th>Waktu Polling (WIB)</th>
+                                <th>Status Link</th>
+                                <th>Download</th>
+                                <th>Upload</th>
+                                <th>Total</th>
+                                <th>Ping 1.1.1.1</th>
+                                <th>Gateway 192.168.18.1</th>
+                                <th>Packet Loss</th>
+                                <th>Interface Errors (Rx/Tx)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="wanLogTableBody">
+                            <tr>
+                                <td colspan="9" style="text-align: center; padding: 32px; color: #94a3b8;">
+                                    Memuat riwayat log 24 jam...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="modal-footer" style="padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.08);">
+                <span style="font-size: 11px; color: #64748b;">
+                    * Data direkam otomatis setiap 2 menit oleh background collector AGIVA NOC.
+                </span>
+                <button type="button" class="btn-modal" id="btnWanLogCloseFooter">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Biznet WAN Speedtest Real-Time Result -->
+    <div id="wanSpeedtestModal" class="modal-overlay" style="display: none;">
+        <div class="modal-card wan-speedtest-modal-card">
+            <div class="modal-header">
+                <div>
+                    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                        <h3 style="margin: 0; font-size: 17px; font-weight: 700; color: #f8fafc;">Real-Time WAN Speedtest</h3>
+                        <span class="wan-badge-isp" style="padding: 2px 8px; font-size: 0.65rem;">ethernet1/3</span>
+                        <span class="speedtest-badge-live">Live On-Demand</span>
+                    </div>
+                    <p style="margin: 4px 0 0; font-size: 12px; color: #94a3b8;">
+                        Pengujian throughput seketika & kualitas latensi link ISP Biznet Dedicated Internet (FW-PA220-1)
+                    </p>
+                </div>
+                <button type="button" class="modal-close-btn" id="btnWanSpeedtestClose" title="Tutup Modal">&times;</button>
+            </div>
+
+            <div class="modal-body wan-speedtest-body">
+                <!-- Testing / Running State -->
+                <div id="speedtestLoadingState" class="speedtest-state-box" style="display: none;">
+                    <div class="speedtest-gauge-wrap">
+                        <div class="speedtest-spinner"></div>
+                        <div class="speedtest-testing-txt">Menguji Performa Link Real-Time...</div>
+                        <div class="speedtest-step-sub" id="speedtestStepMsg">Mengukur throughput Download & Upload pada PA-220...</div>
+                    </div>
+                </div>
+
+                <!-- Result Cards State -->
+                <div id="speedtestResultState" class="speedtest-state-box">
+                    <div class="speedtest-results-grid">
+                        <!-- Download Card -->
+                        <div class="speedtest-res-card res-dl">
+                            <div class="res-card-top">
+                                <span class="res-lbl">Download Speed</span>
+                                <span class="res-badge dl-badge" id="stModalDlUtil">--% Utilisasi</span>
+                            </div>
+                            <div class="res-val-wrap">
+                                <span class="res-val dl-color" id="stModalDlVal">0.0</span>
+                                <span class="res-unit">Mbps</span>
+                            </div>
+                            <div class="wan-progress-bar">
+                                <div class="wan-progress-fill fill-dl" id="stModalDlProgress" style="width: 0%;"></div>
+                            </div>
+                            <div class="res-sub">Paket Kapasitas 100 Mbps</div>
+                        </div>
+
+                        <!-- Upload Card -->
+                        <div class="speedtest-res-card res-ul">
+                            <div class="res-card-top">
+                                <span class="res-lbl">Upload Speed</span>
+                                <span class="res-badge ul-badge" id="stModalUlUtil">--% Utilisasi</span>
+                            </div>
+                            <div class="res-val-wrap">
+                                <span class="res-val ul-color" id="stModalUlVal">0.0</span>
+                                <span class="res-unit">Mbps</span>
+                            </div>
+                            <div class="wan-progress-bar">
+                                <div class="wan-progress-fill fill-ul" id="stModalUlProgress" style="width: 0%;"></div>
+                            </div>
+                            <div class="res-sub">Symmetric Uplink 100 Mbps</div>
+                        </div>
+                    </div>
+
+                    <!-- Latency & Ping Quality Grid -->
+                    <div class="speedtest-metrics-grid">
+                        <div class="st-metric-item">
+                            <span class="st-m-lbl">Ping Internet (1.1.1.1):</span>
+                            <strong class="st-m-val text-green" id="stModalLat">-- ms</strong>
+                        </div>
+                        <div class="st-metric-item">
+                            <span class="st-m-lbl">Modem Gateway (192.168.18.1):</span>
+                            <strong class="st-m-val" id="stModalGwLat">-- ms</strong>
+                        </div>
+                        <div class="st-metric-item">
+                            <span class="st-m-lbl">Packet Loss:</span>
+                            <strong class="st-m-val text-green" id="stModalLoss">0.0%</strong>
+                        </div>
+                        <div class="st-metric-item">
+                            <span class="st-m-lbl">Kualitas Link:</span>
+                            <span class="wan-q-pill pill-green" id="stModalQualityPill">Koneksi Normal</span>
+                        </div>
+                    </div>
+
+                    <div class="speedtest-meta-banner">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                        <span>Waktu Pengujian Real-Time: <strong id="stModalTimestamp">-</strong></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer" style="padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.08);">
+                <button type="button" class="btn-wan-action btn-speedtest" id="btnStModalRetest" style="padding: 6px 16px; font-size: 0.78rem;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" class="btn-icon">
+                        <path d="M23 4v6h-6"></path>
+                        <path d="M1 20v-6h6"></path>
+                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                    </svg>
+                    <span>Uji Ulang Sekarang</span>
+                </button>
+                <button type="button" class="btn-modal" id="btnWanSpeedtestCloseFooter">Tutup</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast Notification Container -->
     <div id="toastContainer" class="toast-container"></div>
 
@@ -384,6 +673,8 @@
     <!-- Initial Real Chart Data from Database -->
     <script id="initial-chart-data"
         type="application/json">{% if initial_chart_history %}{{ initial_chart_history | tojson }}{% else %}{}{% endif %}</script>
+    <script id="initial-wan-summary"
+        type="application/json">{% if wan %}{{ wan | tojson }}{% else %}{}{% endif %}</script>
     <script>
         try {
             const rawInit = document.getElementById('initial-chart-data').textContent || '{}';
@@ -391,10 +682,16 @@
         } catch (e) {
             window.INITIAL_CHART_DATA = {};
         }
+        try {
+            const rawWanSummary = document.getElementById('initial-wan-summary').textContent || '{}';
+            window.INITIAL_WAN_SUMMARY = JSON.parse(rawWanSummary);
+        } catch (e) {
+            window.INITIAL_WAN_SUMMARY = {};
+        }
     </script>
     <!-- Relative JS -->
     <script src="/static/js/timeline_navigator.js?v=1.1"></script>
-    <script src="/static/js/dashboard.js?v=5.2"></script>
+    <script src="/static/js/dashboard.js?v=6.1"></script>
     <script src="/static/js/global_nav.js?v=4.9"></script>
 </body>
 

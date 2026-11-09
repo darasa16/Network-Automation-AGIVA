@@ -3658,3 +3658,827 @@ body.nav-dragging-active * {
 .search-group-count {
     display: none !important;
 }
+
+
+/* ==========================================================================
+   WAN Link / ISP Biznet (ethernet1/3) Monitoring Banner & Cards
+   ========================================================================== */
+.wan-banner-section {
+    margin-top: 18px;
+    margin-bottom: 22px;
+}
+
+.wan-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 20px 24px;
+    display: grid;
+    grid-template-columns: 1.1fr 1.3fr 1.1fr;
+    gap: 24px;
+    align-items: center;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+}
+
+/* Left: Info Block */
+.wan-info-block {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.wan-icon-box {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: rgba(6, 182, 212, 0.12);
+    border: 1px solid rgba(6, 182, 212, 0.3);
+    color: #06b6d4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.wan-icon-box svg {
+    width: 24px;
+    height: 24px;
+}
+
+.wan-title-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.wan-tag-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.wan-badge-isp {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    padding: 2px 7px;
+    border-radius: 4px;
+    background: rgba(6, 182, 212, 0.18);
+    color: #38bdf8;
+    text-transform: uppercase;
+}
+
+.wan-badge-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: rgba(16, 185, 129, 0.12);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.wan-badge-status.status-down {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+.wan-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #f8fafc;
+    margin: 0;
+    letter-spacing: -0.01em;
+}
+
+.wan-meta-sub {
+    font-size: 0.78rem;
+    color: var(--text-secondary, #94a3b8);
+}
+
+.wan-meta-sub strong,
+.wan-meta-sub span,
+.wan-meta-sub code {
+    color: var(--text-secondary, #94a3b8);
+    font-weight: 500;
+    font-family: inherit;
+    background: transparent;
+    padding: 0;
+}
+
+/* Center: Metrics Grid */
+.wan-metrics-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 20px;
+    background: transparent;
+    padding: 0 24px;
+    border: none;
+    border-left: 1px solid var(--border-color);
+}
+
+.wan-metric-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.wan-metric-lbl {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.wan-metric-val-wrap {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+}
+
+.wan-val {
+    font-size: 1.45rem;
+    font-weight: 800;
+    font-family: 'JetBrains Mono', monospace;
+    line-height: 1.1;
+}
+
+.dl-color {
+    color: #06b6d4;
+}
+
+.ul-color {
+    color: #f97316;
+}
+
+.wan-unit {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #64748b;
+}
+
+.wan-progress-bar {
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+    overflow: hidden;
+    margin-top: 4px;
+}
+
+.wan-progress-fill {
+    height: 100%;
+    border-radius: 999px;
+    transition: width 0.4s ease;
+}
+
+.fill-dl {
+    background: linear-gradient(90deg, #06b6d4, #3b82f6);
+}
+
+.fill-ul {
+    background: linear-gradient(90deg, #f97316, #fb923c);
+}
+
+/* Combined Bandwidth Utilization below both metrics (prominent & readable) */
+.wan-util-combined-row {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-top: 4px;
+    padding-top: 8px;
+    border-top: 1px dashed rgba(255, 255, 255, 0.08);
+    flex-wrap: wrap;
+}
+
+.wan-util-combined-lbl {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.wan-util-combined-val {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #22d3ee;
+    font-family: 'JetBrains Mono', monospace;
+    line-height: 1;
+}
+
+.wan-util-combined-sub {
+    font-size: 0.8rem;
+    color: #94a3b8;
+}
+
+.wan-util-combined-cap {
+    color: #f8fafc;
+    font-weight: 600;
+}
+
+/* Right: Quality Block */
+.wan-quality-block {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    border-left: 1px solid var(--border-color);
+    padding-left: 20px;
+}
+
+.wan-quality-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.wan-q-lbl {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+}
+
+.wan-q-pill {
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+}
+
+.pill-green {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.35);
+}
+
+.pill-red {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.35);
+}
+
+.wan-ping-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.wan-ping-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.76rem;
+}
+
+.ping-lbl {
+    color: #94a3b8;
+}
+
+.ping-val {
+    color: #f8fafc;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+}
+
+.wan-sync-time {
+    font-size: 0.68rem;
+    color: #64748b;
+    margin-top: 2px;
+}
+
+/* WAN Card Actions (Speedtest & See Log) */
+.wan-footer-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-top: 6px;
+    flex-wrap: wrap;
+}
+
+.wan-actions-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-wan-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.74rem;
+    font-weight: 600;
+    padding: 5px 14px;
+    border-radius: var(--radius-pill, 999px);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none !important;
+    outline: none;
+    line-height: 1.2;
+    background: var(--gradient-agiva) !important;
+    color: #ffffff !important;
+    box-shadow: 0 2px 8px rgba(232, 165, 118, 0.3);
+}
+
+.btn-wan-action .btn-icon {
+    width: 13px;
+    height: 13px;
+    stroke: #ffffff;
+}
+
+.btn-wan-action:hover:not(:disabled) {
+    background: var(--gradient-agiva-hover) !important;
+    color: #ffffff !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(232, 165, 118, 0.5) !important;
+}
+
+.btn-wan-action:disabled,
+.btn-wan-action.loading {
+    opacity: 0.75;
+    cursor: not-allowed;
+    background: var(--gradient-agiva) !important;
+    transform: none;
+}
+
+.btn-wan-action.loading .btn-icon {
+    animation: wanSpin 1s linear infinite;
+}
+
+@keyframes wanSpin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.btn-speedtest,
+.btn-seelog {
+    background: var(--gradient-agiva) !important;
+    color: #ffffff !important;
+    border: none !important;
+}
+
+.btn-speedtest:hover:not(:disabled),
+.btn-seelog:hover {
+    background: var(--gradient-agiva-hover) !important;
+    color: #ffffff !important;
+}
+
+/* Modal Overlay & Base System */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.78);
+    backdrop-filter: blur(5px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 20px;
+    animation: modalFadeIn 0.2s ease-out;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.97);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.modal-card {
+    background: #0f172a;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+    width: 100%;
+    max-width: 960px;
+    max-height: 86vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.65);
+    overflow: hidden;
+}
+
+.modal-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(15, 23, 42, 0.95);
+}
+
+.modal-close-btn {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    font-size: 26px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 4px 10px;
+    border-radius: 6px;
+    transition: color 0.2s, background 0.2s;
+}
+
+.modal-close-btn:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.modal-body {
+    padding: 16px 20px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.btn-modal {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #e2e8f0;
+    padding: 6px 16px;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-modal:hover {
+    background: rgba(255, 255, 255, 0.16);
+    color: #ffffff;
+}
+
+/* Modal: WAN 24-Hour Log Details */
+.wan-log-modal-card {
+    max-width: 1040px;
+    width: 96%;
+    max-height: 88vh;
+    border: 1px solid rgba(6, 182, 212, 0.35);
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.75), 0 0 30px rgba(6, 182, 212, 0.12);
+}
+
+.wan-log-badge-interval {
+    background: rgba(245, 158, 11, 0.16);
+    color: #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.wan-log-modal-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 20px;
+    background: rgba(15, 23, 42, 0.7);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.wan-log-filter-group {
+    display: flex;
+    gap: 6px;
+}
+
+.wan-filter-btn {
+    background: rgba(255, 255, 255, 0.04);
+    color: #94a3b8;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.wan-filter-btn:hover {
+    color: #f8fafc;
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.wan-filter-btn.active {
+    background: rgba(6, 182, 212, 0.16);
+    color: #22d3ee;
+    border-color: rgba(6, 182, 212, 0.45);
+}
+
+.btn-modal-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #cbd5e1;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-modal-action:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
+.wan-log-modal-body {
+    padding: 0;
+    overflow-y: auto;
+    max-height: 520px;
+}
+
+.wan-log-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.wan-log-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.75rem;
+    text-align: left;
+}
+
+.wan-log-table th {
+    background: #0f172a;
+    position: sticky;
+    top: 0;
+    padding: 11px 14px;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #94a3b8;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    white-space: nowrap;
+    z-index: 2;
+}
+
+.wan-log-table td {
+    padding: 9px 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    color: #e2e8f0;
+    font-family: 'JetBrains Mono', monospace;
+    white-space: nowrap;
+}
+
+.wan-log-table tr:hover td {
+    background: rgba(6, 182, 212, 0.04);
+}
+
+.wan-badge-status-sm {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 7px;
+    border-radius: 999px;
+    font-size: 0.68rem;
+    font-weight: 700;
+}
+
+.wan-badge-status-sm.up {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.wan-badge-status-sm.down {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.wan-badge-status-sm.degraded {
+    background: rgba(245, 158, 11, 0.15);
+    color: #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+    .wan-card {
+        grid-template-columns: 1fr;
+        gap: 18px;
+    }
+    .wan-metrics-grid {
+        border-left: none;
+        border-top: 1px solid var(--border-color);
+        padding-left: 0;
+        padding-right: 0;
+        padding-top: 14px;
+    }
+    .wan-quality-block {
+        border-left: none;
+        border-top: 1px solid var(--border-color);
+        padding-left: 0;
+        padding-top: 14px;
+    }
+}
+
+
+/* ==========================================================================
+   Modal: WAN Speedtest Real-Time Result Card
+   ========================================================================== */
+.wan-speedtest-modal-card {
+    max-width: 600px;
+    width: 95%;
+    border: 1px solid rgba(232, 165, 118, 0.35);
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.75), 0 0 30px rgba(232, 165, 118, 0.12);
+}
+
+.speedtest-badge-live {
+    background: rgba(232, 165, 118, 0.18);
+    color: #f6ad55;
+    border: 1px solid rgba(232, 165, 118, 0.35);
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.wan-speedtest-body {
+    padding: 20px 22px;
+}
+
+.speedtest-results-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 18px;
+}
+
+.speedtest-res-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.res-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.res-lbl {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+}
+
+.res-badge {
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 999px;
+}
+
+.res-badge.dl-badge {
+    background: rgba(6, 182, 212, 0.15);
+    color: #22d3ee;
+    border: 1px solid rgba(6, 182, 212, 0.3);
+}
+
+.res-badge.ul-badge {
+    background: rgba(249, 115, 22, 0.15);
+    color: #fb923c;
+    border: 1px solid rgba(249, 115, 22, 0.3);
+}
+
+.res-val-wrap {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    margin: 2px 0;
+}
+
+.res-val {
+    font-size: 1.75rem;
+    font-weight: 800;
+    font-family: 'JetBrains Mono', monospace;
+    line-height: 1;
+}
+
+.res-unit {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #64748b;
+}
+
+.res-sub {
+    font-size: 0.7rem;
+    color: #64748b;
+    margin-top: 4px;
+}
+
+.speedtest-metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    background: rgba(15, 23, 42, 0.65);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-bottom: 14px;
+}
+
+.st-metric-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.76rem;
+}
+
+.st-m-lbl {
+    color: #94a3b8;
+}
+
+.st-m-val {
+    color: #e2e8f0;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+}
+
+.st-m-val.text-green {
+    color: #10b981;
+}
+
+.speedtest-meta-banner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.72rem;
+    color: #94a3b8;
+    background: rgba(232, 165, 118, 0.06);
+    border: 1px dashed rgba(232, 165, 118, 0.25);
+    padding: 8px 12px;
+    border-radius: 8px;
+}
+
+.speedtest-state-box {
+    width: 100%;
+}
+
+.speedtest-gauge-wrap {
+    padding: 36px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    text-align: center;
+}
+
+.speedtest-spinner {
+    width: 44px;
+    height: 44px;
+    border: 3px solid rgba(232, 165, 118, 0.2);
+    border-top-color: #E8A576;
+    border-radius: 50%;
+    animation: st-spin 0.9s linear infinite;
+}
+
+@keyframes st-spin {
+    to { transform: rotate(360deg); }
+}
+
+.speedtest-testing-txt {
+    font-size: 0.98rem;
+    font-weight: 700;
+    color: #f8fafc;
+}
+
+.speedtest-step-sub {
+    font-size: 0.76rem;
+    color: #94a3b8;
+}

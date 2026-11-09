@@ -69,6 +69,44 @@ class DeviceStatusLog(Base):
 
     device = relationship("Device", back_populates="logs")
 
+class WanStatusLog(Base):
+    """Tabel: wan_status_logs (Histori Metrik WAN / ISP Biznet ethernet1/3 untuk Chart.js & Card)"""
+    __tablename__ = 'wan_status_logs'
+
+    id = Column(BigInteger().with_variant(Integer, "sqlite"), primary_key=True, autoincrement=True)
+    timestamp = Column(DateTime, default=datetime.now, nullable=False)
+    interface_name = Column(String(50), default='ethernet1/3', nullable=False)
+    provider = Column(String(50), default='Biznet', nullable=False)
+    status = Column(String(20), default='UP', nullable=False)  # 'UP' / 'DOWN'
+    download_mbps = Column(Float, default=0.0)
+    upload_mbps = Column(Float, default=0.0)
+    total_mbps = Column(Float, default=0.0)
+    latency_ms = Column(Float, default=0.0)          # Ping ke Internet (1.1.1.1)
+    gateway_latency_ms = Column(Float, default=0.0)  # Ping ke Gateway Modem (192.168.18.1)
+    packet_loss = Column(Float, default=0.0)
+    rx_errors = Column(Integer, default=0)
+    tx_errors = Column(Integer, default=0)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "timestamp": self.timestamp.strftime("%Y-%m-%d %H:%M:%S") if self.timestamp else "-",
+            "time_str": self.timestamp.strftime("%H:%M:%S") if self.timestamp else "-",
+            "interface": self.interface_name,
+            "provider": self.provider,
+            "status": self.status,
+            "download": round(self.download_mbps or 0.0, 1),
+            "upload": round(self.upload_mbps or 0.0, 1),
+            "total": round(self.total_mbps or 0.0, 1),
+            "latency": round(self.latency_ms or 0.0, 1),
+            "gateway_latency": round(self.gateway_latency_ms or 0.0, 1),
+            "packet_loss": round(self.packet_loss or 0.0, 1),
+            "rx_errors": self.rx_errors or 0,
+            "tx_errors": self.tx_errors or 0,
+            "total_errors": (self.rx_errors or 0) + (self.tx_errors or 0)
+        }
+
+
 # 2. ALERT MODELS
 class Alert(Base):
     """Tabel: alerts (Log Kejadian Anomali / Trigger Rule Engine)"""

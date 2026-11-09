@@ -18,7 +18,7 @@ import xml.etree.ElementTree as ET
 
 # Import database dan rule engine mandiri (Komponen 4 LLD)
 from database import db_session
-from models import Device, DeviceStatusLog, IncidentLog
+from models import Device, DeviceStatusLog, IncidentLog, WanStatusLog
 from rule_engine import evaluate_device_rules, trigger_alert_with_antispam
 from logger_config import get_configured_logger
 
@@ -54,6 +54,8 @@ def get_next_polling_time(reference_time=None):
 
 # Cache counter byte fisik Palo Alto untuk menghitung laju throughput Mbps riil
 _PA_PREV_COUNTERS = {}
+_PA_PREV_WAN_COUNTERS = {}
+
 
 def measure_ping_metrics(host, count=3, timeout_sec=1):
     """
@@ -459,6 +461,66 @@ def _execute_device_poll(device):
                     except Exception as e:
                         logger.warning(f"Gagal mengambil traffic ethernet1/2 Palo Alto: {e}")
 
+                    # 3b. Metrik Traffic Riil & Kualitas ISP Port Fisik ethernet1/3 (WAN Biznet)
+                    wan_metrics = {
+                        "download_mbps": 0.0,
+                        "upload_mbps": 0.0,
+                        "total_mbps": 0.0,
+                        "latency_ms": 0.0,
+                        "gateway_latency_ms": 0.0,
+                        "packet_loss": 0.0,
+                        "status": "UP"
+                    }
+                    try:
+                        r_wan = requests.get(f"https://{device.ip_address}/api/?type=op&cmd=<show><interface>ethernet1/3</interface></show>&key={api_key}", verify=False, timeout=8)
+                        if r_wan.status_code == 200:
+                            m_w_ibytes = re.search(r'<ibytes>(\d+)</ibytes>', r_wan.text) or re.search(r'<rx-bytes>(\d+)</rx-bytes>', r_wan.text)
+                            m_w_obytes = re.search(r'<obytes>(\d+)</obytes>', r_wan.text) or re.search(r'<tx-bytes>(\d+)</tx-bytes>', r_wan.text)
+                            m_w_state = re.search(r'<state>(.*?)</state>', r_wan.text)
+                            if m_w_state and m_w_state.group(1).strip().lower() == 'down':
+                                wan_metrics["status"] = "DOWN"
+
+                            m_w_rx_err = re.search(r'<ierrors>(\d+)</ierrors>', r_wan.text) or re.search(r'<rx-error>(\d+)</rx-error>', r_wan.text)
+                            m_w_tx_err = re.search(r'<oerrors>(\d+)</oerrors>', r_wan.text) or re.search(r'<tx-error>(\d+)</tx-error>', r_wan.text)
+                            wan_metrics["rx_errors"] = int(m_w_rx_err.group(1)) if m_w_rx_err else 0
+                            wan_metrics["tx_errors"] = int(m_w_tx_err.group(1)) if m_w_tx_err else 0
+                            wan_metrics["total_errors"] = wan_metrics["rx_errors"] + wan_metrics["tx_errors"]
+
+                            if m_w_ibytes and m_w_obytes:
+                                curr_w_rx = int(m_w_ibytes.group(1))
+                                curr_w_tx = int(m_w_obytes.group(1))
+                                now_ts = time.time()
+                                wan_key = f"{device.device_id}_wan"
+
+                                if wan_key in _PA_PREV_WAN_COUNTERS:
+                                    prev_ts, prev_rx, prev_tx = _PA_PREV_WAN_COUNTERS[wan_key]
+                                    dt = now_ts - prev_ts
+                                    if dt > 0:
+                                        delta_rx = (curr_w_rx - prev_rx) if curr_w_rx >= prev_rx else (curr_w_rx if prev_rx >= (2**32) else ((2**32 - prev_rx) + curr_w_rx))
+                                        delta_tx = (curr_w_tx - prev_tx) if curr_w_tx >= prev_tx else (curr_w_tx if prev_tx >= (2**32) else ((2**32 - prev_tx) + curr_w_tx))
+                                        rx_bps = (delta_rx * 8.0) / dt
+                                        tx_bps = (delta_tx * 8.0) / dt
+                                        wan_metrics["download_mbps"] = round(rx_bps / 1000000.0, 2)
+                                        wan_metrics["upload_mbps"] = round(tx_bps / 1000000.0, 2)
+                                        wan_metrics["total_mbps"] = round(wan_metrics["download_mbps"] + wan_metrics["upload_mbps"], 2)
+                                    _PA_PREV_WAN_COUNTERS[wan_key] = (now_ts, curr_w_rx, curr_w_tx)
+                                else:
+                                    _PA_PREV_WAN_COUNTERS[wan_key] = (now_ts, curr_w_rx, curr_w_tx)
+                    except Exception as e_wan:
+                        logger.warning(f"Gagal mengambil traffic ethernet1/3 (Biznet): {e_wan}")
+
+                    # Double Ping ICMP untuk Akurasi Diagnostik Kualitas Biznet
+                    try:
+                        _, inet_lat, inet_loss = measure_ping_metrics("1.1.1.1", count=2, timeout_sec=1)
+                        _, gw_lat, _ = measure_ping_metrics("192.168.18.1", count=1, timeout_sec=1)
+                        wan_metrics["latency_ms"] = inet_lat
+                        wan_metrics["packet_loss"] = inet_loss
+                        wan_metrics["gateway_latency_ms"] = gw_lat
+                    except Exception as e_p:
+                        logger.warning(f"Gagal uji ping WAN Biznet: {e_p}")
+
+                    metrics["wan_data"] = wan_metrics
+
                     # 4. Metrik Integritas Transmisi Fisik Riil (Akumulasi Counter Seluruh Port Fisik)
                     try:
                         r_cnt = requests.get(f"https://{device.ip_address}/api/?type=op&cmd=<show><counter><interface>all</interface></counter></show>&key={api_key}", verify=False, timeout=5)
@@ -664,6 +726,26 @@ def save_metrics(device_id, metrics):
     )
     try:
         session.add(log_entry)
+
+        # Log WAN Biznet jika tersedia
+        if metrics.get("wan_data"):
+            w = metrics["wan_data"]
+            wan_entry = WanStatusLog(
+                timestamp=datetime.now(),
+                interface_name='ethernet1/3',
+                provider='Biznet',
+                status=w.get("status", "UP"),
+                download_mbps=w.get("download_mbps", 0.0),
+                upload_mbps=w.get("upload_mbps", 0.0),
+                total_mbps=w.get("total_mbps", 0.0),
+                latency_ms=w.get("latency_ms", 0.0),
+                gateway_latency_ms=w.get("gateway_latency_ms", 0.0),
+                packet_loss=w.get("packet_loss", 0.0),
+                rx_errors=w.get("rx_errors", 0),
+                tx_errors=w.get("tx_errors", 0)
+            )
+            session.add(wan_entry)
+
         # Eksekusi Rule Engine & Anti-spam (Komponen 4 LLD)
         import importlib
         import rule_engine
@@ -723,11 +805,12 @@ def cleanup_old_device_logs(retention_days=None):
     cutoff_date = datetime.now() - timedelta(days=retention_days)
     try:
         deleted_count = session.query(DeviceStatusLog).filter(DeviceStatusLog.timestamp < cutoff_date).delete()
+        del_wan = session.query(WanStatusLog).filter(WanStatusLog.timestamp < cutoff_date).delete()
         session.commit()
-        if deleted_count > 0:
-            logger.info(f"[Housekeeping] Berhasil menghapus {deleted_count} baris log lama (> {retention_days} hari) dari device_status_logs.")
+        if (deleted_count + del_wan) > 0:
+            logger.info(f"[Housekeeping] Berhasil menghapus {deleted_count} baris log device dan {del_wan} baris log WAN lama (> {retention_days} hari).")
         else:
-            logger.info(f"[Housekeeping] Retensi data bersih. Tidak ada data device_status_logs yang berumur lebih dari {retention_days} hari.")
+            logger.info(f"[Housekeeping] Retensi data bersih. Tidak ada data device/WAN logs yang berumur lebih dari {retention_days} hari.")
     except Exception as e:
         logger.error(f"[Housekeeping] Gagal menjalankan data retention cleanup device_status_logs: {e}")
         session.rollback()
