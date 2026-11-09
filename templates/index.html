@@ -13,7 +13,7 @@
         rel="stylesheet">
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
-    <link rel="stylesheet" href="/static/css/style.css?v=8.1">
+    <link rel="stylesheet" href="/static/css/style.css?v=10.7">
 </head>
 
 <body>
@@ -31,9 +31,8 @@
                     <circle cx="11" cy="11" r="8"></circle>
                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                 </svg>
-                <input type="text" id="globalSearch" placeholder="Search devices, alerts, data..." autocomplete="off" />
-                <button type="button" id="clearSearchBtn" class="search-clear-btn"
-                    title="Clear search">&times;</button>
+                <input type="text" id="globalSearch" placeholder="Search devices, alerts, data" autocomplete="off" />
+                <button type="button" id="clearSearchBtn" class="search-clear-btn" title="Clear search">&times;</button>
                 <div id="searchResultsDropdown" class="search-results-dropdown" style="display: none;"></div>
             </div>
         </div>
@@ -205,15 +204,28 @@
                     <!-- Monitored Devices Table Panel -->
 
                     <div class="table-panel" id="monitored-devices">
-                        <div class="panel-header table-header-flex">
+                        <div class="panel-header table-header-flex" style="flex-wrap: wrap; gap: 12px;">
                             <div>
                                 <h3 class="panel-title">Monitored Devices</h3>
                                 <span class="panel-sub">List of monitored devices</span>
                             </div>
-                            <div class="table-actions">
-                                <span class="badge-filter active" data-filter="all">All ({{ total_devices }})</span>
-                                <span class="badge-filter" data-filter="UP">Online ({{ devices_online }})</span>
-                                <span class="badge-filter" data-filter="DOWN">Offline ({{ devices_offline }})</span>
+                            <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                                <div class="table-actions">
+                                    <span class="badge-filter active" data-filter="all">All ({{ total_devices }})</span>
+                                    <span class="badge-filter" data-filter="UP">Online ({{ devices_online }})</span>
+                                    <span class="badge-filter" data-filter="DOWN">Offline ({{ devices_offline }})</span>
+                                </div>
+                                <div class="table-search-box">
+                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <circle cx="11" cy="11" r="8"></circle>
+                                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                    </svg>
+                                    <input type="text" id="deviceTableSearch"
+                                        placeholder="Filter devices by name, IP, vendor, site" autocomplete="off" />
+                                    <button type="button" class="table-search-clear"
+                                        id="deviceTableSearchClear">&times;</button>
+                                </div>
                             </div>
                         </div>
 
@@ -260,14 +272,16 @@
                                                 <div class="mini-bar-row">
                                                     <span class="mini-lbl">C:</span>
                                                     <div class="progress-bar-bg">
-                                                        <div class="progress-bar-fill fill-cpu" {{ ('style="width: ' ~ dev.cpu ~ '%;"') | safe }}></div>
+                                                        <div class="progress-bar-fill fill-cpu" {{
+                                                            ('style="width: ' ~ dev.cpu ~ '%;"') | safe }}></div>
                                                     </div>
                                                     <span class="mini-val">{{ dev.cpu }}%</span>
                                                 </div>
                                                 <div class="mini-bar-row">
                                                     <span class="mini-lbl">M:</span>
                                                     <div class="progress-bar-bg">
-                                                        <div class="progress-bar-fill fill-mem" {{ ('style="width: ' ~ dev.mem ~ '%;"') | safe }}></div>
+                                                        <div class="progress-bar-fill fill-mem" {{ ('
+                                                            style="width: ' ~ dev.mem ~ '%;"') | safe }}></div>
                                                     </div>
                                                     <span class="mini-val">{{ dev.mem }}%</span>
                                                 </div>
@@ -330,7 +344,9 @@
                                                     <div class="alert-footer">
                                                         {% if alert.acknowledged %}
                                                         <span class="badge-ack-state text-warning">
-                                                            <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" style="display:inline-block; vertical-align:middle; margin-right:3px;">
+                                                            <svg viewBox="0 0 24 24" width="11" height="11" fill="none"
+                                                                stroke="currentColor" stroke-width="2.5"
+                                                                style="display:inline-block; vertical-align:middle; margin-right:3px;">
                                                                 <polyline points="20 6 9 17 4 12"></polyline>
                                                             </svg>Acknowledged</span>
                                                         <span class="text-muted-xs">{{ alert.acknowledged_by or
@@ -377,7 +393,8 @@
         updateClock();
     </script>
     <!-- Initial Real Chart Data from Database -->
-    <script id="initial-chart-data" type="application/json">{% if initial_chart_history %}{{ initial_chart_history | tojson }}{% else %}{}{% endif %}</script>
+    <script id="initial-chart-data"
+        type="application/json">{% if initial_chart_history %}{{ initial_chart_history | tojson }}{% else %}{}{% endif %}</script>
     <script>
         try {
             const rawInit = document.getElementById('initial-chart-data').textContent || '{}';
@@ -388,8 +405,8 @@
     </script>
     <!-- Relative JS -->
     <script src="/static/js/timeline_navigator.js?v=1.1"></script>
-    <script src="/static/js/dashboard.js?v=5.0"></script>
-    <script src="/static/js/global_nav.js?v=4.3"></script>
+    <script src="/static/js/dashboard.js?v=5.1"></script>
+    <script src="/static/js/global_nav.js?v=4.9"></script>
 </body>
 
 </html>

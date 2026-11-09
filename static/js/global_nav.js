@@ -79,10 +79,10 @@
             html += `
                 <div class="search-group-header">
                     <span>Network Devices</span>
-                    <span class="search-group-count">${devices.length}</span>
                 </div>
             `;
-            devices.forEach(dev => {
+            const topDevs = devices.slice(0, 5);
+            topDevs.forEach(dev => {
                 const itemIdx = currentResults.length;
                 currentResults.push(dev.url);
                 const isUp = dev.status === 'UP';
@@ -118,6 +118,12 @@
                     </div>
                 `;
             });
+            html += `
+                <a class="search-view-all-cta" href="/?search=${encodeURIComponent(query)}#monitored-devices">
+                    <span>Lihat & Filter semua perangkat di Dashboard</span>
+                    <span class="cta-arrow">&rarr;</span>
+                </a>
+            `;
         }
 
         // 2. Active Alerts Section
@@ -125,10 +131,10 @@
             html += `
                 <div class="search-group-header">
                     <span>Active Alerts (Action Required)</span>
-                    <span class="search-group-count">${alerts.length}</span>
                 </div>
             `;
-            alerts.forEach(a => {
+            const topAlerts = alerts.slice(0, 5);
+            topAlerts.forEach(a => {
                 const itemIdx = currentResults.length;
                 currentResults.push(a.url);
                 const isCrit = a.severity === 'CRITICAL';
@@ -162,6 +168,12 @@
                     </div>
                 `;
             });
+            html += `
+                <a class="search-view-all-cta" href="/alerts?search=${encodeURIComponent(query)}#alertsTable">
+                    <span>Lihat & Filter semua alert aktif di Alerts</span>
+                    <span class="cta-arrow">&rarr;</span>
+                </a>
+            `;
         }
 
         // 3. Incident Log & Cooldown History Section
@@ -169,10 +181,10 @@
             html += `
                 <div class="search-group-header">
                     <span>Incident Log & Cooldown History</span>
-                    <span class="search-group-count">${incidents.length}</span>
                 </div>
             `;
-            incidents.forEach(inc => {
+            const topIncidents = incidents.slice(0, 5);
+            topIncidents.forEach(inc => {
                 const itemIdx = currentResults.length;
                 currentResults.push(inc.url);
                 const isCrit = inc.severity === 'CRITICAL';
@@ -218,6 +230,12 @@
                     </div>
                 `;
             });
+            html += `
+                <a class="search-view-all-cta" href="/alerts?search=${encodeURIComponent(query)}#incidentsTable">
+                    <span>Lihat & Filter semua riwayat insiden / cooldown di Incident Log</span>
+                    <span class="cta-arrow">&rarr;</span>
+                </a>
+            `;
         }
 
         // 4. Backups Section
@@ -225,10 +243,10 @@
             html += `
                 <div class="search-group-header">
                     <span>Configuration Backups</span>
-                    <span class="search-group-count">${backups.length}</span>
                 </div>
             `;
-            backups.forEach(b => {
+            const topBackups = backups.slice(0, 5);
+            topBackups.forEach(b => {
                 const itemIdx = currentResults.length;
                 currentResults.push(b.url);
 
@@ -245,6 +263,8 @@
                             <div class="search-item-text">
                                 <div class="search-item-title">${escapeHtml(b.file_name)}</div>
                                 <div class="search-item-desc">
+                                    <span style="background: rgba(232, 165, 118, 0.15); color: var(--color-copper); border: 1px solid rgba(232, 165, 118, 0.3); border-radius: 4px; padding: 0 5px; font-size: 9px; font-weight: 600;">${escapeHtml(b.category || 'CONFIG')}</span>
+                                    <span>•</span>
                                     <span>${escapeHtml(b.device_name)}</span>
                                     <span>•</span>
                                     <span>Site: ${escapeHtml(b.site || '-')}</span>
@@ -261,6 +281,12 @@
                     </div>
                 `;
             });
+            html += `
+                <a class="search-view-all-cta" href="/backups?search=${encodeURIComponent(query)}#backupsTable">
+                    <span>Lihat & Filter semua file di Backups</span>
+                    <span class="cta-arrow">&rarr;</span>
+                </a>
+            `;
         }
 
         // 4. Telegram Section
@@ -268,10 +294,14 @@
             html += `
                 <div class="search-group-header">
                     <span>Telegram Bot Integration</span>
-                    <span class="search-group-count">${telegram.length}</span>
                 </div>
             `;
-            telegram.forEach(t => {
+            // Keep all matching whitelist engineer entries (small admin count as requested), slice other telegram items to top 5
+            const whitelistItems = telegram.filter(t => t.is_whitelist || (t.url && t.url.includes('whitelist-row')));
+            const otherTgItems = telegram.filter(t => !t.is_whitelist && (!t.url || !t.url.includes('whitelist-row'))).slice(0, 5);
+            const displayTelegram = [...whitelistItems, ...otherTgItems];
+
+            displayTelegram.forEach(t => {
                 const itemIdx = currentResults.length;
                 currentResults.push(t.url);
                 const badge = t.status === 'ACTIVE' 
@@ -302,6 +332,12 @@
                     </div>
                 `;
             });
+            html += `
+                <a class="search-view-all-cta" href="/telegram?search=${encodeURIComponent(query)}#tgLogsTable">
+                    <span>Lihat & Filter semua log di Telegram</span>
+                    <span class="cta-arrow">&rarr;</span>
+                </a>
+            `;
         }
 
         // 5. Navigation Section
@@ -309,7 +345,6 @@
             html += `
                 <div class="search-group-header">
                     <span>Navigation Menu</span>
-                    <span class="search-group-count">${navItems.length}</span>
                 </div>
             `;
             navItems.forEach(n => {
@@ -453,88 +488,102 @@
     function triggerHighlightForId(targetId, retries = 35) {
         if (!targetId) return;
 
+        targetId = String(targetId).replace(/^#/, '');
+
+        // 1. Exact pagination and table target check
+        // Special handling for backups paginated rows
+        if (targetId.startsWith('backup-row-') || targetId.startsWith('backup-')) {
+            if (typeof window.checkTargetBackupPage === 'function') {
+                window.checkTargetBackupPage(targetId);
+                if (typeof window.renderBackupsTable === 'function') {
+                    window.renderBackupsTable();
+                }
+            }
+        }
+
+        // Special handling for telegram whitelist paginated rows
+        if (targetId.startsWith('whitelist-row-') || targetId.startsWith('whitelist-')) {
+            if (typeof window.checkTargetWhitelistPage === 'function') {
+                window.checkTargetWhitelistPage(targetId);
+                if (typeof window.renderWhitelistTable === 'function') {
+                    window.renderWhitelistTable();
+                }
+            }
+        }
+
         // Special handling for telegram paginated logs
-        if (targetId.startsWith('msglog-row-')) {
-            if (typeof window.checkTargetLogPage === 'function' && typeof window.renderLogsTable === 'function') {
-                const found = window.checkTargetLogPage(targetId);
-                if (found || !document.getElementById(targetId)) {
-                    window.renderLogsTable(targetId);
+        if (targetId.startsWith('msglog-row-') || targetId.startsWith('msglog-')) {
+            if (typeof window.checkTargetLogPage === 'function') {
+                window.checkTargetLogPage(targetId);
+                if (typeof window.renderLogsTable === 'function') {
+                    window.renderLogsTable();
                 }
             }
         }
 
         // Special handling for paginated alerts
         if (targetId.startsWith('alert-row-') || targetId.startsWith('alert-')) {
-            if (typeof window.checkTargetAlertPage === 'function' && typeof window.renderAlertsPagination === 'function') {
+            if (typeof window.checkTargetAlertPage === 'function') {
                 window.checkTargetAlertPage(targetId);
-                window.renderAlertsPagination();
+                if (typeof window.renderAlertsTable === 'function') {
+                    window.renderAlertsTable();
+                }
             }
         }
 
         // Special handling for paginated incident logs
-        if (targetId.startsWith('inc-row-') || targetId.startsWith('inc-')) {
-            if (typeof window.checkTargetIncidentPage === 'function' && typeof window.renderIncidentsPagination === 'function') {
+        if (targetId.startsWith('inc-row-') || targetId.startsWith('incident-row-') || targetId.startsWith('inc-')) {
+            if (typeof window.checkTargetIncidentPage === 'function') {
                 window.checkTargetIncidentPage(targetId);
-                window.renderIncidentsPagination();
+                if (typeof window.renderIncidentsTable === 'function') {
+                    window.renderIncidentsTable();
+                }
             }
         }
 
         const el = document.getElementById(targetId);
         if (!el) {
             if (retries > 0) {
-                setTimeout(() => triggerHighlightForId(targetId, retries - 1), 80);
+                setTimeout(() => triggerHighlightForId(targetId, retries - 1), 60);
             }
             return;
         }
 
-        // 1. Unhide element if inside filtered tables
-        // If inside Alerts page and row is hidden by filter tab, reset to 'all'
-        const alertTabAll = document.querySelector('#alertsFilterBar .filter-tab[data-filter="all"]');
-        if (alertTabAll && (el.classList.contains('alert-row') || targetId.startsWith('alert-row-'))) {
-            alertTabAll.click();
-        }
-
-        // If inside Incident Log table and row is hidden by filter tab, reset to 'all'
-        const incTabAll = document.querySelector('#incidentsFilterBar .filter-tab[data-inc-filter="all"]');
-        if (incTabAll && (el.classList.contains('incident-row') || targetId.startsWith('inc-row-'))) {
-            incTabAll.click();
-        }
-
-        // Reset any local filter input if it was hiding rows
-        const localSearchInputs = document.querySelectorAll('#backupTableSearch, #searchAlerts, #tableSearch, #deviceSearch, #alertsTableSearch, #incidentsTableSearch');
-        localSearchInputs.forEach(input => {
-            if (input && input.value) {
-                input.value = '';
-                input.dispatchEvent(new Event('input', { bubbles: true }));
-            }
-        });
-
-        // If row itself was hidden
+        // If row itself was hidden by inline style
         const row = el.tagName.toLowerCase() === 'tr' ? el : el.closest('tr');
-        if (row) {
+        if (row && row.style.display === 'none') {
             row.style.display = '';
         }
 
         // 2. Clear any existing highlights
         document.querySelectorAll('.search-target-highlight').forEach(n => n.classList.remove('search-target-highlight'));
 
-        // 3. Double-scroll to center element in viewport
+        // 3. Center element in viewport (taking fixed navbar into account)
         const scrollTarget = () => {
+            const navbar = document.querySelector('.navbar');
+            const navHeight = navbar ? navbar.offsetHeight : 70;
+            const elRect = el.getBoundingClientRect();
+            const targetY = window.pageYOffset + elRect.top - (window.innerHeight / 2) + (elRect.height / 2);
+
+            window.scrollTo({
+                top: Math.max(0, targetY),
+                behavior: 'smooth'
+            });
+
+            // Ensure horizontal scroll inside container if overflowed
             const container = el.closest('.table-responsive');
             if (container) {
-                const elRect = el.getBoundingClientRect();
-                const containerRect = container.getBoundingClientRect();
-                if (elRect.top < containerRect.top || elRect.bottom > containerRect.bottom) {
-                    container.scrollTop += (elRect.top - containerRect.top) - (container.clientHeight / 2) + (elRect.height / 2);
+                const elLeft = el.offsetLeft;
+                if (elLeft < container.scrollLeft || elLeft > container.scrollLeft + container.clientWidth) {
+                    container.scrollTo({ left: Math.max(0, elLeft - 40), behavior: 'smooth' });
                 }
             }
-            el.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
         };
 
-        // Scroll immediately
-        scrollTarget();
-        // Re-scroll after 200ms in case fonts/styles cause shift
-        setTimeout(scrollTarget, 200);
+        requestAnimationFrame(() => {
+            scrollTarget();
+            setTimeout(scrollTarget, 160);
+        });
 
         // 4. Trigger Agiva Copper Highlight Animation
         void el.offsetWidth; // Force CSS reflow
@@ -547,6 +596,17 @@
     }
 
     window.triggerHighlightForId = triggerHighlightForId;
+
+    window.scrollToTableTop = function(elementId) {
+        requestAnimationFrame(() => {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+            const navbar = document.querySelector('.navbar');
+            const navOffset = (navbar ? navbar.offsetHeight : 70) + 16;
+            const targetY = el.getBoundingClientRect().top + window.pageYOffset - navOffset;
+            window.scrollTo({ top: Math.max(0, targetY), behavior: 'smooth' });
+        });
+    };
 
     function handleTargetHashHighlight() {
         const hash = window.location.hash;
@@ -583,7 +643,7 @@
         if (isSamePage) {
             if (targetHash) {
                 if (window.location.hash !== '#' + targetHash) {
-                    history.pushState(null, '', '#' + targetHash);
+                    window.location.hash = '#' + targetHash;
                 }
                 triggerHighlightForId(targetHash);
             }

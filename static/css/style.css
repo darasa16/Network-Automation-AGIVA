@@ -428,7 +428,7 @@ body {
 /* Omni-Search Target Highlight Effect - Clean Copper Left Border & Clean Badge */
 @keyframes targetRowSoftFade {
     0% {
-        background-color: rgba(232, 165, 118, 0.08);
+        background-color: rgba(232, 165, 118, 0.22);
     }
 
     100% {
@@ -451,14 +451,13 @@ tr.search-target-highlight {
 }
 
 tr.search-target-highlight td {
-    background-color: transparent !important;
-    box-shadow: none !important;
-    border-left: none !important;
+    background-color: rgba(232, 165, 118, 0.12) !important;
+    animation: targetRowSoftFade 3.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards !important;
 }
 
 tr.search-target-highlight td:first-child {
     border-left: none !important;
-    box-shadow: inset 3px 0 0 var(--color-copper) !important;
+    box-shadow: inset 4px 0 0 var(--color-copper) !important;
     transition: box-shadow 0.2s ease;
 }
 
@@ -3546,4 +3545,116 @@ body.nav-dragging-active * {
 .login-footer .copyright {
     color: #635b84;
     font-size: 11px;
+}
+
+/* ==========================================================================
+   Two-Tier Search & In-Table Filtering Styles
+   ========================================================================== */
+.table-search-box {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    min-width: 240px;
+    max-width: 380px;
+    flex: 1;
+    margin-left: auto;
+}
+
+.table-search-box svg {
+    position: absolute;
+    left: 12px;
+    color: #64748b;
+    pointer-events: none;
+    transition: color 0.2s ease;
+}
+
+.table-search-box input {
+    width: 100%;
+    background: rgba(15, 23, 42, 0.75);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-pill, 20px);
+    color: #f8fafc;
+    font-size: 12.5px;
+    padding: 7px 32px 7px 34px;
+    outline: none;
+    transition: all 0.25s ease;
+}
+
+.table-search-box input:focus {
+    border-color: var(--color-copper);
+    box-shadow: 0 0 0 3px rgba(232, 165, 118, 0.15);
+    background: rgba(15, 23, 42, 0.95);
+}
+
+.table-search-box:focus-within svg {
+    color: var(--color-copper);
+}
+
+.table-search-clear {
+    position: absolute;
+    right: 10px;
+    background: none;
+    border: none;
+    color: #64748b;
+    font-size: 16px;
+    cursor: pointer;
+    display: none;
+    padding: 0;
+    line-height: 1;
+}
+
+.table-search-clear:hover {
+    color: #f8fafc;
+}
+
+.search-view-all-cta {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+    padding: 6px 14px 10px 14px;
+    margin: 2px 0 6px 0;
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    color: #ffffff !important;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    text-align: right;
+    box-shadow: none !important;
+}
+
+.search-view-all-cta span {
+    color: #ffffff !important;
+}
+
+.search-view-all-cta .cta-arrow {
+    color: #ffffff !important;
+    font-size: 15px;
+    line-height: 1;
+    display: inline-block;
+    transition: transform 0.2s ease;
+}
+
+.search-view-all-cta:hover {
+    background: transparent !important;
+    border: none !important;
+    color: #ffffff !important;
+    text-decoration: none;
+    transform: none;
+}
+
+.search-view-all-cta:hover span:first-child {
+    text-decoration: underline;
+}
+
+.search-view-all-cta:hover .cta-arrow {
+    transform: translateX(3px);
+}
+
+.search-group-count {
+    display: none !important;
 }

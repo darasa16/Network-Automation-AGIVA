@@ -679,12 +679,8 @@ def api_trigger_backup(device_name):
 @app.route('/api/search')
 def api_search():
     """
-    Pattern 3: Omni-Search / Command Palette API
-    Mencari secara serentak ke:
-    1. Perangkat Jaringan (Devices)
-    2. Alerts & Anomali (Alerts)
-    3. File Backup Konfigurasi (Backup History)
-    4. Navigasi Cepat (Pages & Menus)
+    Pattern 3: Omni-Search / Command Palette API (Comprehensive, Ultra-Fast & Resilient)
+    Mencari secara serentak ke 6 domain data tanpa pembatasan limit di awal.
     """
     q = request.args.get('q', '').strip()
     if not q or len(q) < 1:
@@ -694,6 +690,7 @@ def api_search():
             "categories": {
                 "devices": [],
                 "alerts": [],
+                "incidents": [],
                 "backups": [],
                 "telegram": [],
                 "navigation": []
@@ -701,274 +698,394 @@ def api_search():
         })
 
     session = db_session()
-    ql = q.lower()
-    
-    # 1. Devices matching name, IP, vendor, site, or status
-    all_devs = session.query(Device).order_by(Device.device_id.asc()).all()
-    matched_devices = []
-    for d in all_devs:
-        if (ql in d.name.lower() or 
-            ql in d.ip_address.lower() or 
-            ql in d.vendor.lower() or 
-            ql in d.site.lower() or
-            ql == d.status.lower()):
-            matched_devices.append({
-                "id": d.device_id,
-                "name": d.name,
-                "ip": d.ip_address,
-                "vendor": d.vendor,
-                "site": d.site,
-                "status": d.status,
-                "url": f"/device/{d.device_id}#deviceHeaderCard"
-            })
+    try:
+        ql = q.lower()
+        clean_q = re.sub(r'[\#]', '', ql).strip()
+        num_matches = re.findall(r'\d+', ql)
+        numeric_id = int(num_matches[0]) if num_matches else None
+        clean_nospace = re.sub(r'[\s\-_]+', '', ql)
+        cutoff_30d = datetime.now() - timedelta(days=30)
 
-    # 2. Active & Sustained Alerts (Hanya alert yang belum di-resolve yang tampil di antrean alerts)
-    active_alerts = session.query(Alert).filter(
-        Alert.resolved_at == None
-    ).order_by(Alert.triggered_at.desc()).all()
-    matched_alerts = []
-    clean_q = ql.replace('#', '').strip()
-    for a in active_alerts:
-        dev_name = a.device.name.lower() if a.device else ""
-        dev_ip = a.device.ip_address.lower() if a.device else ""
-        alert_code = f"alert-{a.alert_id}".lower()
-        if (clean_q in alert_code or 
-            clean_q == str(a.alert_id) or
-            ql in a.type.lower() or 
-            ql in a.message.lower() or 
-            ql in a.severity.lower() or 
-            ql in dev_name or
-            ql in dev_ip):
-            matched_alerts.append({
-                "id": a.alert_id,
-                "type": a.type,
-                "severity": a.severity,
-                "message": a.message[:75] + ("..." if len(a.message) > 75 else ""),
-                "device_name": a.device.name if a.device else "Unknown Device",
-                "ip": a.device.ip_address if a.device else "-",
-                "triggered_at": a.triggered_at.strftime("%d/%m %H:%M") if a.triggered_at else "-",
-                "acknowledged": a.acknowledged,
-                "url": f"/alerts#alert-row-{a.alert_id}"
-            })
-            if len(matched_alerts) >= 5:
-                break
+        # Pre-cache all devices in memory (Hanya 3-10 perangkat, mencegah N+1 queries ribuan kali)
+        all_devs = session.query(Device).order_by(Device.device_id.asc()).all()
+        dev_map = {d.device_id: d for d in all_devs}
 
-    # 3. Incident Log & Cooldown History (30 hari terakhir sesuai retensi)
-    cutoff_30d = datetime.now() - timedelta(days=30)
-    all_incidents = session.query(IncidentLog).filter(
-        IncidentLog.started_at >= cutoff_30d
-    ).order_by(IncidentLog.started_at.desc()).limit(150).all()
+        # 1. DEVICES: Match name, IP, vendor, site, status (UP/DOWN/Online/Offline), atau ports
+        matched_devices = []
+        for d in all_devs:
+            d_name = (d.name or "").lower()
+            d_ip = (d.ip_address or "").lower()
+            d_vendor = (d.vendor or "").lower()
+            d_site = (d.site or "").lower()
+            d_status = (d.status or "").lower()
 
-    matched_incidents = []
-    for inc in all_incidents:
-        dev_name = inc.device.name.lower() if inc.device else ""
-        dev_ip = inc.device.ip_address.lower() if inc.device else ""
-        inc_code = f"inc-{inc.incident_id}".lower()
-        status_raw = (inc.status or "").lower()
-        peak_metric_val = (inc.peak_metric or "").lower()
-        
-        # Representative label
-        if inc.status == 'AUTO_COOLDOWN':
-            status_label = "Cooldown"
-        elif inc.status == 'RESOLVED_ALERT':
-            status_label = "Resolved"
-        elif inc.status == 'ACTIVE_MONITORING':
-            status_label = "Monitoring"
-        elif inc.status in ['ACTIVE_ALERT', 'ESCALATED_TO_ALERT']:
-            status_label = "Active Alert"
-        else:
-            status_label = inc.status or "Incident"
+            is_status_match = False
+            if ql in ["up", "online", "status:up", "status up"] and d_status == 'up':
+                is_status_match = True
+            elif ql in ["down", "offline", "status:down", "status down"] and d_status == 'down':
+                is_status_match = True
+            elif ql == d_status:
+                is_status_match = True
 
-        if (clean_q in inc_code or 
-            clean_q == str(inc.incident_id) or
-            ql in dev_name or 
-            ql in dev_ip or 
-            ql in inc.type.lower() or 
-            ql in (inc.severity or "").lower() or 
-            ql in status_raw or 
-            ql in status_label.lower() or
-            ql in peak_metric_val or
-            (ql == "cooldown" and inc.status == 'AUTO_COOLDOWN') or
-            (ql == "resolved" and inc.status == 'RESOLVED_ALERT') or
-            (ql in ["active alert", "active_alert", "alert"] and inc.status in ['ACTIVE_ALERT', 'ESCALATED_TO_ALERT']) or
-            (ql in ["incident", "incidents"])):
+            is_port_match = False
+            if d_vendor == 'palo alto' and any(k in ql for k in ['biznet', 'wan', 'gateway', 'lan gateway', 'ethernet1/3', 'pa-220']):
+                is_port_match = True
+            elif d_vendor == 'aruba' and any(k in ql for k in ['sfp', 'poe', '2930f']):
+                is_port_match = True
+            elif d_vendor == 'huawei' and any(k in ql for k in ['vlanif', 'stack', 's5735', '10ge']):
+                is_port_match = True
+
+            if (ql in d_name or 
+                ql in d_ip or 
+                ql in d_vendor or 
+                ql in d_site or
+                is_status_match or
+                is_port_match):
+                matched_devices.append({
+                    "id": d.device_id,
+                    "name": d.name or "Unknown Device",
+                    "ip": d.ip_address or "-",
+                    "vendor": d.vendor or "Generic",
+                    "site": d.site or "-",
+                    "status": d.status or "UP",
+                    "url": f"/device/{d.device_id}#deviceHeaderCard"
+                })
+                if len(matched_devices) >= 10:
+                    break
+
+        # 2. ACTIVE ALERTS (Antrean berjalan yang butuh mitigasi)
+        active_alerts = session.query(Alert).filter(
+            Alert.resolved_at == None
+        ).order_by(Alert.triggered_at.desc()).all()
+        matched_alerts = []
+        for a in active_alerts:
+            dev = dev_map.get(a.device_id)
+            dev_name = (dev.name or "").lower() if dev else ""
+            dev_ip = (dev.ip_address or "").lower() if dev else ""
+            dev_vendor = (dev.vendor or "").lower() if dev else ""
+            a_type = (a.type or "").lower()
+            a_msg = (a.message or "").lower()
+            a_sev = (a.severity or "").lower()
+            ack_by = (a.acknowledged_by or "").lower()
+
+            is_id_match = (numeric_id is not None and a.alert_id == numeric_id) or (clean_q and clean_q in f"alert-{a.alert_id}") or (clean_q and clean_q == str(a.alert_id))
+
+            is_ack_match = False
+            if ql in ["pending", "pending ack", "unack", "unacknowledged"] and not a.acknowledged:
+                is_ack_match = True
+            elif ql in ["ack", "acked", "acknowledged"] and a.acknowledged:
+                is_ack_match = True
+            elif ack_by and ql in ack_by:
+                is_ack_match = True
+
+            if (is_id_match or
+                ql in a_type or 
+                ql in a_msg or 
+                ql in a_sev or 
+                ql in dev_name or
+                ql in dev_ip or
+                ql in dev_vendor or
+                is_ack_match):
+                matched_alerts.append({
+                    "id": a.alert_id,
+                    "type": a.type or "ANOMALY",
+                    "severity": a.severity or "WARNING",
+                    "message": (a.message or "")[:75] + ("..." if len(a.message or "") > 75 else ""),
+                    "device_name": dev.name if dev else "Unknown Device",
+                    "ip": dev.ip_address if dev else "-",
+                    "triggered_at": a.triggered_at.strftime("%d/%m %H:%M") if a.triggered_at else "-",
+                    "acknowledged": bool(a.acknowledged),
+                    "url": f"/alerts#alert-row-{a.alert_id}"
+                })
+                if len(matched_alerts) >= 10:
+                    break
+
+        # 3. INCIDENT LOG & COOLDOWN HISTORY (Ultra fast using dev_map, zero extra SQL calls!)
+        all_incidents = session.query(IncidentLog).filter(
+            IncidentLog.started_at >= cutoff_30d
+        ).order_by(IncidentLog.started_at.desc()).all()
+
+        matched_incidents = []
+        for inc in all_incidents:
+            dev = dev_map.get(inc.device_id)
+            dev_name = (dev.name or "").lower() if dev else ""
+            dev_ip = (dev.ip_address or "").lower() if dev else ""
+            dev_vendor = (dev.vendor or "").lower() if dev else ""
+            inc_code = f"inc-{inc.incident_id}".lower()
+            status_raw = (inc.status or "").lower()
+            status_clean = status_raw.replace('_', ' ')
+            peak_metric_val = (inc.peak_metric or "").lower()
             
-            dur_str = "-"
-            if inc.duration_seconds and inc.duration_seconds > 0:
-                m, s = divmod(inc.duration_seconds, 60)
-                h, m = divmod(m, 60)
-                if h > 0:
-                    dur_str = f"{h}h {m}m"
-                elif m > 0:
-                    dur_str = f"{m}m {s}s"
+            if inc.status == 'AUTO_COOLDOWN':
+                status_label = "Cooldown"
+            elif inc.status == 'RESOLVED_ALERT':
+                status_label = "Resolved"
+            elif inc.status == 'ACTIVE_MONITORING':
+                status_label = "Monitoring"
+            elif inc.status in ['ACTIVE_ALERT', 'ESCALATED_TO_ALERT']:
+                status_label = "Active Alert"
+            else:
+                status_label = inc.status or "Incident"
+
+            is_inc_id_match = (numeric_id is not None and inc.incident_id == numeric_id) or (clean_q and clean_q in inc_code) or (clean_q and clean_q == str(inc.incident_id))
+
+            is_status_match = False
+            if inc.status == 'RESOLVED_ALERT' and any(k in ql for k in ["resolved", "resolved alert", "resolve", "selesai"]):
+                is_status_match = True
+            elif inc.status == 'AUTO_COOLDOWN' and any(k in ql for k in ["cooldown", "auto cooldown", "cooling"]):
+                is_status_match = True
+            elif inc.status == 'ACTIVE_MONITORING' and any(k in ql for k in ["monitoring", "active monitoring"]):
+                is_status_match = True
+            elif ql in ["incident", "incidents", "insiden"]:
+                is_status_match = True
+            elif ql in ["alert", "alerts", "peringatan"] and inc.status in ['ACTIVE_ALERT', 'ESCALATED_TO_ALERT', 'RESOLVED_ALERT']:
+                is_status_match = True
+
+            has_nospace_match = len(clean_nospace) >= 2 and (clean_nospace in re.sub(r'[\s\-_]+', '', status_raw))
+
+            if (is_inc_id_match or 
+                ql in dev_name or 
+                ql in dev_ip or 
+                ql in dev_vendor or
+                ql in (inc.type or "").lower() or 
+                ql in (inc.severity or "").lower() or 
+                ql in status_raw or 
+                ql in status_clean or
+                ql in status_label.lower() or
+                has_nospace_match or
+                ql in peak_metric_val or
+                is_status_match):
+                
+                dur_str = "-"
+                if inc.duration_seconds and inc.duration_seconds > 0:
+                    m, s = divmod(inc.duration_seconds, 60)
+                    h, m = divmod(m, 60)
+                    if h > 0:
+                        dur_str = f"{h}h {m}m"
+                    elif m > 0:
+                        dur_str = f"{m}m {s}s"
+                    else:
+                        dur_str = f"{s}s"
+
+                matched_incidents.append({
+                    "id": inc.incident_id,
+                    "code": f"#INC-{inc.incident_id}",
+                    "device_name": dev.name if dev else "Unknown Device",
+                    "ip": dev.ip_address if dev else "-",
+                    "type": inc.type or "INCIDENT",
+                    "severity": inc.severity or "WARNING",
+                    "peak_metric": inc.peak_metric or "-",
+                    "status": inc.status or "MONITORING",
+                    "status_label": status_label,
+                    "started_at": inc.started_at.strftime("%d/%m %H:%M") if inc.started_at else "-",
+                    "duration": dur_str,
+                    "url": f"/alerts#inc-row-{inc.incident_id}"
+                })
+                if len(matched_incidents) >= 10:
+                    break
+
+        # 4. CONFIGURATION BACKUPS (Ultra fast using dev_map, safe os.path.basename)
+        all_backups = session.query(BackupHistory).order_by(BackupHistory.timestamp.desc(), BackupHistory.backup_id.desc()).all()
+        matched_backups = []
+        for b in all_backups:
+            dev = dev_map.get(b.device_id)
+            dev_name = (dev.name or "").lower() if dev else ""
+            dev_ip = (dev.ip_address or "").lower() if dev else ""
+            dev_vendor = (dev.vendor or "").lower() if dev else ""
+            dev_site = (dev.site or "").lower() if dev else ""
+            
+            raw_fp = b.file_path or ""
+            file_name = os.path.basename(raw_fp) if raw_fp else f"backup-{b.backup_id}.cfg"
+
+            cat = (getattr(b, 'category', None) or "").lower()
+            if not cat:
+                fp_lower = raw_fp.lower()
+                if "_system" in fp_lower or "logbuffer" in fp_lower:
+                    cat = "system"
+                elif "_traffic" in fp_lower:
+                    cat = "traffic"
+                elif "_threat" in fp_lower:
+                    cat = "threat"
                 else:
-                    dur_str = f"{s}s"
+                    cat = "config"
 
-            matched_incidents.append({
-                "id": inc.incident_id,
-                "code": f"#INC-{inc.incident_id}",
-                "device_name": inc.device.name if inc.device else "Unknown Device",
-                "ip": inc.device.ip_address if inc.device else "-",
-                "type": inc.type,
-                "severity": inc.severity,
-                "peak_metric": inc.peak_metric or "-",
-                "status": inc.status,
-                "status_label": status_label,
-                "started_at": inc.started_at.strftime("%d/%m %H:%M") if inc.started_at else "-",
-                "duration": dur_str,
-                "url": f"/alerts#inc-row-{inc.incident_id}"
-            })
-            if len(matched_incidents) >= 6:
-                break
+            trigger_str = (b.trigger_by or "").lower()
+            status_str = (b.status or "").lower()
 
-    # 3. Backups matching file_path, status, device name, or site
-    all_backups = session.query(BackupHistory).order_by(BackupHistory.backup_id.desc()).limit(50).all()
-    matched_backups = []
-    for b in all_backups:
-        dev_name = b.device.name.lower() if b.device else ""
-        dev_site = b.device.site.lower() if b.device and b.device.site else ""
-        file_name = os.path.basename(b.file_path)
-        if (ql in file_name.lower() or 
-            ql in dev_name or 
-            ql in dev_site or
-            ql in b.status.lower()):
-            matched_backups.append({
-                "id": b.backup_id,
-                "file_name": file_name,
-                "device_name": b.device.name if b.device else "Unknown Device",
-                "site": b.device.site if b.device and b.device.site else "-",
-                "date": b.timestamp.strftime("%d/%m %H:%M") if b.timestamp else "-",
-                "size": b.file_size,
-                "status": b.status,
-                "url": f"/backups#backup-row-{b.backup_id}"
-            })
-            if len(matched_backups) >= 5:
-                break
+            is_backup_id_match = (numeric_id is not None and b.backup_id == numeric_id) or (clean_q and clean_q in f"backup-{b.backup_id}")
 
-    # 4. Telegram Whitelist & Bot Commands matching engineer, username, role, or command
-    all_tg_users = session.query(TelegramWhitelist).all()
-    matched_telegram = []
-    for u in all_tg_users:
-        if (ql in u.engineer_name.lower() or 
-            ql in u.telegram_username.lower() or 
-            ql in u.role.lower() or
-            ql in str(u.chat_id)):
-            matched_telegram.append({
-                "id": u.id,
-                "title": f"{u.engineer_name} ({u.telegram_username})",
-                "desc": f"Role: {u.role} • Chat ID: {u.chat_id}",
-                "status": "ACTIVE" if u.is_active else "INACTIVE",
-                "url": f"/telegram#whitelist-row-{u.id}"
-            })
-            if len(matched_telegram) >= 4:
-                break
+            if (is_backup_id_match or
+                ql in file_name.lower() or 
+                ql in dev_name or 
+                ql in dev_ip or
+                ql in dev_vendor or
+                ql in dev_site or
+                ql in cat or
+                ql in trigger_str or
+                ql in status_str):
+                matched_backups.append({
+                    "id": b.backup_id,
+                    "file_name": file_name,
+                    "device_name": dev.name if dev else "Unknown Device",
+                    "site": dev.site if dev and dev.site else "-",
+                    "date": b.timestamp.strftime("%d/%m %H:%M") if b.timestamp else "-",
+                    "size": b.file_size or "0 B",
+                    "status": b.status or "SUCCESS",
+                    "category": cat.upper(),
+                    "url": f"/backups#backup-row-{b.backup_id}"
+                })
+                if len(matched_backups) >= 10:
+                    break
 
-    tg_commands = [
-        {"cmd": "/start", "desc": "Start bot interaction & operational guide"},
-        {"cmd": "/status", "desc": "Health summary of all network devices"},
-        {"cmd": "/devices", "desc": "Inventory table of all network devices"},
-        {"cmd": "/device", "desc": "Real-time CPU, RAM, & Uptime for a device"},
-        {"cmd": "/alerts", "desc": "List of active network anomalies & alerts"},
-        {"cmd": "/ack", "desc": "Acknowledge alert handling by engineer"},
-        {"cmd": "/resolve", "desc": "Mark network incident as resolved"},
-        {"cmd": "/backup", "desc": "Trigger manual running-config backup"},
-        {"cmd": "/user", "desc": "Engineer profile & Whitelist verification"},
-        {"cmd": "/approve", "desc": "Approve new engineer access role"}
-    ]
-    for c in tg_commands:
-        if len(matched_telegram) >= 6:
-            break
-        if (ql in c["cmd"].lower() or 
-            ql in c["desc"].lower() or 
-            (ql.startswith('/') and ql in c["cmd"].lower())):
+        # 5. TELEGRAM BOT INTEGRATION
+        matched_telegram = []
+
+        all_tg_users = session.query(TelegramWhitelist).order_by(TelegramWhitelist.id.asc()).all()
+        for u in all_tg_users:
+            u_name = (u.engineer_name or "").lower()
+            # Whitelist search: strictly Technician Name only, include all matched data
+            if ql in u_name:
+                matched_telegram.append({
+                    "id": u.id,
+                    "is_whitelist": True,
+                    "title": f"{u.engineer_name} ({u.telegram_username})",
+                    "desc": f"Technician: {u.engineer_name} • Role: {u.role} • Chat ID: {u.chat_id}",
+                    "status": "ACTIVE" if u.is_active else "INACTIVE",
+                    "url": f"/telegram#whitelist-row-{u.id}"
+                })
+
+        tg_commands = [
+            {"cmd": "/start", "desc": "Start bot interaction & operational guide"},
+            {"cmd": "/status", "desc": "Health summary of all network devices"},
+            {"cmd": "/devices", "desc": "Inventory table of all network devices"},
+            {"cmd": "/device", "desc": "Real-time CPU, RAM, & Uptime for a device"},
+            {"cmd": "/alerts", "desc": "List of active network anomalies & alerts"},
+            {"cmd": "/ack", "desc": "Acknowledge alert handling by engineer"},
+            {"cmd": "/resolve", "desc": "Mark network incident as resolved"},
+            {"cmd": "/backup", "desc": "Trigger manual running-config backup"},
+            {"cmd": "/user", "desc": "Engineer profile & Whitelist verification"},
+            {"cmd": "/approve", "desc": "Approve new engineer access role"}
+        ]
+        count_cmd = 0
+        for c in tg_commands:
             clean_cmd = c["cmd"].replace('/', '')
-            matched_telegram.append({
-                "id": c["cmd"],
-                "title": f"Bot Command: {c['cmd']}",
-                "desc": c["desc"],
-                "status": "COMMAND",
-                "url": f"/telegram#cmd-row-{clean_cmd}"
-            })
+            if (ql in c["cmd"].lower() or 
+                ql in clean_cmd.lower() or
+                ql in c["desc"].lower() or 
+                (ql.startswith('/') and ql in c["cmd"].lower())):
+                matched_telegram.append({
+                    "id": c["cmd"],
+                    "title": f"Bot Command: {c['cmd']}",
+                    "desc": c["desc"],
+                    "status": "COMMAND",
+                    "url": f"/telegram#cmd-row-{clean_cmd}"
+                })
+                count_cmd += 1
+                if count_cmd >= 3:
+                    break
 
-    # c. Message Dispatch Logs (Riwayat Pengiriman Pesan & Notifikasi Telegram)
-    msg_logs = session.query(TelegramMessageLog).order_by(TelegramMessageLog.sent_at.desc(), TelegramMessageLog.id.desc()).limit(100).all()
-    for m in msg_logs:
-        if len(matched_telegram) >= 8:
-            break
-        if (ql in m.content.lower() or 
-            ql in m.message_type.lower() or 
-            ql in str(m.chat_id)):
-            clean_content = re.sub(r'<[^>]+>', '', m.content).strip()
-            clean_content = ' '.join(clean_content.split())
-            snippet = clean_content[:65] + ("..." if len(clean_content) > 65 else "")
-            time_str = m.sent_at.strftime("%d/%m %H:%M") if m.sent_at else "-"
-            matched_telegram.append({
-                "id": m.id,
-                "title": f"Log: {snippet}",
-                "desc": f"{m.message_type} • Chat ID: {m.chat_id} • {time_str}",
-                "status": m.status or "SENT",
-                "url": f"/telegram#msglog-row-{m.id}"
-            })
+        msg_logs = session.query(TelegramMessageLog).filter(
+            TelegramMessageLog.sent_at >= cutoff_30d
+        ).order_by(TelegramMessageLog.sent_at.desc(), TelegramMessageLog.id.desc()).all()
+        count_msg = 0
+        for m in msg_logs:
+            m_content = (m.content or "").lower()
+            m_type = (m.message_type or "").lower()
+            m_status = (m.status or "").lower()
+            m_chat = str(m.chat_id or "")
 
-    # 5. Quick Navigation Menus
-    navigation_items = [
-        {
-            "title": "Monitoring Dashboard",
-            "desc": "Real-time metrics and full device inventory",
-            "category": "Navigation Menu",
-            "keywords": ["dashboard", "monitoring", "home", "graph", "metrics", "switch", "traffic", "cpu"],
-            "url": "/"
-        },
-        {
-            "title": "Alert & Incident Center",
-            "desc": "Active alarms, incident log history, and device cooldown",
-            "category": "Navigation Menu",
-            "keywords": ["alert", "alerts", "incident", "alarm", "anomaly", "ack", "notif", "warning", "cooldown", "resolved"],
-            "url": "/alerts"
-        },
-        {
-            "title": "Configuration Backups",
-            "desc": "Manage device running-config backups and audit archives",
-            "category": "Navigation Menu",
-            "keywords": ["backup", "backups", "config", "configuration", "file", "download", "diff"],
-            "url": "/backups"
-        },
-        {
-            "title": "Telegram Bot Integration",
-            "desc": "Bot control center, technician whitelist, and dispatch audit logs",
-            "category": "Navigation Menu",
-            "keywords": ["telegram", "bot", "whitelist", "chat", "command", "engineer", "noc"],
-            "url": "/telegram"
-        }
-    ]
-    matched_nav = []
-    for nav in navigation_items:
-        if (ql in nav["title"].lower() or 
-            ql in nav["desc"].lower() or 
-            any(ql in k for k in nav["keywords"])):
-            matched_nav.append(nav)
+            if (ql in m_content or 
+                ql in m_type or 
+                ql in m_status or
+                ql in m_chat):
+                clean_content = re.sub(r'<[^>]+>', '', m.content or '').strip()
+                clean_content = ' '.join(clean_content.split())
+                snippet = clean_content[:65] + ("..." if len(clean_content) > 65 else "")
+                time_str = m.sent_at.strftime("%d/%m %H:%M") if m.sent_at else "-"
+                matched_telegram.append({
+                    "id": m.id,
+                    "title": f"Log: {snippet}",
+                    "desc": f"{m.message_type or 'DISPATCH'} • Chat ID: {m.chat_id} • {time_str}",
+                    "status": m.status or "SENT",
+                    "url": f"/telegram#msglog-row-{m.id}"
+                })
+                count_msg += 1
+                if count_msg >= 3:
+                    break
 
-    total_count = (len(matched_devices) + 
-                   len(matched_alerts) + 
-                   len(matched_incidents) + 
-                   len(matched_backups) + 
-                   len(matched_telegram) + 
-                   len(matched_nav))
+        # 6. QUICK NAVIGATION MENUS
+        navigation_items = [
+            {
+                "title": "Monitoring Dashboard",
+                "desc": "Real-time metrics and full device inventory",
+                "category": "Navigation Menu",
+                "keywords": ["dashboard", "monitoring", "home", "graph", "metrics", "switch", "traffic", "cpu", "perangkat", "ringkasan", "alat", "grafik"],
+                "url": "/"
+            },
+            {
+                "title": "Alert & Incident Center",
+                "desc": "Active alarms, incident log history, and device cooldown",
+                "category": "Navigation Menu",
+                "keywords": ["alert", "alerts", "incident", "alarm", "anomaly", "ack", "notif", "warning", "cooldown", "resolved", "peringatan", "gangguan", "anomali", "insiden"],
+                "url": "/alerts"
+            },
+            {
+                "title": "Configuration Backups",
+                "desc": "Manage device running-config backups and audit archives",
+                "category": "Navigation Menu",
+                "keywords": ["backup", "backups", "config", "configuration", "file", "download", "diff", "cadangan", "konfigurasi", "unduh"],
+                "url": "/backups"
+            },
+            {
+                "title": "Telegram Bot Integration",
+                "desc": "Bot control center, technician whitelist, and dispatch audit logs",
+                "category": "Navigation Menu",
+                "keywords": ["telegram", "bot", "whitelist", "chat", "command", "engineer", "noc", "teknisi", "perintah"],
+                "url": "/telegram"
+            }
+        ]
+        matched_nav = []
+        for nav in navigation_items:
+            if (ql in nav["title"].lower() or 
+                ql in nav["desc"].lower() or 
+                any(ql in k for k in nav["keywords"])):
+                matched_nav.append(nav)
 
-    session.close()
+        total_count = (len(matched_devices) + 
+                       len(matched_alerts) + 
+                       len(matched_incidents) + 
+                       len(matched_backups) + 
+                       len(matched_telegram) + 
+                       len(matched_nav))
 
-    return jsonify({
-        "query": q,
-        "total_results": total_count,
-        "categories": {
-            "devices": matched_devices,
-            "alerts": matched_alerts,
-            "incidents": matched_incidents,
-            "backups": matched_backups,
-            "telegram": matched_telegram,
-            "navigation": matched_nav
-        }
-    })
+        return jsonify({
+            "query": q,
+            "total_results": total_count,
+            "categories": {
+                "devices": matched_devices,
+                "alerts": matched_alerts,
+                "incidents": matched_incidents,
+                "backups": matched_backups,
+                "telegram": matched_telegram,
+                "navigation": matched_nav
+            }
+        })
+    except Exception as e:
+        logger.error(f"[api_search] Error processing search query '{q}': {e}", exc_info=True)
+        return jsonify({
+            "query": q,
+            "total_results": 0,
+            "categories": {
+                "devices": [],
+                "alerts": [],
+                "incidents": [],
+                "backups": [],
+                "telegram": [],
+                "navigation": []
+            }
+        })
+    finally:
+        session.close()
 
 @app.route('/api/status')
 def api_status():

@@ -819,9 +819,12 @@ function scrollToDevicesTable() {
     }
 }
 
+let currentDeviceSearch = '';
+
 function applyTableFilters() {
     const activeFilterBtn = document.querySelector('.badge-filter.active');
     const statusFilter = activeFilterBtn ? activeFilterBtn.getAttribute('data-filter') : 'all';
+    const q = currentDeviceSearch.trim().toLowerCase();
 
     const rows = document.querySelectorAll('#deviceTableBody .device-row');
     let visibleCount = 0;
@@ -830,7 +833,22 @@ function applyTableFilters() {
         const rowStatus = row.getAttribute('data-status') || (row.classList.contains('filter-UP') ? 'UP' : 'DOWN');
         const matchesStatus = statusFilter === 'all' || rowStatus === statusFilter;
 
-        if (matchesStatus) {
+        let matchesSearch = true;
+        if (q) {
+            const devId = row.getAttribute('data-id') || (row.id ? row.id.replace('row-dev-', '') : '');
+            const devName = (row.getAttribute('data-name') || '').toLowerCase();
+            const devIp = (row.getAttribute('data-ip') || '').toLowerCase();
+            const devVendor = (row.getAttribute('data-vendor') || '').toLowerCase();
+            const devSite = (row.getAttribute('data-site') || '').toLowerCase();
+            const devStatus = rowStatus.toLowerCase();
+
+            matchesSearch = devId.includes(q) || ('dev-' + devId).includes(q) || ('#' + devId).includes(q) ||
+                            devName.includes(q) || devIp.includes(q) ||
+                            devVendor.includes(q) || devSite.includes(q) ||
+                            devStatus.includes(q);
+        }
+
+        if (matchesStatus && matchesSearch) {
             row.style.display = '';
             visibleCount++;
         } else {
@@ -842,9 +860,14 @@ function applyTableFilters() {
     const tbody = document.getElementById('deviceTableBody');
     let emptyRow = document.getElementById('noResultsRow');
     if (visibleCount === 0 && rows.length > 0) {
-        let emptyMessage = statusFilter === 'DOWN' ? 'No devices currently offline.' :
+        let emptyMessage = '';
+        if (q) {
+            emptyMessage = `No devices found matching "${escapeHtml(currentDeviceSearch)}"`;
+        } else {
+            emptyMessage = statusFilter === 'DOWN' ? 'No devices currently offline.' :
                            statusFilter === 'UP' ? 'No devices currently online.' :
                            'No devices available.';
+        }
 
         if (!emptyRow && tbody) {
             emptyRow = document.createElement('tr');
@@ -875,6 +898,43 @@ function setupTableFilters() {
             applyTableFilters();
         });
     });
+
+    const devSearchInput = document.getElementById('deviceTableSearch');
+    const devSearchClear = document.getElementById('deviceTableSearchClear');
+    if (devSearchInput) {
+        devSearchInput.addEventListener('input', (e) => {
+            currentDeviceSearch = e.target.value;
+            if (devSearchClear) {
+                devSearchClear.style.display = currentDeviceSearch ? 'block' : 'none';
+            }
+            applyTableFilters();
+        });
+    }
+    if (devSearchClear) {
+        devSearchClear.addEventListener('click', () => {
+            if (devSearchInput) {
+                devSearchInput.value = '';
+                devSearchInput.focus();
+            }
+            currentDeviceSearch = '';
+            devSearchClear.style.display = 'none';
+            applyTableFilters();
+        });
+    }
+
+    // Check URL query parameter (?search=...)
+    const urlParams = new URLSearchParams(window.location.search);
+    const searchParam = urlParams.get('search');
+    if (searchParam) {
+        currentDeviceSearch = searchParam;
+        if (devSearchInput) devSearchInput.value = searchParam;
+        if (devSearchClear) devSearchClear.style.display = 'block';
+        applyTableFilters();
+
+        if (window.location.hash === '#monitored-devices') {
+            scrollToDevicesTable();
+        }
+    }
 }
 
 

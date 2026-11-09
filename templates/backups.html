@@ -12,7 +12,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
         rel="stylesheet">
     <!-- Relative CSS -->
-    <link rel="stylesheet" href="/static/css/style.css?v=10.1">
+    <link rel="stylesheet" href="/static/css/style.css?v=10.7">
     <style>
         #backupsTable td,
         #backupsTable td span,
@@ -319,6 +319,7 @@
             transform: translateY(-1px) !important;
             box-shadow: 0 4px 12px rgba(232, 165, 118, 0.45) !important;
         }
+
         .toast-container {
             display: none !important;
         }
@@ -438,7 +439,7 @@
                     <circle cx="11" cy="11" r="8"></circle>
                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                 </svg>
-                <input type="text" id="globalSearch" placeholder="Search devices, alerts, data..." autocomplete="off" />
+                <input type="text" id="globalSearch" placeholder="Search devices, alerts, data" autocomplete="off" />
                 <button type="button" id="clearSearchBtn" class="search-clear-btn" title="Clear search">&times;</button>
                 <div id="searchResultsDropdown" class="search-results-dropdown" style="display: none;"></div>
             </div>
@@ -576,24 +577,42 @@
                     </div>
                 </div>
 
-                <!-- Category Filter Pills Bar -->
-                <div class="category-filters-container">
-                    <button type="button" class="category-filter-btn active" data-cat="ALL"
-                        onclick="setCategoryFilter('ALL', this)"><span>All</span> <span class="filter-count"
-                            id="count-all">({{ category_counts.all if category_counts else (backups|length if backups
-                            else 0) }})</span></button>
-                    <button type="button" class="category-filter-btn" data-cat="SYSTEM"
-                        onclick="setCategoryFilter('SYSTEM', this)"><span>System</span> <span class="filter-count"
-                            id="count-system">({{ category_counts.system if category_counts else 0 }})</span></button>
-                    <button type="button" class="category-filter-btn" data-cat="CONFIG"
-                        onclick="setCategoryFilter('CONFIG', this)"><span>Config</span> <span class="filter-count"
-                            id="count-config">({{ category_counts.config if category_counts else 0 }})</span></button>
-                    <button type="button" class="category-filter-btn" data-cat="TRAFFIC"
-                        onclick="setCategoryFilter('TRAFFIC', this)"><span>Traffic</span> <span class="filter-count"
-                            id="count-traffic">({{ category_counts.traffic if category_counts else 0 }})</span></button>
-                    <button type="button" class="category-filter-btn" data-cat="THREAT"
-                        onclick="setCategoryFilter('THREAT', this)"><span>Threat</span> <span class="filter-count"
-                            id="count-threat">({{ category_counts.threat if category_counts else 0 }})</span></button>
+                <!-- Category Filter Pills Bar & Local In-Table Search -->
+                <div class="category-filters-container"
+                    style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                        <button type="button" class="category-filter-btn active" data-cat="ALL"
+                            onclick="setCategoryFilter('ALL', this)"><span>All</span> <span class="filter-count"
+                                id="count-all">({{ category_counts.all if category_counts else (backups|length if
+                                backups
+                                else 0) }})</span></button>
+                        <button type="button" class="category-filter-btn" data-cat="SYSTEM"
+                            onclick="setCategoryFilter('SYSTEM', this)"><span>System</span> <span class="filter-count"
+                                id="count-system">({{ category_counts.system if category_counts else 0
+                                }})</span></button>
+                        <button type="button" class="category-filter-btn" data-cat="CONFIG"
+                            onclick="setCategoryFilter('CONFIG', this)"><span>Config</span> <span class="filter-count"
+                                id="count-config">({{ category_counts.config if category_counts else 0
+                                }})</span></button>
+                        <button type="button" class="category-filter-btn" data-cat="TRAFFIC"
+                            onclick="setCategoryFilter('TRAFFIC', this)"><span>Traffic</span> <span class="filter-count"
+                                id="count-traffic">({{ category_counts.traffic if category_counts else 0
+                                }})</span></button>
+                        <button type="button" class="category-filter-btn" data-cat="THREAT"
+                            onclick="setCategoryFilter('THREAT', this)"><span>Threat</span> <span class="filter-count"
+                                id="count-threat">({{ category_counts.threat if category_counts else 0
+                                }})</span></button>
+                    </div>
+                    <div class="table-search-box">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                        <input type="text" id="backupTableSearch"
+                            placeholder="Search Device, Category, File Name, Status" autocomplete="off" />
+                        <button type="button" class="table-search-clear" id="backupTableSearchClear">&times;</button>
+                    </div>
                 </div>
 
                 <div class="table-responsive">
@@ -649,18 +668,12 @@
                     style="font-size:12px; color:#94a3b8; font-family:'JetBrains Mono', monospace;"></span>
                 <div style="display:flex; gap:10px; align-items:center;">
                     <button type="button" class="btn-modal" id="btnCopyModal" onclick="copyModalContent(this)">
-                        <svg class="copy-icon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:6px;">
+                        <svg class="copy-icon" viewBox="0 0 24 24" width="13" height="13" fill="none"
+                            stroke="currentColor" stroke-width="2.5" style="margin-right:6px;">
                             <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                             <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                         </svg>
                         <span>Copy Text</span>
-                    </button>
-                    <button type="button" class="btn-modal" onclick="closeConfigModal()">
-                        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;">
-                            <line x1="18" y1="6" x2="6" y2="18"></line>
-                            <line x1="6" y1="6" x2="18" y2="18"></line>
-                        </svg>
-                        <span>Close</span>
                     </button>
                 </div>
             </div>
@@ -670,7 +683,7 @@
     <!-- Toast Notification Container -->
     <div id="toastContainer" class="toast-container"></div>
 
-<script id="backupsData" type="application/json">{{ backups | tojson }}</script>
+    <script id="backupsData" type="application/json">{{ backups | tojson }}</script>
     <script>
         function updateClock() {
             const now = new Date();
@@ -707,6 +720,7 @@
         let currentBackupPage = 1;
         const backupsPerPage = 20;
         let currentCategoryFilter = 'ALL';
+        let currentBackupsSearch = '';
 
         function escapeHtml(text) {
             if (!text) return '';
@@ -716,6 +730,21 @@
                 .replace(/>/g, "&gt;")
                 .replace(/"/g, "&quot;")
                 .replace(/'/g, "&#039;");
+        }
+
+        function getFilteredBackups() {
+            const q = currentBackupsSearch.trim().toLowerCase();
+            return allBackups.filter(b => {
+                const cat = (b.category || '').toUpperCase();
+                if (currentCategoryFilter !== 'ALL' && cat !== currentCategoryFilter) return false;
+                if (!q) return true;
+                const dev = String(b.device || '').toLowerCase();
+                const catStr = cat.toLowerCase();
+                const rawFile = String(b.file || '');
+                const fileName = (rawFile.includes('/') ? rawFile.split('/').pop() : (rawFile.includes('\\') ? rawFile.split('\\').pop() : rawFile)).toLowerCase();
+                const stat = String(b.status || '').toLowerCase();
+                return dev.includes(q) || catStr.includes(q) || fileName.includes(q) || stat.includes(q);
+            });
         }
 
         function updateCategoryCounts() {
@@ -747,10 +776,16 @@
             if (!rowId && window.location.hash) {
                 rowId = window.location.hash.replace('#', '');
             }
-            if (rowId && rowId.startsWith('backup-row-')) {
-                const targetId = parseInt(rowId.replace('backup-row-', ''), 10);
+            if (rowId && (rowId.startsWith('backup-row-') || rowId.startsWith('backup-'))) {
+                const targetId = parseInt(rowId.replace(/^(backup-row-|backup-)/, ''), 10);
                 if (!isNaN(targetId) && allBackups && allBackups.length > 0) {
                     currentCategoryFilter = 'ALL';
+                    currentBackupsSearch = '';
+                    const searchInput = document.getElementById('backupTableSearch');
+                    if (searchInput) searchInput.value = '';
+                    const clearBtn = document.getElementById('backupTableSearchClear');
+                    if (clearBtn) clearBtn.style.display = 'none';
+
                     document.querySelectorAll('.category-filter-btn').forEach(b => {
                         b.classList.toggle('active', b.getAttribute('data-cat') === 'ALL');
                     });
@@ -774,17 +809,23 @@
             const pageInfo = document.getElementById('backupsPageInfo');
             if (!tbody) return;
 
-            const filteredBackups = allBackups.filter(b => {
-                const cat = (b.category || '').toUpperCase();
-                return (currentCategoryFilter === 'ALL' || cat === currentCategoryFilter);
-            });
-
+            const filteredBackups = getFilteredBackups();
             const totalBackups = filteredBackups.length;
 
             if (totalBackups === 0) {
-                const catCapitalized = currentCategoryFilter === 'ALL'
-                    ? 'Backup'
-                    : currentCategoryFilter.charAt(0).toUpperCase() + currentCategoryFilter.slice(1).toLowerCase() + ' Backup';
+                let emptyTitle = '';
+                let emptySub = '';
+                if (currentBackupsSearch.trim()) {
+                    emptyTitle = 'No Matching Backup Records';
+                    emptySub = `No backup files matched "${escapeHtml(currentBackupsSearch)}"`;
+                } else {
+                    const catCapitalized = currentCategoryFilter === 'ALL'
+                        ? 'Backup'
+                        : currentCategoryFilter.charAt(0).toUpperCase() + currentCategoryFilter.slice(1).toLowerCase() + ' Backup';
+                    emptyTitle = `No ${escapeHtml(catCapitalized)} Records Found`;
+                    emptySub = 'Scheduled daily backups or manual triggers via Telegram will appear here';
+                }
+
                 tbody.innerHTML = `
                     <tr class="empty-state-row" id="backupsEmptyState">
                         <td colspan="8" style="text-align: center; padding: 40px 10px;">
@@ -794,10 +835,10 @@
                                     <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
                                 </svg>
                                 <p id="backupsEmptyTitle" class="empty-title" style="font-size: 0.9rem; font-weight: 500; color: #94a3b8; margin: 0 0 4px 0;">
-                                    No ${escapeHtml(catCapitalized)} Records Found
+                                    ${emptyTitle}
                                 </p>
                                 <span id="backupsEmptySub" class="empty-sub" style="font-size: 0.75rem; color: #64748b;">
-                                    Scheduled daily backups or manual triggers via Telegram will appear here
+                                    ${emptySub}
                                 </span>
                             </div>
                         </td>
@@ -929,11 +970,20 @@
             controls.innerHTML = btnHtml;
         }
 
-        function gotoBackupPage(page) {
-            const filteredBackups = allBackups.filter(b => {
-                const cat = (b.category || '').toUpperCase();
-                return (currentCategoryFilter === 'ALL' || cat === currentCategoryFilter);
+        function scrollToTableTop(elementId) {
+            requestAnimationFrame(() => {
+                const el = document.getElementById(elementId);
+                if (!el) return;
+                const navbar = document.querySelector('.navbar');
+                const navOffset = (navbar ? navbar.offsetHeight : 70) + 16;
+                const targetY = el.getBoundingClientRect().top + window.pageYOffset - navOffset;
+                window.scrollTo({ top: Math.max(0, targetY), behavior: 'smooth' });
             });
+        }
+        window.scrollToTableTop = scrollToTableTop;
+
+        function gotoBackupPage(page) {
+            const filteredBackups = getFilteredBackups();
             const totalPages = Math.ceil(filteredBackups.length / backupsPerPage) || 1;
             if (page < 1 || page > totalPages) return;
             currentBackupPage = page;
@@ -942,6 +992,7 @@
                 history.replaceState(null, '', window.location.pathname + window.location.search);
             }
             renderBackupsTable();
+            scrollToTableTop('backupsTable');
         }
         window.gotoBackupPage = gotoBackupPage;
 
@@ -956,10 +1007,51 @@
             renderBackupsTable();
         }
 
+        // Local In-Table Search Input Listeners
+        const backupSearchInput = document.getElementById('backupTableSearch');
+        const backupSearchClear = document.getElementById('backupTableSearchClear');
+        if (backupSearchInput) {
+            backupSearchInput.addEventListener('input', (e) => {
+                currentBackupsSearch = e.target.value;
+                if (backupSearchClear) {
+                    backupSearchClear.style.display = currentBackupsSearch ? 'block' : 'none';
+                }
+                currentBackupPage = 1;
+                renderBackupsTable();
+            });
+        }
+        if (backupSearchClear) {
+            backupSearchClear.addEventListener('click', () => {
+                if (backupSearchInput) {
+                    backupSearchInput.value = '';
+                    backupSearchInput.focus();
+                }
+                currentBackupsSearch = '';
+                backupSearchClear.style.display = 'none';
+                currentBackupPage = 1;
+                renderBackupsTable();
+            });
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
+            // Check URL search parameter (?search=...)
+            const urlParams = new URLSearchParams(window.location.search);
+            const searchParam = urlParams.get('search');
+            if (searchParam) {
+                currentBackupsSearch = searchParam;
+                if (backupSearchInput) backupSearchInput.value = searchParam;
+                if (backupSearchClear) backupSearchClear.style.display = 'block';
+            }
+
             updateCategoryCounts();
             checkTargetBackupPage();
             renderBackupsTable();
+
+            // Smooth scroll to table if targeted
+            if (window.location.hash === '#backupsTable') {
+                const el = document.getElementById('backupsTable');
+                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
         });
 
         window.addEventListener('hashchange', () => {
@@ -1102,7 +1194,7 @@
         }
 
     </script>
-    <script src="/static/js/global_nav.js?v=4.3"></script>
+    <script src="/static/js/global_nav.js?v=4.9"></script>
 </body>
 
 </html>

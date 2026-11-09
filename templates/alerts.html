@@ -11,7 +11,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
         rel="stylesheet">
     <!-- Relative CSS -->
-    <link rel="stylesheet" href="/static/css/style.css?v=8.5">
+    <link rel="stylesheet" href="/static/css/style.css?v=10.7">
     <style>
         .section-separator {
             margin-top: 1.5rem;
@@ -190,9 +190,8 @@
                     <circle cx="11" cy="11" r="8"></circle>
                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                 </svg>
-                <input type="text" id="globalSearch" placeholder="Search devices, alerts, data..." autocomplete="off" />
-                <button type="button" id="clearSearchBtn" class="search-clear-btn"
-                    title="Clear search">&times;</button>
+                <input type="text" id="globalSearch" placeholder="Search devices, alerts, data" autocomplete="off" />
+                <button type="button" id="clearSearchBtn" class="search-clear-btn" title="Clear search">&times;</button>
                 <div id="searchResultsDropdown" class="search-results-dropdown" style="display: none;"></div>
             </div>
         </div>
@@ -238,7 +237,8 @@
             <div class="page-header-row">
                 <div>
                     <h2>Active & Sustained Alerts</h2>
-                    <p class="sub-text">Active operational alerts requiring mitigation. Resolved incidents are archived in the Incident Log below.</p>
+                    <p class="sub-text">Active operational alerts requiring mitigation. Resolved incidents are archived
+                        in the Incident Log below.</p>
                 </div>
                 <div class="header-tools">
                     <button class="btn-refresh" onclick="refreshAlerts(this)">
@@ -253,10 +253,22 @@
             </div>
 
             <!-- Alert Filters -->
-            <div class="filter-bar" id="alertsFilterBar">
-                <button class="filter-tab active" data-filter="all">All Active Alerts ({{ total_alerts }})</button>
-                <button class="filter-tab" data-filter="pending">Pending ACK ({{ pending_alerts }})</button>
-                <button class="filter-tab" data-filter="acked">Acknowledged ({{ acked_alerts }})</button>
+            <div class="filter-bar" id="alertsFilterBar"
+                style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <button class="filter-tab active" data-filter="all">All Active Alerts ({{ total_alerts }})</button>
+                    <button class="filter-tab" data-filter="pending">Pending ACK ({{ pending_alerts }})</button>
+                    <button class="filter-tab" data-filter="acked">Acknowledged ({{ acked_alerts }})</button>
+                </div>
+                <div class="table-search-box">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input type="text" id="alertsTableSearch" placeholder="Search ID, Severity, Device, Anomaly Type"
+                        autocomplete="off" />
+                    <button type="button" class="table-search-clear" id="alertsTableSearchClear">&times;</button>
+                </div>
             </div>
 
             <!-- Alerts Table Panel -->
@@ -300,11 +312,28 @@
                 </div>
 
                 <!-- Incident Filters -->
-                <div class="filter-bar" id="incidentsFilterBar">
-                    <button class="filter-tab active" data-inc-filter="all">All Incidents ({{ total_incidents }})</button>
-                    <button class="filter-tab" data-inc-filter="monitoring">Active Monitoring ({{ monitoring_incidents }})</button>
-                    <button class="filter-tab" data-inc-filter="cooldown">Cooldown ({{ cooldown_incidents }})</button>
-                    <button class="filter-tab" data-inc-filter="resolved">Resolved Alerts ({{ resolved_incidents }})</button>
+                <div class="filter-bar" id="incidentsFilterBar"
+                    style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <button class="filter-tab active" data-inc-filter="all">All Incidents ({{ total_incidents
+                            }})</button>
+                        <button class="filter-tab" data-inc-filter="monitoring">Active Monitoring ({{
+                            monitoring_incidents }})</button>
+                        <button class="filter-tab" data-inc-filter="cooldown">Cooldown ({{ cooldown_incidents
+                            }})</button>
+                        <button class="filter-tab" data-inc-filter="resolved">Resolved Alerts ({{ resolved_incidents
+                            }})</button>
+                    </div>
+                    <div class="table-search-box">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                        <input type="text" id="incidentsTableSearch"
+                            placeholder="Search Incident ID, Severity, Device, Incident Type" autocomplete="off" />
+                        <button type="button" class="table-search-clear" id="incidentsTableSearchClear">&times;</button>
+                    </div>
                 </div>
 
                 <!-- Incidents Table Panel (Without Message column as requested) -->
@@ -389,6 +418,25 @@
         let currentAlertsPage = 1;
         const alertsPerPage = 20;
         let currentAlertFilter = 'all';
+        let currentAlertsSearch = '';
+
+        function getFilteredAlerts() {
+            const q = currentAlertsSearch.trim().toLowerCase();
+            return allAlerts.filter(a => {
+                if (currentAlertFilter === 'pending' && a.acknowledged) return false;
+                if (currentAlertFilter === 'acked' && !a.acknowledged) return false;
+                if (!q) return true;
+                const idStr = String(a.id || '');
+                const sev = String(a.severity || '').toLowerCase();
+                const dev = String(a.device_name || '').toLowerCase();
+                const type = String(a.type || '').toLowerCase();
+
+                return idStr.includes(q) || ('alert-' + idStr).includes(q) || ('#' + idStr).includes(q) ||
+                    sev.includes(q) ||
+                    dev.includes(q) ||
+                    type.includes(q);
+            });
+        }
 
         function checkTargetAlertPage(targetRowId) {
             let rowId = targetRowId;
@@ -399,6 +447,12 @@
                 const targetId = parseInt(rowId.replace(/^(alert-row-|alert-)/, ''), 10);
                 if (!isNaN(targetId) && allAlerts && allAlerts.length > 0) {
                     currentAlertFilter = 'all';
+                    currentAlertsSearch = '';
+                    const searchInput = document.getElementById('alertsTableSearch');
+                    if (searchInput) searchInput.value = '';
+                    const clearBtn = document.getElementById('alertsTableSearchClear');
+                    if (clearBtn) clearBtn.style.display = 'none';
+
                     document.querySelectorAll('#alertsFilterBar .filter-tab').forEach(t => {
                         t.classList.toggle('active', t.getAttribute('data-filter') === 'all');
                     });
@@ -422,19 +476,16 @@
             const pageInfo = document.getElementById('alertsPageInfo');
             if (!tbody) return;
 
-            const filteredAlerts = allAlerts.filter(a => {
-                if (currentAlertFilter === 'all') return true;
-                if (currentAlertFilter === 'pending') return !a.acknowledged;
-                if (currentAlertFilter === 'acked') return a.acknowledged;
-                return true;
-            });
-
+            const filteredAlerts = getFilteredAlerts();
             const totalAlerts = filteredAlerts.length;
 
             if (totalAlerts === 0) {
                 let emptyTitle = 'All Systems Operational';
                 let emptySub = 'No active alerts requiring mitigation';
-                if (currentAlertFilter === 'pending') {
+                if (currentAlertsSearch.trim()) {
+                    emptyTitle = 'No Matching Active Alerts';
+                    emptySub = `No active alerts matched "${escapeHtml(currentAlertsSearch)}"`;
+                } else if (currentAlertFilter === 'pending') {
                     emptyTitle = 'No Pending ACK Alerts';
                     emptySub = 'All active alerts have been acknowledged';
                 } else if (currentAlertFilter === 'acked') {
@@ -561,13 +612,20 @@
             controls.innerHTML = btnHtml;
         }
 
-        function gotoAlertPage(page) {
-            const filteredAlerts = allAlerts.filter(a => {
-                if (currentAlertFilter === 'all') return true;
-                if (currentAlertFilter === 'pending') return !a.acknowledged;
-                if (currentAlertFilter === 'acked') return a.acknowledged;
-                return true;
+        function scrollToTableTop(elementId) {
+            requestAnimationFrame(() => {
+                const el = document.getElementById(elementId);
+                if (!el) return;
+                const navbar = document.querySelector('.navbar');
+                const navOffset = (navbar ? navbar.offsetHeight : 70) + 16;
+                const targetY = el.getBoundingClientRect().top + window.pageYOffset - navOffset;
+                window.scrollTo({ top: Math.max(0, targetY), behavior: 'smooth' });
             });
+        }
+        window.scrollToTableTop = scrollToTableTop;
+
+        function gotoAlertPage(page) {
+            const filteredAlerts = getFilteredAlerts();
             const totalPages = Math.ceil(filteredAlerts.length / alertsPerPage) || 1;
             if (page < 1 || page > totalPages) return;
             currentAlertsPage = page;
@@ -575,6 +633,7 @@
                 history.replaceState(null, '', window.location.pathname + window.location.search);
             }
             renderAlertsTable();
+            scrollToTableTop('alertsTable');
         }
         window.gotoAlertPage = gotoAlertPage;
 
@@ -598,6 +657,28 @@
         let currentIncidentsPage = 1;
         const incidentsPerPage = 20;
         let currentIncidentFilter = 'all';
+        let currentIncidentsSearch = '';
+
+        function getFilteredIncidents() {
+            const q = currentIncidentsSearch.trim().toLowerCase();
+            return allIncidents.filter(inc => {
+                const st = (inc.status || '').toUpperCase();
+                if (currentIncidentFilter === 'monitoring' && st !== 'ACTIVE_MONITORING') return false;
+                if (currentIncidentFilter === 'cooldown' && st !== 'AUTO_COOLDOWN') return false;
+                if (currentIncidentFilter === 'resolved' && st !== 'RESOLVED_ALERT') return false;
+                if (!q) return true;
+                const idStr = String(inc.id || '');
+                const sev = String(inc.severity || '').toLowerCase();
+                const dev = String(inc.device_name || '').toLowerCase();
+                const type = String(inc.type || '').toLowerCase();
+
+                return idStr.includes(q) || ('inc-' + idStr).includes(q) || ('#inc-' + idStr).includes(q) ||
+                    ('incident-' + idStr).includes(q) || ('#incident-' + idStr).includes(q) ||
+                    sev.includes(q) ||
+                    dev.includes(q) ||
+                    type.includes(q);
+            });
+        }
 
         function checkTargetIncidentPage(targetRowId) {
             let rowId = targetRowId;
@@ -608,6 +689,12 @@
                 const targetId = parseInt(rowId.replace(/^(inc-row-|incident-row-|inc-)/, ''), 10);
                 if (!isNaN(targetId) && allIncidents && allIncidents.length > 0) {
                     currentIncidentFilter = 'all';
+                    currentIncidentsSearch = '';
+                    const searchInput = document.getElementById('incidentsTableSearch');
+                    if (searchInput) searchInput.value = '';
+                    const clearBtn = document.getElementById('incidentsTableSearchClear');
+                    if (clearBtn) clearBtn.style.display = 'none';
+
                     document.querySelectorAll('#incidentsFilterBar .filter-tab').forEach(t => {
                         t.classList.toggle('active', t.getAttribute('data-inc-filter') === 'all');
                     });
@@ -631,21 +718,16 @@
             const pageInfo = document.getElementById('incidentsPageInfo');
             if (!tbody) return;
 
-            const filteredIncidents = allIncidents.filter(inc => {
-                const st = (inc.status || '').toUpperCase();
-                if (currentIncidentFilter === 'all') return true;
-                if (currentIncidentFilter === 'monitoring') return st === 'ACTIVE_MONITORING';
-                if (currentIncidentFilter === 'cooldown') return st === 'AUTO_COOLDOWN';
-                if (currentIncidentFilter === 'resolved') return st === 'RESOLVED_ALERT';
-                return true;
-            });
-
+            const filteredIncidents = getFilteredIncidents();
             const totalIncidents = filteredIncidents.length;
 
             if (totalIncidents === 0) {
                 let emptyTitle = 'No Incident History Recorded';
                 let emptySub = 'All past network incidents have been resolved';
-                if (currentIncidentFilter === 'monitoring') {
+                if (currentIncidentsSearch.trim()) {
+                    emptyTitle = 'No Matching Incidents Found';
+                    emptySub = `No incident or cooldown history matched "${escapeHtml(currentIncidentsSearch)}"`;
+                } else if (currentIncidentFilter === 'monitoring') {
                     emptyTitle = 'No Active Monitoring';
                     emptySub = 'No anomalies currently in the 10-minute evaluation window';
                 } else if (currentIncidentFilter === 'cooldown') {
@@ -783,14 +865,7 @@
         }
 
         function gotoIncidentPage(page) {
-            const filteredIncidents = allIncidents.filter(inc => {
-                const st = (inc.status || '').toUpperCase();
-                if (currentIncidentFilter === 'all') return true;
-                if (currentIncidentFilter === 'monitoring') return st === 'ACTIVE_MONITORING';
-                if (currentIncidentFilter === 'cooldown') return st === 'AUTO_COOLDOWN';
-                if (currentIncidentFilter === 'resolved') return st === 'RESOLVED_ALERT';
-                return true;
-            });
+            const filteredIncidents = getFilteredIncidents();
             const totalPages = Math.ceil(filteredIncidents.length / incidentsPerPage) || 1;
             if (page < 1 || page > totalPages) return;
             currentIncidentsPage = page;
@@ -798,6 +873,7 @@
                 history.replaceState(null, '', window.location.pathname + window.location.search);
             }
             renderIncidentsTable();
+            scrollToTableTop('incidentsTable');
         }
         window.gotoIncidentPage = gotoIncidentPage;
 
@@ -815,15 +891,92 @@
             });
         });
 
+        // Setup In-Table Search Input Listeners
+        const alertsSearchInput = document.getElementById('alertsTableSearch');
+        const alertsSearchClear = document.getElementById('alertsTableSearchClear');
+        if (alertsSearchInput) {
+            alertsSearchInput.addEventListener('input', (e) => {
+                currentAlertsSearch = e.target.value;
+                if (alertsSearchClear) {
+                    alertsSearchClear.style.display = currentAlertsSearch ? 'block' : 'none';
+                }
+                currentAlertsPage = 1;
+                renderAlertsTable();
+            });
+        }
+        if (alertsSearchClear) {
+            alertsSearchClear.addEventListener('click', () => {
+                if (alertsSearchInput) {
+                    alertsSearchInput.value = '';
+                    alertsSearchInput.focus();
+                }
+                currentAlertsSearch = '';
+                alertsSearchClear.style.display = 'none';
+                currentAlertsPage = 1;
+                renderAlertsTable();
+            });
+        }
+
+        const incidentsSearchInput = document.getElementById('incidentsTableSearch');
+        const incidentsSearchClear = document.getElementById('incidentsTableSearchClear');
+        if (incidentsSearchInput) {
+            incidentsSearchInput.addEventListener('input', (e) => {
+                currentIncidentsSearch = e.target.value;
+                if (incidentsSearchClear) {
+                    incidentsSearchClear.style.display = currentIncidentsSearch ? 'block' : 'none';
+                }
+                currentIncidentsPage = 1;
+                renderIncidentsTable();
+            });
+        }
+        if (incidentsSearchClear) {
+            incidentsSearchClear.addEventListener('click', () => {
+                if (incidentsSearchInput) {
+                    incidentsSearchInput.value = '';
+                    incidentsSearchInput.focus();
+                }
+                currentIncidentsSearch = '';
+                incidentsSearchClear.style.display = 'none';
+                currentIncidentsPage = 1;
+                renderIncidentsTable();
+            });
+        }
+
         // =========================================================================
         // 3. PAGE INITIALIZATION & HASH EVENT LISTENER
         // =========================================================================
         function initPagination() {
+            // Check URL query param (?search=...)
+            const urlParams = new URLSearchParams(window.location.search);
+            const searchParam = urlParams.get('search');
+            const hash = window.location.hash;
+
+            if (searchParam) {
+                if (hash === '#alertsTable' || hash.startsWith('#alert-')) {
+                    currentAlertsSearch = searchParam;
+                    if (alertsSearchInput) alertsSearchInput.value = searchParam;
+                    if (alertsSearchClear) alertsSearchClear.style.display = 'block';
+                } else {
+                    currentIncidentsSearch = searchParam;
+                    if (incidentsSearchInput) incidentsSearchInput.value = searchParam;
+                    if (incidentsSearchClear) incidentsSearchClear.style.display = 'block';
+                }
+            }
+
             checkTargetAlertPage();
             renderAlertsTable();
 
             checkTargetIncidentPage();
             renderIncidentsTable();
+
+            // Smooth scroll to table if targeted
+            if (hash === '#alertsTable') {
+                const el = document.getElementById('alertsTable');
+                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } else if (hash === '#incidentsTable') {
+                const el = document.getElementById('incidentsTable');
+                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
         }
 
         if (document.readyState === 'loading') {
@@ -865,7 +1018,7 @@
     <script>
         window.NAV_DEVICES = JSON.parse(document.getElementById('nav-devices-data').textContent || '[]');
     </script>
-    <script src="/static/js/global_nav.js?v=4.4"></script>
+    <script src="/static/js/global_nav.js?v=4.9"></script>
 </body>
 
 </html>

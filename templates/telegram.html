@@ -104,10 +104,11 @@
         <div class="content-layout">
             <!-- Left: Whitelist Tim NOC -->
             <div class="table-panel">
-                <div class="panel-header">
+                <div class="panel-header" style="flex-wrap: wrap; gap: 12px;">
                     <div>
                         <h3 class="panel-title">Network Engineer Whitelist</h3>
-                        <span class="panel-sub">Official Telegram accounts authorized with full administrative and operational command access</span>
+                        <span class="panel-sub">Official Telegram accounts authorized with full administrative and
+                            operational command access</span>
                     </div>
                 </div>
                 <div class="table-responsive">
@@ -185,20 +186,31 @@
 
         <!-- 3. Telegram Message Dispatch Log -->
         <div class="table-panel">
-            <div class="panel-header">
+            <div class="panel-header" style="flex-wrap: wrap; gap: 12px;">
                 <div>
                     <h3 class="panel-title">Telegram Message & Notification Dispatch History</h3>
-                    <span class="panel-sub">30-day audit log of anomaly alerts and command responses
-                    </span>
+                    <span class="panel-sub">30-day audit log of anomaly alerts and command responses</span>
                 </div>
-                <button class="btn-refresh" onclick="refreshTelegram(this)">
-                    <svg class="refresh-icon" viewBox="0 0 24 24" width="14" height="14" fill="none"
-                        stroke="currentColor" stroke-width="2.5"
-                        style="display:inline-block; vertical-align:middle; margin-right:4px;">
-                        <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
-                    </svg>
-                    <span>Refresh Log</span>
-                </button>
+                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                    <div class="table-search-box">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                        <input type="text" id="tgLogsTableSearch" placeholder="Search Type, Content, Status"
+                            autocomplete="off" />
+                        <button type="button" class="table-search-clear" id="tgLogsTableSearchClear">&times;</button>
+                    </div>
+                    <button class="btn-refresh" onclick="refreshTelegram(this)">
+                        <svg class="refresh-icon" viewBox="0 0 24 24" width="14" height="14" fill="none"
+                            stroke="currentColor" stroke-width="2.5"
+                            style="display:inline-block; vertical-align:middle; margin-right:4px;">
+                            <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+                        </svg>
+                        <span>Refresh Log</span>
+                    </button>
+                </div>
             </div>
             <div class="table-responsive table-no-scroll">
                 <table class="data-table" id="tgLogsTable">
@@ -445,13 +457,17 @@
         let currentWhitelistPage = 1;
         const whitelistPerPage = 5;
 
+        function getFilteredWhitelist() {
+            return allWhitelist;
+        }
+
         function checkTargetWhitelistPage(targetRowId) {
             let rowId = targetRowId;
             if (!rowId && window.location.hash) {
                 rowId = window.location.hash.replace('#', '');
             }
-            if (rowId && rowId.startsWith('whitelist-row-')) {
-                const targetId = parseInt(rowId.replace('whitelist-row-', ''), 10);
+            if (rowId && (rowId.startsWith('whitelist-row-') || rowId.startsWith('whitelist-'))) {
+                const targetId = parseInt(rowId.replace(/^(whitelist-row-|whitelist-)/, ''), 10);
                 if (!isNaN(targetId) && allWhitelist && allWhitelist.length > 0) {
                     const idx = allWhitelist.findIndex(w => Number(w.id) === targetId);
                     if (idx !== -1) {
@@ -473,9 +489,13 @@
             const pageInfo = document.getElementById('tgWhitelistPageInfo');
             if (!tbody) return;
 
-            const totalWhitelist = allWhitelist.length;
+            const filteredWhitelist = getFilteredWhitelist();
+            const totalWhitelist = filteredWhitelist.length;
 
             if (totalWhitelist === 0) {
+                let emptyTitle = 'No Engineers Whitelisted';
+                let emptySub = 'No engineer accounts registered in Telegram bot whitelist';
+
                 tbody.innerHTML = `<tr class="empty-state-row">
                     <td colspan="5" style="text-align:center; padding: 40px 10px;">
                         <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;">
@@ -485,8 +505,8 @@
                                 <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
                                 <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                             </svg>
-                            <p style="font-size: 0.9rem; font-weight: 500; color: #94a3b8; margin: 0 0 4px 0;">No Engineers Whitelisted</p>
-                            <span style="font-size: 0.75rem; color: #64748b;">No engineer accounts registered in Telegram bot whitelist</span>
+                            <p style="font-size: 0.9rem; font-weight: 500; color: #94a3b8; margin: 0 0 4px 0;">${emptyTitle}</p>
+                            <span style="font-size: 0.75rem; color: #64748b;">${emptySub}</span>
                         </div>
                     </td>
                 </tr>`;
@@ -502,7 +522,7 @@
 
             const startIndex = (currentWhitelistPage - 1) * whitelistPerPage;
             const endIndex = Math.min(startIndex + whitelistPerPage, totalWhitelist);
-            const pageData = allWhitelist.slice(startIndex, endIndex);
+            const pageData = filteredWhitelist.slice(startIndex, endIndex);
 
             let html = '';
             for (const w of pageData) {
@@ -595,14 +615,28 @@
         }
         window.renderWhitelistPaginationButtons = renderWhitelistPaginationButtons;
 
+        function scrollToTableTop(elementId) {
+            requestAnimationFrame(() => {
+                const el = document.getElementById(elementId);
+                if (!el) return;
+                const navbar = document.querySelector('.navbar');
+                const navOffset = (navbar ? navbar.offsetHeight : 70) + 16;
+                const targetY = el.getBoundingClientRect().top + window.pageYOffset - navOffset;
+                window.scrollTo({ top: Math.max(0, targetY), behavior: 'smooth' });
+            });
+        }
+        window.scrollToTableTop = scrollToTableTop;
+
         function gotoWhitelistPage(page) {
-            const totalPages = Math.ceil(allWhitelist.length / whitelistPerPage) || 1;
+            const filteredWhitelist = getFilteredWhitelist();
+            const totalPages = Math.ceil(filteredWhitelist.length / whitelistPerPage) || 1;
             if (page < 1 || page > totalPages) return;
             currentWhitelistPage = page;
             if (window.location.hash && window.location.hash.startsWith('#whitelist-row-')) {
                 history.replaceState(null, '', window.location.pathname + window.location.search);
             }
             renderWhitelistTable();
+            scrollToTableTop('tgWhitelistTable');
         }
         window.gotoWhitelistPage = gotoWhitelistPage;
 
@@ -615,6 +649,7 @@
         }
         let currentLogPage = 1;
         const logsPerPage = 20;
+        let currentLogsSearch = '';
 
         function escapeHtml(text) {
             if (!text) return '';
@@ -626,14 +661,39 @@
                 .replace(/'/g, "&#039;");
         }
 
+        function getFilteredLogs() {
+            const q = currentLogsSearch.trim().toLowerCase();
+            if (!q) return allLogs;
+            return allLogs.filter(l => {
+                const type = String(l.type || '').toLowerCase();
+                const content = String(l.content || '').toLowerCase();
+                const status = String(l.status || '').toLowerCase();
+
+                let typeLabel = '';
+                if (l.type === 'ALERT_NOTIFICATION') typeLabel = 'alert notif alert notification';
+                else if (l.type === 'DIAGNOSTIC_TEST') typeLabel = 'test ping diagnostic test';
+                else if (l.type === 'COMMAND_RESPONSE' || l.type === 'CMD_REPLY') typeLabel = 'cmd reply command response';
+
+                return type.includes(q) || typeLabel.includes(q) ||
+                    content.includes(q) ||
+                    status.includes(q);
+            });
+        }
+
         function checkTargetLogPage(targetRowId) {
             let rowId = targetRowId;
             if (!rowId && window.location.hash) {
                 rowId = window.location.hash.replace('#', '');
             }
-            if (rowId && rowId.startsWith('msglog-row-')) {
-                const targetId = parseInt(rowId.replace('msglog-row-', ''), 10);
+            if (rowId && (rowId.startsWith('msglog-row-') || rowId.startsWith('msglog-'))) {
+                const targetId = parseInt(rowId.replace(/^(msglog-row-|msglog-)/, ''), 10);
                 if (!isNaN(targetId) && allLogs && allLogs.length > 0) {
+                    currentLogsSearch = '';
+                    const searchInput = document.getElementById('tgLogsTableSearch');
+                    if (searchInput) searchInput.value = '';
+                    const clearBtn = document.getElementById('tgLogsTableSearchClear');
+                    if (clearBtn) clearBtn.style.display = 'none';
+
                     const idx = allLogs.findIndex(l => Number(l.id) === targetId);
                     if (idx !== -1) {
                         currentLogPage = Math.floor(idx / logsPerPage) + 1;
@@ -654,9 +714,17 @@
             const pageInfo = document.getElementById('tgPageInfo');
             if (!tbody) return;
 
-            const totalLogs = allLogs.length;
+            const filteredLogs = getFilteredLogs();
+            const totalLogs = filteredLogs.length;
 
             if (totalLogs === 0) {
+                let emptyTitle = 'No Dispatch History';
+                let emptySub = 'No message dispatch history recorded in the last 30 days';
+                if (currentLogsSearch.trim()) {
+                    emptyTitle = 'No Matching Dispatch Logs';
+                    emptySub = `No dispatch records matched "${escapeHtml(currentLogsSearch)}"`;
+                }
+
                 tbody.innerHTML = `<tr class="empty-state-row">
                     <td colspan="5" style="text-align:center; padding: 40px 10px;">
                         <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;">
@@ -664,8 +732,8 @@
                                 <circle cx="12" cy="12" r="10"></circle>
                                 <polyline points="12 6 12 12 16 14"></polyline>
                             </svg>
-                            <p style="font-size: 0.9rem; font-weight: 500; color: #94a3b8; margin: 0 0 4px 0;">No Dispatch History</p>
-                            <span style="font-size: 0.75rem; color: #64748b;">No message dispatch history recorded in the last 30 days</span>
+                            <p style="font-size: 0.9rem; font-weight: 500; color: #94a3b8; margin: 0 0 4px 0;">${emptyTitle}</p>
+                            <span style="font-size: 0.75rem; color: #64748b;">${emptySub}</span>
                         </div>
                     </td>
                 </tr>`;
@@ -681,7 +749,7 @@
 
             const startIndex = (currentLogPage - 1) * logsPerPage;
             const endIndex = Math.min(startIndex + logsPerPage, totalLogs);
-            const pageData = allLogs.slice(startIndex, endIndex);
+            const pageData = filteredLogs.slice(startIndex, endIndex);
 
             let html = '';
             for (const l of pageData) {
@@ -782,7 +850,8 @@
         }
 
         function gotoLogPage(page) {
-            const totalPages = Math.ceil(allLogs.length / logsPerPage) || 1;
+            const filteredLogs = getFilteredLogs();
+            const totalPages = Math.ceil(filteredLogs.length / logsPerPage) || 1;
             if (page < 1 || page > totalPages) return;
             currentLogPage = page;
             // Clear anchor hash if present so pagination is not locked to a search target
@@ -790,8 +859,35 @@
                 history.replaceState(null, '', window.location.pathname + window.location.search);
             }
             renderLogsTable();
+            scrollToTableTop('tgLogsTable');
         }
         window.gotoLogPage = gotoLogPage;
+
+        // In-Table Search Input Listeners for Dispatch History
+        const logsSearchInput = document.getElementById('tgLogsTableSearch');
+        const logsSearchClear = document.getElementById('tgLogsTableSearchClear');
+        if (logsSearchInput) {
+            logsSearchInput.addEventListener('input', (e) => {
+                currentLogsSearch = e.target.value;
+                if (logsSearchClear) {
+                    logsSearchClear.style.display = currentLogsSearch ? 'block' : 'none';
+                }
+                currentLogPage = 1;
+                renderLogsTable();
+            });
+        }
+        if (logsSearchClear) {
+            logsSearchClear.addEventListener('click', () => {
+                if (logsSearchInput) {
+                    logsSearchInput.value = '';
+                    logsSearchInput.focus();
+                }
+                currentLogsSearch = '';
+                logsSearchClear.style.display = 'none';
+                currentLogPage = 1;
+                renderLogsTable();
+            });
+        }
 
         function showToast(message, type = 'success') {
             // Disabled in favor of Inline Button Feedback
@@ -910,10 +1006,36 @@
 
         // Initial table render once DOM is fully loaded
         document.addEventListener('DOMContentLoaded', () => {
+            // Check URL search parameter (?search=...)
+            const urlParams = new URLSearchParams(window.location.search);
+            const searchParam = urlParams.get('search');
+            const hash = window.location.hash;
+
+            if (searchParam) {
+                if (hash === '#tgWhitelistTable' || hash.startsWith('#whitelist-')) {
+                    currentWhitelistSearch = searchParam;
+                    if (wlSearchInput) wlSearchInput.value = searchParam;
+                    if (wlSearchClear) wlSearchClear.style.display = 'block';
+                } else {
+                    currentLogsSearch = searchParam;
+                    if (logsSearchInput) logsSearchInput.value = searchParam;
+                    if (logsSearchClear) logsSearchClear.style.display = 'block';
+                }
+            }
+
             checkTargetWhitelistPage();
             renderWhitelistTable();
             checkTargetLogPage();
             renderLogsTable();
+
+            // Smooth scroll to table if targeted
+            if (hash === '#tgWhitelistTable') {
+                const el = document.getElementById('tgWhitelistTable');
+                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } else if (hash === '#tgLogsTable') {
+                const el = document.getElementById('tgLogsTable');
+                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
         });
 
         // Re-render if hash changes to log or whitelist on different page

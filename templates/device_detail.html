@@ -14,7 +14,7 @@
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
     <!-- Relative CSS -->
-    <link rel="stylesheet" href="/static/css/style.css?v=10.0">
+    <link rel="stylesheet" href="/static/css/style.css?v=10.7">
 </head>
 
 <body>
@@ -32,9 +32,8 @@
                     <circle cx="11" cy="11" r="8"></circle>
                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                 </svg>
-                <input type="text" id="globalSearch" placeholder="Search devices, alerts, data..." autocomplete="off" />
-                <button type="button" id="clearSearchBtn" class="search-clear-btn"
-                    title="Clear search">&times;</button>
+                <input type="text" id="globalSearch" placeholder="Search devices, alerts, data" autocomplete="off" />
+                <button type="button" id="clearSearchBtn" class="search-clear-btn" title="Clear search">&times;</button>
                 <div id="searchResultsDropdown" class="search-results-dropdown" style="display: none;"></div>
             </div>
         </div>
@@ -135,7 +134,8 @@
                 <div class="panel-header">
                     <div>
                         <h3 class="panel-title">System Specifications</h3>
-                        <span class="panel-sub">Hardware identity, firmware, and operational specs of physical device</span>
+                        <span class="panel-sub">Hardware identity, firmware, and operational specs of physical
+                            device</span>
                     </div>
                 </div>
                 <div class="specs-grid">
@@ -236,7 +236,9 @@
             </div>
             {% endif %}
 
-            {% set dev_type = 'Firewall' if ('palo' in device.vendor.lower() or 'fw' in device.name.lower()) else ('Router' if ('router' in device.vendor.lower() or 'rt' in device.name.lower() or 'mikrotik' in device.vendor.lower()) else 'Switch') %}
+            {% set dev_type = 'Firewall' if ('palo' in device.vendor.lower() or 'fw' in device.name.lower()) else
+            ('Router' if ('router' in device.vendor.lower() or 'rt' in device.name.lower() or 'mikrotik' in
+            device.vendor.lower()) else 'Switch') %}
             <!-- Resource Utilization Graphs -->
             <div class="resource-graphs-section">
                 <div class="charts-header-bar">
@@ -249,8 +251,8 @@
                             title="Real-time live sync every 2 minutes">
                             <span class="live-dot"></span> Live
                         </button>
-                        <button class="time-range-btn" data-range="1h"
-                            title="1-hour historical trend (every 2 min)">1 Hour</button>
+                        <button class="time-range-btn" data-range="1h" title="1-hour historical trend (every 2 min)">1
+                            Hour</button>
                         <button class="time-range-btn" data-range="12h"
                             title="12-hour historical trend (every 2 min)">12 Hours</button>
                         <button class="time-range-btn" data-range="24h"
@@ -336,7 +338,9 @@
                             </div>
                             <div class="chart-legend-custom">
                                 <span class="legend-tag"><span class="legend-color bg-cyan"></span> Packet Buffer</span>
-                                <span class="legend-tag"><span class="legend-color bg-orange"></span> {% if 'huawei' in device.vendor.lower() %}Peak Buffer{% elif 'palo' in device.vendor.lower() %}Packet Descriptor{% else %}Message Buffer{% endif %}</span>
+                                <span class="legend-tag"><span class="legend-color bg-orange"></span> {% if 'huawei' in
+                                    device.vendor.lower() %}Peak Buffer{% elif 'palo' in device.vendor.lower() %}Packet
+                                    Descriptor{% else %}Message Buffer{% endif %}</span>
                             </div>
                         </div>
                         <div class="device-chart-body">
@@ -390,7 +394,8 @@
                         <div class="panel-header">
                             <div>
                                 <h3 class="panel-title">Packet Loss / Ping Drop (%)</h3>
-                                <span class="panel-sub">ICMP packet failure rate (Request Time Out / Path Anomaly)</span>
+                                <span class="panel-sub">ICMP packet failure rate (Request Time Out / Path
+                                    Anomaly)</span>
                             </div>
                             <div class="chart-legend-custom">
                                 <span class="legend-tag"><span class="legend-color bg-orange"></span> Drop (%)</span>
@@ -445,9 +450,13 @@
                                 <th>Speed</th>
                                 <th>Throughput Tx</th>
                                 <th>Throughput Rx</th>
-                                <th title="Total physical hardware register byte accumulation since device boot / counter reset">Bytes Tx / Rx (Cumulative)</th>
+                                <th
+                                    title="Total physical hardware register byte accumulation since device boot / counter reset">
+                                    Bytes Tx / Rx (Cumulative)</th>
                                 <th>PoE Power</th>
-                                <th title="Physical hardware register counter: Tx Error (Send) / Rx Error (Receive) / Tx Drops (Buffer Egress)">Errors (Tx / Rx) / Drops</th>
+                                <th
+                                    title="Physical hardware register counter: Tx Error (Send) / Rx Error (Receive) / Tx Drops (Buffer Egress)">
+                                    Errors (Tx / Rx) / Drops</th>
                             </tr>
                         </thead>
                         <tbody id="portsTableBody">
@@ -466,9 +475,13 @@
                                         style="background: rgba(232, 165, 118, 0.2); color: var(--color-copper); border-color: rgba(232, 165, 118, 0.4);">LAN
                                         GATEWAY</span>
                                     {% elif 'vlanif' in p.port_id.lower() %}
-                                    <span class="badge-uplink" style="background: rgba(99, 102, 241, 0.2); color: #818cf8; border-color: rgba(99, 102, 241, 0.4);">L3 SVI</span>
-                                    {% elif 'stack' in p.port_id.lower() or '10ge1/0/5' in p.port_id.lower() or '10ge1/0/6' in p.port_id.lower() %}
-                                    <span class="badge-uplink" style="background: rgba(148, 163, 184, 0.2); color: #94a3b8; border-color: rgba(148, 163, 184, 0.4);">iSTACK</span>
+                                    <span class="badge-uplink"
+                                        style="background: rgba(99, 102, 241, 0.2); color: #818cf8; border-color: rgba(99, 102, 241, 0.4);">L3
+                                        SVI</span>
+                                    {% elif 'stack' in p.port_id.lower() or '10ge1/0/5' in p.port_id.lower() or
+                                    '10ge1/0/6' in p.port_id.lower() %}
+                                    <span class="badge-uplink"
+                                        style="background: rgba(148, 163, 184, 0.2); color: #94a3b8; border-color: rgba(148, 163, 184, 0.4);">iSTACK</span>
                                     {% elif p.is_sfp %}
                                     <span class="badge-media-sfp">10G SFP+</span>
                                     {% elif 'palo' in device.vendor.lower() %}
@@ -514,7 +527,8 @@
                                     <span>N/A (Fiber)</span>
                                     {% elif 'vlanif' in p.port_id.lower() or 'stack' in p.port_id.lower() %}
                                     <span>N/A</span>
-                                    {% elif 'palo' in device.vendor.lower() or 'pa220' in device.name.lower() or 'pa-220' in device.name.lower() %}
+                                    {% elif 'palo' in device.vendor.lower() or 'pa220' in device.name.lower() or
+                                    'pa-220' in device.name.lower() %}
                                     <span>N/A (Non-PoE)</span>
                                     {% elif p.poe and p.status == 'UP' and p.poe.power_watts > 0 %}
                                     <span>{{ p.poe.power_watts }} W</span>
@@ -522,18 +536,25 @@
                                     <span>0 W</span>
                                     {% endif %}
                                 </td>
-                                <td><span>{{ "{:,}".format(p.errors_tx).replace(',', '.') }} / {{ "{:,}".format(p.errors_rx).replace(',', '.') }} / {{ "{:,}".format(p.drops_tx).replace(',', '.') }}</span></td>
+                                <td><span>{{ "{:,}".format(p.errors_tx).replace(',', '.') }} / {{
+                                        "{:,}".format(p.errors_rx).replace(',', '.') }} / {{
+                                        "{:,}".format(p.drops_tx).replace(',', '.') }}</span></td>
                             </tr>
                             {% else %}
                             <tr class="empty-state-row">
                                 <td colspan="9" style="text-align: center; padding: 40px 10px;">
-                                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;">
-                                        <svg style="width: 40px; height: 40px; stroke: #10b981; color: #10b981; fill: none; margin: 0 auto 8px auto; display: block;" viewBox="0 0 24 24" stroke-width="1.5">
+                                    <div
+                                        style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;">
+                                        <svg style="width: 40px; height: 40px; stroke: #10b981; color: #10b981; fill: none; margin: 0 auto 8px auto; display: block;"
+                                            viewBox="0 0 24 24" stroke-width="1.5">
                                             <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
                                             <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
                                         </svg>
-                                        <p style="font-size: 0.9rem; font-weight: 500; color: #94a3b8; margin: 0 0 4px 0;">No Interfaces Found</p>
-                                        <span style="font-size: 0.75rem; color: #64748b;">No network interface telemetry available for this device</span>
+                                        <p
+                                            style="font-size: 0.9rem; font-weight: 500; color: #94a3b8; margin: 0 0 4px 0;">
+                                            No Interfaces Found</p>
+                                        <span style="font-size: 0.75rem; color: #64748b;">No network interface telemetry
+                                            available for this device</span>
                                     </div>
                                 </td>
                             </tr>
@@ -566,7 +587,7 @@
     </script>
     <script src="/static/js/timeline_navigator.js?v=1.1"></script>
     <script src="/static/js/device_detail.js?v=20.0"></script>
-    <script src="/static/js/global_nav.js?v=4.3"></script>
+    <script src="/static/js/global_nav.js?v=4.9"></script>
 </body>
 
 </html>
