@@ -119,8 +119,8 @@
                 `;
             });
             html += `
-                <a class="search-view-all-cta" href="/?search=${encodeURIComponent(query)}#monitored-devices">
-                    <span>Lihat & Filter semua perangkat di Dashboard</span>
+                <a class="search-view-all-cta" href="/#monitored-devices">
+                    <span>Lihat semua perangkat di Dashboard</span>
                     <span class="cta-arrow">&rarr;</span>
                 </a>
             `;

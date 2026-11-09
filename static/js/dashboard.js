@@ -899,41 +899,8 @@ function setupTableFilters() {
         });
     });
 
-    const devSearchInput = document.getElementById('deviceTableSearch');
-    const devSearchClear = document.getElementById('deviceTableSearchClear');
-    if (devSearchInput) {
-        devSearchInput.addEventListener('input', (e) => {
-            currentDeviceSearch = e.target.value;
-            if (devSearchClear) {
-                devSearchClear.style.display = currentDeviceSearch ? 'block' : 'none';
-            }
-            applyTableFilters();
-        });
-    }
-    if (devSearchClear) {
-        devSearchClear.addEventListener('click', () => {
-            if (devSearchInput) {
-                devSearchInput.value = '';
-                devSearchInput.focus();
-            }
-            currentDeviceSearch = '';
-            devSearchClear.style.display = 'none';
-            applyTableFilters();
-        });
-    }
-
-    // Check URL query parameter (?search=...)
-    const urlParams = new URLSearchParams(window.location.search);
-    const searchParam = urlParams.get('search');
-    if (searchParam) {
-        currentDeviceSearch = searchParam;
-        if (devSearchInput) devSearchInput.value = searchParam;
-        if (devSearchClear) devSearchClear.style.display = 'block';
-        applyTableFilters();
-
-        if (window.location.hash === '#monitored-devices') {
-            scrollToDevicesTable();
-        }
+    if (window.location.hash === '#monitored-devices') {
+        scrollToDevicesTable();
     }
 }
 
