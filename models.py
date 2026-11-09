@@ -124,11 +124,11 @@ class IncidentLog(Base):
             m, s = divmod(self.duration_seconds, 60)
             h, m = divmod(m, 60)
             if h > 0:
-                duration_str = f"{h}j {m}m {s}d"
+                duration_str = f"{h}h {m}m {s}s"
             elif m > 0:
-                duration_str = f"{m}m {s}d"
+                duration_str = f"{m}m {s}s"
             else:
-                duration_str = f"{s} dtk"
+                duration_str = f"{s}s"
 
         return {
             "id": self.incident_id,

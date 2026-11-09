@@ -132,10 +132,10 @@ document.addEventListener('DOMContentLoaded', () => {
     initTimeRangeSelector();
     setupTableFilters();
 
-    // Pulihkan data tabel dan KPI dari cache jika belum terisi
+    // Restore table data and KPIs from cache if not yet populated
     restoreDashboardFromStorageIfEmpty();
 
-    // Bersihkan service worker agar browser tetap normal menampilkan layar koneksi terputus saat app.py mati
+    // Clear service worker so browser displays standard disconnected screen when app.py terminates
     cleanupServiceWorker();
 
     // Poll immediately on page load
@@ -151,13 +151,13 @@ document.addEventListener('DOMContentLoaded', () => {
 function initCharts() {
     let initData = window.INITIAL_CHART_DATA || { labels: [], cpu: [], mem: [], ingress: [], egress: [] };
 
-    // Validasi apakah data awal memiliki titik valid
+    // Validate whether initial data contains valid datapoints
     const hasValidInitialData = initData && initData.labels && initData.labels.length > 1;
 
     if (hasValidInitialData) {
         saveChartHistoryToStorage('live', initData);
     } else {
-        // Ambil data chart terakhir dari localStorage atau fallback
+        // Retrieve latest chart data from localStorage or fallback
         const cachedChart = loadChartHistoryFromStorage('live');
         if (cachedChart && cachedChart.labels && cachedChart.labels.length > 0) {
             initData = cachedChart;
@@ -226,7 +226,7 @@ function initCharts() {
         gradientOrange.addColorStop(0, 'rgba(249, 115, 22, 0.25)');
         gradientOrange.addColorStop(1, 'rgba(249, 115, 22, 0.0)');
 
-        // Hitung skala dinamis SEBELUM new Chart dibuat agar tidak terjadi glitch "sempet lewat / mentok di atas" saat refresh
+        // Calculate dynamic scale BEFORE creating new Chart to prevent visual glitches during refresh
         const allInitTrf = [...(initData.ingress || []), ...(initData.egress || [])];
         const maxInitTrf = allInitTrf.length > 0 ? Math.max(...allInitTrf) : 0;
         let initialTrfMax = 100;
@@ -267,7 +267,7 @@ function initCharts() {
         });
     }
 
-    // Terapkan data awal langsung dengan skala dinamis identik dengan device_detail.js
+    // Apply initial data immediately with dynamic scale identical to device_detail.js
     if (initData && (initData.labels || []).length > 0) {
         applyChartHistory(initData);
     }
@@ -337,7 +337,7 @@ function initTimeRangeSelector() {
             buttons.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
 
-            // Segera render dari cache agar transisi instan dan tidak blank jika offline
+            // Immediately render from cache for instant transitions without blanks when offline
             const cachedChart = loadChartHistoryFromStorage(range);
             if (cachedChart && cachedChart.labels && cachedChart.labels.length > 0) {
                 applyChartHistory(cachedChart);
@@ -355,7 +355,7 @@ function applyChartHistory(history) {
     const navCpuEl = document.getElementById('cpuMemTimelineNav');
     const navTrfEl = document.getElementById('trafficTimelineNav');
 
-    // Jika mode live: sembunyikan navigator, render seluruh data live
+    // If live mode: hide navigator, render all live data
     if (currentDashboardRange === 'live') {
         if (navCpuEl) navCpuEl.style.display = 'none';
         if (navTrfEl) navTrfEl.style.display = 'none';
@@ -373,7 +373,7 @@ function applyChartHistory(history) {
             onWindowChange: (startIdx, endIdx) => {
                 if (lastDashboardHistory) {
                     renderDashboardChartsSlice(lastDashboardHistory, startIdx, endIdx);
-                    // Sinkronisasi dengan slider traffic
+                    // Synchronize with traffic slider
                     if (trafficTimelineNav && !trafficTimelineNav.isDragging) {
                         trafficTimelineNav.updateWindowDOM(cpuMemTimelineNav.startFrac, cpuMemTimelineNav.endFrac);
                     }
@@ -391,7 +391,7 @@ function applyChartHistory(history) {
             onWindowChange: (startIdx, endIdx) => {
                 if (lastDashboardHistory) {
                     renderDashboardChartsSlice(lastDashboardHistory, startIdx, endIdx);
-                    // Sinkronisasi dengan slider CPU
+                    // Synchronize with CPU slider
                     if (cpuMemTimelineNav && !cpuMemTimelineNav.isDragging) {
                         cpuMemTimelineNav.updateWindowDOM(trafficTimelineNav.startFrac, trafficTimelineNav.endFrac);
                     }
@@ -431,7 +431,7 @@ function renderDashboardChartsSlice(history, startIdx, endIdx) {
     const dynamicPointRadius = visibleCount <= 45 ? 3 : (visibleCount <= 85 ? 1.5 : 0);
     const hoverPointRadius = dynamicPointRadius > 0 ? dynamicPointRadius + 3 : 5;
 
-    // 1. CPU & Memory Chart (Standar Baku 100%, Dinamis jika tembus > 100%)
+    // 1. CPU & Memory Chart (Default 100%, Dynamic if > 100%)
     if (cpuMemChart) {
         cpuMemChart.data.labels = labels;
         cpuMemChart.data.datasets[0].data = cpuVals;
@@ -455,7 +455,7 @@ function renderDashboardChartsSlice(history, startIdx, endIdx) {
         cpuMemChart.update('none');
     }
 
-    // 2. Network Interface Traffic Chart (Standar Baku 100 Mbps, Dinamis jika tembus > 100 Mbps)
+    // 2. Network Interface Traffic Chart (Default 100 Mbps, Dynamic if > 100 Mbps)
     if (trafficChart) {
         trafficChart.data.labels = labels;
         trafficChart.data.datasets[0].data = inVals;
@@ -500,7 +500,7 @@ async function pollRealtimeStatus() {
         saveDashboardDataToStorage(data);
         setTimeout(prefetchHistoricalRanges, 1500);
     } catch (error) {
-        // Server backend offline / down: terapkan data & grafik terakhir yang tersimpan
+        // Backend server offline/down: apply latest saved data & charts
         handleServerDisconnected(indicator, statusText);
     }
 }
@@ -524,7 +524,7 @@ function handleServerDisconnected(indicator, statusText) {
         statusText.textContent = 'POLLING STOPPED';
     }
 
-    // Ambil data dan grafik terakhir dari cache lokal
+    // Retrieve latest data and charts from local cache
     const cachedData = loadDashboardDataFromStorage();
     const cachedChart = loadChartHistoryFromStorage(currentDashboardRange);
 
@@ -606,7 +606,7 @@ function renderDeviceTable(devices) {
     const tbody = document.getElementById('deviceTableBody');
     if (!tbody) return;
 
-    // Kunci urutan permanen berdasarkan device_id (1, 2, 3) agar tidak pernah loncat
+    // Permanent sort order by device_id (1, 2, 3) to prevent row jumping
     devices.sort((a, b) => a.id - b.id);
 
     let html = '';
@@ -704,7 +704,10 @@ function renderAlertsStream(alerts) {
             <p class="alert-message">${escapeHtml(alert.message)}</p>
             <div class="alert-footer">
                 ${isAck ? `
-                    <span class="badge-ack-state text-success">✓ Acknowledged</span>
+                    <span class="badge-ack-state text-warning">
+                        <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" style="display:inline-block; vertical-align:middle; margin-right:3px;">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>Acknowledged</span>
                     <span class="text-muted-xs">${escapeHtml(alert.acknowledged_by || 'Confirmed')}</span>
                 ` : `
                     <span class="badge-ack-state text-warning">Pending ACK</span>
@@ -716,8 +719,8 @@ function renderAlertsStream(alerts) {
 }
 
 /* --------------------------------------------------------------------------
-   SOP PT AGIVA: Acknowledge (ACK) Alert via Web dinonaktifkan secara ketat.
-   Acknowledge HANYA boleh dilakukan oleh petugas melalui Telegram Bot: /ack <alert_id>
+   SOP PT AGIVA: Alert Acknowledge (ACK) via Web is strictly disabled.
+   Acknowledge must ONLY be performed by authorized engineers via Telegram Bot: /ack <alert_id>
    -------------------------------------------------------------------------- */
 
 /* --------------------------------------------------------------------------
@@ -767,7 +770,7 @@ function updateSearchDropdown(query) {
             const vendorClass = (dev.vendor || '').toLowerCase().replace(/\s+/g, '-');
             const vendorInitial = (dev.vendor || 'D')[0].toUpperCase();
 
-            // Status UP atau DOWN dihilangkan pada search bar dropdown
+            // UP or DOWN status omitted in search bar dropdown
             itemsHtml += `
             <li class="search-dropdown-item" onclick="window.location.href='/device/${dev.id}'">
                 <div class="search-item-info">
@@ -878,23 +881,8 @@ function setupTableFilters() {
 
 
 /* --------------------------------------------------------------------------
-   Toast Notifications
+   Toast Notifications (Disabled in favor of Inline Button Feedback)
    -------------------------------------------------------------------------- */
 function showToast(message, type = 'success') {
-    const container = document.getElementById('toastContainer');
-    if (!container) return;
-
-    const toast = document.createElement('div');
-    toast.className = 'toast';
-    toast.style.borderLeft = type === 'error' ? '4px solid #ef4444' : '4px solid #10b981';
-    toast.innerHTML = `
-        <span>${type === 'error' ? '❌' : '✅'}</span>
-        <span>${message}</span>
-    `;
-
-    container.appendChild(toast);
-    setTimeout(() => {
-        toast.style.opacity = '0';
-        setTimeout(() => toast.remove(), 300);
-    }, 3500);
+    // Disabled in favor of Inline Button Feedback
 }

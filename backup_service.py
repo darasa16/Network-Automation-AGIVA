@@ -602,7 +602,7 @@ def cleanup_old_backup_history(retention_days: int = None) -> dict:
 
             # Pengecekan Safety Net: Lindungi salinan konfigurasi terakhir per perangkat
             if cat_lower == "config" and b.backup_id in latest_config_backup_ids:
-                dev_name = b.device.name if b.device else f"Perangkat #{b.device_id}"
+                dev_name = b.device.name if b.device else f"Device #{b.device_id}"
                 logger.info(
                     f"[Housekeeping] Safety Net Aktif: Melewati penghapusan backup Config ID {b.backup_id} ({dev_name}) "
                     f"karena merupakan salinan konfigurasi terakhir untuk Disaster Recovery."

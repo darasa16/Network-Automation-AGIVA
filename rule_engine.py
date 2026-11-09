@@ -48,8 +48,8 @@ def send_telegram_broadcast(message_text, parse_mode='HTML'):
     tg_chat_id = os.getenv('NOC_TELEGRAM_CHAT_ID', '-1004429503436')
 
     if not tg_token or tg_token.startswith('123456'):
-        logger.warning("Token Telegram belum diset di .env atau masih default.")
-        return False, 'Token Telegram belum diset di .env'
+        logger.warning("Telegram bot token is not configured in .env or is still default.")
+        return False, 'Telegram token is not configured in .env'
 
     url = f'https://api.telegram.org/bot{tg_token}/sendMessage'
     payload = {
@@ -70,11 +70,11 @@ def send_telegram_broadcast(message_text, parse_mode='HTML'):
                 if resp.status == 200:
                     return True, 'SENT'
         except Exception as e:
-            logger.warning(f"Percobaan {attempt}/{max_retries} kirim pesan Telegram gagal: {e}")
+            logger.warning(f"Telegram dispatch attempt {attempt}/{max_retries} failed: {e}")
             if attempt < max_retries:
                 time.sleep(1.0)
             else:
-                logger.error(f"Gagal mengirim pesan Telegram setelah {max_retries}x percobaan: {e}")
+                logger.error(f"Failed to send Telegram message after {max_retries} attempts: {e}")
                 return False, f'FAILED: {str(e)[:90]}'
 
     return False, 'FAILED: Max retries exceeded'
@@ -171,7 +171,7 @@ def trigger_alert_with_antispam(session, device, alert_type, severity, message, 
             f"<b>{severity} ALERT</b>\n\n"
             f"Alert ID: #{alert_id}\n"
             f"Device: {device.name} ({device.ip_address})\n"
-            f"Vendor: {device.vendor} ({device.site})\n"
+            f"Vendor: {device.vendor} ({device.site})\n"             
             f"Anomaly Type: {alert_type}\n"
             f"Issue Detail: {message}\n"
             f"Incident Duration: Active for {dur_mins} mins (since {active_incident.started_at.strftime('%H:%M:%S')} WIB)\n"
@@ -193,12 +193,12 @@ def trigger_alert_with_antispam(session, device, alert_type, severity, message, 
         session.add(log_entry)
         session.commit()
 
-        logger.warning(f"[RuleEngine] ESKALASI ALERT #{alert_id}: {device.name} - {alert_type} telah berlangsung {dur_mins} menit.")
-        return True, active_incident, "Anomali bertahan ≥ 10 menit, dieskalasi ke Alert Aktif."
+        logger.warning(f"[RuleEngine] ALERT ESCALATION #{alert_id}: {device.name} - {alert_type} active for {dur_mins} mins.")
+        return True, active_incident, "Anomaly persisted ≥ 10 minutes, escalated to Active Alert."
 
-    # Spam tertahan selama periode cooldown atau jika sudah dieskalasi
+    # Spam suppressed during cooldown period or if already escalated
     session.commit()
-    return False, active_incident, "Dalam pemantauan aktif / cooldown."
+    return False, active_incident, "Under active monitoring / cooldown."
 
 
 def auto_resolve_alert(session, device, alert_type, recovery_message=None):
@@ -269,8 +269,8 @@ def auto_resolve_alert(session, device, alert_type, recovery_message=None):
     # mengetik /resolve <alert_id> di Telegram Bot atau klik tombol Resolve di Web Dashboard.
     alert_ref = f"#{active_alert.alert_id}" if active_alert else (f"#INC-{active_incident.incident_id}" if active_incident else "-")
     logger.info(
-        f"[RuleEngine] Metrik {device.name} - {alert_type} telah normal kembali, "
-        f"tetapi Alert {alert_ref} tetap OPEN di antrean Active Alerts menunggu /resolve manual petugas via Telegram atau Web."
+        f"[RuleEngine] Metrics for {device.name} - {alert_type} returned to normal, "
+        f"but Alert {alert_ref} remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web."
     )
     return False, None
 

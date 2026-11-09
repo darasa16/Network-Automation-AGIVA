@@ -57,7 +57,7 @@
             display: block !important;
         }
 
-        /* Label Sub-Site Perangkat (Diselaraskan dengan .neighbor-desc: 11px, var(--text-muted)) */
+        /* Device Sub-Site Label (Aligned with .neighbor-desc: 11px, var(--text-muted)) */
         #backupsTable .device-site-sub {
             font-size: 11px !important;
             color: var(--text-muted) !important;
@@ -65,7 +65,7 @@
             display: inline-block;
         }
 
-        /* Kecualikan badge kategori, status, dan tombol aksi */
+        /* Exclude category badge, status, and action buttons */
         #backupsTable .badge-category-orange,
         #backupsTable .badge-category-orange * {
             font-size: 11px !important;
@@ -96,7 +96,7 @@
             color: var(--color-red) !important;
         }
 
-        /* Hilangkan titik bulat pada badge status */
+        /* Remove dot circle on status badge */
         #backupsTable .badge-dot-green,
         #backupsTable .badge-dot-red {
             display: none !important;
@@ -150,7 +150,7 @@
             text-transform: uppercase;
         }
 
-        /* Category Filter Buttons - Diselaraskan dengan Desain Filter Tab/Badge AGIVA */
+        /* Category Filter Buttons - Aligned with AGIVA Filter Tab/Badge Design */
         .category-filters-container {
             display: flex;
             align-items: center;
@@ -320,12 +320,10 @@
             box-shadow: 0 4px 12px rgba(232, 165, 118, 0.45) !important;
         }
         .toast-container {
-            z-index: 100000 !important;
+            display: none !important;
         }
 
         #btnCopyModal.btn-copied {
-            background: linear-gradient(135deg, #10b981, #059669) !important;
-            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.45) !important;
             color: #ffffff !important;
             transform: translateY(-1px) !important;
         }
@@ -876,20 +874,20 @@
 
             let btnHtml = '';
 
-            // Tombol Prev (‹ Prev)
+            // Prev Button (‹ Prev)
             btnHtml += `<button type="button" class="pagination-nav-btn ${currentBackupPage === 1 ? 'disabled' : ''}" 
                          onclick="gotoBackupPage(${currentBackupPage - 1})" ${currentBackupPage === 1 ? 'disabled' : ''}>
                          <span>&#8249;</span> <span>Prev</span>
                         </button>`;
 
-            // Penomoran Halaman dengan format cerdas (1 ... 9 [10] 11 ... 20)
+            // Smart pagination formatting (1 ... 9 [10] 11 ... 20)
             if (totalPages <= 7) {
                 for (let p = 1; p <= totalPages; p++) {
                     btnHtml += `<button type="button" class="pagination-num-btn ${p === currentBackupPage ? 'active' : ''}" 
                                  onclick="gotoBackupPage(${p})">${p}</button>`;
                 }
             } else {
-                // Selalu tampilkan halaman 1
+                // Always display page 1
                 btnHtml += `<button type="button" class="pagination-num-btn ${currentBackupPage === 1 ? 'active' : ''}" 
                              onclick="gotoBackupPage(1)">1</button>`;
 
@@ -917,12 +915,12 @@
                     btnHtml += `<span class="pagination-dots">...</span>`;
                 }
 
-                // Selalu tampilkan halaman terakhir
+                // Always display last page
                 btnHtml += `<button type="button" class="pagination-num-btn ${currentBackupPage === totalPages ? 'active' : ''}" 
                              onclick="gotoBackupPage(${totalPages})">${totalPages}</button>`;
             }
 
-            // Tombol Next (Next ›)
+            // Next Button (Next ›)
             btnHtml += `<button type="button" class="pagination-nav-btn ${currentBackupPage === totalPages ? 'disabled' : ''}" 
                          onclick="gotoBackupPage(${currentBackupPage + 1})" ${currentBackupPage === totalPages ? 'disabled' : ''}>
                          <span>Next</span> <span>&#8250;</span>
@@ -1054,6 +1052,7 @@
         }
 
         function fallbackCopy(text, onSuccess) {
+            const targetBtn = document.getElementById('btnCopyModal');
             try {
                 const textArea = document.createElement("textarea");
                 textArea.value = text;
@@ -1066,10 +1065,27 @@
                 const successful = document.execCommand('copy');
                 document.body.removeChild(textArea);
                 if (successful && onSuccess) onSuccess();
-                else showToast('Failed to copy text.', true);
+                else triggerCopyFailed(targetBtn);
             } catch (err) {
-                showToast('Failed to copy text.', true);
+                triggerCopyFailed(targetBtn);
             }
+        }
+
+        function triggerCopyFailed(targetBtn) {
+            if (!targetBtn) return;
+            const originalHtml = targetBtn.innerHTML;
+            targetBtn.classList.add('btn-state-error');
+            targetBtn.innerHTML = `
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:6px;">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+                <span>Failed to copy</span>
+            `;
+            setTimeout(() => {
+                targetBtn.classList.remove('btn-state-error');
+                targetBtn.innerHTML = originalHtml;
+            }, 2000);
         }
 
         // Close on ESC key or backdrop click
@@ -1082,20 +1098,7 @@
         });
 
         function showToast(message, isError = false) {
-            const container = document.getElementById('toastContainer');
-            if (!container) return;
-            const toast = document.createElement('div');
-            toast.className = 'toast';
-            toast.style.borderLeft = isError ? '4px solid #ef4444' : '4px solid #10b981';
-            const icon = isError ? '⚠️' : '✅';
-            toast.innerHTML = `<span style="font-size:15px;">${icon}</span><span style="font-weight:500;">${message}</span>`;
-            container.appendChild(toast);
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                toast.style.transform = 'translateX(100%)';
-                toast.style.transition = 'all 0.3s ease-out';
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
+            // Disabled in favor of Inline Button Feedback
         }
 
     </script>

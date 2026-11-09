@@ -9,8 +9,9 @@
     <div class="page-header-row">
         <div>
             <h2>Telegram Bot Integration & Notification</h2>
-            <p class="sub-text">Telegram Bot integration panel for network incident escalation, technician authorization controls, and dispatch audit logs
-</p>
+            <p class="sub-text">Telegram Bot integration panel for network incident escalation, technician authorization
+                controls, and dispatch audit logs
+            </p>
         </div>
         <div class="header-tools">
             <button class="btn-action btn-send-test" onclick="sendTestTelegramAlert()">
@@ -106,8 +107,7 @@
                 <div class="panel-header">
                     <div>
                         <h3 class="panel-title">Network Engineer Whitelist</h3>
-                        <span class="panel-sub">Daftar akun Telegram resmi yang memiliki keseluruhan akses command
-                            bot</span>
+                        <span class="panel-sub">Official Telegram accounts authorized with full administrative and operational command access</span>
                     </div>
                 </div>
                 <div class="table-responsive">
@@ -122,7 +122,7 @@
                             </tr>
                         </thead>
                         <tbody id="tgWhitelistBody">
-                            <!-- Dimuat dinamis via JavaScript dengan Paginasi -->
+                            <!-- Loaded dynamically via JavaScript with pagination -->
                         </tbody>
                     </table>
                 </div>
@@ -161,13 +161,18 @@
                             {% else %}
                             <tr class="empty-state-row">
                                 <td colspan="3" style="text-align: center; padding: 40px 10px;">
-                                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;">
-                                        <svg style="width: 40px; height: 40px; stroke: #10b981; color: #10b981; fill: none; margin: 0 auto 8px auto; display: block;" viewBox="0 0 24 24" stroke-width="1.5">
+                                    <div
+                                        style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;">
+                                        <svg style="width: 40px; height: 40px; stroke: #10b981; color: #10b981; fill: none; margin: 0 auto 8px auto; display: block;"
+                                            viewBox="0 0 24 24" stroke-width="1.5">
                                             <polyline points="4 17 10 11 4 5"></polyline>
                                             <line x1="12" y1="19" x2="20" y2="19"></line>
                                         </svg>
-                                        <p style="font-size: 0.9rem; font-weight: 500; color: #94a3b8; margin: 0 0 4px 0;">No Commands Available</p>
-                                        <span style="font-size: 0.75rem; color: #64748b;">No interactive bot automation commands registered</span>
+                                        <p
+                                            style="font-size: 0.9rem; font-weight: 500; color: #94a3b8; margin: 0 0 4px 0;">
+                                            No Commands Available</p>
+                                        <span style="font-size: 0.75rem; color: #64748b;">No interactive bot automation
+                                            commands registered</span>
                                     </div>
                                 </td>
                             </tr>
@@ -184,7 +189,7 @@
                 <div>
                     <h3 class="panel-title">Telegram Message & Notification Dispatch History</h3>
                     <span class="panel-sub">30-day audit log of anomaly alerts and command responses
-</span>
+                    </span>
                 </div>
                 <button class="btn-refresh" onclick="refreshTelegram(this)">
                     <svg class="refresh-icon" viewBox="0 0 24 24" width="14" height="14" fill="none"
@@ -207,7 +212,7 @@
                         </tr>
                     </thead>
                     <tbody id="tgLogsBody">
-                        <!-- Dimuat otomatis via JavaScript dengan Paginasi 20 baris/halaman -->
+                        <!-- Loaded automatically via JavaScript with 20 rows/page pagination -->
                     </tbody>
                 </table>
             </div>
@@ -247,7 +252,7 @@
             flex-shrink: 0;
         }
 
-        /* Khusus Pagination Whitelist di Dual-Panel agar rapi satu baris & tidak pecah */
+        /* Whitelist Pagination styling in Dual-Panel layout */
         #tgWhitelistPaginationContainer {
             padding: 12px 16px;
             gap: 10px;
@@ -348,7 +353,7 @@
             color: #94a3b8;
         }
 
-        /* Kolom Perintah tanpa kotak badge */
+        /* Command column without badge box */
         #tgCommandsTable td:first-child code {
             background: transparent !important;
             border: none !important;
@@ -361,7 +366,7 @@
             color: #ffffff !important;
         }
 
-        /* Standarisasi Font Inter (Sans-serif) untuk Kolom Tabel Riwayat Telegram */
+        /* Standardize Inter (Sans-serif) font for Telegram history table columns */
         #tgLogsTable,
         #tgLogsTable th,
         #tgLogsTable td,
@@ -375,7 +380,9 @@
         #tgLogsTable code {
             font-size: 13px;
             font-weight: 500;
-            background: transparent !important; border: none !important; box-shadow: none !important;
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
             padding: 0 !important;
             border-radius: 0 !important;
             color: #e2e8f0;
@@ -532,20 +539,20 @@
 
             let btnHtml = '';
 
-            // Tombol Prev (‹ Prev)
+            // Prev Button (‹ Prev)
             btnHtml += `<button class="pagination-nav-btn ${currentWhitelistPage === 1 ? 'disabled' : ''}" 
                          onclick="gotoWhitelistPage(${currentWhitelistPage - 1})" ${currentWhitelistPage === 1 ? 'disabled' : ''}>
                          <span>&#8249;</span> <span>Prev</span>
                         </button>`;
 
-            // Penomoran Halaman dengan format cerdas (1 ... 9 [10] 11 ... 20)
+            // Smart pagination formatting (1 ... 9 [10] 11 ... 20)
             if (totalPages <= 7) {
                 for (let p = 1; p <= totalPages; p++) {
                     btnHtml += `<button class="pagination-num-btn ${p === currentWhitelistPage ? 'active' : ''}" 
                                  onclick="gotoWhitelistPage(${p})">${p}</button>`;
                 }
             } else {
-                // Selalu tampilkan halaman 1
+                // Always display page 1
                 btnHtml += `<button class="pagination-num-btn ${currentWhitelistPage === 1 ? 'active' : ''}" 
                              onclick="gotoWhitelistPage(1)">1</button>`;
 
@@ -573,12 +580,12 @@
                     btnHtml += `<span class="pagination-dots">...</span>`;
                 }
 
-                // Selalu tampilkan halaman terakhir
+                // Always display last page
                 btnHtml += `<button class="pagination-num-btn ${currentWhitelistPage === totalPages ? 'active' : ''}" 
                              onclick="gotoWhitelistPage(${totalPages})">${totalPages}</button>`;
             }
 
-            // Tombol Next (Next ›)
+            // Next Button (Next ›)
             btnHtml += `<button class="pagination-nav-btn ${currentWhitelistPage === totalPages ? 'disabled' : ''}" 
                          onclick="gotoWhitelistPage(${currentWhitelistPage + 1})" ${currentWhitelistPage === totalPages ? 'disabled' : ''}>
                          <span>Next</span> <span>&#8250;</span>
@@ -719,20 +726,20 @@
 
             let btnHtml = '';
 
-            // Tombol Prev (‹ Prev)
+            // Prev Button (‹ Prev)
             btnHtml += `<button class="pagination-nav-btn ${currentLogPage === 1 ? 'disabled' : ''}" 
                          onclick="gotoLogPage(${currentLogPage - 1})" ${currentLogPage === 1 ? 'disabled' : ''}>
                          <span>&#8249;</span> <span>Prev</span>
                         </button>`;
 
-            // Penomoran Halaman dengan format cerdas (1 ... 9 [10] 11 ... 20)
+            // Smart pagination formatting (1 ... 9 [10] 11 ... 20)
             if (totalPages <= 7) {
                 for (let p = 1; p <= totalPages; p++) {
                     btnHtml += `<button class="pagination-num-btn ${p === currentLogPage ? 'active' : ''}" 
                                  onclick="gotoLogPage(${p})">${p}</button>`;
                 }
             } else {
-                // Selalu tampilkan halaman 1
+                // Always display page 1
                 btnHtml += `<button class="pagination-num-btn ${currentLogPage === 1 ? 'active' : ''}" 
                              onclick="gotoLogPage(1)">1</button>`;
 
@@ -760,12 +767,12 @@
                     btnHtml += `<span class="pagination-dots">...</span>`;
                 }
 
-                // Selalu tampilkan halaman terakhir
+                // Always display last page
                 btnHtml += `<button class="pagination-num-btn ${currentLogPage === totalPages ? 'active' : ''}" 
                              onclick="gotoLogPage(${totalPages})">${totalPages}</button>`;
             }
 
-            // Tombol Next (Next ›)
+            // Next Button (Next ›)
             btnHtml += `<button class="pagination-nav-btn ${currentLogPage === totalPages ? 'disabled' : ''}" 
                          onclick="gotoLogPage(${currentLogPage + 1})" ${currentLogPage === totalPages ? 'disabled' : ''}>
                          <span>Next</span> <span>&#8250;</span>
@@ -787,52 +794,71 @@
         window.gotoLogPage = gotoLogPage;
 
         function showToast(message, type = 'success') {
-            const container = document.getElementById('toastContainer');
-            if (!container) {
-                alert(message);
-                return;
-            }
-            const toast = document.createElement('div');
-            toast.className = `toast toast-${type}`;
-            toast.style.cssText = 'background: #18142c; border: 1px solid #3d346b; color: #f8fafc; padding: 12px 18px; border-radius: 8px; margin-top: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); font-size: 13px; display: flex; align-items: center; gap: 8px; animation: slideIn 0.3s ease;';
-            toast.innerHTML = `<span>${type === 'success' ? '✅' : '⚠️'}</span><span>${message}</span>`;
-            container.appendChild(toast);
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                toast.style.transition = 'opacity 0.4s ease';
-                setTimeout(() => toast.remove(), 400);
-            }, 4000);
+            // Disabled in favor of Inline Button Feedback
         }
 
         async function sendTestTelegramAlert() {
-            try {
-                const btn = document.querySelector('.btn-send-test');
-                btn.disabled = true;
-                btn.innerHTML = 'Sending...';
+            const btn = document.querySelector('.btn-send-test');
+            if (!btn) return;
+            const originalHtml = `
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px;">
+                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+                Test Telegram Connectivity
+            `;
 
+            btn.disabled = true;
+            btn.classList.remove('btn-state-success', 'btn-state-error', 'btn-state-warning');
+            btn.classList.add('btn-state-loading');
+            btn.innerHTML = `
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:6px; animation: spin 0.8s linear infinite;">
+                    <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+                </svg>
+                <span>Sending...</span>
+            `;
+
+            try {
                 const res = await fetch('/api/telegram/test-alert', { method: 'POST' });
                 const data = await res.json();
 
+                btn.classList.remove('btn-state-loading');
+
                 if (data.success) {
-                    showToast(data.message || 'Test connectivity message sent to Telegram successfully!', 'success');
-                    setTimeout(() => fetchTelegramLogs(), 800);
+                    btn.classList.add('btn-state-success');
+                    btn.innerHTML = `
+                        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:6px;">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <span>Sent Successfully</span>
+                    `;
+                    setTimeout(() => fetchTelegramLogs(), 500);
                 } else {
-                    showToast(data.message || 'Failed to send alert', 'error');
+                    btn.classList.add('btn-state-error');
+                    btn.innerHTML = `
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:6px;">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                        <span>Failed to Send</span>
+                    `;
                 }
             } catch (err) {
-                showToast('Connection error while sending alert', 'error');
-            } finally {
-                const btn = document.querySelector('.btn-send-test');
-                if (btn) {
-                    btn.disabled = false;
-                    btn.innerHTML = `
-                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px;">
-                        <line x1="22" y1="2" x2="11" y2="13"></line>
-                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                btn.classList.remove('btn-state-loading');
+                btn.classList.add('btn-state-error');
+                btn.innerHTML = `
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:6px;">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
                     </svg>
-                    Test Telegram Connectivity
+                    <span>Connection Error</span>
                 `;
-                }
+            } finally {
+                setTimeout(() => {
+                    btn.classList.remove('btn-state-loading', 'btn-state-success', 'btn-state-error', 'btn-state-warning');
+                    btn.disabled = false;
+                    btn.innerHTML = originalHtml;
+                }, 2500);
             }
         }
 
@@ -882,7 +908,7 @@
             }
         }
 
-        // Jalankan render tabel pertama kali saat DOM selesai dimuat
+        // Initial table render once DOM is fully loaded
         document.addEventListener('DOMContentLoaded', () => {
             checkTargetWhitelistPage();
             renderWhitelistTable();
@@ -890,7 +916,7 @@
             renderLogsTable();
         });
 
-        // Re-render jika hash berubah ke log atau whitelist di halaman berbeda
+        // Re-render if hash changes to log or whitelist on different page
         window.addEventListener('hashchange', () => {
             checkTargetWhitelistPage();
             renderWhitelistTable();
@@ -898,7 +924,7 @@
             renderLogsTable();
         });
 
-        // Auto-refresh telegram logs setiap 5 detik
+        // Auto-refresh telegram logs every 5 seconds
         setInterval(fetchTelegramLogs, 5000);
     </script>
     {% endblock %}

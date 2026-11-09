@@ -22,7 +22,7 @@
             gap: 24px;
         }
 
-        /* Standardisasi 100% Font Inter untuk SELURUH elemen kedua tabel */
+        /* Standardize 100% Inter Font for ALL elements across both tables */
         #alertsTable,
         #incidentsTable,
         #alertsTable *,
@@ -233,7 +233,7 @@
         <div class="alerts-page-container">
 
             <!-- ========================================================= -->
-            <!-- 1. ACTIVE & SUSTAINED ALERTS TABLE (>= 10 MENIT)          -->
+            <!-- 1. ACTIVE & SUSTAINED ALERTS TABLE (>= 10 MINUTES)        -->
             <!-- ========================================================= -->
             <div class="page-header-row">
                 <div>
@@ -289,7 +289,7 @@
             </div>
 
             <!-- ========================================================= -->
-            <!-- 2. INCIDENT HISTORY & COOLDOWN LOG TABLE (RETENSI 30 HARI)-->
+            <!-- 2. INCIDENT HISTORY & COOLDOWN LOG TABLE (30-DAY RETENTION)-->
             <!-- ========================================================= -->
             <div class="section-separator">
                 <div class="page-header-row">
@@ -307,7 +307,7 @@
                     <button class="filter-tab" data-inc-filter="resolved">Resolved Alerts ({{ resolved_incidents }})</button>
                 </div>
 
-                <!-- Incidents Table Panel (Tanpa Kolom Message sesuai request) -->
+                <!-- Incidents Table Panel (Without Message column as requested) -->
                 <div class="table-panel">
                     <div class="table-responsive">
                         <table class="data-table" id="incidentsTable">
@@ -508,13 +508,13 @@
 
             let btnHtml = '';
 
-            // Tombol Prev (‹ Prev)
+            // Prev Button (‹ Prev)
             btnHtml += `<button type="button" class="pagination-nav-btn ${currentAlertsPage === 1 ? 'disabled' : ''}" 
                          onclick="gotoAlertPage(${currentAlertsPage - 1})" ${currentAlertsPage === 1 ? 'disabled' : ''}>
                          <span>&#8249;</span> <span>Prev</span>
                         </button>`;
 
-            // Penomoran Halaman dengan format cerdas (1 ... 9 [10] 11 ... 20)
+            // Smart pagination formatting (1 ... 9 [10] 11 ... 20)
             if (totalPages <= 7) {
                 for (let p = 1; p <= totalPages; p++) {
                     btnHtml += `<button type="button" class="pagination-num-btn ${p === currentAlertsPage ? 'active' : ''}" 
@@ -552,7 +552,7 @@
                              onclick="gotoAlertPage(${totalPages})">${totalPages}</button>`;
             }
 
-            // Tombol Next (Next ›)
+            // Next Button (Next ›)
             btnHtml += `<button type="button" class="pagination-nav-btn ${currentAlertsPage === totalPages ? 'disabled' : ''}" 
                          onclick="gotoAlertPage(${currentAlertsPage + 1})" ${currentAlertsPage === totalPages ? 'disabled' : ''}>
                          <span>Next</span> <span>&#8250;</span>
@@ -729,13 +729,13 @@
 
             let btnHtml = '';
 
-            // Tombol Prev (‹ Prev)
+            // Prev Button (‹ Prev)
             btnHtml += `<button type="button" class="pagination-nav-btn ${currentIncidentsPage === 1 ? 'disabled' : ''}" 
                          onclick="gotoIncidentPage(${currentIncidentsPage - 1})" ${currentIncidentsPage === 1 ? 'disabled' : ''}>
                          <span>&#8249;</span> <span>Prev</span>
                         </button>`;
 
-            // Penomoran Halaman dengan format cerdas (1 ... 9 [10] 11 ... 20)
+            // Smart pagination formatting (1 ... 9 [10] 11 ... 20)
             if (totalPages <= 7) {
                 for (let p = 1; p <= totalPages; p++) {
                     btnHtml += `<button type="button" class="pagination-num-btn ${p === currentIncidentsPage ? 'active' : ''}" 
@@ -773,7 +773,7 @@
                              onclick="gotoIncidentPage(${totalPages})">${totalPages}</button>`;
             }
 
-            // Tombol Next (Next ›)
+            // Next Button (Next ›)
             btnHtml += `<button type="button" class="pagination-nav-btn ${currentIncidentsPage === totalPages ? 'disabled' : ''}" 
                          onclick="gotoIncidentPage(${currentIncidentsPage + 1})" ${currentIncidentsPage === totalPages ? 'disabled' : ''}>
                          <span>Next</span> <span>&#8250;</span>
@@ -858,14 +858,7 @@
         }
 
         function showToast(message, isError = false) {
-            const container = document.getElementById('toastContainer');
-            if (!container) return;
-            const toast = document.createElement('div');
-            toast.className = 'toast';
-            toast.style.borderLeft = isError ? '4px solid #ef4444' : '4px solid #10b981';
-            toast.innerHTML = `<span>${isError ? '⚠️' : '✅'}</span><span>${message}</span>`;
-            container.appendChild(toast);
-            setTimeout(() => toast.remove(), 3500);
+            // Disabled in favor of Inline Button Feedback
         }
     </script>
     <script id="nav-devices-data" type="application/json">{{ nav_devices | tojson }}</script>

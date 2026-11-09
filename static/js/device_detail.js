@@ -3,7 +3,7 @@
  * Real-time metric polling, manual refresh interaction, and 8-card live charts.
  */
 
-// 6 Main Chart & Visual instances (Model 1: 3 baris x 2 panel)
+// 6 Main Chart & Visual instances (Model 1: 3 rows x 2 panels)
 let chartCpuMem = null;
 let chartTraffic = null;
 let chartBuffers = null;
@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initPortControls();
     initTimeRangeSelector();
 
-    // Pulihkan dari cache jika ada agar instan dan tidak kosong saat app.py mati
+    // Restore from cache if available for instant display when app.py terminates
     const devId = typeof CURRENT_DEVICE_ID !== 'undefined' ? CURRENT_DEVICE_ID : 1;
     const cached = loadDeviceMetricsFromStorage(devId, currentDeviceRange);
     if (cached) {
@@ -162,9 +162,9 @@ function updatePortsTableRows(ports) {
             let poeText = '0 W';
             const pidLower = (p.port_id || '').toString().toLowerCase();
             const isPalo = (typeof CURRENT_DEVICE_ID !== 'undefined' && CURRENT_DEVICE_ID === 3) ||
-                           (document.title && document.title.toLowerCase().includes('pa-220')) ||
-                           (document.getElementById('deviceTitle') && document.getElementById('deviceTitle').textContent.toLowerCase().includes('pa-220')) ||
-                           (lastDeviceRawData && lastDeviceRawData.specs && lastDeviceRawData.specs.model && lastDeviceRawData.specs.model.toLowerCase().includes('palo'));
+                (document.title && document.title.toLowerCase().includes('pa-220')) ||
+                (document.getElementById('deviceTitle') && document.getElementById('deviceTitle').textContent.toLowerCase().includes('pa-220')) ||
+                (lastDeviceRawData && lastDeviceRawData.specs && lastDeviceRawData.specs.model && lastDeviceRawData.specs.model.toLowerCase().includes('palo'));
 
             if (isPalo) {
                 poeText = 'N/A (Non-PoE)';
@@ -285,7 +285,7 @@ function applyDeviceDataToUI(data) {
         if (dnsModeEl && data.specs.dns_mode) dnsModeEl.textContent = data.specs.dns_mode;
     }
 
-    // Sinkronisasi Tabel Port dengan Siklus Log 2 Menit Terbaru
+    // Synchronize Port Table with Latest 2-Minute Log Cycle
     if (data.ports && Array.isArray(data.ports)) {
         updatePortsTableRows(data.ports);
     }
@@ -310,24 +310,7 @@ function updateConnectionStatus(isOnline) {
 }
 
 function showToast(message, type = 'success') {
-    const container = document.getElementById('toastContainer');
-    if (!container) return;
-
-    const toast = document.createElement('div');
-    toast.className = `toast toast-${type}`;
-    const icon = type === 'success' ? '✅' : '⚠️';
-    toast.innerHTML = `
-        <span style="font-size: 16px;">${icon}</span>
-        <div class="toast-content" style="flex:1;">
-            <div class="toast-title">${type === 'success' ? 'Success' : 'Warning'}</div>
-            <div class="toast-message">${message}</div>
-        </div>
-        <button class="toast-close" onclick="this.parentElement.remove()">&times;</button>
-    `;
-    container.appendChild(toast);
-    setTimeout(() => {
-        if (toast.parentElement) toast.remove();
-    }, 3000);
+    // Disabled in favor of Inline Button Feedback
 }
 
 async function fetchDeviceMetrics(isManual = false) {
@@ -341,6 +324,8 @@ async function fetchDeviceMetrics(isManual = false) {
 
     if (isManual && btn) {
         btn.disabled = true;
+        btn.classList.remove('btn-state-success', 'btn-state-error', 'btn-state-warning');
+        btn.classList.add('btn-state-loading');
         btn.innerHTML = `
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" style="display:inline-block; vertical-align:middle; margin-right:4px; animation: spin 0.8s linear infinite;">
                 <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
@@ -359,9 +344,14 @@ async function fetchDeviceMetrics(isManual = false) {
                 applyDeviceDataToUI(cached);
             }
             if (isManual && btn) {
-                btn.disabled = false;
-                btn.innerHTML = originalBtnHtml;
-                showToast('Backend offline. Displaying latest snapshot data.', 'warning');
+                btn.classList.remove('btn-state-loading');
+                btn.classList.add('btn-state-warning');
+                btn.innerHTML = `<span>Offline</span>`;
+                setTimeout(() => {
+                    btn.classList.remove('btn-state-warning');
+                    btn.disabled = false;
+                    btn.innerHTML = originalBtnHtml;
+                }, 2200);
             }
             return;
         }
@@ -372,6 +362,8 @@ async function fetchDeviceMetrics(isManual = false) {
         applyDeviceDataToUI(data);
 
         if (isManual && btn) {
+            btn.classList.remove('btn-state-loading');
+            btn.classList.add('btn-state-success');
             btn.innerHTML = `
                 <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#ffffff" stroke-width="2.5" style="display:inline-block; vertical-align:middle; margin-right:4px;">
                     <polyline points="20 6 9 17 4 12"></polyline>
@@ -379,9 +371,10 @@ async function fetchDeviceMetrics(isManual = false) {
                 <span style="color: #ffffff;">Updated</span>
             `;
             setTimeout(() => {
+                btn.classList.remove('btn-state-success');
                 btn.disabled = false;
                 btn.innerHTML = originalBtnHtml;
-            }, 1000);
+            }, 1200);
         }
     } catch (err) {
         updateConnectionStatus(false);
@@ -390,9 +383,14 @@ async function fetchDeviceMetrics(isManual = false) {
             applyDeviceDataToUI(cached);
         }
         if (isManual && btn) {
-            btn.disabled = false;
-            btn.innerHTML = originalBtnHtml;
-            showToast('Backend server offline. Displaying latest snapshot data.', 'warning');
+            btn.classList.remove('btn-state-loading');
+            btn.classList.add('btn-state-warning');
+            btn.innerHTML = `<span>Offline</span>`;
+            setTimeout(() => {
+                btn.classList.remove('btn-state-warning');
+                btn.disabled = false;
+                btn.innerHTML = originalBtnHtml;
+            }, 2200);
         }
     }
 }
@@ -758,7 +756,7 @@ function renderDeviceCharts(data) {
     const labels = data.labels || [];
     if (labels.length === 0) return;
 
-    // Pastikan fallback array terisi bila kosong
+    // Ensure fallback array is populated if empty
     if (!data.cpu) data.cpu = labels.map(() => 0);
     if (!data.memory) data.memory = labels.map(() => 0);
     if (!data.traffic) data.traffic = labels.map(() => 0);
@@ -774,7 +772,7 @@ function renderDeviceCharts(data) {
 
     const navIds = ['navCpuMem', 'navTraffic', 'navBuffers', 'navErrorsDrops', 'navLatency', 'navPacketLoss'];
 
-    // Jika mode live: sembunyikan semua 6 navigator slider, render seluruh data live
+    // If live mode: hide all 6 navigator sliders, render all live data
     if (currentDeviceRange === 'live') {
         navIds.forEach(id => {
             const el = document.getElementById(id);
@@ -784,10 +782,10 @@ function renderDeviceCharts(data) {
         return;
     }
 
-    // Mode histori: 1h, 12h, 24h -> Inisialisasi 6 Timeline Navigators jika belum dibuat
+    // Historical mode: 1h, 12h, 24h -> Initialize 6 Timeline Navigators if not yet created
     initTimelineNavigators();
 
-    // Pertahankan batas pecahan jendela aktif jika pengguna sedang menyeret slider
+    // Preserve active window boundaries if user is dragging slider
     const sampleNav = navCpuMem || navTraffic;
     const preserveFractions = (sampleNav && (sampleNav.isDragging || (sampleNav.fullLabels && sampleNav.fullLabels.length > 0)))
         ? { start: sampleNav.startFrac, end: sampleNav.endFrac }
@@ -1006,20 +1004,20 @@ function renderDeviceChartsSlice(data, startIdx, endIdx) {
     );
 
     // 3. Chart Buffer Hardware Switch (Spike Bar Chart Histogram persis Integritas Transmisi Fisik)
-        const isHuawei = (data.name && data.name.toLowerCase().includes('s5735')) || (data.specs && data.specs.model && data.specs.model.toLowerCase().includes('huawei'));
-        const isPalo = (data.name && data.name.toLowerCase().includes('pa220')) || (data.specs && data.specs.model && data.specs.model.toLowerCase().includes('palo'));
-        const secondLabel = isHuawei ? 'Peak Buffer' : (isPalo ? 'Packet Descriptor' : 'Message Buffer');
-        chartBuffers = createOrUpdateBarChart(
-            chartBuffers,
-            document.getElementById('chartBuffers'),
-            labels,
-            [
-                { label: 'Packet Buffer', data: pbVals, color: 'rgba(6, 182, 212, 0.85)', borderColor: '#06b6d4' },
-                { label: secondLabel, data: mbVals, color: 'rgba(249, 115, 22, 0.85)', borderColor: '#f97316' }
-            ],
-            100,
-            '%'
-        );
+    const isHuawei = (data.name && data.name.toLowerCase().includes('s5735')) || (data.specs && data.specs.model && data.specs.model.toLowerCase().includes('huawei'));
+    const isPalo = (data.name && data.name.toLowerCase().includes('pa220')) || (data.specs && data.specs.model && data.specs.model.toLowerCase().includes('palo'));
+    const secondLabel = isHuawei ? 'Peak Buffer' : (isPalo ? 'Packet Descriptor' : 'Message Buffer');
+    chartBuffers = createOrUpdateBarChart(
+        chartBuffers,
+        document.getElementById('chartBuffers'),
+        labels,
+        [
+            { label: 'Packet Buffer', data: pbVals, color: 'rgba(6, 182, 212, 0.85)', borderColor: '#06b6d4' },
+            { label: secondLabel, data: mbVals, color: 'rgba(249, 115, 22, 0.85)', borderColor: '#f97316' }
+        ],
+        100,
+        '%'
+    );
 
     // 4. Spike Bar Chart (Integritas Transmisi Fisik)
     chartErrorsDrops = createOrUpdateBarChart(

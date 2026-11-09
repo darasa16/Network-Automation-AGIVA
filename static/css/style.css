@@ -1596,6 +1596,31 @@ code {
     transform: translateY(0) !important;
 }
 
+/* Inline Button Feedback States */
+.btn-state-loading {
+    opacity: 0.85 !important;
+    cursor: wait !important;
+    pointer-events: none !important;
+}
+
+.btn-state-success {
+    /* Retain original button background - no green */
+    color: #ffffff !important;
+    pointer-events: none !important;
+}
+
+.btn-state-error {
+    /* Retain original button background - no red */
+    color: #ffffff !important;
+    pointer-events: none !important;
+}
+
+.btn-state-warning {
+    /* Retain original button background - no color change */
+    color: #ffffff !important;
+    pointer-events: none !important;
+}
+
 .text-center {
     text-align: center;
 }
@@ -2747,9 +2772,10 @@ code {
 }
 
 /* --------------------------------------------------------------------------
-   Toast Notifications
+   Toast Notifications (Hidden in favor of Inline Button Feedback)
    -------------------------------------------------------------------------- */
 .toast-container {
+    display: none !important;
     position: fixed;
     bottom: 24px;
     right: 24px;

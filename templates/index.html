@@ -329,7 +329,10 @@
                                                     <p class="alert-message">{{ alert.message }}</p>
                                                     <div class="alert-footer">
                                                         {% if alert.acknowledged %}
-                                                        <span class="badge-ack-state text-success">✓ Acknowledged</span>
+                                                        <span class="badge-ack-state text-warning">
+                                                            <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" style="display:inline-block; vertical-align:middle; margin-right:3px;">
+                                                                <polyline points="20 6 9 17 4 12"></polyline>
+                                                            </svg>Acknowledged</span>
                                                         <span class="text-muted-xs">{{ alert.acknowledged_by or
                                                             'Confirmed' }}</span>
                                                         {% else %}

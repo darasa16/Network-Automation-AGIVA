@@ -66,13 +66,13 @@ ALERTS = {}
 # ==================== FORMATTING & HELPERS ====================
 
 def make_progress_bar(percent: int, length: int = 10) -> str:
-    """Membuat visual progress bar telemetri persentase"""
+    """Generate visual percentage progress bar for telemetry"""
     percent = max(0, min(100, int(percent)))
     filled = int(round((percent / 100) * length))
     return "█" * filled + "░" * (length - filled)
 
 def is_whitelisted(user_id: int) -> bool:
-    """Mengecek otorisasi pengguna dalam Whitelist NOC (memory + database)"""
+    """Check user authorization against NOC Whitelist (memory + database)"""
     if user_id in WHITELIST_USERS:
         return True
     session = None
@@ -101,15 +101,15 @@ def is_whitelisted(user_id: int) -> bool:
         db_session.remove()
 
 def render_access_denied_view(user_id: int, action_name: str) -> str:
-    """Pesan keamanan standar enterprise saat akses tidak sah terjadi"""
+    """Enterprise security view for unauthorized access attempts"""
     return (
-        "<b>Akses Ditolak</b>\n\n"
-        "Kejadian: Percobaan akses tanpa izin\n"
-        f"Perintah: <code>{html.escape(action_name)}</code>\n"
-        f"ID Pengguna: <code>{user_id}</code>\n"
-        f"Waktu: <code>{get_current_time_wib()}</code>\n\n"
-        "Akun Anda tidak terdaftar dalam daftar whitelist.\n"
-        "Silahkan hubungi Admin untuk perizinan."
+        "<b>ACCESS DENIED</b>\n\n"
+        "Event: Unauthorized access attempt\n"
+        f"Command: <code>{html.escape(action_name)}</code>\n"
+        f"User ID: <code>{user_id}</code>\n"
+        f"Time: <code>{get_current_time_wib()}</code>\n\n"
+        "Your account is not registered in the whitelist.\n"
+        "Please contact the Administrator for authorization."
     )
 
 def log_telegram_message(chat_id: str, message_type: str, content: str, status: str = 'SENT', alert_id: int = None):
@@ -163,60 +163,60 @@ def build_status_view() -> str:
         alert_count = len(active_alerts)
         uptime_ratio = (up_count / total) * 100 if total > 0 else 0
 
-        overall_health = "Normal" if down_count == 0 and alert_count == 0 else ("Peringatan" if down_count > 0 else "Waspada")
+        overall_health = "Normal" if down_count == 0 and alert_count == 0 else ("Warning" if down_count > 0 else "Degraded")
 
         msg = (
-            "<b>NETWORK AUTOMATION PT AGIVA INDONESIA</b>\n\n"
-            f"Waktu Sistem: <code>{get_current_time_wib()}</code>\n"
-            f"Kondisi Jaringan: {overall_health}\n"
-            f"Tingkat Ketersediaan: <code>{uptime_ratio:.1f}% Online</code>\n\n"
+            "<b>MONITORING SYSTEM PT AGIVA INDONESIA</b>\n\n"
+            f"System Time: <code>{get_current_time_wib()}</code>\n"
+            f"Network Health: {overall_health}\n"
+            f"Availability: <code>{uptime_ratio:.1f}% Online</code>\n\n"
             "<pre>\n"
-            f"Total Perangkat   : {total} Unit\n"
-            f"Perangkat Normal  : {up_count} Unit\n"
-            f"Perangkat Gangguan: {down_count} Unit\n"
-            f"Alert Terbuka     : {alert_count} Kasus\n"
-            "</pre>\n"
+            f"Total Devices     : {total} Units\n"
+            f"Normal Devices    : {up_count} Units\n"
+            f"Impaired Devices  : {down_count} Units\n"
+            f"Open Alerts       : {alert_count} Cases\n"
+            "</pre>\n\n"
         )
 
         if down_count > 0:
             down_devices = [d.name for d in devices if (d.status or "").upper() == "DOWN"]
-            msg += f"Perangkat tidak terjangkau: <code>{', '.join(down_devices)}</code>\n\n"
+            msg += f"Unreachable devices: <code>{', '.join(down_devices)}</code>\n\n"
         else:
-            msg += "Seluruh perangkat beroperasi normal.\n\n"
+            msg += "All devices are operating normally.\n\n"
 
         msg += (
-            "Perintah yang tersedia:\n"
-            "/start - Panduan operasional bot\n"
-            "/devices - Daftar seluruh perangkat\n"
-            "/device [nama_perangkat] - Rincian telemetri perangkat\n"
-            "/alerts - Daftar gangguan aktif\n"
-            "/ack [id_alert] - Konfirmasi penanganan alert\n"
-            "/resolve [id_alert] - Selesaikan dan pulihkan gangguan\n"
-            "/backup [nama_perangkat] [kategori] - Backup manual konfigurasi & log audit\n"
-            "/user - Profil & status hak akses akun\n"
-            "/approve @username [role] - (Khusus Admin) Menyetujui akses teknisi baru."
+            "Available Commands:\n"
+            "/start - Operational bot guide\n"
+            "/devices - List all monitored devices\n"
+            "/device [device_name] - Detailed device telemetry\n"
+            "/alerts - List active incidents and alerts\n"
+            "/ack [alert_id] - Acknowledge alert handling\n"
+            "/resolve [alert_id] - Resolve and close incident\n"
+            "/backup [device_name] [category] - Trigger manual backup & audit archive\n"
+            "/user - View user profile & access status\n"
+            "/approve @username [role] - (Admin only) Approve new engineer access."
         )
         return msg
     except Exception as e:
         logger.error(f"Error in build_status_view: {e}")
-        return "Gagal memuat status sistem jaringan dari database."
+        return "Failed to load network system status from database."
     finally:
         if session:
             session.close()
         db_session.remove()
 
 def build_devices_view() -> str:
-    """Tampilan Daftar Inventaris Perangkat Riil dari Database"""
+    """Real Device Inventory List View from Database"""
     session = None
     try:
         session = db_session()
         devices = session.query(Device).order_by(Device.device_id.asc()).all()
 
         msg = (
-            "<b>INVENTARIS PERANGKAT JARINGAN</b>\n\n"
-            f"Total Perangkat Terdata : {len(devices)} Unit\n"
+            "<b>NETWORK DEVICE INVENTORY PT AGIVA INDONESIA</b>\n\n"
+            f"Total Registered Devices : {len(devices)} Units\n"
             "<pre>\n"
-            "NAMA PERANGKAT     VENDOR      STATUS   LOKASI\n"
+            "DEVICE NAME        VENDOR      STATUS   LOCATION\n"
         )
         for dev in devices:
             d_name = (dev.name or "-")[:18]
@@ -226,18 +226,18 @@ def build_devices_view() -> str:
             msg += f"{d_name:<18} {v_name:<11} {status_txt:<8} {site_name}\n"
         msg += "</pre>\n\n"
         example_name = devices[0].name if devices else "SW-2930F-HO"
-        msg += f"Ketik /device [nama_perangkat] untuk melihat telemetri lengkap. Contoh: /device {example_name}"
+        msg += f"Type /device [device_name] to view telemetry details. Example: /device {example_name}"
         return msg
     except Exception as e:
         logger.error(f"Error in build_devices_view: {e}")
-        return "Gagal memuat daftar perangkat dari database."
+        return "Failed to load device inventory from database."
     finally:
         if session:
             session.close()
         db_session.remove()
 
 def build_device_detail_view(device_name: str) -> str:
-    """Tampilan Detail Telemetri Satu Perangkat Riil dari Database"""
+    """Detailed Telemetry View of a Single Device from Database"""
     session = None
     try:
         session = db_session()
@@ -248,9 +248,9 @@ def build_device_detail_view(device_name: str) -> str:
 
         if not db_dev:
             return (
-                "<b>PERANGKAT TIDAK DITEMUKAN</b>\n\n"
-                f"Perangkat <code>{html.escape(device_name)}</code> tidak terdaftar dalam inventaris.\n"
-                "Gunakan perintah /devices untuk melihat daftar perangkat yang tersedia."
+                "<b>DEVICE NOT FOUND</b>\n\n"
+                f"Device <code>{html.escape(device_name)}</code> is not registered in the inventory.\n"
+                "Use /devices to view the list of available devices."
             )
 
         d_name = db_dev.name
@@ -269,8 +269,8 @@ def build_device_detail_view(device_name: str) -> str:
         cpu_bar = make_progress_bar(cpu_val, 10)
         mem_bar = make_progress_bar(mem_val, 10)
 
-        cpu_label = "Kritis" if cpu_val >= 85 else ("Tinggi" if cpu_val >= 70 else "Normal")
-        mem_label = "Kritis" if mem_val >= 85 else ("Tinggi" if mem_val >= 70 else "Normal")
+        cpu_label = "Critical" if cpu_val >= 85 else ("High" if cpu_val >= 70 else "Normal")
+        mem_label = "Critical" if mem_val >= 85 else ("High" if mem_val >= 70 else "Normal")
 
         # Ambil riwayat backup terakhir riil dari BackupHistory
         last_bkp = session.query(BackupHistory).filter(
@@ -283,37 +283,37 @@ def build_device_detail_view(device_name: str) -> str:
             last_b = last_bkp.timestamp.strftime("%Y-%m-%d %H:%M WIB")
             b_path = os.path.dirname(last_bkp.file_path).replace("\\", "/") if last_bkp.file_path else f"/backups/{site_clean}/{d_name}"
         else:
-            last_b = "Belum Ada Backup"
+            last_b = "No Backup Available"
             b_path = f"/backups/{site_clean}/{d_name}"
 
         msg = (
-            "<b>INFORMASI PERANGKAT</b>\n\n"
-            f"Nama Device: {html.escape(d_name)}\n"
-            f"Status Operasional: {status_badge}\n"
-            f"Alamat IP: <code>{d_ip}</code>\n"
+            "<b>DEVICE INFORMATION PT AGIVA INDONESIA</b>\n\n"
+            f"Device Name: {html.escape(d_name)}\n"
+            f"Operational Status: {status_badge}\n"
+            f"IP Address: <code>{d_ip}</code>\n"
             f"Vendor: {d_vendor}\n"
-            f"Lokasi: {d_site}\n"
-            f"Latency: <code>{lat_val} ms</code> | Ping Drop: <code>{loss_val}%</code>\n"
-            f"Waktu Aktif: <code>{d_uptime}</code>\n\n"
-            "Penggunaan Sumber Daya:\n"
+            f"Location: {d_site}\n"
+            f"Latency: <code>{lat_val} ms</code> | Packet Loss: <code>{loss_val}%</code>\n"
+            f"Uptime: <code>{d_uptime}</code>\n\n"
+            "Resource Utilization:\n"
             f"<code>CPU [{cpu_bar}] {cpu_val:>2}% ({cpu_label})</code>\n"
             f"<code>MEM [{mem_bar}] {mem_val:>2}% ({mem_label})</code>\n\n"
-            "Manajemen Konfigurasi:\n"
-            f"• Backup Terakhir: <code>{last_b}</code>\n"
-            f"• Jalur Direktori: <code>{b_path}</code>\n\n"
-            f"Ketik /backup {html.escape(d_name)} untuk melakukan backup konfigurasi manual."
+            "Configuration Management:\n"
+            f"• Last Backup: <code>{last_b}</code>\n"
+            f"• Directory Path: <code>{b_path}</code>\n\n"
+            f"Type /backup {html.escape(d_name)} to execute a manual configuration backup."
         )
         return msg
     except Exception as e:
         logger.error(f"Error in build_device_detail_view: {e}")
-        return f"Gagal memuat telemetri perangkat {html.escape(device_name)} dari database."
+        return f"Failed to load telemetry for device {html.escape(device_name)} from database."
     finally:
         if session:
             session.close()
         db_session.remove()
 
 def build_alerts_view() -> str:
-    """Tampilan Daftar Incident & Alert Aktif dari Database sesuai Format Resmi AGIVA"""
+    """Active Incidents & Alerts View from Database per AGIVA NOC Format"""
     session = None
     try:
         session = db_session()
@@ -332,7 +332,7 @@ def build_alerts_view() -> str:
         # Format 1: Jika tidak ada gangguan aktif
         if not db_alerts:
             msg = (
-                "<b>ACTIVE ALERTS</b>\n"
+                "<b>ACTIVE ALERTS PT AGIVA INDONESIA</b>\n"
                 f"As of {time_wib}\n\n"
                 "<pre>\n"
                 f"{'Unacknowledged':<17} {len(open_alerts)}\n"
@@ -380,7 +380,7 @@ def build_alerts_view() -> str:
             table_lines.append(f"{id_str:<4} {sev_str:<9} {dev_str:<14} {type_str:<11} {age_str:<5} {state_str}")
 
         msg = (
-            "<b>ACTIVE ALERTS</b>\n"
+            "<b>ACTIVE ALERTS PT AGIVA INDONESIA</b>\n"
             f"As of {time_wib}\n\n"
             "<pre>\n"
             f"{'Unacknowledged':<17} {len(open_alerts)}\n"
@@ -393,21 +393,21 @@ def build_alerts_view() -> str:
         return msg
     except Exception as e:
         logger.error(f"Error in build_alerts_view: {e}")
-        return "Gagal memuat daftar alert dari database."
+        return "Failed to load active alerts from database."
     finally:
         if session:
             session.close()
         db_session.remove()
 
 def build_backup_report(device_name: str, operator_name: str) -> str:
-    """Laporan Hasil Eksekusi Backup Konfigurasi Terakhir dari Database"""
+    """Configuration Backup Execution Report from Database"""
     session = None
     try:
         session = db_session()
         clean_name = device_name.strip()
         db_dev = session.query(Device).filter(Device.name.ilike(f"%{clean_name}%")).first()
         if not db_dev:
-            return f"Perangkat <code>{html.escape(device_name)}</code> tidak ditemukan dalam inventaris."
+            return f"Device <code>{html.escape(device_name)}</code> not found in inventory."
 
         last_bkp = session.query(BackupHistory).filter(
             BackupHistory.device_id == db_dev.device_id
@@ -416,65 +416,65 @@ def build_backup_report(device_name: str, operator_name: str) -> str:
         time_str = last_bkp.timestamp.strftime("%Y-%m-%d %H:%M:%S WIB") if last_bkp and last_bkp.timestamp else get_current_time_wib()
         f_path = last_bkp.file_path if last_bkp else f"/backups/{db_dev.site}/{db_dev.name}/"
         f_size = last_bkp.file_size if last_bkp else "-"
-        st = "Sukses" if (last_bkp and last_bkp.status == 'SUCCESS') else ("Gagal" if last_bkp else "Belum Ada Riwayat")
+        st = "Success" if (last_bkp and last_bkp.status == 'SUCCESS') else ("Failed" if last_bkp else "No History Available")
         cat = last_bkp.category if last_bkp else "Config"
 
         return (
-            "<b>LAPORAN HASIL BACKUP KONFIGURASI</b>\n\n"
-            f"Perangkat: <code>{db_dev.name}</code> ({db_dev.ip_address})\n"
+            "<b>CONFIGURATION BACKUP REPORT</b>\n\n"
+            f"Device: <code>{db_dev.name}</code> ({db_dev.ip_address})\n"
             f"Vendor: {db_dev.vendor}\n"
             f"Site: {db_dev.site}\n"
             f"Operator: @{html.escape(operator_name)}\n"
-            f"Waktu Eksekusi: <code>{time_str}</code>\n\n"
-            "Rincian Pengarsipan:\n"
-            f"• Kategori: {cat}\n"
-            f"• Lokasi Berkas:\n  <code>{f_path}</code>\n"
-            f"• Ukuran Berkas: {f_size}\n"
-            f"• Status Akhir: {st}"
+            f"Execution Time: <code>{time_str}</code>\n\n"
+            "Archive Details:\n"
+            f"• Category: {cat}\n"
+            f"• File Location:\n  <code>{f_path}</code>\n"
+            f"• File Size: {f_size}\n"
+            f"• Final Status: {st}"
         )
     except Exception as e:
         logger.error(f"Error in build_backup_report: {e}")
-        return "Gagal memuat laporan backup dari database."
+        return "Failed to load backup report from database."
     finally:
         if session:
             session.close()
         db_session.remove()
 
 def build_start_view() -> str:
-    """Panduan & Dokumentasi Operasional NOC saat /start"""
+    """NOC Operational Guide for /start"""
     return (
-        "<b>PANDUAN OPERASIONAL BOT NETWORK AUTOMATION</b>\n"
-        "Sistem automasi pemantauan jaringan, pelaporan gangguan, dan backup konfigurasi terpusat.\n\n"
-        "Daftar Perintah:\n\n"
+        "<b>STATUS OPERATIONAL GUIDE PT AGIVA INDONESIA</b>\n"
+        "Centralized system for network monitoring, incident alerting, and automated configuration backups.\n\n"
+        "Available Commands:\n\n"
         "• /status\n"
-        "Menampilkan ringkasan kondisi jaringan, perangkat UP/DOWN, dan alert aktif.\n\n"
+        "Display network health summary, UP/DOWN device count, and active alerts.\n\n"
         "• /devices\n"
-        "Menampilkan tabel inventaris seluruh perangkat yang dipantau.\n\n"
-        "• /device [nama_perangkat]\n"
-        "Menampilkan rincian telemetri satu perangkat (CPU, Memori, Uptime, Status Backup).\n"
-        "Contoh: /device SW-2930F-HO\n\n"
+        "Display inventory table of all monitored network devices.\n\n"
+        "• /device [device_name]\n"
+        "Display telemetry details for a specific device (CPU, Memory, Uptime, Backup Status).\n"
+        "Example: /device SW-2930F-HO\n\n"
         "• /alerts\n"
-        "Menampilkan daftar gangguan dan anomali jaringan yang memerlukan mitigasi.\n\n"
-        "• /ack [id_alert]\n"
-        "Konfirmasi penanganan alert oleh engineer yang bertugas.\n"
-        "Contoh: /ack 17\n\n"
-        "• /resolve [id_alert]\n"
-        "Selesaikan dan pulihkan gangguan secara manual.\n"
-        "Contoh: /resolve 17\n\n"
-        "• /backup [nama_perangkat] [kategori]\n"
-        "Memicu penarikan konfigurasi & log audit multi-vendor (pilihan: all, system, config, traffic, threat).\n"
-        "Contoh: /backup FW-PA220-1 (semua kategori) atau /backup SW-2930F-HO config\n\n"
+        "Display list of active incidents and anomalies requiring mitigation.\n\n"
+        "• /ack [alert_id]\n"
+        "Acknowledge alert handling by the on-duty engineer.\n"
+        "Example: /ack 17\n\n"
+        "• /resolve [alert_id]\n"
+        "Resolve and close an incident manually.\n"
+        "Example: /resolve 17\n\n"
+        "• /backup [device_name] [category]\n"
+        "Trigger multi-vendor configuration & audit log backup (options: all, system, config, traffic, threat).\n"
+        "Example: /backup FW-PA220-1 (all categories) or /backup SW-2930F-HO config\n\n"
         "• /user\n"
-        "Melihat identitas teknisi, Chat ID Telegram, dan verifikasi otomatis akses Whitelist.\n\n"
-        "• /approve [username] [role]\n"
-        "Menyetujui akses teknisi baru dengan role pilihan (khusus admin)."
+        "View engineer identity, Telegram Chat ID, and whitelist authorization status.\n\n"
+        "• /approve @username [role]\n"
+        "Authorize and approve new engineer access with specified role (Admin only)."
     )
 
 
 # ==================== TELEGRAM COMMAND HANDLERS ====================
 
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Command /start: Menampilkan Panduan Operasional Bot"""
+    """Command /start: Display Bot Operational Guide"""
     ACTIVE_CHATS.add(update.effective_chat.id)
     text = build_start_view()
     await update.message.reply_text(text, parse_mode=ParseMode.HTML)
@@ -482,7 +482,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     log_telegram_message(update.effective_chat.id, "COMMAND_REPLY", f"Response /start: Operational bot guide sent to @{u_name}")
 
 async def status_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Command /status: Ringkasan Telemetri Kesehatan Jaringan"""
+    """Command /status: Network Health Telemetry Summary"""
     ACTIVE_CHATS.add(update.effective_chat.id)
     text = build_status_view()
     await update.message.reply_text(text, parse_mode=ParseMode.HTML)
@@ -490,7 +490,7 @@ async def status_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     log_telegram_message(update.effective_chat.id, "COMMAND_REPLY", f"Response /status: Telemetry health summary sent to @{u_name}")
 
 async def devices_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Command /devices: Daftar Inventaris Seluruh Node"""
+    """Command /devices: Complete Node Inventory List"""
     ACTIVE_CHATS.add(update.effective_chat.id)
     text = build_devices_view()
     await update.message.reply_text(text, parse_mode=ParseMode.HTML)
@@ -498,16 +498,18 @@ async def devices_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     log_telegram_message(update.effective_chat.id, "COMMAND_REPLY", f"Response /devices: Node inventory list sent to @{u_name}")
 
 async def device_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Command /device <nama>: Status Detail Satu Node"""
+    """Command /device <name>: Detailed Status of One Node"""
     ACTIVE_CHATS.add(update.effective_chat.id)
     if not context.args:
         text = build_devices_view()
         await update.message.reply_text(
-            "Parameter Perangkat Diperlukan. Gunakan format: <code>/device &lt;nama_perangkat&gt;</code>\n"
-            "Contoh: <code>/device SW-2930F-HO</code>\n\n"
+            "Device parameter required. Use format: <code>/device &lt;device_name&gt;</code>\n"
+            "Example: <code>/device SW-2930F-HO</code>\n\n"
             + text,
             parse_mode=ParseMode.HTML
         )
+        u_name = update.effective_user.username or update.effective_user.first_name if update.effective_user else "User"
+        log_telegram_message(update.effective_chat.id, "COMMAND_REPLY", f"Response /device: Missing parameter instruction sent to @{u_name}")
         return
 
     device_name = context.args[0].strip()
@@ -517,7 +519,7 @@ async def device_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     log_telegram_message(update.effective_chat.id, "COMMAND_REPLY", f"Response /device: Telemetry details for {device_name} sent to @{u_name}")
 
 async def alerts_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Command /alerts: Tampilan Daftar Insiden Jaringan"""
+    """Command /alerts: List Active Network Incidents"""
     ACTIVE_CHATS.add(update.effective_chat.id)
     text = build_alerts_view()
     await update.message.reply_text(text, parse_mode=ParseMode.HTML)
@@ -525,7 +527,7 @@ async def alerts_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     log_telegram_message(update.effective_chat.id, "COMMAND_REPLY", f"Response /alerts: Active alerts list sent to @{u_name}")
 
 async def ack_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Command /ack <alert_id>: Acknowledge Alert (Database Riil)"""
+    """Command /ack <alert_id>: Acknowledge Alert (Real Database)"""
     user_id = update.effective_user.id
     if not is_whitelisted(user_id):
         logger.warning(f"Unauthorized /ack command by user {user_id}")
@@ -533,9 +535,11 @@ async def ack_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             render_access_denied_view(user_id, "/ack"),
             parse_mode=ParseMode.HTML
         )
+        u_name = update.effective_user.username or update.effective_user.first_name if update.effective_user else str(user_id)
+        log_telegram_message(update.effective_chat.id, "COMMAND_REPLY", f"Access denied for /ack command to @{u_name} (ID: {user_id}) - Not in Whitelist")
         return
 
-    # Parse ID dari argumen (/ack 10) atau text (/ack10 atau /ack_10)
+    # Parse ID from arguments (/ack 10) or text (/ack10 or /ack_10)
     raw_id = ""
     if context.args:
         raw_id = context.args[0].strip()
@@ -547,11 +551,13 @@ async def ack_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not raw_id:
         text = build_alerts_view()
         await update.message.reply_text(
-            "<b>PARAMETER ALERT DIPERLUKAN</b>\n\n"
-            "Gunakan format: <code>/ack &lt;id_alert&gt;</code> (contoh: <code>/ack 17</code>)\n\n"
+            "<b>ALERT PARAMETER REQUIRED</b>\n\n"
+            "Use format: <code>/ack &lt;alert_id&gt;</code> (example: <code>/ack 17</code>)\n\n"
             + text,
             parse_mode=ParseMode.HTML
         )
+        u_name = update.effective_user.username or update.effective_user.first_name if update.effective_user else "User"
+        log_telegram_message(update.effective_chat.id, "COMMAND_REPLY", f"Response /ack: Missing parameter instruction sent to @{u_name}")
         return
 
     alert_id_clean = raw_id.lstrip('#').replace('ALT-', '').strip()
@@ -566,11 +572,12 @@ async def ack_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         if db_alert:
             if db_alert.resolved_at:
-                await update.message.reply_text(f"<b>PEMBERITAHUAN</b>\n\nAlert #{db_alert.alert_id} sudah dalam status Resolved sebelumnya.", parse_mode=ParseMode.HTML)
+                await update.message.reply_text(f"Alert #{db_alert.alert_id} is already in Resolved status.", parse_mode=ParseMode.HTML)
+                log_telegram_message(update.effective_chat.id, "COMMAND_REPLY", f"Response /ack: Alert #{db_alert.alert_id} is already in Resolved status (sent to @{handler_user})")
                 return
 
             alert_id_val = db_alert.alert_id
-            dev_name = db_alert.device.name if db_alert.device else f"Perangkat #{db_alert.device_id}"
+            dev_name = db_alert.device.name if db_alert.device else f"Device #{db_alert.device_id}"
             severity_val = db_alert.severity
 
             db_alert.acknowledged = True
@@ -578,14 +585,14 @@ async def ack_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             session.commit()
 
             ack_report = (
-                "<b>KONFIRMASI PENANGANAN ALERT</b>\n\n"
-                f"Referensi Alert: <code>#{alert_id_val}</code>\n"
-                f"Perangkat: <code>{dev_name}</code>\n"
-                f"Tingkat Bahaya: {severity_val}\n"
-                f"Petugas: @{html.escape(handler_user)}\n"
-                f"Waktu Konfirmasi: <code>{get_current_time_wib()}</code>\n"
-                "Status ACK: Acknowledged (Sedang Ditangani)\n\n"
-                f"Ketik <code>/resolve {alert_id_val}</code> untuk menyelesaikan gangguan dan memindahkannya ke Incident Log."
+                "<b>ALERT HANDLING CONFIRMATION</b>\n\n"
+                f"Alert Reference: <code>#{alert_id_val}</code>\n"
+                f"Device: <code>{dev_name}</code>\n"
+                f"Severity: {severity_val}\n"
+                f"Operator: @{html.escape(handler_user)}\n"
+                f"Confirmation Time: <code>{get_current_time_wib()}</code>\n"
+                "ACK Status: Acknowledged\n\n"
+                f"Type <code>/resolve {alert_id_val}</code> to resolve the issue and archive it to Incident Log."
             )
             ACTIVE_CHATS.add(update.effective_chat.id)
             await update.message.reply_text(ack_report, parse_mode=ParseMode.HTML)
@@ -598,19 +605,22 @@ async def ack_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return
 
         await update.message.reply_text(
-            f"<b>ALERT ID TIDAK DITEMUKAN</b>\n\nAlert <code>{html.escape(raw_id)}</code> tidak terdaftar dalam antrean aktif database.",
+            f"<b>ALERT ID NOT FOUND</b>\n\nAlert <code>{html.escape(raw_id)}</code> is not registered in the active database queue.",
             parse_mode=ParseMode.HTML
         )
+        u_name = update.effective_user.username or update.effective_user.first_name if update.effective_user else "User"
+        log_telegram_message(update.effective_chat.id, "COMMAND_REPLY", f"Response /ack: Alert ID '{raw_id}' not found in active queue (sent to @{u_name})")
     except Exception as e:
         logger.error(f"Error handling /ack command: {e}")
-        await update.message.reply_text(f"Gagal memproses acknowledge: {e}")
+        await update.message.reply_text(f"Failed to process acknowledge: {e}")
+        log_telegram_message(update.effective_chat.id, "COMMAND_REPLY", f"Response /ack error: {e}")
     finally:
         if session:
             session.close()
         db_session.remove()
 
 async def resolve_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Command /resolve <alert_id>: Resolve Alert secara manual & pindahkan ke Incident Log"""
+    """Command /resolve <alert_id>: Manually resolve Alert & move to Incident Log"""
     user_id = update.effective_user.id
     if not is_whitelisted(user_id):
         logger.warning(f"Unauthorized /resolve command by user {user_id}")
@@ -618,9 +628,11 @@ async def resolve_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             render_access_denied_view(user_id, "/resolve"),
             parse_mode=ParseMode.HTML
         )
+        u_name = update.effective_user.username or update.effective_user.first_name if update.effective_user else str(user_id)
+        log_telegram_message(update.effective_chat.id, "COMMAND_REPLY", f"Access denied for /resolve command to @{u_name} (ID: {user_id}) - Not in Whitelist")
         return
 
-    # Parse ID dari argumen (/resolve 10) atau text (/resolve10 atau /resolve_10)
+    # Parse ID from arguments (/resolve 10) or text (/resolve10 or /resolve_10)
     raw_id = ""
     if context.args:
         raw_id = context.args[0].strip()
@@ -632,11 +644,13 @@ async def resolve_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not raw_id:
         text = build_alerts_view()
         await update.message.reply_text(
-            "<b>PARAMETER ALERT DIPERLUKAN</b>\n\n"
-            "Gunakan format: <code>/resolve &lt;id_alert&gt;</code> (contoh: <code>/resolve 17</code>)\n\n"
+            "<b>ALERT PARAMETER REQUIRED</b>\n\n"
+            "Use format: <code>/resolve &lt;alert_id&gt;</code> (example: <code>/resolve 17</code>)\n\n"
             + text,
             parse_mode=ParseMode.HTML
         )
+        u_name = update.effective_user.username or update.effective_user.first_name if update.effective_user else "User"
+        log_telegram_message(update.effective_chat.id, "COMMAND_REPLY", f"Response /resolve: Missing parameter instruction sent to @{u_name}")
         return
 
     alert_id_clean = raw_id.lstrip('#').replace('ALT-', '').strip()
@@ -651,29 +665,31 @@ async def resolve_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         if db_alert:
             if db_alert.resolved_at:
-                await update.message.reply_text(f"<b>PEMBERITAHUAN</b>\n\nAlert #{db_alert.alert_id} sudah terselesaikan sebelumnya (Status: Resolved).", parse_mode=ParseMode.HTML)
+                await update.message.reply_text(f"Alert #{db_alert.alert_id} is already resolved (Status: Resolved).", parse_mode=ParseMode.HTML)
+                log_telegram_message(update.effective_chat.id, "COMMAND_REPLY", f"Response /resolve: Alert #{db_alert.alert_id} is already resolved (sent to @{handler_user})")
                 return
 
-            # VALIDASI KETAT PER SOP PT AGIVA: Wajib /ack terlebih dahulu sebelum /resolve
+            # Strict validation per PT AGIVA SOP: Alert must be acknowledged before it can be resolved
             if not db_alert.acknowledged:
-                dev_name = db_alert.device.name if db_alert.device else f"Perangkat #{db_alert.device_id}"
+                dev_name = db_alert.device.name if db_alert.device else f"Device #{db_alert.device_id}"
                 await update.message.reply_text(
-                    f"<b>ALERT BELUM DI-ACKNOWLEDGE</b>\n\n"
-                    f"Alert <code>#{db_alert.alert_id}</code> ({html.escape(dev_name)}) harus di-acknowledge terlebih dahulu sebelum dapat diselesaikan per SOP NOC PT AGIVA.\n\n"
-                    f"Silakan ketik <code>/ack {db_alert.alert_id}</code> terlebih dahulu untuk mengonfirmasi penanganan.",
+                    f"<b>ALERT NOT ACKNOWLEDGED</b>\n\n"
+                    f"Alert <code>#{db_alert.alert_id}</code> ({html.escape(dev_name)}) must be acknowledged before it can be resolved per PT AGIVA NOC SOP.\n\n"
+                    f"Please type <code>/ack {db_alert.alert_id}</code> first to confirm handling.",
                     parse_mode=ParseMode.HTML
                 )
+                log_telegram_message(update.effective_chat.id, "COMMAND_REPLY", f"Response /resolve: Alert #{db_alert.alert_id} rejected - must be acknowledged first via /ack (sent to @{handler_user})")
                 return
 
             alert_id_val = db_alert.alert_id
-            dev_name = db_alert.device.name if db_alert.device else f"Perangkat #{db_alert.device_id}"
+            dev_name = db_alert.device.name if db_alert.device else f"Device #{db_alert.device_id}"
             severity_val = db_alert.severity
 
             now = datetime.now()
             db_alert.resolved_at = now
             db_alert.acknowledged = True
 
-            # Pindahkan / sinkronkan ke Incident Log dengan status RESOLVED_ALERT
+            # Sync with Incident Log
             active_inc = session.query(IncidentLog).filter(
                 IncidentLog.device_id == db_alert.device_id,
                 IncidentLog.type == db_alert.type,
@@ -706,14 +722,14 @@ async def resolve_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
             ACTIVE_CHATS.add(update.effective_chat.id)
             resolve_report = (
-                "<b>KONFIRMASI PENYELESAIAN ALERT</b>\n\n"
-                f"Referensi Alert: <code>#{alert_id_val}</code>\n"
-                f"Perangkat: <code>{dev_name}</code>\n"
-                f"Tingkat Bahaya: {severity_val}\n"
-                f"Diselesaikan oleh: @{html.escape(handler_user)}\n"
-                f"Waktu Selesai: <code>{get_current_time_wib()}</code>\n"
-                f"Status Insiden: Resolved (Tercatat di Incident Log #INC-{inc_id})\n\n"
-                "Perangkat telah pulih. Alert berhasil ditutup dan dipindahkan dari tabel Active Alerts ke tabel Incident Log & Cooldown History."
+                "<b>ALERT RESOLUTION CONFIRMATION</b>\n\n"
+                f"Alert Reference: <code>#{alert_id_val}</code>\n"
+                f"Device: <code>{dev_name}</code>\n"
+                f"Severity: {severity_val}\n"
+                f"Resolved by: @{html.escape(handler_user)}\n"
+                f"Resolution Time: <code>{get_current_time_wib()}</code>\n"
+                f"Incident Status: Resolved (Recorded in Incident Log #INC-{inc_id})\n\n"
+                "Device has recovered. The alert has been closed and moved from Active Alerts to Incident Log & Cooldown History."
             )
             await update.message.reply_text(resolve_report, parse_mode=ParseMode.HTML)
             log_telegram_message(
@@ -725,19 +741,22 @@ async def resolve_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return
 
         await update.message.reply_text(
-            f"<b>ALERT ID TIDAK DITEMUKAN</b>\n\nAlert <code>{html.escape(raw_id)}</code> tidak terdaftar dalam antrean aktif database.",
+            f"<b>ALERT ID NOT FOUND</b>\n\nAlert <code>{html.escape(raw_id)}</code> is not registered in the active database queue.",
             parse_mode=ParseMode.HTML
         )
+        u_name = update.effective_user.username or update.effective_user.first_name if update.effective_user else "User"
+        log_telegram_message(update.effective_chat.id, "COMMAND_REPLY", f"Response /resolve: Alert ID '{raw_id}' not found in active queue (sent to @{u_name})")
     except Exception as e:
         logger.error(f"Error handling /resolve command: {e}")
-        await update.message.reply_text(f"Gagal memproses penyelesaian alert: {e}")
+        await update.message.reply_text(f"Failed to process alert resolution: {e}")
+        log_telegram_message(update.effective_chat.id, "COMMAND_REPLY", f"Response /resolve error: {e}")
     finally:
         if session:
             session.close()
         db_session.remove()
 
 async def backup_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Command /backup <nama>: Trigger Backup & Log Archive Manual Riil"""
+    """Command /backup <name>: Trigger Real Manual Backup & Log Archive"""
     user_id = update.effective_user.id
     if not is_whitelisted(user_id):
         logger.warning(f"Unauthorized /backup command by user {user_id}")
@@ -745,28 +764,34 @@ async def backup_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             render_access_denied_view(user_id, "/backup"),
             parse_mode=ParseMode.HTML
         )
+        u_name = update.effective_user.username or update.effective_user.first_name if update.effective_user else str(user_id)
+        log_telegram_message(update.effective_chat.id, "COMMAND_REPLY", f"Access denied for /backup command to @{u_name} (ID: {user_id}) - Not in Whitelist")
         return
 
     if not context.args:
         text = build_devices_view()
         await update.message.reply_text(
-            "<b>PARAMETER PERANGKAT DIPERLUKAN</b>\n\n"
-            "Gunakan format: <code>/backup &lt;nama_perangkat&gt; [kategori]</code>\n\n"
-            "Pilihan Kategori: <code>all</code>, <code>system</code>, <code>config</code>, <code>traffic</code>, <code>threat</code>\n\n"
-            "Contoh:\n"
-            "• <code>/backup FW-PA220-1</code> (Tarik semua kategori)\n"
-            "• <code>/backup FW-PA220-1 traffic</code> (Hanya Traffic)\n"
-            "• <code>/backup SW-2930F-HO config</code> (Hanya Running Config)\n\n"
+            "<b>DEVICE PARAMETER REQUIRED</b>\n\n"
+            "Use format: <code>/backup &lt;device_name&gt; [category]</code>\n\n"
+            "Category Options: <code>all</code>, <code>system</code>, <code>config</code>, <code>traffic</code>, <code>threat</code>\n\n"
+            "Examples:\n"
+            "• <code>/backup FW-PA220-1</code> (All categories)\n"
+            "• <code>/backup FW-PA220-1 traffic</code> (Traffic only)\n"
+            "• <code>/backup SW-2930F-HO config</code> (Running Config only)\n"
+            "• <code>/backup FW-PA220-1 system</code> (System logs only)\n"
+            "• <code>/backup FW-PA220-1 threat</code> (Threat logs only)\n\n"
             + text,
             parse_mode=ParseMode.HTML
         )
+        u_name = update.effective_user.username or update.effective_user.first_name if update.effective_user else "User"
+        log_telegram_message(update.effective_chat.id, "COMMAND_REPLY", f"Response /backup: Missing parameter instruction sent to @{u_name}")
         return
 
     device_name = context.args[0].strip()
     category_param = context.args[1].strip().lower() if len(context.args) > 1 else None
     operator_user = update.effective_user.username or update.effective_user.first_name
 
-    cat_desc = f"kategori {category_param.upper()}" if category_param and category_param != "all" else "semua kategori"
+    cat_desc = f"{category_param.upper()} category" if category_param and category_param != "all" else "all categories"
 
     # Deteksi protokol komunikasi perangkat riil dari database (SSH vs API)
     method = "SSH"
@@ -790,9 +815,9 @@ async def backup_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         db_session.remove()
 
     progress_msg = await update.message.reply_text(
-        "<b>MEMPROSES PENCADANGAN</b>\n\n"
-        f"Menghubungi <code>{html.escape(device_name)}</code> via {method}.\n"
-        f"Mengekstrak berkas {cat_desc}.",
+        "<b>PROCESSING BACKUP</b>\n\n"
+        f"Connecting to <code>{html.escape(device_name)}</code> via {method}.\n"
+        f"Extracting {cat_desc} files.",
         parse_mode=ParseMode.HTML
     )
 
@@ -809,10 +834,17 @@ async def backup_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if not backup_result.get("success"):
         await progress_msg.edit_text(
-            f"<b>GAGAL MENGEKSEKUSI PENCADANGAN</b>\n\n"
-            f"Perangkat: <code>{html.escape(device_name)}</code>\n"
-            f"Keterangan: {html.escape(backup_result.get('error', 'Terjadi kesalahan internal.'))}",
+            f"<b>BACKUP EXECUTION FAILED</b>\n\n"
+            f"Device: <code>{html.escape(device_name)}</code>\n"
+            f"Reason: {html.escape(backup_result.get('error', 'Internal error occurred.'))}",
             parse_mode=ParseMode.HTML
+        )
+        err_desc = backup_result.get('error', 'Internal error occurred.')
+        log_telegram_message(
+            chat_id=str(update.effective_chat.id),
+            message_type="COMMAND_REPLY",
+            content=f"Backup for {device_name} by @{operator_user} FAILED: {err_desc}",
+            status="SENT"
         )
         return
 
@@ -885,7 +917,7 @@ async def backup_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def user_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Command /user: Menampilkan info profil teknisi, Chat ID Telegram, dan verifikasi status whitelist NOC"""
+    """Command /user: Display engineer profile, Telegram Chat ID, and NOC whitelist verification status"""
     ACTIVE_CHATS.add(update.effective_chat.id)
     user = update.effective_user
     if not user:
@@ -893,22 +925,22 @@ async def user_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     user_id = user.id
     raw_username = user.username or ''
-    display_username = f"@{raw_username}" if raw_username else "(tidak ada username)"
+    display_username = f"@{raw_username}" if raw_username else "(no username)"
     full_name = user.full_name or user.first_name or "Engineer"
 
     session = db_session()
     try:
-        # 1. Cek apakah user sudah terdaftar dengan chat_id angka ini
+        # 1. Check if user is registered with this numerical chat_id
         entry = session.query(TelegramWhitelist).filter(TelegramWhitelist.chat_id == str(user_id)).first()
 
-        # 2. Jika belum ditemukan dengan chat_id, cek apakah sudah di-approve oleh Admin via @username
+        # 2. If not found by chat_id, check if approved by Admin via @username
         if not entry and raw_username:
             entry = session.query(TelegramWhitelist).filter(
                 (TelegramWhitelist.telegram_username.ilike(f"@{raw_username}")) |
                 (TelegramWhitelist.telegram_username.ilike(raw_username))
             ).first()
             if entry:
-                # Kaitkan Chat ID asli Telegram pengguna
+                # Link user's real Telegram Chat ID
                 entry.chat_id = str(user_id)
                 if full_name:
                     entry.engineer_name = full_name
@@ -916,42 +948,43 @@ async def user_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 if entry.is_active and user_id not in WHITELIST_USERS:
                     WHITELIST_USERS.append(user_id)
 
-        # 3. Jika sudah terdaftar
+        # 3. If registered
         if entry:
             if entry.is_active and user_id not in WHITELIST_USERS:
                 WHITELIST_USERS.append(user_id)
 
             status_str = "Active" if entry.is_active else "Inactive"
             reply_msg = (
-                "<b>PROFIL TEKNISI AGIVA NETWORK OPERATIONS</b>\n\n"
-                f"Nama: <code>{html.escape(entry.engineer_name)}</code>\n"
+                "<b>NETWORK OPERATIONS ENGINEER PROFILE</b>\n\n"
+                f"Name: <code>{html.escape(entry.engineer_name)}</code>\n"
                 f"Chat ID: <code>{user_id}</code>\n"
                 f"Username: {html.escape(entry.telegram_username)}\n"
                 f"Role: <code>{html.escape(entry.role)}</code>\n"
                 f"Status: {status_str}\n\n"
-                "Hak Akses:\n"
-                "• Diizinkan: /status, /devices, /device, /alerts, /user, /start, /ack, /backup\n"
-                "• Ditolak: -\n\n"
-                f"Terdaftar sejak: <code>{entry.registered_at.strftime('%Y-%m-%d')}</code>"
+                "Access Permissions:\n"
+                "• Allowed: /status, /devices, /device, /alerts, /user, /start, /ack, /resolve, /backup\n"
+                "• Denied: -\n\n"
+                f"Registered since: <code>{entry.registered_at.strftime('%Y-%m-%d')}</code>"
             )
             log_telegram_message(update.effective_chat.id, "COMMAND_REPLY", f"Response /user: Engineer profile check for @{raw_username or full_name} (ID: {user_id})")
             await update.message.reply_text(reply_msg, parse_mode=ParseMode.HTML)
             return
 
-        # 4. Jika belum terdaftar
+        # 4. If not registered
         reply_msg = (
-            "<b>INFORMASI PENGGUNA TELEGRAM</b>\n\n"
-            f"Nama: <code>{html.escape(full_name)}</code>\n"
+            "<b>TELEGRAM USER INFORMATION</b>\n\n"
+            f"Name: <code>{html.escape(full_name)}</code>\n"
             f"Chat ID: <code>{user_id}</code>\n"
             f"Username: {html.escape(display_username)}\n"
-            "Role: <i>Guest</i>\n"
+            "Role: Guest\n"
             "Status: Inactive\n\n"
-            "Hak Akses:\n"
-            "• Diizinkan: /status, /devices, /device, /alerts, /user, /start\n"
-            "• Ditolak: /ack, /backup\n\n"
-            "Untuk mendaftarkan akun ke Whitelist, hubungi admin untuk di-approve via username Telegram Anda."
+            "Access Permissions:\n"
+            "• Allowed: /status, /devices, /device, /alerts, /user, /start\n"
+            "• Denied: /ack, /resolve, /backup\n\n"
+            "To register your account in the Whitelist, contact the Administrator to approve your Telegram username."
         )
         await update.message.reply_text(reply_msg, parse_mode=ParseMode.HTML)
+        log_telegram_message(update.effective_chat.id, "COMMAND_REPLY", f"Response /user: Guest profile sent to @{raw_username or full_name} (ID: {user_id}) - Not in Whitelist")
 
     except Exception as e:
         try:
@@ -959,19 +992,20 @@ async def user_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         except Exception:
             pass
         logger.error(f"Error handling /user command: {e}")
-        await update.message.reply_text(f"Gagal memuat profil: {e}")
+        await update.message.reply_text(f"Failed to load user profile: {e}")
+        log_telegram_message(update.effective_chat.id, "COMMAND_REPLY", f"Response /user error: {e}")
     finally:
         session.close()
         db_session.remove()
 
 
 async def approve_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Command /approve @username [role]: Menyetujui akses teknisi oleh Lead Engineer Dara Samsara"""
+    """Command /approve @username [role]: Authorize engineer access by Lead Engineer Dara Samsara"""
     user = update.effective_user
     if not user:
         return
 
-    # Otorisasi: HANYA Dara Samsara (Lead Engineer) yang berhak approve
+    # Authorization: ONLY Lead Engineer can approve
     lead_admin_id = 5419251159
     try:
         env_admin = os.getenv("TELEGRAM_CHAT_ID", "5419251159").strip()
@@ -983,12 +1017,14 @@ async def approve_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if user.id != lead_admin_id:
         logger.warning(f"Unauthorized /approve attempt by user {user.id} ({user.username})")
         await update.message.reply_text(
-            "Akses ditolak. Hanya Admin yang memiliki wewenang untuk menyetujui akses.",
+            "Access denied. Only the Administrator is authorized to approve access.",
             parse_mode=ParseMode.HTML
         )
+        u_name = user.username or user.first_name if user else "User"
+        log_telegram_message(update.effective_chat.id, "COMMAND_REPLY", f"Access denied for /approve command to @{u_name} (ID: {user.id}) - Admin privilege required")
         return
 
-    # Ambil parameter target (@username) dan custom role
+    # Parse target parameter (@username) and custom role
     target = None
     custom_role = None
 
@@ -996,10 +1032,11 @@ async def approve_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         replied_user = update.message.reply_to_message.from_user
         if not replied_user.username:
             await update.message.reply_text(
-                "Registrasi ditolak. Wajib menggunakan username dan role.\n\n"
-                "Gunakan format: /approve @username [role].",
+                "Registration rejected. Username and role are required.\n\n"
+                "Use format: /approve @username [role].",
                 parse_mode=ParseMode.HTML
             )
+            log_telegram_message(update.effective_chat.id, "COMMAND_REPLY", "Response /approve: Rejected - Username is missing in replied message")
             return
         target = f"@{replied_user.username}"
         if context.args:
@@ -1011,13 +1048,14 @@ async def approve_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if not target or not target.startswith("@") or target.lstrip("@").strip().isdigit():
         await update.message.reply_text(
-            "Registrasi ditolak. Wajib menggunakan username dan role.\n\n"
-            "Gunakan format: /approve @username [role].",
+            "Registration rejected. Username and role are required.\n\n"
+            "Use format: /approve @username [role].",
             parse_mode=ParseMode.HTML
         )
+        log_telegram_message(update.effective_chat.id, "COMMAND_REPLY", "Response /approve: Rejected - Valid @username is required")
         return
 
-    # Normalisasi format username
+    # Normalize username format
     clean_target = target.lstrip("@").strip()
     username_tag = f"@{clean_target}"
     eng_name = clean_target.replace("_", " ").title()
@@ -1025,7 +1063,7 @@ async def approve_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     session = db_session()
     try:
-        # Cari di database berdasarkan username
+        # Search database by username
         entry = session.query(TelegramWhitelist).filter(
             (TelegramWhitelist.telegram_username.ilike(username_tag)) |
             (TelegramWhitelist.telegram_username.ilike(clean_target)) |
@@ -1043,11 +1081,12 @@ async def approve_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 if cid_int not in WHITELIST_USERS:
                     WHITELIST_USERS.append(cid_int)
 
-            msg = f"Akun {html.escape(entry.telegram_username)} berhasil di-approve sebagai {html.escape(entry.role)}."
+            msg = f"Account {html.escape(entry.telegram_username)} successfully approved as {html.escape(entry.role)}."
             await update.message.reply_text(msg)
+            log_telegram_message(update.effective_chat.id, "COMMAND_REPLY", f"Response /approve: Account {entry.telegram_username} updated and approved as {entry.role} by Admin")
             return
 
-        # Jika belum ada di database, buat record baru dengan placeholder pending
+        # If not yet in database, create new pending record
         new_entry = TelegramWhitelist(
             chat_id=f"Pending_{clean_target[:35]}",
             telegram_username=username_tag,
@@ -1058,7 +1097,7 @@ async def approve_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         session.add(new_entry)
         session.commit()
 
-        msg = f"Akun {html.escape(username_tag)} berhasil di-approve sebagai {html.escape(eng_role)}."
+        msg = f"Account {html.escape(username_tag)} successfully approved as {html.escape(eng_role)}."
         await update.message.reply_text(msg)
         log_telegram_message(update.effective_chat.id, "COMMAND_REPLY", f"Response /approve: Account {username_tag} approved as {eng_role} by Admin")
 
@@ -1068,7 +1107,8 @@ async def approve_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         except Exception:
             pass
         logger.error(f"Error handling /approve: {e}")
-        await update.message.reply_text(f"Gagal melakukan approval: {e}")
+        await update.message.reply_text(f"Failed to process approval: {e}")
+        log_telegram_message(update.effective_chat.id, "COMMAND_REPLY", f"Response /approve error: {e}")
     finally:
         session.close()
         db_session.remove()
@@ -1077,13 +1117,13 @@ async def approve_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # ==================== MAIN APPLICATION INITIALIZATION ====================
 
 async def global_error_handler(update: object, context: ContextTypes.DEFAULT_TYPE):
-    """Menangkap semua exception agar bot tetap berjalan tanpa crash"""
+    """Catch all exceptions to ensure bot resilience without crashing"""
     logger.error(f"Global Error Handler caught: {context.error}")
 
 import atexit
 
 def mark_bot_offline():
-    """Menulis status OFFLINE ke heartbeat file agar dashboard segera mendeteksi bot mati"""
+    """Write OFFLINE status to heartbeat file so dashboard immediately detects downtime"""
     try:
         hb_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'logs', 'bot_heartbeat.json')
         if os.path.exists(hb_path):
@@ -1112,7 +1152,7 @@ def start_local_heartbeat():
 
 def main():
     if not BOT_TOKEN:
-        print("[Critical] TELEGRAM_BOT_TOKEN belum diset di file .env!")
+        print("[Critical] TELEGRAM_BOT_TOKEN is not set in .env file!")
         return
 
     start_local_heartbeat()
@@ -1123,7 +1163,7 @@ def main():
     print(f"[*] Started at      : {get_current_time_wib()}")
     print(f"[*] Whitelist Users : {WHITELIST_USERS if WHITELIST_USERS else 'Unrestricted (Open Lab)'}")
     print("[*] Engine Status   : Ready for Telemetry & Alert Dispatch")
-    print("[*] Polling loop running... (Tekan Ctrl+C untuk menghentikan)")
+    print("[*] Polling loop running... (Press Ctrl+C to terminate)")
     print("===============================================================\n")
 
     app = ApplicationBuilder().token(BOT_TOKEN).build()
@@ -1142,21 +1182,16 @@ def main():
     app.add_handler(CommandHandler("user", user_command))
     app.add_handler(CommandHandler("approve", approve_command))
 
-    # Automated Background Data Collector Scheduler dinonaktifkan (Manual Resolve Only)
-    # if app.job_queue:
-    #     app.job_queue.run_repeating(auto_collector_job, interval=25, first=10)
-    #     logger.info("Background Automated Data Collector Scheduler initialized (interval: 25s)")
-
     # Global Error Handler
     app.add_error_handler(global_error_handler)
 
     try:
         app.run_polling()
     except (KeyboardInterrupt, SystemExit):
-        print("\n[*] Bot engine dihentikan oleh pengguna.")
+        print("\n[*] Bot engine terminated by user.")
     finally:
         mark_bot_offline()
-        print("[*] Status bot dicatat sebagai OFFLINE.")
+        print("[*] Bot status marked as OFFLINE.")
 
 if __name__ == "__main__":
     main()
