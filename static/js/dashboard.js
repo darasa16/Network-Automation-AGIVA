@@ -661,30 +661,31 @@ function updateWanCard(wan) {
 
     const dlVal = wan.download_mbps !== undefined ? wan.download_mbps : 0.0;
     const ulVal = wan.upload_mbps !== undefined ? wan.upload_mbps : 0.0;
+    const totVal = wan.total_mbps !== undefined ? wan.total_mbps : (Math.round((dlVal + ulVal) * 10) / 10);
     const cap = wan.capacity_mbps || 100;
-    const utilPct = wan.utilization_pct !== undefined ? wan.utilization_pct : (cap > 0 ? Math.round((dlVal / cap) * 1000) / 10 : 0);
+    const utilPct = wan.utilization_pct !== undefined ? wan.utilization_pct : (cap > 0 ? Math.round((totVal / cap) * 1000) / 10 : 0);
+    const dlUtilPct = cap > 0 ? Math.round((dlVal / cap) * 1000) / 10 : 0;
     const ulUtilPct = cap > 0 ? Math.round((ulVal / cap) * 1000) / 10 : 0;
 
     if (dlEl) dlEl.textContent = dlVal;
     if (ulEl) ulEl.textContent = ulVal;
-    if (dlProg) dlProg.style.width = `${Math.min(100, Math.max(0, utilPct))}%`;
+    if (dlProg) dlProg.style.width = `${Math.min(100, Math.max(0, dlUtilPct))}%`;
     if (ulProg) ulProg.style.width = `${Math.min(100, Math.max(0, ulUtilPct))}%`;
 
     // Combined Utilization Row below Download & Upload
     const utilCombinedVal = document.getElementById('wanUtilCombinedVal');
     const capValCombined = document.getElementById('wanCapValCombined');
     if (utilCombinedVal) utilCombinedVal.textContent = `${utilPct}%`;
-    if (capValCombined) capValCombined.textContent = `${cap} Mbps`;
+    if (capValCombined) capValCombined.textContent = cap;
 
-    if (latEl && wan.latency_ms !== undefined) latEl.textContent = `${wan.latency_ms} ms`;
-    if (lossEl && wan.packet_loss !== undefined) lossEl.textContent = `${wan.packet_loss}%`;
-    if (gwLatEl && wan.gateway_latency_ms !== undefined) gwLatEl.textContent = `${wan.gateway_latency_ms} ms`;
+    if (latEl && wan.latency_ms !== undefined) latEl.textContent = wan.latency_ms;
+    if (lossEl && wan.packet_loss !== undefined) lossEl.textContent = wan.packet_loss;
+    if (gwLatEl && wan.gateway_latency_ms !== undefined) gwLatEl.textContent = wan.gateway_latency_ms;
     if (errEl) {
         const rxErr = wan.rx_errors !== undefined ? wan.rx_errors : 0;
         const txErr = wan.tx_errors !== undefined ? wan.tx_errors : 0;
-        const totErr = wan.total_errors !== undefined ? wan.total_errors : (rxErr + txErr);
-        errEl.textContent = `${rxErr} / ${txErr} pkts`;
-        errEl.style.color = totErr > 0 ? '#ef4444' : '#10b981';
+        errEl.textContent = `${rxErr} / ${txErr}`;
+        errEl.style.color = ''; // Dilarang berwarna merah atau hijau! Tetap putih dari CSS (.ping-num)
     }
     if (lastSync && wan.last_updated) lastSync.textContent = wan.last_updated;
 
@@ -697,7 +698,7 @@ function updateWanCard(wan) {
 
     const isUp = wan.status === 'UP';
     if (statusText) {
-        statusText.textContent = `${wan.status || 'UP'} (1 Gbps)`;
+        statusText.textContent = wan.status || 'UP'; // Tanpa tulisan '(1 Gbps)'
     }
     if (statusDot) {
         statusDot.className = `live-dot dot-${isUp ? 'green' : 'red'}`;
@@ -804,7 +805,12 @@ async function handleWanSpeedtest() {
         modal.style.display = 'flex';
         document.body.style.overflow = 'hidden';
     }
-    if (loadingState) loadingState.style.display = 'flex';
+    if (loadingState) {
+        loadingState.style.display = 'flex';
+        loadingState.style.flexDirection = 'column';
+        loadingState.style.alignItems = 'center';
+        loadingState.style.justifyContent = 'center';
+    }
     if (resultState) resultState.style.display = 'none';
     if (btnRetest) btnRetest.disabled = true;
     if (btnTrigger) btnTrigger.classList.add('loading');
@@ -831,25 +837,35 @@ async function handleWanSpeedtest() {
 
             const dlVal = w.download_mbps !== undefined ? w.download_mbps : 0.0;
             const ulVal = w.upload_mbps !== undefined ? w.upload_mbps : 0.0;
+            const totVal = w.total_mbps !== undefined ? w.total_mbps : (Math.round((dlVal + ulVal) * 10) / 10);
             const cap = w.capacity_mbps || 100;
-            const utilPct = w.utilization_pct !== undefined ? w.utilization_pct : (cap > 0 ? Math.round((dlVal / cap) * 1000) / 10 : 0);
+            const utilPct = w.utilization_pct !== undefined ? w.utilization_pct : (cap > 0 ? Math.round((totVal / cap) * 1000) / 10 : 0);
+            const dlPct = cap > 0 ? Math.round((dlVal / cap) * 1000) / 10 : 0;
             const ulPct = cap > 0 ? Math.round((ulVal / cap) * 1000) / 10 : 0;
 
             if (stDl) stDl.textContent = dlVal;
             if (stUl) stUl.textContent = ulVal;
-            if (stDlUtil) stDlUtil.textContent = `${utilPct}% Utilisasi`;
+            if (stDlUtil) stDlUtil.textContent = `${dlPct}% Utilisasi`;
             if (stUlUtil) stUlUtil.textContent = `${ulPct}% Utilisasi`;
-            if (stDlProg) stDlProg.style.width = `${Math.min(100, Math.max(0, utilPct))}%`;
+            if (stDlProg) stDlProg.style.width = `${Math.min(100, Math.max(0, dlPct))}%`;
             if (stUlProg) stUlProg.style.width = `${Math.min(100, Math.max(0, ulPct))}%`;
             if (stLat) stLat.textContent = `${w.latency_ms} ms`;
             if (stGwLat) stGwLat.textContent = `${w.gateway_latency_ms} ms`;
             if (stLoss) stLoss.textContent = `${w.packet_loss}%`;
             if (stQPill) {
-                const qColor = w.quality_color || (w.status === 'DOWN' ? 'red' : 'green');
-                stQPill.className = `wan-q-pill pill-${qColor}`;
-                stQPill.textContent = w.quality_label || (qColor === 'red' ? 'Koneksi Abnormal' : 'Koneksi Normal');
+                const isDown = w.status === 'DOWN' || w.quality_color === 'red';
+                stQPill.textContent = w.quality_label || (isDown ? 'Koneksi Abnormal' : 'Koneksi Normal');
+                stQPill.className = 'st-m-val';
+                stQPill.style.color = '#ffffff';
+                stQPill.style.background = 'transparent';
+                stQPill.style.border = 'none';
+                stQPill.style.boxShadow = 'none';
             }
-            if (stTs) stTs.textContent = `${w.last_updated || new Date().toLocaleTimeString('id-ID')} (Real-Time Speedtest)`;
+            if (stTs) {
+                const rawTime = w.last_updated || new Date().toLocaleTimeString('id-ID');
+                const cleanTime = rawTime.replace(/\s*\(.*?\)/g, '').trim();
+                stTs.textContent = cleanTime;
+            }
 
             // Update main dashboard WAN card as well!
             updateWanCard(w);
@@ -954,27 +970,26 @@ function renderWanLogTableRows() {
     }
 
     const rowsHtml = filtered.map(item => {
-        const totErr = item.total_errors !== undefined ? item.total_errors : ((item.rx_errors || 0) + (item.tx_errors || 0));
         const isDown = item.status === 'DOWN';
-        const isDegraded = !isDown && (item.latency_ms > 45.0 || item.packet_loss > 3.0 || totErr > 0);
-        const statusClass = isDown ? 'down' : (isDegraded ? 'degraded' : 'up');
-        const statusLabel = isDown ? 'DOWN' : (isDegraded ? 'DEGRADED' : 'UP');
+        const statusClass = isDown ? 'down' : 'up';
+        const statusLabel = isDown ? 'DOWN' : 'UP';
 
         return `
             <tr>
-                <td style="color: #cbd5e1; font-weight: 500;">${escapeHtml(item.timestamp)}</td>
+                <td style="color: #ffffff; font-weight: 500;">${escapeHtml(item.timestamp)}</td>
                 <td>
                     <span class="wan-badge-status-sm ${statusClass}">
+                        <span class="live-dot dot-${isDown ? 'red' : 'green'}" style="width: 5px; height: 5px;"></span>
                         ${statusLabel}
                     </span>
                 </td>
-                <td style="color: #06b6d4; font-weight: 700;">${item.download_mbps} <span style="font-size: 0.7em; color: #64748b;">Mbps</span></td>
-                <td style="color: #f97316; font-weight: 700;">${item.upload_mbps} <span style="font-size: 0.7em; color: #64748b;">Mbps</span></td>
-                <td style="color: #e2e8f0;">${item.total_mbps} <span style="font-size: 0.7em; color: #64748b;">Mbps</span></td>
-                <td style="color: ${item.latency_ms > 45 ? '#f59e0b' : '#10b981'}; font-weight: 600;">${item.latency_ms} ms</td>
-                <td style="color: #94a3b8;">${item.gateway_latency_ms} ms</td>
-                <td style="color: ${item.packet_loss > 0 ? '#ef4444' : '#10b981'}; font-weight: 600;">${item.packet_loss}%</td>
-                <td style="color: ${totErr > 0 ? '#ef4444' : '#10b981'}; font-weight: 600;">${item.rx_errors || 0} / ${item.tx_errors || 0} pkts</td>
+                <td style="color: #ffffff; font-weight: 600;">${item.download_mbps} Mbps</td>
+                <td style="color: #ffffff; font-weight: 600;">${item.upload_mbps} Mbps</td>
+                <td style="color: #ffffff; font-weight: 600;">${item.total_mbps} Mbps</td>
+                <td style="color: #ffffff; font-weight: 500;">${item.latency_ms} ms</td>
+                <td style="color: #ffffff; font-weight: 500;">${item.gateway_latency_ms} ms</td>
+                <td style="color: #ffffff; font-weight: 500;">${item.packet_loss}%</td>
+                <td style="color: #ffffff; font-weight: 500;">${item.rx_errors || 0} / ${item.tx_errors || 0} pkts</td>
             </tr>
         `;
     }).join('');

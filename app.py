@@ -164,46 +164,9 @@ def get_wan_metrics_summary(session=None):
         latest = None
 
     capacity = float(os.getenv("BIZNET_CAPACITY_MBPS", "100.0"))
-    now = datetime.now()
 
-    # Siklus Polling Otomatis 2 Menit:
-    # Memastikan metrik KPI dan 'Last Polled' selalu ter-update setiap 2 menit,
-    # dan data polling sebelumnya otomatis masuk ke arsip 'See Log'.
-    if not latest or (now - latest.timestamp).total_seconds() >= 120:
-        try:
-            import random
-            prev_dl = latest.download_mbps if latest else 27.4
-            prev_ul = latest.upload_mbps if latest else 3.1
-            prev_lat = latest.latency_ms if latest else 9.5
-            prev_gw_lat = latest.gateway_latency_ms if latest else 1.1
-
-            # Variasi natural trafik download & upload antar siklus 2 menit
-            new_dl = round(max(5.0, min(95.0, prev_dl + random.uniform(-3.5, 4.0))), 1)
-            new_ul = round(max(1.0, min(25.0, prev_ul + random.uniform(-0.8, 1.0))), 1)
-            new_lat = round(max(4.0, min(35.0, prev_lat + random.uniform(-0.6, 0.6))), 1)
-            new_gw = round(max(0.6, min(2.5, prev_gw_lat + random.uniform(-0.15, 0.15))), 1)
-
-            new_entry = WanStatusLog(
-                timestamp=now,
-                interface_name='ethernet1/3',
-                provider='Biznet',
-                status='UP',
-                download_mbps=new_dl,
-                upload_mbps=new_ul,
-                total_mbps=round(new_dl + new_ul, 1),
-                latency_ms=new_lat,
-                gateway_latency_ms=new_gw,
-                packet_loss=0.0,
-                rx_errors=latest.rx_errors if latest else 0,
-                tx_errors=latest.tx_errors if latest else 0
-            )
-            session.add(new_entry)
-            session.commit()
-            latest = new_entry
-        except Exception as e_poll:
-            session.rollback()
-            logger.warning(f"Error auto-recording 2-min WAN cycle: {e_poll}")
-
+    # Single Source of Truth: app.py murni membaca data riil dari database (dicatat oleh collector.py).
+    # Tidak membuat/memalsukan log baru saat collector.py tidak aktif.
     if latest:
         dl = round(latest.download_mbps or 0.0, 1)
         ul = round(latest.upload_mbps or 0.0, 1)
@@ -217,9 +180,10 @@ def get_wan_metrics_summary(session=None):
         st = latest.status or "UP"
         updated = latest.timestamp.strftime("%H:%M:%S") if latest.timestamp else "-"
     else:
-        dl, ul, tot, lat, gw_lat, loss, rx_err, tx_err, tot_err, st, updated = 27.4, 3.1, 30.5, 9.5, 1.1, 0.0, 0, 0, 0, "UP", now.strftime("%H:%M:%S")
+        dl, ul, tot, lat, gw_lat, loss, rx_err, tx_err, tot_err, st, updated = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0, 0, 0, "UP", "-"
 
-    utilization_pct = round(min(100.0, (dl / capacity) * 100.0), 1)
+    # Metode Agregat Gabungan: Menghitung persentase pemakaian total trafik (Download + Upload) terhadap kapasitas paket
+    utilization_pct = round(min(100.0, (tot / capacity) * 100.0), 1)
 
     # Diagnostik Pintar Otomatis (Cukup Hijau: Koneksi Normal, Merah: Koneksi Abnormal)
     if st == "DOWN" or loss > 2.0 or lat > 45.0 or tot_err > 0 or utilization_pct >= 90.0:
@@ -1366,10 +1330,8 @@ def api_wan_logs():
                 WanStatusLog.timestamp.desc()
             ).limit(720).all()
 
-        # Sesuai aturan perancangan: data polling paling baru yang sedang berjalan (aktif) tampil di KPI Card & Last Polled.
-        # Daftar tabel 'See Log' menampilkan siklus polling yang telah terselesaikan (mulai dari siklus sebelumnya).
-        # Data terbaru baru masuk ke See Log saat polling berikutnya tiba.
-        historical_logs = logs[1:] if len(logs) > 1 else logs
+        # Data riil dari database: baris paling atas di See Log adalah data polling terbaru yang sama persis dengan KPI Card.
+        historical_logs = logs
 
         result = []
         for row in historical_logs:
@@ -1453,6 +1415,7 @@ def api_wan_speedtest():
     pa_ip = os.getenv("PA_IP", "192.168.1.11")
     pa_key = os.getenv("PA_API_KEY", "LUFRPT1mOVAwR1h3bzFrTFNnQjI4WkF3L0h5UVg5Z3c9VDZ2TVVXS2ZmODdwUVRkbDdvcGdJSW1WUkJWVnFCWWdUWWhZV3J4SnhoWFdLalNySkpoRmI0enhVWkdNZjBBdw==")
 
+    pa_reachable = False
     dl_mbps = 0.0
     ul_mbps = 0.0
     link_status = "UP" if (inet_up or gw_up) else "DOWN"
@@ -1461,6 +1424,7 @@ def api_wan_speedtest():
         url_if = f"https://{pa_ip}/api/?type=op&cmd=<show><interface>ethernet1/3</interface></show>&key={pa_key}"
         r1 = requests.get(url_if, verify=False, timeout=3)
         if r1.status_code == 200:
+            pa_reachable = True
             m_state = re.search(r'<state>(.*?)</state>', r1.text)
             if m_state and m_state.group(1).strip().lower() == 'down':
                 link_status = "DOWN"
@@ -1491,16 +1455,15 @@ def api_wan_speedtest():
                         ul_mbps = round(live_ul, 2)
     except Exception as e:
         logger.warning(f"Speedtest PA-220 interface probe failed: {e}")
+        pa_reachable = False
 
-    # Fallback realistis jika idle atau lab environment
-    if link_status == "UP" and dl_mbps == 0.0:
-        import random
-        dl_mbps = round(random.uniform(41.0, 68.5), 1)
-        ul_mbps = round(random.uniform(12.0, 24.5), 1)
-        if inet_lat == 0.0:
-            inet_lat = round(random.uniform(8.5, 14.2), 1)
-        if gw_lat == 0.0:
-            gw_lat = round(random.uniform(0.9, 1.6), 1)
+    # Validasi Real-Time: Jika perangkat firewall PA-220 dan gateway Biznet tidak terjangkau
+    # (misalnya sedang di luar jaringan kantor/NOC), tolak speedtest secara jujur tanpa membuat data simulasi!
+    if not pa_reachable and not gw_up:
+        return jsonify({
+            "status": "error",
+            "message": "Tidak dapat terhubung ke Firewall FW-PA220-1 atau Gateway Biznet (192.168.18.1). Speedtest hanya dapat dijalankan saat terhubung ke jaringan kantor/Biznet."
+        }), 503
 
     total_mbps = round(dl_mbps + ul_mbps, 2)
 
@@ -1524,7 +1487,7 @@ def api_wan_speedtest():
         session.add(new_log)
         session.commit()
         wan_summary = get_wan_metrics_summary(session=session)
-        wan_summary["last_updated"] = f"{datetime.now().strftime('%H:%M:%S')} (Speedtest)"
+        wan_summary["last_updated"] = datetime.now().strftime('%H:%M:%S')
         return jsonify({
             "status": "success",
             "message": f"Speedtest Berhasil! Download: {dl_mbps} Mbps, Upload: {ul_mbps} Mbps, Ping: {inet_lat} ms",
