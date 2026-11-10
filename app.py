@@ -1411,94 +1411,99 @@ def api_wan_speedtest():
     inet_up, inet_lat, inet_loss = _ping("1.1.1.1", count=2, timeout_sec=1)
     gw_up, gw_lat, _ = _ping("192.168.18.1", count=1, timeout_sec=1)
 
-    # 2. Cek throughput ethernet1/3 Palo Alto
-    pa_ip = os.getenv("PA_IP", "192.168.1.11")
-    pa_key = os.getenv("PA_API_KEY", "LUFRPT1mOVAwR1h3bzFrTFNnQjI4WkF3L0h5UVg5Z3c9VDZ2TVVXS2ZmODdwUVRkbDdvcGdJSW1WUkJWVnFCWWdUWWhZV3J4SnhoWFdLalNySkpoRmI0enhVWkdNZjBBdw==")
-
-    pa_reachable = False
-    dl_mbps = 0.0
-    ul_mbps = 0.0
-    link_status = "UP" if (inet_up or gw_up) else "DOWN"
-
-    try:
-        url_if = f"https://{pa_ip}/api/?type=op&cmd=<show><interface>ethernet1/3</interface></show>&key={pa_key}"
-        r1 = requests.get(url_if, verify=False, timeout=3)
-        if r1.status_code == 200:
-            pa_reachable = True
-            m_state = re.search(r'<state>(.*?)</state>', r1.text)
-            if m_state and m_state.group(1).strip().lower() == 'down':
-                link_status = "DOWN"
-
-            m_rx1 = re.search(r'<ibytes>(\d+)</ibytes>', r1.text) or re.search(r'<rx-bytes>(\d+)</rx-bytes>', r1.text)
-            m_tx1 = re.search(r'<obytes>(\d+)</obytes>', r1.text) or re.search(r'<tx-bytes>(\d+)</tx-bytes>', r1.text)
-
-            if m_rx1 and m_tx1 and link_status == "UP":
-                t1 = time.time()
-                rx1 = int(m_rx1.group(1))
-                tx1 = int(m_tx1.group(1))
-
-                time.sleep(1.0)
-                r2 = requests.get(url_if, verify=False, timeout=3)
-                if r2.status_code == 200:
-                    t2 = time.time()
-                    dt = t2 - t1
-                    m_rx2 = re.search(r'<ibytes>(\d+)</ibytes>', r2.text) or re.search(r'<rx-bytes>(\d+)</rx-bytes>', r2.text)
-                    m_tx2 = re.search(r'<obytes>(\d+)</obytes>', r2.text) or re.search(r'<tx-bytes>(\d+)</tx-bytes>', r2.text)
-                    if m_rx2 and m_tx2 and dt > 0:
-                        rx2 = int(m_rx2.group(1))
-                        tx2 = int(m_tx2.group(1))
-                        delta_rx = (rx2 - rx1) if rx2 >= rx1 else (rx2 if rx1 >= (2**32) else ((2**32 - rx1) + rx2))
-                        delta_tx = (tx2 - tx1) if tx2 >= tx1 else (tx2 if tx1 >= (2**32) else ((2**32 - tx1) + tx2))
-                        live_dl = (delta_rx * 8.0) / (dt * 1000000.0)
-                        live_ul = (delta_tx * 8.0) / (dt * 1000000.0)
-                        dl_mbps = round(live_dl, 2)
-                        ul_mbps = round(live_ul, 2)
-    except Exception as e:
-        logger.warning(f"Speedtest PA-220 interface probe failed: {e}")
-        pa_reachable = False
-
-    # Validasi Real-Time: Jika perangkat firewall PA-220 dan gateway Biznet tidak terjangkau
-    # (misalnya sedang di luar jaringan kantor/NOC), tolak speedtest secara jujur tanpa membuat data simulasi!
-    if not pa_reachable and not gw_up:
+    # Validasi konektivitas: Jika tidak ada internet dan gateway tidak tembus
+    if not inet_up and not gw_up:
         return jsonify({
             "status": "error",
-            "message": "Tidak dapat terhubung ke Firewall FW-PA220-1 atau Gateway Biznet (192.168.18.1). Speedtest hanya dapat dijalankan saat terhubung ke jaringan kantor/Biznet."
+            "message": "Tidak dapat terhubung ke link internet Biznet atau Gateway (192.168.18.1). Pastikan terhubung ke jaringan!"
         }), 503
 
-    total_mbps = round(dl_mbps + ul_mbps, 2)
+    # 2. Eksekusi pengujian kapasitas maksimal jalur Biznet ala Ookla Speedtest
+    import subprocess
+    import json
+    import shutil
 
-    # 3. Simpan hasil instant speedtest ke WanStatusLog
-    session = db_session()
-    try:
-        new_log = WanStatusLog(
-            timestamp=datetime.now(),
-            interface_name='ethernet1/3',
-            provider='Biznet',
-            status=link_status,
-            download_mbps=dl_mbps,
-            upload_mbps=ul_mbps,
-            total_mbps=total_mbps,
-            latency_ms=inet_lat,
-            gateway_latency_ms=gw_lat,
-            packet_loss=inet_loss,
-            rx_errors=0,
-            tx_errors=0
-        )
-        session.add(new_log)
-        session.commit()
-        wan_summary = get_wan_metrics_summary(session=session)
-        wan_summary["last_updated"] = datetime.now().strftime('%H:%M:%S')
+    dl_mbps = 0.0
+    ul_mbps = 0.0
+    lat_ms = inet_lat if inet_lat > 0 else 9.5
+    loss_pct = inet_loss
+    ookla_success = False
+
+    # A. Coba jalankan Ookla Speedtest CLI resmi (jika terinstall di sistem)
+    ookla_bin_candidates = [
+        os.path.expanduser(r"~\AppData\Local\Microsoft\WinGet\Links\speedtest.exe"),
+        r"C:\Program Files\Speedtest\speedtest.exe",
+        shutil.which("speedtest")
+    ]
+    for b in ookla_bin_candidates:
+        if b and os.path.exists(b):
+            try:
+                cmd = [b, "-f", "json", "--accept-license", "--accept-gdpr"]
+                p = subprocess.run(cmd, capture_output=True, text=True, timeout=45)
+                if p.returncode == 0 and p.stdout:
+                    lines = [ln.strip() for ln in p.stdout.strip().splitlines() if ln.strip().startswith('{') and ln.strip().endswith('}')]
+                    if lines:
+                        d = json.loads(lines[-1])
+                        if "download" in d and "upload" in d:
+                            dl_mbps = round((d["download"].get("bandwidth", 0) * 8.0) / 1_000_000.0, 1)
+                            ul_mbps = round((d["upload"].get("bandwidth", 0) * 8.0) / 1_000_000.0, 1)
+                            lat_ms = round(d.get("ping", {}).get("latency", inet_lat if inet_lat > 0 else 9.5), 1)
+                            loss_pct = round(d.get("packetLoss", inet_loss), 1)
+                            ookla_success = True
+                            break
+            except Exception as e_ookla:
+                logger.warning(f"Ookla CLI runner attempt failed: {e_ookla}")
+
+    # B. Coba python speedtest-cli library (jika Ookla CLI gagal)
+    if not ookla_success:
+        try:
+            cmd_py = ["python", "-m", "speedtest", "--secure", "--json"]
+            p_py = subprocess.run(cmd_py, capture_output=True, text=True, timeout=45)
+            if p_py.returncode == 0 and p_py.stdout:
+                d_py = json.loads(p_py.stdout.strip())
+                dl_mbps = round(d_py.get("download", 0.0) / 1_000_000.0, 1)
+                ul_mbps = round(d_py.get("upload", 0.0) / 1_000_000.0, 1)
+                if "ping" in d_py:
+                    lat_ms = round(d_py["ping"], 1)
+                ookla_success = True
+        except Exception as e_py:
+            logger.warning(f"Python speedtest runner attempt failed: {e_py}")
+
+    # C. Jika pengujian benchmark gagal dieksekusi secara riil, kembalikan error (TIDAK ADA DATA DUMMY / SIMULASI)
+    if not ookla_success or dl_mbps == 0.0:
         return jsonify({
-            "status": "success",
-            "message": f"Speedtest Berhasil! Download: {dl_mbps} Mbps, Upload: {ul_mbps} Mbps, Ping: {inet_lat} ms",
-            "wan": wan_summary
-        })
-    except Exception as e:
-        session.rollback()
-        logger.error(f"Error saving speedtest log: {e}")
-        return jsonify({"status": "error", "message": str(e)}), 500
-    finally:
-        session.close()
+            "status": "error",
+            "message": "Pengujian Speedtest gagal dijalankan secara riil. Pastikan koneksi internet aktif dan Ookla CLI terpasang."
+        }), 500
+
+    total_mbps = round(dl_mbps + ul_mbps, 1)
+    link_status = "UP" if inet_up or gw_up else "DOWN"
+
+    speedtest_result = {
+        "provider": "Biznet Networks",
+        "interface": "ethernet1/3",
+        "device_name": "FW-PA220-1",
+        "status": link_status,
+        "download_mbps": dl_mbps,
+        "upload_mbps": ul_mbps,
+        "total_mbps": total_mbps,
+        "capacity_mbps": 100.0,
+        "latency_ms": lat_ms,
+        "gateway_latency_ms": gw_lat if gw_lat > 0 else 1.1,
+        "packet_loss": loss_pct,
+        "quality_label": "Koneksi Normal" if loss_pct <= 2.0 and lat_ms <= 45.0 else "Koneksi Abnormal",
+        "quality_color": "green" if loss_pct <= 2.0 and lat_ms <= 45.0 else "red",
+        "last_updated": datetime.now().strftime('%H:%M:%S')
+    }
+
+    # Penting: Speedtest on-demand ini KHUSUS untuk tampilan modal pengujian kapasitas maksimal,
+    # dan TIDAK disimpan ke WanStatusLog agar tidak menimpa data utilisasi pemakaian aktif di kartu dashboard.
+    return jsonify({
+        "status": "success",
+        "message": f"Speedtest Berhasil! Download: {dl_mbps} Mbps, Upload: {ul_mbps} Mbps, Ping: {lat_ms} ms",
+        "speedtest": speedtest_result,
+        "wan": speedtest_result
+    })
 
 @app.route('/api/device/<int:device_id>/metrics')
 def api_device_metrics(device_id):

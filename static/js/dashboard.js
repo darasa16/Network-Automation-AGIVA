@@ -867,18 +867,13 @@ async function handleWanSpeedtest() {
                 stTs.textContent = cleanTime;
             }
 
-            // Update main dashboard WAN card as well!
-            updateWanCard(w);
+            // Sesuai perancangan NOC: Jangan menimpa kartu KPI dashboard utama!
+            // Kartu dashboard tetap menampilkan utilisasi pemakaian aktif karyawan (misal 19.4 Mbps / 4 Mbps / 23.4%).
+            // Modal Speedtest khusus menampilkan hasil uji kapasitas maksimal pipa (~92 Mbps).
 
             // Hide loading, show results
             if (loadingState) loadingState.style.display = 'none';
             if (resultState) resultState.style.display = 'block';
-
-            // If See Log modal is open, refresh logs
-            const logModal = document.getElementById('wanLogModal');
-            if (logModal && logModal.style.display !== 'none') {
-                fetchWanLogs(true);
-            }
         } else {
             alert('Gagal menjalankan speedtest: ' + (data.message || 'Error'));
             closeWanSpeedtestModal();
