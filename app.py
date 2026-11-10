@@ -1,7 +1,6 @@
 from dotenv import load_dotenv
 load_dotenv(override=True)
 import os
-import random
 import json
 import re
 import time
@@ -178,7 +177,22 @@ def get_wan_metrics_summary(session=None):
         tx_err = int(latest.tx_errors or 0)
         tot_err = rx_err + tx_err
         st = latest.status or "UP"
-        updated = latest.timestamp.strftime("%H:%M:%S") if latest.timestamp else "-"
+        if latest.timestamp:
+            ts = latest.timestamp
+            if isinstance(ts, str):
+                try:
+                    ts = datetime.fromisoformat(ts.replace('Z', '+00:00'))
+                except Exception:
+                    ts = datetime.now()
+            # Seragamkan dengan time bucket interval grafik (kelipatan 120 detik / 2 menit)
+            bucket_seconds = 120
+            cycle_key = int(ts.timestamp()) // bucket_seconds
+            floored_dt = datetime.fromtimestamp(cycle_key * bucket_seconds)
+            date_str = floored_dt.strftime("%d/%m/%Y")
+            time_str = floored_dt.strftime("%H:%M:%S")
+            updated = f"{date_str} {time_str}"
+        else:
+            updated = "-"
     else:
         dl, ul, tot, lat, gw_lat, loss, rx_err, tx_err, tot_err, st, updated = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0, 0, 0, "UP", "-"
 
@@ -188,11 +202,11 @@ def get_wan_metrics_summary(session=None):
     # Diagnostik Pintar Otomatis (Cukup Hijau: Koneksi Normal, Merah: Koneksi Abnormal)
     if st == "DOWN" or loss > 2.0 or lat > 45.0 or tot_err > 0 or utilization_pct >= 90.0:
         quality_status = "ABNORMAL"
-        quality_label = "Koneksi Abnormal"
+        quality_label = "Abnormal Connection"
         quality_color = "red"
     else:
         quality_status = "NORMAL"
-        quality_label = "Koneksi Normal"
+        quality_label = "Normal Connection"
         quality_color = "green"
 
     if close_session:
@@ -531,7 +545,7 @@ def api_ack_alert(alert_id):
     """
     return jsonify({
         "success": False,
-        "message": "Acknowledge via Web dinonaktifkan per SOP PT AGIVA. Gunakan perintah Telegram: /ack <alert_id> oleh Duty Engineer resmi."
+        "message": "Web acknowledge is strictly disabled PT AGIVA SOP. Please use Telegram command: /ack <alert_id> by authorized Duty Engineer."
     }), 403
 
 @app.route('/api/resolve/<int:alert_id>', methods=['POST'])
@@ -1377,7 +1391,6 @@ def api_wan_speedtest():
     """
     import platform
     import subprocess
-    import requests
     import re
     import time
 
@@ -1415,7 +1428,7 @@ def api_wan_speedtest():
     if not inet_up and not gw_up:
         return jsonify({
             "status": "error",
-            "message": "Tidak dapat terhubung ke link internet Biznet atau Gateway (192.168.18.1). Pastikan terhubung ke jaringan!"
+            "message": "Cannot connect to Biznet internet link or Gateway (192.168.18.1). Please verify physical network connectivity."
         }), 503
 
     # 2. Eksekusi pengujian kapasitas maksimal jalur Biznet ala Ookla Speedtest
@@ -1473,7 +1486,7 @@ def api_wan_speedtest():
     if not ookla_success or dl_mbps == 0.0:
         return jsonify({
             "status": "error",
-            "message": "Pengujian Speedtest gagal dijalankan secara riil. Pastikan koneksi internet aktif dan Ookla CLI terpasang."
+            "message": "Speedtest execution failed. Please verify internet connectivity and Ookla CLI installation."
         }), 500
 
     total_mbps = round(dl_mbps + ul_mbps, 1)
@@ -1491,7 +1504,7 @@ def api_wan_speedtest():
         "latency_ms": lat_ms,
         "gateway_latency_ms": gw_lat if gw_lat > 0 else 1.1,
         "packet_loss": loss_pct,
-        "quality_label": "Koneksi Normal" if loss_pct <= 2.0 and lat_ms <= 45.0 else "Koneksi Abnormal",
+        "quality_label": "Normal Connection" if loss_pct <= 2.0 and lat_ms <= 45.0 else "Abnormal Connection",
         "quality_color": "green" if loss_pct <= 2.0 and lat_ms <= 45.0 else "red",
         "last_updated": datetime.now().strftime('%H:%M:%S')
     }
@@ -1500,7 +1513,7 @@ def api_wan_speedtest():
     # dan TIDAK disimpan ke WanStatusLog agar tidak menimpa data utilisasi pemakaian aktif di kartu dashboard.
     return jsonify({
         "status": "success",
-        "message": f"Speedtest Berhasil! Download: {dl_mbps} Mbps, Upload: {ul_mbps} Mbps, Ping: {lat_ms} ms",
+        "message": f"Speedtest Completed Successfully! Download: {dl_mbps} Mbps, Upload: {ul_mbps} Mbps, Ping: {lat_ms} ms",
         "speedtest": speedtest_result,
         "wan": speedtest_result
     })

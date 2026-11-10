@@ -178,7 +178,7 @@ function updatePortsTableRows(ports) {
             row.children[8].innerHTML = '<span>' + poeText + '</span>';
         }
 
-        // 7. Errors (Tx / Rx) / Drops (cell 9) - Transparan 1:1 tanpa penjumlahan
+        // 7. Errors (Tx / Rx) / Drops (cell 9) - Transparent 1:1 without summation
         if (row.children[9]) {
             const errTx = (p.errors_tx || 0).toLocaleString('id-ID');
             const errRx = (p.errors_rx || 0).toLocaleString('id-ID');
@@ -803,7 +803,7 @@ function renderDeviceCharts(data) {
         isNavBatchUpdating = false;
     }
 
-    // Sinkronisasi posisi awal seluruh visual slider dan render potongan grafik aktif
+    // Synchronize initial slider positions and render active chart segments
     const activeNav = navCpuMem || navTraffic;
     if (activeNav) {
         const total = labels.length;

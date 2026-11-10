@@ -120,7 +120,7 @@
             });
             html += `
                 <a class="search-view-all-cta" href="/#monitored-devices">
-                    <span>Lihat semua perangkat di Dashboard</span>
+                    <span>View all devices on Dashboard</span>
                     <span class="cta-arrow">&rarr;</span>
                 </a>
             `;
@@ -170,7 +170,7 @@
             });
             html += `
                 <a class="search-view-all-cta" href="/alerts?search=${encodeURIComponent(query)}#alertsTable">
-                    <span>Lihat & Filter semua alert aktif di Alerts</span>
+                    <span>View & filter all active alerts in Alerts</span>
                     <span class="cta-arrow">&rarr;</span>
                 </a>
             `;
@@ -232,7 +232,7 @@
             });
             html += `
                 <a class="search-view-all-cta" href="/alerts?search=${encodeURIComponent(query)}#incidentsTable">
-                    <span>Lihat & Filter semua riwayat insiden / cooldown di Incident Log</span>
+                    <span>View & filter all incident and cooldown history in Incident Log</span>
                     <span class="cta-arrow">&rarr;</span>
                 </a>
             `;
@@ -283,7 +283,7 @@
             });
             html += `
                 <a class="search-view-all-cta" href="/backups?search=${encodeURIComponent(query)}#backupsTable">
-                    <span>Lihat & Filter semua file di Backups</span>
+                    <span>View & filter all files in Backups</span>
                     <span class="cta-arrow">&rarr;</span>
                 </a>
             `;
@@ -334,7 +334,7 @@
             });
             html += `
                 <a class="search-view-all-cta" href="/telegram?search=${encodeURIComponent(query)}#tgLogsTable">
-                    <span>Lihat & Filter semua log di Telegram</span>
+                    <span>View & filter all logs in Telegram</span>
                     <span class="cta-arrow">&rarr;</span>
                 </a>
             `;

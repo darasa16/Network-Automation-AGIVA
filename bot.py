@@ -113,7 +113,7 @@ def render_access_denied_view(user_id: int, action_name: str) -> str:
     )
 
 def log_telegram_message(chat_id: str, message_type: str, content: str, status: str = 'SENT', alert_id: int = None):
-    """Mencatat setiap pesan / dispatch bot Telegram ke basis data (tabel telegram_message_logs)"""
+    """Record every Telegram bot message/dispatch to database (telegram_message_logs table)"""
     session = None
     try:
         session = db_session()
@@ -150,7 +150,7 @@ def log_telegram_message(chat_id: str, message_type: str, content: str, status: 
 # ==================== VIEW BUILDERS (FORMAL CORPORATE TEMPLATES) ====================
 
 def build_status_view() -> str:
-    """Tampilan Ringkasan Status NOC Riil dari Database"""
+    """Real NOC Status Summary View from Database"""
     session = None
     try:
         session = db_session()
@@ -1135,7 +1135,7 @@ def mark_bot_offline():
 atexit.register(mark_bot_offline)
 
 def start_local_heartbeat():
-    """Menulis heartbeat file lokal agar dashboard lokal dapat memantau status bot saat dijalankan di lokal"""
+    """Write local heartbeat file so local dashboard monitors bot status when running locally"""
     def _worker():
         hb_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'logs')
         os.makedirs(hb_dir, exist_ok=True)

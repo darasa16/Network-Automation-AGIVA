@@ -461,7 +461,7 @@ tr.search-target-highlight td:first-child {
     transition: box-shadow 0.2s ease;
 }
 
-/* Telegram Command Styling (Tanpa kotak hijau / badge) */
+/* Telegram Command Styling (Plain text without badge box) */
 #tgCommandsTable td:first-child code {
     display: inline;
     padding: 0;
@@ -779,7 +779,7 @@ tr.search-target-highlight td:first-child {
     align-items: stretch;
 }
 
-/* Telegram Page: Commands & Logs Tables - Auto-fit tanpa scroll */
+/* Telegram Page: Commands & Logs Tables - Auto-fit without scroll */
 .table-responsive.table-no-scroll {
     overflow-x: visible;
     margin-top: 14px;
@@ -802,7 +802,7 @@ tr.search-target-highlight td:first-child {
     vertical-align: middle;
 }
 
-/* 1. Commands Cheat Sheet Table (Daftar Perintah) */
+/* 1. Commands Cheat Sheet Table (Command Reference) */
 #tgCommandsTable th:nth-child(1),
 #tgCommandsTable td:nth-child(1) {
     white-space: nowrap;
@@ -822,7 +822,7 @@ tr.search-target-highlight td:first-child {
     font-size: 12.5px;
 }
 
-/* 2. Message Dispatch Log Table (Riwayat Pengiriman) */
+/* 2. Message Dispatch Log Table (Dispatch History) */
 #tgLogsTable th:nth-child(1),
 #tgLogsTable td:nth-child(1) {
     white-space: nowrap;
@@ -3781,7 +3781,7 @@ body.nav-dragging-active * {
     padding: 0;
 }
 
-/* Center: Metrics Grid (Kompak, tidak terlalu lebar) */
+/* Center: Metrics Grid (Compact layout) */
 .wan-metrics-grid {
     display: grid;
     grid-template-columns: 175px 175px;
@@ -3903,7 +3903,7 @@ body.nav-dragging-active * {
     font-family: inherit !important;
 }
 
-/* Right: Quality Block (Angka tetap dipojok, huruf/label digeser lebih ke kanan agar pas) */
+/* Right: Quality Block (Right-aligned numbers with properly spaced labels) */
 .wan-quality-block {
     display: flex;
     flex-direction: column;
@@ -3982,13 +3982,13 @@ body.nav-dragging-active * {
 .ping-num,
 .ping-val {
     color: #ffffff !important;
-    font-family: inherit !important; /* Font kompak sama persis dengan font IP: 192.168.18.226 ('Inter', sans-serif) */
+    font-family: inherit !important; /* Compact font matching IP typography ('Inter', sans-serif) */
     font-weight: 600;
     font-size: 0.78rem;
 }
 
 .ping-unit {
-    color: #ffffff !important; /* Putih semua sesuai permintaan user */
+    color: #ffffff !important; /* Standard white typography */
     font-family: inherit;
     font-size: 0.76rem;
     font-weight: 500;
@@ -4014,7 +4014,7 @@ body.nav-dragging-active * {
     align-items: center;
     gap: 12px;
     margin-top: 6px;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
 }
 
 .wan-actions-row {

@@ -13,7 +13,7 @@
         rel="stylesheet">
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
-    <link rel="stylesheet" href="/static/css/style.css?v=16.3">
+    <link rel="stylesheet" href="/static/css/style.css?v=16.4">
 </head>
 
 <body>
@@ -164,7 +164,7 @@
                                 <span class="wan-unit">Mbps</span>
                             </div>
                             <div class="wan-progress-bar">
-                                <div class="wan-progress-fill fill-dl" id="wanDlProgress" style="width: {{ ((wan.download_mbps / (wan.capacity_mbps or 100)) * 100)|round(1) if wan else '27.4' }}%;"></div>
+                                <div class="wan-progress-fill fill-dl" id="wanDlProgress" {{ ('style="width: ' ~ (((wan.download_mbps / (wan.capacity_mbps or 100)) * 100)|round(1) if wan else '27.4') ~ '%;"') | safe }}></div>
                             </div>
                         </div>
 
@@ -175,15 +175,15 @@
                                 <span class="wan-unit">Mbps</span>
                             </div>
                             <div class="wan-progress-bar">
-                                <div class="wan-progress-fill fill-ul" id="wanUlProgress" style="width: {{ ((wan.upload_mbps / (wan.capacity_mbps or 100)) * 100)|round(1) if wan else '3.1' }}%;"></div>
+                                <div class="wan-progress-fill fill-ul" id="wanUlProgress" {{ ('style="width: ' ~ (((wan.upload_mbps / (wan.capacity_mbps or 100)) * 100)|round(1) if wan else '3.1') ~ '%;"') | safe }}></div>
                             </div>
                         </div>
 
                         <!-- Combined Bandwidth Utilization Row across both metrics -->
                         <div class="wan-util-combined-row">
-                            <span class="wan-util-combined-lbl">Utilisasi Bandwidth:</span>
+                            <span class="wan-util-combined-lbl">Bandwidth Utilization:</span>
                             <strong class="wan-util-combined-val" id="wanUtilCombinedVal">{{ wan.utilization_pct if wan else '30.5' }}%</strong>
-                            <span class="wan-util-combined-sub">dari paket <strong class="wan-util-combined-cap" id="wanCapValCombined">{{ wan.capacity_mbps if wan else '100' }}</strong> <span class="wan-unit">Mbps</span></span>
+                            <span class="wan-util-combined-sub">of plan <strong class="wan-util-combined-cap" id="wanCapValCombined">{{ wan.capacity_mbps if wan else '100' }}</strong> <span class="wan-unit">Mbps</span></span>
                         </div>
                     </div>
 
@@ -222,13 +222,13 @@
                         <div class="wan-footer-row">
                             <span class="wan-sync-time">Last Polled: <span id="wanLastSync">{{ wan.last_updated if wan else 'Just now' }}</span></span>
                             <div class="wan-actions-row">
-                                <button type="button" id="btnWanSpeedtest" class="btn-wan-action btn-speedtest" title="Jalankan Speedtest Real-Time Sekarang">
+                                <button type="button" id="btnWanSpeedtest" class="btn-wan-action btn-speedtest" title="Execute Real-Time Speedtest Now">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" class="btn-icon">
                                         <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
                                     </svg>
                                     <span class="btn-wan-text">Speedtest</span>
                                 </button>
-                                <button type="button" id="btnWanSeeLog" class="btn-wan-action btn-seelog" title="Lihat Riwayat Log 24 Jam Biznet">
+                                <button type="button" id="btnWanSeeLog" class="btn-wan-action btn-seelog" title="View Biznet 24-Hour Log History">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon">
                                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                                         <polyline points="14 2 14 8 20 8"></polyline>
@@ -368,16 +368,14 @@
                                                 <div class="mini-bar-row">
                                                     <span class="mini-lbl">C:</span>
                                                     <div class="progress-bar-bg">
-                                                        <div class="progress-bar-fill fill-cpu" {{
-                                                            ('style="width: ' ~ dev.cpu ~ '%;"') | safe }}></div>
+                                                        <div class="progress-bar-fill fill-cpu" {{ ('style="width: ' ~ dev.cpu ~ '%;"') | safe }}></div>
                                                     </div>
                                                     <span class="mini-val">{{ dev.cpu }}%</span>
                                                 </div>
                                                 <div class="mini-bar-row">
                                                     <span class="mini-lbl">M:</span>
                                                     <div class="progress-bar-bg">
-                                                        <div class="progress-bar-fill fill-mem" {{ ('
-                                                            style="width: ' ~ dev.mem ~ '%;"') | safe }}></div>
+                                                        <div class="progress-bar-fill fill-mem" {{ ('style="width: ' ~ dev.mem ~ '%;"') | safe }}></div>
                                                     </div>
                                                     <span class="mini-val">{{ dev.mem }}%</span>
                                                 </div>
@@ -483,15 +481,15 @@
                         <h3 style="margin: 0; font-size: 17px; font-weight: 700; color: #f8fafc;">Biznet 24 Hour Polling Log</h3>
                     </div>
                     <p style="margin: 4px 0 0; font-size: 12px; color: #94a3b8;">
-                        Riwayat kualitas koneksi Biznet Dedicated Internet
+                        Biznet Dedicated Internet link performance history
                     </p>
                 </div>
-                <button type="button" class="modal-close-btn" id="btnWanLogClose" title="Tutup Modal">&times;</button>
+                <button type="button" class="modal-close-btn" id="btnWanLogClose" title="Close Modal">&times;</button>
             </div>
             
             <div class="wan-log-modal-toolbar">
                 <div style="display: flex; gap: 8px; align-items: center; margin-left: auto;">
-                    <button type="button" class="btn-modal-action" id="btnWanLogRefresh" title="Muat ulang log dari database">
+                    <button type="button" class="btn-modal-action" id="btnWanLogRefresh" title="Reload logs from database">
                         <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M23 4v6h-6"></path>
                             <path d="M1 20v-6h6"></path>
@@ -499,7 +497,7 @@
                         </svg>
                         <span>Refresh</span>
                     </button>
-                    <button type="button" class="btn-modal-action" id="btnWanLogExport" title="Download data log sebagai file CSV">
+                    <button type="button" class="btn-modal-action" id="btnWanLogExport" title="Export log data as CSV file">
                         <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                             <polyline points="7 10 12 15 17 10"></polyline>
@@ -515,8 +513,8 @@
                     <table class="wan-log-table" id="wanLogTable">
                         <thead>
                             <tr>
-                                <th>Waktu Polling (WIB)</th>
-                                <th>Status Link</th>
+                                <th>Polling Timestamp (WIB)</th>
+                                <th>Link Status</th>
                                 <th>Download</th>
                                 <th>Upload</th>
                                 <th>Total</th>
@@ -529,7 +527,7 @@
                         <tbody id="wanLogTableBody">
                             <tr>
                                 <td colspan="9" style="text-align: center; padding: 32px; color: #94a3b8;">
-                                    Memuat riwayat log 24 jam...
+                                    Loading 24-hour log history...
                                 </td>
                             </tr>
                         </tbody>
@@ -539,7 +537,7 @@
 
             <div class="modal-footer" style="padding: 12px 20px; display: flex; justify-content: flex-start; align-items: center; border-top: 1px solid rgba(255,255,255,0.08);">
                 <span style="font-size: 11px; color: #64748b;">
-                    * Data direkam otomatis setiap 2 menit.
+                    * Data recorded automatically every 2 minutes.
                 </span>
             </div>
         </div>
@@ -554,10 +552,10 @@
                         <h3 style="margin: 0; font-size: 17px; font-weight: 700; color: #f8fafc;">Real-Time Speedtest</h3>
                     </div>
                     <p style="margin: 4px 0 0; font-size: 12px; color: #94a3b8;">
-                        Menguji batas kapasitas Peak Speed.
+                        Testing peak bandwidth capacity limit.
                     </p>
                 </div>
-                <button type="button" class="modal-close-btn" id="btnWanSpeedtestClose" title="Tutup Modal">&times;</button>
+                <button type="button" class="modal-close-btn" id="btnWanSpeedtestClose" title="Close Modal">&times;</button>
             </div>
 
             <div class="modal-body wan-speedtest-body">
@@ -565,8 +563,8 @@
                 <div id="speedtestLoadingState" class="speedtest-state-box" style="display: none;">
                     <div class="speedtest-gauge-wrap">
                         <div class="speedtest-spinner"></div>
-                        <div class="speedtest-testing-txt">Menguji Performa Link Real-Time...</div>
-                        <div class="speedtest-step-sub" id="speedtestStepMsg">Mengukur kualitas internet biznet</div>
+                        <div class="speedtest-testing-txt">Testing Real-Time Link Performance...</div>
+                        <div class="speedtest-step-sub" id="speedtestStepMsg">Measuring Biznet link quality</div>
                     </div>
                 </div>
 
@@ -617,8 +615,8 @@
                             <strong class="st-m-val" id="stModalLoss">0.0%</strong>
                         </div>
                         <div class="st-metric-item">
-                            <span class="st-m-lbl">Kualitas Link:</span>
-                            <strong class="st-m-val" id="stModalQualityPill" style="color: #ffffff !important; font-weight: 600;">Koneksi Normal</strong>
+                            <span class="st-m-lbl">Link Quality:</span>
+                            <strong class="st-m-val" id="stModalQualityPill" style="color: #ffffff !important; font-weight: 600;">Normal Connection</strong>
                         </div>
                     </div>
 
@@ -627,7 +625,7 @@
                             <circle cx="12" cy="12" r="10"></circle>
                             <polyline points="12 6 12 12 16 14"></polyline>
                         </svg>
-                        <span>Waktu Pengujian Real-Time: <strong id="stModalTimestamp">-</strong></span>
+                        <span>Real-Time Test Timestamp: <strong id="stModalTimestamp">-</strong></span>
                     </div>
                 </div>
             </div>

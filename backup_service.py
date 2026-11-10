@@ -182,7 +182,28 @@ def fetch_aruba_log_or_config(ip: str, user: str, pwd: str, category: str, *args
                 last_err = e_pm
                 continue
 
-    raise Exception(f"Aruba SSH connection failed: {last_err}")
+    # 3. Fallback via Aruba REST API (port 80 HTTP) jika SSH gagal
+    try:
+        logger.info("SSH Aruba gagal atau timeout, mencoba fallback via Aruba REST API...")
+        if cat_lower == "config":
+            r = requests.get(f"http://{ip}/rest/v4/config/running-config", timeout=10)
+            if r.status_code == 200 and r.text.strip():
+                logger.info("Aruba backup running-config berhasil via REST API")
+                return r.text
+        elif cat_lower == "system":
+            r = requests.get(f"http://{ip}/rest/v4/system/status", timeout=10)
+            if r.status_code == 200 and r.text.strip():
+                logger.info("Aruba backup system status berhasil via REST API")
+                return r.text
+        elif cat_lower == "traffic":
+            r = requests.get(f"http://{ip}/rest/v4/port-statistics", timeout=10)
+            if r.status_code == 200 and r.text.strip():
+                logger.info("Aruba backup port-statistics berhasil via REST API")
+                return r.text
+    except Exception as e_api:
+        logger.warning(f"Aruba REST API fallback juga gagal: {e_api}")
+
+    raise Exception(f"Aruba backup failed via SSH and REST API: {last_err}")
 
 def fetch_huawei_log_or_config(ip: str, user: str, pwd: str, category: str, *args, **kwargs) -> str:
     """Ekstraksi raw snapshot log/config Huawei CloudEngine S5735 via Paramiko/Netmiko."""

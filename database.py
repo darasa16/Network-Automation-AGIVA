@@ -1,7 +1,6 @@
 
 import os
 from datetime import datetime, timedelta
-import random
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 from dotenv import load_dotenv
@@ -131,65 +130,17 @@ def init_db():
     # Check if database needs seeding
     session = db_session()
     try:
-        # Seeding Telegram Whitelist
+        # Seeding Telegram Whitelist if empty
         whitelist_count = session.query(TelegramWhitelist).count()
         if whitelist_count == 0:
             print("[*] Seeding Telegram Whitelist (Admin/NOC Security Access)...")
             seed_whitelist_only(session)
-
-        # Seeding WAN Biznet History if empty
-        seed_wan_history_if_needed(session)
 
     except Exception as e:
         session.rollback()
         raise e
     finally:
         session.close()
-
-def seed_wan_history_if_needed(session):
-    from models import WanStatusLog
-    try:
-        count = session.query(WanStatusLog).count()
-        if count == 0:
-            print("[*] Menginisialisasi histori data metrik WAN Biznet ethernet1/3 (24 jam terakhir)...")
-            now = datetime.now()
-            entries = []
-            for i in range(720, -1, -1):
-                ts = now - timedelta(minutes=i * 2)
-                hour = ts.hour
-                is_busy = 9 <= hour <= 17
-                base_dl = 46.0 if is_busy else 22.0
-                base_ul = 15.0 if is_busy else 8.0
-                dl = round(max(5.0, min(92.0, base_dl + random.uniform(-14.0, 20.0))), 1)
-                ul = round(max(2.0, min(38.0, base_ul + random.uniform(-5.0, 8.0))), 1)
-                lat = round(random.uniform(7.5, 14.0), 1)
-                gw_lat = round(random.uniform(0.7, 1.3), 1)
-                loss = 0.0
-                if is_busy and random.random() < 0.04:
-                    lat = round(random.uniform(22.0, 38.0), 1)
-
-                entry = WanStatusLog(
-                    timestamp=ts,
-                    interface_name='ethernet1/3',
-                    provider='Biznet',
-                    status='UP',
-                    download_mbps=dl,
-                    upload_mbps=ul,
-                    total_mbps=round(dl + ul, 1),
-                    latency_ms=lat,
-                    gateway_latency_ms=gw_lat,
-                    packet_loss=loss,
-                    rx_errors=0,
-                    tx_errors=0
-                )
-                entries.append(entry)
-
-            session.bulk_save_objects(entries)
-            session.commit()
-            print(f"[*] Berhasil menambahkan {len(entries)} data histori awal WAN Biznet.")
-    except Exception as e:
-        session.rollback()
-        print(f"[!] Gagal inisialisasi WAN history: {e}")
 
 
 def seed_demo_data(session):
@@ -213,11 +164,11 @@ def seed_demo_data(session):
                             site=d_info.get('site', 'HO'),
                             credential_ref=d_info.get('credential_ref', 'env_vault'),
                             status='UP',
-                            cpu_usage=12.0,
-                            mem_usage=45.0,
-                            latency_ms=2.5,
+                            cpu_usage=0.0,
+                            mem_usage=0.0,
+                            latency_ms=0.0,
                             packet_loss=0.0,
-                            uptime='30 hari, 12 jam'
+                            uptime='-'
                         )
                         session.add(new_dev)
                         dev_objects.append(new_dev)

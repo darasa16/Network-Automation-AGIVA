@@ -171,7 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Poll immediately on page load
     pollRealtimeStatus();
 
-    // Polling interval (setiap 5 detik)
+    // Polling interval (every 5 seconds)
     setInterval(pollRealtimeStatus, 5000);
 });
 
@@ -460,8 +460,8 @@ function renderDashboardChartsSlice(history, startIdx, endIdx) {
     const outVals = (history.egress || []).slice(s, e + 1);
 
     const visibleCount = labels.length;
-    // Titik adaptif: saat zoom in <= 45 titik, titik tampil bulat jelas (pointRadius: 3).
-    // Saat rentang penuh lebar > 85 titik, titik dinonaktifkan agar garis tipis dan rapi.
+    // Adaptive datapoints: when zoom in <= 45 points, render clear circular points (pointRadius: 3).
+    // In full range > 85 points, points are disabled for clean and thin lines.
     const dynamicPointRadius = visibleCount <= 45 ? 3 : (visibleCount <= 85 ? 1.5 : 0);
     const hoverPointRadius = dynamicPointRadius > 0 ? dynamicPointRadius + 3 : 5;
 
@@ -622,7 +622,7 @@ function updateDashboardView(data) {
     }
 
     if (data.metrics) {
-        // Terapkan seluruh histori riil langsung dari database (seperti di device_detail.js)
+        // Apply complete real historical data directly from database (matching device_detail.js)
         if (data.history) {
             applyChartHistory(data.history);
         }
@@ -685,12 +685,12 @@ function updateWanCard(wan) {
         const rxErr = wan.rx_errors !== undefined ? wan.rx_errors : 0;
         const txErr = wan.tx_errors !== undefined ? wan.tx_errors : 0;
         errEl.textContent = `${rxErr} / ${txErr}`;
-        errEl.style.color = ''; // Dilarang berwarna merah atau hijau! Tetap putih dari CSS (.ping-num)
+        errEl.style.color = ''; // Keep white via CSS (.ping-num)
     }
     if (lastSync && wan.last_updated) lastSync.textContent = wan.last_updated;
 
     if (qPill) {
-        const qLabel = wan.quality_label || (wan.quality_color === 'red' ? 'Koneksi Abnormal' : 'Koneksi Normal');
+        const qLabel = wan.quality_label || (wan.quality_color === 'red' ? 'Abnormal Connection' : 'Normal Connection');
         const qColor = wan.quality_color || (wan.status === 'DOWN' ? 'red' : 'green');
         qPill.textContent = qLabel;
         qPill.className = `wan-q-pill pill-${qColor}`;
@@ -698,7 +698,7 @@ function updateWanCard(wan) {
 
     const isUp = wan.status === 'UP';
     if (statusText) {
-        statusText.textContent = wan.status || 'UP'; // Tanpa tulisan '(1 Gbps)'
+        statusText.textContent = wan.status || 'UP'; // Exclude '(1 Gbps)' text
     }
     if (statusDot) {
         statusDot.className = `live-dot dot-${isUp ? 'green' : 'red'}`;
@@ -854,7 +854,7 @@ async function handleWanSpeedtest() {
             if (stLoss) stLoss.textContent = `${w.packet_loss}%`;
             if (stQPill) {
                 const isDown = w.status === 'DOWN' || w.quality_color === 'red';
-                stQPill.textContent = w.quality_label || (isDown ? 'Koneksi Abnormal' : 'Koneksi Normal');
+                stQPill.textContent = w.quality_label || (isDown ? 'Abnormal Connection' : 'Normal Connection');
                 stQPill.className = 'st-m-val';
                 stQPill.style.color = '#ffffff';
                 stQPill.style.background = 'transparent';
@@ -867,20 +867,20 @@ async function handleWanSpeedtest() {
                 stTs.textContent = cleanTime;
             }
 
-            // Sesuai perancangan NOC: Jangan menimpa kartu KPI dashboard utama!
-            // Kartu dashboard tetap menampilkan utilisasi pemakaian aktif karyawan (misal 19.4 Mbps / 4 Mbps / 23.4%).
-            // Modal Speedtest khusus menampilkan hasil uji kapasitas maksimal pipa (~92 Mbps).
+            // NOC Architecture: Do not overwrite main dashboard KPI cards!
+            // Dashboard cards display active internal utilization metrics.
+            // Speedtest modal specifically measures peak physical bandwidth capacity.
 
             // Hide loading, show results
             if (loadingState) loadingState.style.display = 'none';
             if (resultState) resultState.style.display = 'block';
         } else {
-            alert('Gagal menjalankan speedtest: ' + (data.message || 'Error'));
+            alert('Failed to execute speedtest: ' + (data.message || 'Error'));
             closeWanSpeedtestModal();
         }
     } catch (e) {
         console.error('Speedtest error:', e);
-        alert('Terjadi kesalahan saat menjalankan speedtest real-time.');
+        alert('An error occurred while executing real-time speedtest.');
         closeWanSpeedtestModal();
     } finally {
         if (btnRetest) btnRetest.disabled = false;
@@ -913,7 +913,7 @@ function closeWanLogModal() {
 async function fetchWanLogs(silent = false) {
     const tbody = document.getElementById('wanLogTableBody');
     if (!silent && tbody) {
-        tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 32px; color: #94a3b8;">Memuat riwayat log 24 jam...</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 32px; color: #94a3b8;">Loading 24-hour log history...</td></tr>`;
     }
 
     try {
@@ -924,12 +924,12 @@ async function fetchWanLogs(silent = false) {
             updateWanLogCounts();
             renderWanLogTableRows();
         } else if (tbody) {
-            tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 24px; color: #ef4444;">Gagal memuat log (${res.status})</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 24px; color: #ef4444;">Failed to load logs (${res.status})</td></tr>`;
         }
     } catch (e) {
         console.error('Error fetching WAN logs:', e);
         if (tbody) {
-            tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 24px; color: #ef4444;">Terjadi kesalahan jaringan saat memuat log.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 24px; color: #ef4444;">Network error occurred while loading logs.</td></tr>`;
         }
     }
 }
@@ -960,7 +960,7 @@ function renderWanLogTableRows() {
     }
 
     if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 28px; color: #94a3b8;">Tidak ada data log yang sesuai filter ini.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 28px; color: #94a3b8;">No log records found matching this filter.</td></tr>`;
         return;
     }
 
@@ -994,7 +994,7 @@ function renderWanLogTableRows() {
 
 function exportWanLogsToCsv() {
     if (!currentWanLogs || currentWanLogs.length === 0) {
-        alert('Tidak ada data log untuk diexport.');
+        alert('No log data available to export.');
         return;
     }
 
@@ -1188,7 +1188,7 @@ function updateSearchDropdown(query) {
     }
 
     const devices = getDevicesList();
-    // Filter khusus berdasarkan Nama Vendor atau Site
+    // Dedicated filter by Vendor Name or Site
     const matches = devices.filter(d =>
         (d.vendor && d.vendor.toLowerCase().includes(query)) ||
         (d.site && d.site.toLowerCase().includes(query))
@@ -1286,7 +1286,7 @@ function applyTableFilters() {
         }
     });
 
-    // Handle empty state feedback di tabel
+    // Handle empty state feedback in table
     const tbody = document.getElementById('deviceTableBody');
     let emptyRow = document.getElementById('noResultsRow');
     if (visibleCount === 0 && rows.length > 0) {
