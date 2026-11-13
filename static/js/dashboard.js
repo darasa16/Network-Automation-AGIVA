@@ -913,7 +913,17 @@ function closeWanLogModal() {
 async function fetchWanLogs(silent = false) {
     const tbody = document.getElementById('wanLogTableBody');
     if (!silent && tbody) {
-        tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 32px; color: #94a3b8;">Loading 24-hour log history...</td></tr>`;
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="9" style="text-align: center; padding: 45px 20px;">
+                    <div class="speedtest-gauge-wrap" style="display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                        <div class="speedtest-spinner"></div>
+                        <div class="speedtest-testing-txt" style="margin-top:14px; font-size:14px; font-weight:600; color:#f8fafc;">Loading 24-Hour Polling Logs</div>
+                        <div class="speedtest-step-sub" style="font-size:12px; color:#94a3b8; margin-top:4px;">Retrieving telemetry snapshots from database</div>
+                    </div>
+                </td>
+            </tr>
+        `;
     }
 
     try {
@@ -1273,9 +1283,9 @@ function applyTableFilters() {
             const devStatus = rowStatus.toLowerCase();
 
             matchesSearch = devId.includes(q) || ('dev-' + devId).includes(q) || ('#' + devId).includes(q) ||
-                            devName.includes(q) || devIp.includes(q) ||
-                            devVendor.includes(q) || devSite.includes(q) ||
-                            devStatus.includes(q);
+                devName.includes(q) || devIp.includes(q) ||
+                devVendor.includes(q) || devSite.includes(q) ||
+                devStatus.includes(q);
         }
 
         if (matchesStatus && matchesSearch) {
@@ -1295,8 +1305,8 @@ function applyTableFilters() {
             emptyMessage = `No devices found matching "${escapeHtml(currentDeviceSearch)}"`;
         } else {
             emptyMessage = statusFilter === 'DOWN' ? 'No devices currently offline.' :
-                           statusFilter === 'UP' ? 'No devices currently online.' :
-                           'No devices available.';
+                statusFilter === 'UP' ? 'No devices currently online.' :
+                    'No devices available.';
         }
 
         if (!emptyRow && tbody) {

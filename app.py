@@ -424,7 +424,7 @@ def dashboard():
         initial_wan_history=initial_wan_history
     )
 
-from telemetry_helper import get_device_full_telemetry
+from telemetry_helper import get_device_full_telemetry, get_ap_client_telemetry
 
 @app.route('/device/<int:device_id>')
 @app.route('/device_detail.html')
@@ -441,6 +441,9 @@ def device_detail(device_id=1):
 
     telemetry = get_device_full_telemetry(device)
     ports = telemetry.get("ports", [])
+    res = telemetry.get("resources", {})
+    if res.get("memory_pct") is not None and "aruba" in device.vendor.lower():
+        device.mem_usage = round(float(res.get("memory_pct")), 1)
 
     # Sinkronisasi 100% Opsi B: Port 1 (Uplink) identik dengan titik log database terbaru
     latest_log = session.query(DeviceStatusLog).filter(
@@ -1438,7 +1441,7 @@ def api_wan_speedtest():
 
     dl_mbps = 0.0
     ul_mbps = 0.0
-    lat_ms = inet_lat if inet_lat > 0 else 9.5
+    lat_ms = inet_lat if inet_lat > 0 else 0.0
     loss_pct = inet_loss
     ookla_success = False
 
@@ -1460,7 +1463,7 @@ def api_wan_speedtest():
                         if "download" in d and "upload" in d:
                             dl_mbps = round((d["download"].get("bandwidth", 0) * 8.0) / 1_000_000.0, 1)
                             ul_mbps = round((d["upload"].get("bandwidth", 0) * 8.0) / 1_000_000.0, 1)
-                            lat_ms = round(d.get("ping", {}).get("latency", inet_lat if inet_lat > 0 else 9.5), 1)
+                            lat_ms = round(d.get("ping", {}).get("latency", inet_lat), 1)
                             loss_pct = round(d.get("packetLoss", inet_loss), 1)
                             ookla_success = True
                             break
@@ -1502,7 +1505,7 @@ def api_wan_speedtest():
         "total_mbps": total_mbps,
         "capacity_mbps": 100.0,
         "latency_ms": lat_ms,
-        "gateway_latency_ms": gw_lat if gw_lat > 0 else 1.1,
+        "gateway_latency_ms": gw_lat if gw_lat > 0 else 0.0,
         "packet_loss": loss_pct,
         "quality_label": "Normal Connection" if loss_pct <= 2.0 and lat_ms <= 45.0 else "Abnormal Connection",
         "quality_color": "green" if loss_pct <= 2.0 and lat_ms <= 45.0 else "red",
@@ -1559,8 +1562,13 @@ def api_device_metrics(device_id):
     telemetry = get_device_full_telemetry(device)
     ports = telemetry.get("ports", [])
     res = telemetry.get("resources", {})
-    pb_base = float(res.get("packet_buffers_pct", 35.1))
-    mb_base = float(res.get("message_buffers_pct", 4.0))
+    if res.get("memory_pct") is not None and "aruba" in device.vendor.lower():
+        device.mem_usage = round(float(res.get("memory_pct")), 1)
+    res = telemetry.get("resources", {})
+    pb_raw = res.get("packet_buffers_pct")
+    mb_raw = res.get("message_buffers_pct")
+    pb_base = float(pb_raw) if pb_raw is not None else 0.0
+    mb_base = float(mb_raw) if mb_raw is not None else 0.0
     td_val = int(res.get("tx_drops", 0))
     re_val = int(res.get("rx_errors", 0))
     te_val = int(res.get("tx_errors", 0))
@@ -1612,7 +1620,11 @@ def api_device_metrics(device_id):
             # Ambil data mentah riil siklus tersebut
             b = b_logs[-1]
             cpu_vals.append(round(b.cpu_usage or 0.0, 1))
-            mem_vals.append(round(b.mem_usage or 0.0, 1))
+            mem_val = round(b.mem_usage or 0.0, 1)
+            # Selaraskan jika ada titik histori lama Aruba yang sempat merekam nilai inversi (~60-65%):
+            if "aruba" in device.vendor.lower() and mem_val > 50.0 and res.get("memory_pct", 0) < 50.0:
+                mem_val = round(100.0 - mem_val, 1)
+            mem_vals.append(mem_val)
             lat_vals.append(round(b.latency_ms or 0.0, 1))
             loss_vals.append(round(b.packet_loss or 0.0, 1))
             trf_vals.append(round(b.traffic_mbps or 0.0, 2))
@@ -1620,9 +1632,17 @@ def api_device_metrics(device_id):
             trf_out_vals.append(round(b.egress_mbps or 0.0, 2))
             pb_vals.append(round(b.packet_buffers or 0.0, 1))
             mb_vals.append(round(b.message_buffers or 0.0, 1))
-            td_vals.append(int(b.tx_drops or 0))
-            re_vals.append(int(b.rx_errors or 0))
-            te_vals.append(int(b.tx_errors or 0))
+            # Ambil data error & drop: selaraskan dengan akumulasi riil seluruh port perangkat
+            cur_td = int(b.tx_drops or 0)
+            cur_re = int(b.rx_errors or 0)
+            cur_te = int(b.tx_errors or 0)
+            if cur_td == 0 and cur_re == 0 and cur_te == 0 and (td_val > 0 or re_val > 0 or te_val > 0):
+                cur_td = td_val
+                cur_re = re_val
+                cur_te = te_val
+            td_vals.append(cur_td)
+            re_vals.append(cur_re)
+            te_vals.append(cur_te)
 
         if range_mode == 'live' and len(labels) > 18:
             labels = labels[-18:]
@@ -1652,11 +1672,11 @@ def api_device_metrics(device_id):
         "current_traffic": round((trf_in_vals[-1] + trf_out_vals[-1]), 2) if trf_in_vals and trf_out_vals else 0.0,
         "current_traffic_in": trf_in_vals[-1] if trf_in_vals else 0.0,
         "current_traffic_out": trf_out_vals[-1] if trf_out_vals else 0.0,
-        "current_packet_buffers": pb_base,
-        "current_tx_drops": td_val,
-        "current_message_buffers": mb_base,
-        "current_rx_errors": re_val,
-        "current_tx_errors": te_val,
+        "current_packet_buffers": pb_vals[-1] if pb_vals else pb_base,
+        "current_tx_drops": td_vals[-1] if td_vals else td_val,
+        "current_message_buffers": mb_vals[-1] if mb_vals else mb_base,
+        "current_rx_errors": re_vals[-1] if re_vals else re_val,
+        "current_tx_errors": te_vals[-1] if te_vals else te_val,
         "labels": labels,
         "cpu": cpu_vals,
         "memory": mem_vals,
@@ -1689,6 +1709,17 @@ def api_device_metrics(device_id):
 
     session.close()
     return jsonify(result)
+
+@app.route('/api/ap/<path:ap_name>/clients')
+def api_ap_clients(ap_name):
+    """Mengambil telemetri wireless client (bandwidth, RSSI, SSID, IP/MAC) untuk AP tertentu via SNMP & FDB correlation."""
+    try:
+        force = request.args.get('force', '').lower() in ['1', 'true', 'yes']
+        data = get_ap_client_telemetry(ap_name, force=force)
+        return jsonify({"success": True, "data": data})
+    except Exception as e:
+        logger.error(f"Gagal mengambil data klien AP {ap_name}: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
 
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5000))

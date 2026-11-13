@@ -1,7 +1,6 @@
 import os
 import sys
 import html
-import random
 import hashlib
 import logging
 import json
@@ -703,7 +702,7 @@ async def resolve_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 active_inc.status = 'RESOLVED_ALERT'
                 inc_id = active_inc.incident_id
             else:
-                dur_sec = max(1, int((now - db_alert.triggered_at).total_seconds())) if db_alert.triggered_at else 600
+                dur_sec = max(1, int((now - db_alert.triggered_at).total_seconds())) if db_alert.triggered_at else 0
                 new_inc = IncidentLog(
                     device_id=db_alert.device_id,
                     type=db_alert.type,

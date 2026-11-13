@@ -2596,6 +2596,10 @@ code {
     font-size: 11px;
     color: var(--text-muted);
     margin-top: 2px;
+    max-width: 380px;
+    white-space: normal !important;
+    word-break: break-word;
+    line-height: 1.4;
 }
 
 #portsTable th,

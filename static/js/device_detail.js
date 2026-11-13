@@ -142,23 +142,18 @@ function updatePortsTableRows(ports) {
             row.children[4].innerHTML = `<span>${p.speed}</span>`;
         }
 
-        // 3. Tx (cell 5)
-        if (row.children[5] && p.tx_mbps !== undefined) {
-            row.children[5].innerHTML = `<span>${p.tx_mbps}</span>`;
+        // 3. Combined Throughput Tx / Rx (cell 5)
+        if (row.children[5] && p.tx_mbps !== undefined && p.rx_mbps !== undefined) {
+            row.children[5].innerHTML = `<span>${p.tx_mbps} / ${p.rx_mbps} Mbps</span>`;
         }
 
-        // 4. Rx (cell 6)
-        if (row.children[6] && p.rx_mbps !== undefined) {
-            row.children[6].innerHTML = `<span>${p.rx_mbps}</span>`;
+        // 4. Total Transfer Tx/Rx (cell 6)
+        if (row.children[6] && p.bytes_tx_fmt && p.bytes_rx_fmt) {
+            row.children[6].innerHTML = `<span>${p.bytes_tx_fmt} / ${p.bytes_rx_fmt}</span>`;
         }
 
-        // 5. Total Transfer Tx/Rx (cell 7)
-        if (row.children[7] && p.bytes_tx_fmt && p.bytes_rx_fmt) {
-            row.children[7].innerHTML = `<span>${p.bytes_tx_fmt} / ${p.bytes_rx_fmt}</span>`;
-        }
-
-        // 6. PoE Power (cell 8) - No badge, clean plain text
-        if (row.children[8]) {
+        // 5. PoE Power (cell 7) - No badge, clean plain text
+        if (row.children[7]) {
             let poeText = '0 W';
             const pidLower = (p.port_id || '').toString().toLowerCase();
             const isPalo = (typeof CURRENT_DEVICE_ID !== 'undefined' && CURRENT_DEVICE_ID === 3) ||
@@ -175,15 +170,15 @@ function updatePortsTableRows(ports) {
             } else if (p.poe && p.status === 'UP' && p.poe.power_watts > 0) {
                 poeText = p.poe.power_watts + ' W';
             }
-            row.children[8].innerHTML = '<span>' + poeText + '</span>';
+            row.children[7].innerHTML = '<span>' + poeText + '</span>';
         }
 
-        // 7. Errors (Tx / Rx) / Drops (cell 9) - Transparent 1:1 without summation
-        if (row.children[9]) {
+        // 6. Errors (Tx / Rx) / Drops (cell 8) - Transparent 1:1 without summation
+        if (row.children[8]) {
             const errTx = (p.errors_tx || 0).toLocaleString('id-ID');
             const errRx = (p.errors_rx || 0).toLocaleString('id-ID');
             const drops = (p.drops_tx || 0).toLocaleString('id-ID');
-            row.children[9].innerHTML = `<span>${errTx} / ${errRx} / ${drops}</span>`;
+            row.children[8].innerHTML = `<span>${errTx} / ${errRx} / ${drops}</span>`;
         }
     });
 }
@@ -233,11 +228,18 @@ function applyDeviceDataToUI(data) {
     }
     if (data.current_packet_buffers !== undefined) {
         const pbEl = document.getElementById('valPacketBuffers');
-        if (pbEl) pbEl.textContent = `${data.current_packet_buffers}%`;
+        if (pbEl) {
+            const isHw = (data.name && data.name.toLowerCase().includes('s5735')) || (data.specs && data.specs.model && data.specs.model.toLowerCase().includes('huawei'));
+            pbEl.textContent = isHw ? `${data.current_packet_buffers} pkts` : `${data.current_packet_buffers}%`;
+        }
     }
     if (data.current_message_buffers !== undefined) {
         const mbEl = document.getElementById('valMessageBuffers');
-        if (mbEl) mbEl.textContent = `${data.current_message_buffers}%`;
+        if (mbEl) {
+            const isHw = (data.name && data.name.toLowerCase().includes('s5735')) || (data.specs && data.specs.model && data.specs.model.toLowerCase().includes('huawei'));
+            const isPa = (data.name && data.name.toLowerCase().includes('pa220')) || (data.specs && data.specs.model && data.specs.model.toLowerCase().includes('palo'));
+            mbEl.textContent = isHw ? `${data.current_message_buffers} pkts` : (isPa ? `${data.current_message_buffers} sesi` : `${data.current_message_buffers}%`);
+        }
     }
     if (data.current_rx_errors !== undefined) {
         const reEl = document.getElementById('valRxErrors');
@@ -715,7 +717,9 @@ function createOrUpdateBarChart(existingChart, ctx, labels, datasets, suggestedM
                         label: function (ctx) {
                             const val = ctx.parsed.y;
                             const formatted = Number.isInteger(val) ? val.toLocaleString('id-ID') : (typeof val === 'number' ? val.toLocaleString('id-ID', { minimumFractionDigits: 1, maximumFractionDigits: 2 }) : val);
-                            return ` ${ctx.dataset.label}: ${formatted}${unit}`;
+                            const dsLabel = ctx.dataset.label || '';
+                            const suffix = dsLabel.includes('%') ? '' : (dsLabel.includes('Sessions') ? ' sesi' : unit);
+                            return ` ${dsLabel}: ${formatted}${suffix}`;
                         }
                     }
                 }
@@ -762,8 +766,8 @@ function renderDeviceCharts(data) {
     if (!data.traffic) data.traffic = labels.map(() => 0);
     if (!data.traffic_in) data.traffic_in = labels.map(() => 0);
     if (!data.traffic_out) data.traffic_out = labels.map(() => 0);
-    if (!data.packet_buffers) data.packet_buffers = labels.map(() => 35.1);
-    if (!data.message_buffers) data.message_buffers = labels.map(() => 4.0);
+    if (!data.packet_buffers) data.packet_buffers = labels.map(() => 0);
+    if (!data.message_buffers) data.message_buffers = labels.map(() => 0);
     if (!data.rx_errors) data.rx_errors = labels.map(() => 0);
     if (!data.tx_errors) data.tx_errors = labels.map(() => 0);
     if (!data.tx_drops) data.tx_drops = labels.map(() => 0);
@@ -859,11 +863,14 @@ function initTimelineNavigators() {
     if (!navBuffers) {
         const el = document.getElementById('navBuffers');
         if (el) {
+            const isHw = (lastDeviceRawData && ((lastDeviceRawData.name && lastDeviceRawData.name.toLowerCase().includes('s5735')) || (lastDeviceRawData.specs && lastDeviceRawData.specs.model && lastDeviceRawData.specs.model.toLowerCase().includes('huawei'))));
+            const isPa = (lastDeviceRawData && ((lastDeviceRawData.name && lastDeviceRawData.name.toLowerCase().includes('pa220')) || (lastDeviceRawData.specs && lastDeviceRawData.specs.model && lastDeviceRawData.specs.model.toLowerCase().includes('palo'))));
+            const navUnit = isHw ? ' pkts' : (isPa ? '' : '%');
             navBuffers = new TimelineNavigator({
                 containerId: 'navBuffers',
                 color: '#06b6d4',
                 secondaryColor: '#f97316',
-                unit: '%',
+                unit: navUnit,
                 onWindowChange: (startIdx, endIdx) => {
                     if (isNavBatchUpdating) return;
                     if (lastDeviceRawData) {
@@ -1003,20 +1010,22 @@ function renderDeviceChartsSlice(data, startIdx, endIdx) {
         trafficTooltip
     );
 
-    // 3. Chart Buffer Hardware Switch (Spike Bar Chart Histogram persis Integritas Transmisi Fisik)
+    // 3. Chart Buffer Hardware Switch / Firewall Session Capacity / Huawei Buffer Congestion Drops
     const isHuawei = (data.name && data.name.toLowerCase().includes('s5735')) || (data.specs && data.specs.model && data.specs.model.toLowerCase().includes('huawei'));
     const isPalo = (data.name && data.name.toLowerCase().includes('pa220')) || (data.specs && data.specs.model && data.specs.model.toLowerCase().includes('palo'));
-    const secondLabel = isHuawei ? 'Peak Buffer' : (isPalo ? 'Packet Descriptor' : 'Message Buffer');
+    const firstLabel = isPalo ? 'Session Utilization (%)' : (isHuawei ? 'Egress Drops (Tx)' : 'Packet Buffer');
+    const secondLabel = isHuawei ? 'Ingress Drops (Rx)' : (isPalo ? 'Active Sessions' : 'Message Buffer');
+    const chartUnit = isPalo ? '' : (isHuawei ? ' pkts' : '%');
     chartBuffers = createOrUpdateBarChart(
         chartBuffers,
         document.getElementById('chartBuffers'),
         labels,
         [
-            { label: 'Packet Buffer', data: pbVals, color: 'rgba(6, 182, 212, 0.85)', borderColor: '#06b6d4' },
+            { label: firstLabel, data: pbVals, color: 'rgba(6, 182, 212, 0.85)', borderColor: '#06b6d4' },
             { label: secondLabel, data: mbVals, color: 'rgba(249, 115, 22, 0.85)', borderColor: '#f97316' }
         ],
         100,
-        '%'
+        chartUnit
     );
 
     // 4. Spike Bar Chart (Integritas Transmisi Fisik)
@@ -1029,7 +1038,7 @@ function renderDeviceChartsSlice(data, startIdx, endIdx) {
             { label: 'RX Errors', data: rxVals, color: 'rgba(249, 115, 22, 0.85)', borderColor: '#f97316' },
             { label: 'TX Drops', data: tdVals, color: 'rgba(234, 179, 8, 0.85)', borderColor: '#eab308' }
         ],
-        100,
+        10,
         ''
     );
 
@@ -1051,7 +1060,7 @@ function renderDeviceChartsSlice(data, startIdx, endIdx) {
         [
             { label: 'Ping Drop', data: lossVals, color: 'rgba(249, 115, 22, 0.85)', borderColor: '#f97316' }
         ],
-        100,
+        10,
         '%'
     );
 }

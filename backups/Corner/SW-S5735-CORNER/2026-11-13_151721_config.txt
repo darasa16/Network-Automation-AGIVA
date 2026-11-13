@@ -1,0 +1,122 @@
+======================================================================
+AGIVA NOC RAW SNAPSHOT [CONFIG]
+Execution Time: 2026-11-13 15:17:21 WIB
+Device        : SW-S5735-CORNER (192.168.1.155)
+Site          : Corner
+Category      : Config
+Triggered By  : Telegram (@Dara Samsara)
+======================================================================
+
+!Software Version V600R024C00SPC500
+!Last configuration was updated at 2026-11-13 12:03:59+07:00 by Administrator
+!Last configuration was saved at 2026-11-13 12:04:13+07:00 by Administrator
+#
+pki realm default
+#
+clock timezone DefaultZoneName add 07:00:00
+#
+sysname SW-S5735-CORNER
+#
+dhcp enable ipv4
+#
+undo ftp server source all-interface
+undo ftp ipv6 server source all-interface
+#
+ssl policy default
+ pki-domain default
+ ssl minimum version tls1.2
+ cipher-suite exclude key-exchange rsa
+ cipher-suite exclude cipher mode cbc
+ cipher-suite exclude hmac sha1
+ diffie-hellman modulus 3072
+ ecdh group nist curve brainpool
+ signature algorithm-list ed25519 ed448 rsa-pss-pss-sha256 rsa-pss-pss-sha384 rsa-pss-pss-sha512 rsa-pss-rsae-sha256 rsa-pss-rsae-sha384 rsa-pss-rsae-sha512
+#
+info-center logfile compression lzma
+#
+device board 1 board-type S5735-L24P4XE-A-V2
+#
+dns resolve
+#
+authentication-profile name default_authen_profile
+authentication-profile name dot1x_authen_profile
+authentication-profile name dot1xmac_authen_profile
+authentication-profile name mac_authen_profile
+authentication-profile name multi_authen_profile
+authentication-profile name portal_authen_profile
+#
+dns server 192.168.1.1 
+dns server 203.142.84.222 
+#
+drop-profile default
+#
+ntp server source-interface all disable
+ntp ipv6 server source-interface all disable
+#
+vlan batch 2 4 10
+#
+lnp disable
+#
+error-down auto-recovery cause link-flap interval 60
+#
+undo telnet server-source all-interface
+undo telnet ipv6 server-source all-interface
+#
+qos schedule-profile default
+#
+qos burst-mode enhanced slot 1
+#
+diffserv domain default
+#
+ip vpn-instance _management_vpn_
+ ipv4-family
+#
+vlan 1
+ name vlan1
+#
+vlan 2
+ name VLAN2
+#
+vlan 4
+ name VLAN4
+#
+vlan 10
+ name VLAN10
+#
+aaa
+ authentication-scheme default
+  authentication-mode local
+ authentication-scheme radius
+  authentication-mode radius
+ authorization-scheme default
+  authorization-mode local
+ accounting-scheme default
+  accounting-mode none
+ local-aaa-user password policy administrator
+  password history record number 0
+  password expire 0
+ domain default
+  authentication-scheme default
+  accounting-scheme default
+ domain default_admin
+  authentication-scheme default
+  accounting-scheme default
+ domain domain_accampus
+  authentication-scheme default
+  accounting-scheme default
+ local-user accampus@domain_accampus password irreversible-cipher $1d$#`n0O}T33(4wPA)H$g~;r2pbZU=dq7y/UiuTXu012YE%y$@7U!EAXem),$
+ local-user accampus@domain_accampus password-force-change disable
+ local-user accampus@domain_accampus privilege level 3
+ local-user accampus@domain_accampus service-type ssh http
+ local-user administrator password irreversible-cipher $1d$pT.i0PG!Z8>8iR9P$tSnC)}!$]Ql!]u20@vt.O"oM~VCkcPCpxcJ[\$aV$
+ local-user administrator password-force-change disable
+ local-user administrator privilege level 3
+ local-user administrator service-type terminal ssh http
+#
+free-rule-template name default_free_rule
+#
+portal-access-profile name portal_access_profile
+#
+dot1x-access-profile name dot1x_access_profile
+#
+mac-access-profile name mac_access_profile

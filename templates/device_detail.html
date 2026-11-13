@@ -14,7 +14,314 @@
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
     <!-- Relative CSS -->
-    <link rel="stylesheet" href="/static/css/style.css?v=10.7">
+    <link rel="stylesheet" href="/static/css/style.css?v=10.8">
+    <style>
+        #portsTable th:nth-child(4),
+        #portsTable td:nth-child(4) {
+            min-width: 280px;
+            max-width: 400px;
+        }
+
+        .neighbor-desc {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 2px;
+            max-width: 380px;
+            white-space: normal !important;
+            word-break: break-word;
+            line-height: 1.4;
+        }
+
+        .neighbor-name {
+            max-width: 380px;
+            white-space: normal !important;
+            word-break: break-word;
+            line-height: 1.4;
+        }
+
+        /* AP Neighbor Interactive Button */
+        .ap-neighbor-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            background: rgba(56, 189, 248, 0.08);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 6px;
+            color: #38bdf8;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+            font-family: inherit;
+        }
+
+        .ap-neighbor-btn:hover {
+            background: rgba(56, 189, 248, 0.2);
+            border-color: #38bdf8;
+            box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
+            transform: translateY(-1px);
+        }
+
+        .wifi-icon-svg {
+            width: 14px;
+            height: 14px;
+            stroke: currentColor;
+            flex-shrink: 0;
+        }
+
+        .ap-live-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 1px 6px;
+            background: rgba(16, 185, 129, 0.18);
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            color: #34d399;
+            border-radius: 9999px;
+            letter-spacing: 0.3px;
+        }
+
+        .ap-live-dot {
+            width: 6px;
+            height: 6px;
+            background: #10b981;
+            border-radius: 50%;
+            box-shadow: 0 0 6px #10b981;
+            animation: apPulseDot 1.5s infinite;
+        }
+
+        @keyframes apPulseDot {
+            0% {
+                transform: scale(0.9);
+                opacity: 0.7;
+            }
+
+            50% {
+                transform: scale(1.3);
+                opacity: 1;
+                box-shadow: 0 0 10px #10b981;
+            }
+
+            100% {
+                transform: scale(0.9);
+                opacity: 0.7;
+            }
+        }
+
+        /* Modal AP Styling */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.82);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 20px;
+        }
+
+        .modal-card-ap {
+            background: #0f172a;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 14px;
+            width: 100%;
+            max-width: 1100px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.8), 0 0 30px rgba(56, 189, 248, 0.1);
+            animation: modalFadeIn 0.2s ease-out;
+            overflow: hidden;
+        }
+
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.97);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .modal-header-ap {
+            padding: 16px 22px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(15, 23, 42, 0.95);
+        }
+
+        .modal-close-btn {
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            font-size: 26px;
+            line-height: 1;
+            cursor: pointer;
+            padding: 4px 10px;
+            border-radius: 6px;
+            transition: color 0.15s;
+        }
+
+        .modal-close-btn:hover {
+            color: #f1f5f9;
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .modal-body-ap {
+            padding: 20px 24px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .ap-grid-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 12px;
+        }
+
+        .ap-stat-card {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 10px;
+            padding: 12px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .ap-stat-card .label {
+            font-size: 11px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .ap-stat-card .val {
+            font-size: 15px;
+            font-weight: 700;
+            color: #f1f5f9;
+        }
+
+        .ap-stat-card .sub {
+            font-size: 11px;
+            color: #64748b;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .client-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        .client-table th {
+            background: rgba(15, 23, 42, 0.95);
+            color: #94a3b8;
+            text-align: left;
+            padding: 10px 12px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .client-table td {
+            padding: 11px 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            vertical-align: middle;
+        }
+
+        .client-table tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .client-host {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            color: #f8fafc;
+        }
+
+        .badge-rssi-excel {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            padding: 2px 7px;
+            border-radius: 5px;
+            font-size: 11px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .badge-rssi-good {
+            background: rgba(59, 130, 246, 0.15);
+            color: #60a5fa;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            padding: 2px 7px;
+            border-radius: 5px;
+            font-size: 11px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .badge-rssi-fair {
+            background: rgba(245, 158, 11, 0.15);
+            color: #fbbf24;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            padding: 2px 7px;
+            border-radius: 5px;
+            font-size: 11px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .bw-meter {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            min-width: 120px;
+        }
+
+        .bw-bar-track {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .bw-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #38bdf8, #10b981);
+            border-radius: 2px;
+        }
+    </style>
 </head>
 
 <body>
@@ -325,22 +632,36 @@
                     <div class="chart-panel">
                         <div class="panel-header">
                             <div>
+                                {% if 'palo' in device.vendor.lower() %}
+                                <h3 class="panel-title">Firewall Session &amp; Capacity Utilization</h3>
+                                <span class="panel-sub">PAN-OS active session table utilization &amp; concurrent active
+                                    sessions</span>
+                                {% elif 'huawei' in device.vendor.lower() %}
+                                <h3 class="panel-title">Buffer Congestion &amp; Queue Drops</h3>
+                                <span class="panel-sub">ASIC packet buffer queue discards (Tail drops &amp;
+                                    overflow)</span>
+                                {% else %}
                                 <h3 class="panel-title">{{ dev_type }} Hardware Buffer</h3>
-                                <span class="panel-sub">
-                                    {% if 'huawei' in device.vendor.lower() %}
-                                    ASIC QoS buffer queue utilization (Current vs Peak Watermark)
-                                    {% elif 'palo' in device.vendor.lower() %}
-                                    On-chip packet buffer queue &amp; packet descriptor pool utilization
-                                    {% else %}
-                                    ASIC packet buffer queue &amp; control plane buffer utilization
-                                    {% endif %}
-                                </span>
+                                <span class="panel-sub">ASIC packet buffer queue &amp; control plane buffer
+                                    utilization</span>
+                                {% endif %}
                             </div>
                             <div class="chart-legend-custom">
+                                {% if 'palo' in device.vendor.lower() %}
+                                <span class="legend-tag"><span class="legend-color bg-cyan"></span> Session Util
+                                    (%)</span>
+                                <span class="legend-tag"><span class="legend-color bg-orange"></span> Active
+                                    Sessions</span>
+                                {% elif 'huawei' in device.vendor.lower() %}
+                                <span class="legend-tag"><span class="legend-color bg-cyan"></span> Egress Drops
+                                    (Tx)</span>
+                                <span class="legend-tag"><span class="legend-color bg-orange"></span> Ingress Drops
+                                    (Rx)</span>
+                                {% else %}
                                 <span class="legend-tag"><span class="legend-color bg-cyan"></span> Packet Buffer</span>
-                                <span class="legend-tag"><span class="legend-color bg-orange"></span> {% if 'huawei' in
-                                    device.vendor.lower() %}Peak Buffer{% elif 'palo' in device.vendor.lower() %}Packet
-                                    Descriptor{% else %}Message Buffer{% endif %}</span>
+                                <span class="legend-tag"><span class="legend-color bg-orange"></span> Message
+                                    Buffer</span>
+                                {% endif %}
                             </div>
                         </div>
                         <div class="device-chart-body">
@@ -448,8 +769,7 @@
                                 <th>Operational Status</th>
                                 <th>Connected Neighbor (LLDP)</th>
                                 <th>Speed</th>
-                                <th>Throughput Tx</th>
-                                <th>Throughput Rx</th>
+                                <th title="Instantaneous live transmission rate: Transmit (Tx) / Receive (Rx) in Mbps">Throughput Tx / Rx</th>
                                 <th
                                     title="Total physical hardware register byte accumulation since device boot / counter reset">
                                     Bytes Tx / Rx (Cumulative)</th>
@@ -511,16 +831,38 @@
                                 </td>
                                 <td>
                                     {% if p.neighbor %}
+                                    {% if p.neighbor.is_ap or 'ap-' in p.neighbor.name.lower() or 'access point' in
+                                    p.neighbor.desc.lower() %}
+                                    <div class="neighbor-name"
+                                        style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                                        <button type="button" class="ap-neighbor-btn"
+                                            onclick="openApModal('{{ p.neighbor.name }}', '{{ p.port_name }}', '{{ p.speed }}')"
+                                            title="Klik untuk memantau klien nirkabel & penggunaan bandwidth Wi-Fi">
+                                            <svg class="wifi-icon-svg" viewBox="0 0 24 24" fill="none"
+                                                stroke="currentColor" stroke-width="2">
+                                                <path d="M5 12.55a11 11 0 0 1 14.08 0"></path>
+                                                <path d="M1.42 9a16 16 0 0 1 21.16 0"></path>
+                                                <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+                                                <line x1="12" y1="20" x2="12.01" y2="20"></line>
+                                            </svg>
+                                            <span>{{ p.neighbor.name }}</span>
+                                            <span class="ap-live-badge"><span class="ap-live-dot"></span>WiFi
+                                                Clients</span>
+                                        </button>
+                                        <code class="neighbor-remote-port">({{ p.neighbor.remote_port }})</code>
+                                    </div>
+                                    <div class="neighbor-desc">{{ p.neighbor.desc }}</div>
+                                    {% else %}
                                     <div class="neighbor-name">{{ p.neighbor.name }} <code
                                             class="neighbor-remote-port">({{ p.neighbor.remote_port }})</code></div>
                                     <div class="neighbor-desc">{{ p.neighbor.desc }}</div>
+                                    {% endif %}
                                     {% else %}
                                     <span class="text-muted" style="font-size: 12px;">-</span>
                                     {% endif %}
                                 </td>
                                 <td><span>{{ p.speed }}</span></td>
-                                <td><span>{{ p.tx_mbps }}</span></td>
-                                <td><span>{{ p.rx_mbps }}</span></td>
+                                <td><span>{{ p.tx_mbps }} / {{ p.rx_mbps }} Mbps</span></td>
                                 <td><span>{{ p.bytes_tx_fmt }} / {{ p.bytes_rx_fmt }}</span></td>
                                 <td>
                                     {% if p.is_sfp %}
@@ -566,6 +908,123 @@
         </div>
     </main>
 
+    <!-- Wireless AP Client Telemetry Modal -->
+    <div id="apClientsModal" class="modal-overlay" style="display: none;"
+        onclick="if(event.target === this) closeApModal()">
+        <div class="modal-card-ap">
+            <div class="modal-header-ap">
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <div
+                        style="width:38px; height:38px; border-radius:8px; background:rgba(56, 189, 248, 0.15); border:1px solid rgba(56, 189, 248, 0.3); display:flex; align-items:center; justify-content:center; color:#38bdf8;">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M5 12.55a11 11 0 0 1 14.08 0"></path>
+                            <path d="M1.42 9a16 16 0 0 1 21.16 0"></path>
+                            <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+                            <line x1="12" y1="20" x2="12.01" y2="20"></line>
+                        </svg>
+                    </div>
+                    <div>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <h3 id="modalApTitle" style="margin:0; font-size:17px; font-weight:700; color:#f8fafc;">
+                                AP-Aruba-HO-1</h3>
+                            <span id="modalApVendorBadge" class="ap-live-badge"><span
+                                    class="ap-live-dot"></span>Online</span>
+                        </div>
+                        <p id="modalApSubtitle" style="margin:3px 0 0 0; font-size:12px; color:#94a3b8;">Aruba AP-505
+                            Campus Access Point &bull; Port 2</p>
+                    </div>
+                </div>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <button type="button" class="btn-refresh" id="btnRefreshApClients" onclick="refreshApModal()"
+                        title="Refresh live telemetry" style="padding:5px 10px; font-size:12px;">
+                        <svg class="refresh-icon" viewBox="0 0 24 24" width="13" height="13" fill="none"
+                            stroke="currentColor" stroke-width="2.5"
+                            style="display:inline-block; vertical-align:middle; margin-right:4px;">
+                            <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+                        </svg>
+                        <span>Refresh</span>
+                    </button>
+                    <button type="button" class="modal-close-btn" onclick="closeApModal()"
+                        title="Close">&times;</button>
+                </div>
+            </div>
+
+            <div class="modal-body-ap">
+                <!-- Summary Cards -->
+                <div class="ap-grid-summary">
+                    <div class="ap-stat-card">
+                        <span class="label">Access Point Hardware</span>
+                        <span class="val" id="apModelText">-</span>
+                        <span class="sub" id="apIpMacText">-</span>
+                    </div>
+                    <div class="ap-stat-card">
+                        <span class="label">Location & Switch Port</span>
+                        <span class="val" id="apLocationText">-</span>
+                        <span class="sub" id="apPortPoeText">-</span>
+                    </div>
+                    <div class="ap-stat-card">
+                        <span class="label">Active Wi-Fi Clients</span>
+                        <span class="val" id="apClientsCount" style="color:#38bdf8;">0 Devices</span>
+                        <span class="sub" id="apRadioText">Switch Port FDB Station</span>
+                    </div>
+                    <div class="ap-stat-card">
+                        <span class="label">Live AP Bandwidth (Switch PoE)</span>
+                        <span class="val" id="apThroughputText" style="color:#34d399;">0.0 Mbps</span>
+                        <span class="sub" id="apTrafficBreakdown">Rx: 0 Mbps &bull; Tx: 0 Mbps</span>
+                    </div>
+                </div>
+
+                <!-- Controls & Search -->
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span style="font-size:13px; font-weight:700; color:#e2e8f0;">Associated Wireless Clients</span>
+                        <span id="apFilteredCountBadge"
+                            style="font-size:11px; padding:2px 8px; border-radius:10px; background:rgba(255,255,255,0.06); color:#94a3b8;">Showing
+                            all</span>
+                    </div>
+                    <div style="display:flex; gap:8px; align-items:center;">
+                        <input type="text" id="apClientSearchInput" placeholder="Filter hostname, IP, MAC, SSID..."
+                            oninput="filterApClients()"
+                            style="background:#1e293b; border:1px solid rgba(255,255,255,0.12); color:#f8fafc; font-size:12px; padding:6px 12px; border-radius:6px; min-width:240px; outline:none;" />
+                    </div>
+                </div>
+
+                <!-- Clients Table -->
+                <div class="table-responsive"
+                    style="max-height: 420px; overflow-y:auto; border:1px solid rgba(255,255,255,0.08); border-radius:8px;">
+                    <table class="client-table">
+                        <thead>
+                            <tr>
+                                <th>Client Device</th>
+                                <th>IP &amp; MAC Address</th>
+                                <th>Associated Port &amp; AP</th>
+                                <th style="min-width: 175px;">Live Throughput (Rx / Tx)</th>
+                                <th style="min-width: 130px;">Cumulative Usage</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="apClientsTableBody">
+                            <tr>
+                                <td colspan="6" style="text-align:center; padding:30px; color:#94a3b8;">
+                                    Loading client telemetry via Palo Alto &amp; SNMP...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div
+                style="padding:12px 24px; background:rgba(15,23,42,0.9); border-top:1px solid rgba(255,255,255,0.06); display:flex; justify-content:space-between; align-items:center;">
+                <span id="apLastUpdatedText"
+                    style="font-size:11px; color:#64748b; font-family:'JetBrains Mono', monospace;">Last Polled:
+                    -</span>
+                <span style="font-size:11px; color:#64748b;">Source: Palo Alto Networks PA-220 L7 Traffic Telemetry &amp; Hardware Switch FDB</span>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast Notification Container -->
     <div id="toastContainer" class="toast-container"></div>
 
@@ -586,8 +1045,282 @@
         window.NAV_DEVICES = JSON.parse(document.getElementById('nav-devices-data').textContent || '[]');
     </script>
     <script src="/static/js/timeline_navigator.js?v=1.1"></script>
-    <script src="/static/js/device_detail.js?v=20.0"></script>
+    <script src="/static/js/device_detail.js?v=21.0"></script>
     <script src="/static/js/global_nav.js?v=4.9"></script>
+
+    <!-- Wireless AP Client Telemetry JavaScript -->
+    <script>
+        let currentApName = null;
+        let currentApClientsCache = [];
+        let currentApDataObj = null;
+        let currentApSummaryObj = null;
+
+        async function openApModal(apName, portName, speed) {
+            currentApName = apName;
+            const modal = document.getElementById('apClientsModal');
+            if (!modal) return;
+
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+
+            document.getElementById('modalApTitle').textContent = apName;
+            document.getElementById('modalApSubtitle').textContent = `Associated with ${portName || 'Port'} (${speed || '1 Gbps'})`;
+            document.getElementById('apClientSearchInput').value = '';
+
+            const apLoadingHtml = `
+                <tr>
+                    <td colspan="6" style="text-align:center; padding:45px 20px;">
+                        <div class="speedtest-gauge-wrap" style="display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                            <div class="speedtest-spinner"></div>
+                            <div class="speedtest-testing-txt" style="margin-top:14px; font-size:14px; font-weight:600; color:#f8fafc;">Memuat Telemetri Nirkabel AP</div>
+                            <div class="speedtest-step-sub" style="font-size:12px; color:#94a3b8; margin-top:4px;">Menghubungkan Palo Alto PA-220 &amp; FDB Switch Table</div>
+                        </div>
+                    </td>
+                </tr>
+            `;
+            document.getElementById('apClientsTableBody').innerHTML = apLoadingHtml;
+
+            await loadApData(apName);
+        }
+
+        function closeApModal() {
+            const modal = document.getElementById('apClientsModal');
+            if (modal) modal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+
+        async function refreshApModal() {
+            if (!currentApName) return;
+            const btn = document.getElementById('btnRefreshApClients');
+            if (btn) btn.classList.add('loading');
+
+            const apLoadingHtml = `
+                <tr>
+                    <td colspan="6" style="text-align:center; padding:45px 20px;">
+                        <div class="speedtest-gauge-wrap" style="display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                            <div class="speedtest-spinner"></div>
+                            <div class="speedtest-testing-txt" style="margin-top:14px; font-size:14px; font-weight:600; color:#f8fafc;">Memuat Telemetri Nirkabel AP...</div>
+                            <div class="speedtest-step-sub" style="font-size:12px; color:#94a3b8; margin-top:4px;">Menghubungkan Palo Alto PA-220 &amp; FDB Switch Table</div>
+                        </div>
+                    </td>
+                </tr>
+            `;
+            document.getElementById('apClientsTableBody').innerHTML = apLoadingHtml;
+
+            await loadApData(currentApName, true);
+            if (btn) btn.classList.remove('loading');
+        }
+
+        async function loadApData(apName, force = false) {
+            try {
+                const url = `/api/ap/${encodeURIComponent(apName)}/clients` + (force ? `?force=1&_t=${Date.now()}` : '');
+                const resp = await fetch(url);
+                const json = await resp.json();
+                if (!json.success || !json.data) {
+                    throw new Error(json.error || 'Failed to fetch AP data');
+                }
+                const data = json.data;
+                const ap = data.ap;
+                const summary = data.summary;
+                currentApDataObj = ap;
+                currentApSummaryObj = summary;
+                currentApClientsCache = ap.clients || data.clients || [];
+
+                // Update Summary Cards
+                document.getElementById('modalApTitle').textContent = ap.name;
+                document.getElementById('modalApSubtitle').textContent = `${ap.vendor} • ${ap.model}`;
+                document.getElementById('apModelText').textContent = ap.model;
+                document.getElementById('apIpMacText').textContent = ap.esn ? `${ap.ip_address} • ESN: ${ap.esn}` : (ap.mac_address && ap.mac_address !== '-' ? `${ap.ip_address} • MAC: ${ap.mac_address}` : `${ap.ip_address} • SNMPv2c`);
+                document.getElementById('apLocationText').textContent = ap.location;
+                document.getElementById('apPortPoeText').textContent = `${ap.connected_switch} (${ap.connected_port}) • PoE: ${ap.poe_power}`;
+                document.getElementById('apClientsCount').textContent = `${summary.active_clients} Devices`;
+
+                // Badge Online / Standby
+                const badge = document.getElementById('modalApVendorBadge');
+                if (badge) {
+                    if (summary.is_reachable) {
+                        badge.className = 'ap-live-badge';
+                        badge.style.background = 'rgba(16, 185, 129, 0.15)';
+                        badge.style.borderColor = 'rgba(16, 185, 129, 0.3)';
+                        badge.style.color = '#34d399';
+                        badge.innerHTML = `<span class="ap-live-dot" style="background:#10b981; box-shadow:0 0 8px #10b981;"></span>Online (${ap.uptime || 'Active'})`;
+                    } else {
+                        badge.className = 'ap-live-badge';
+                        badge.style.background = 'rgba(148, 163, 184, 0.12)';
+                        badge.style.borderColor = 'rgba(148, 163, 184, 0.25)';
+                        badge.style.color = '#94a3b8';
+                        badge.innerHTML = `<span class="ap-live-dot" style="background:#94a3b8; box-shadow:none;"></span>Standby / Belum Ada Klien`;
+                    }
+                }
+
+                const radioInfo = ap.connected_switch ? `${ap.connected_switch} • ${ap.connected_port || 'PoE'}` : 'Switch Port FDB Station';
+                document.getElementById('apRadioText').textContent = radioInfo;
+
+                document.getElementById('apThroughputText').textContent = `${summary.total_mbps} Mbps`;
+                document.getElementById('apTrafficBreakdown').textContent = `Rx: ${summary.total_rx_mbps} Mbps • Tx: ${summary.total_tx_mbps} Mbps`;
+                document.getElementById('apLastUpdatedText').textContent = `Last Polled: ${summary.timestamp}`;
+                document.getElementById('apFilteredCountBadge').textContent = `Showing all (${currentApClientsCache.length})`;
+
+                renderClientRows(currentApClientsCache);
+            } catch (err) {
+                console.error('AP client telemetry error:', err);
+                document.getElementById('apClientsTableBody').innerHTML = `
+                    <tr>
+                        <td colspan="5" style="text-align:center; padding:30px; color:#94a3b8;">
+                            Belum dapat memuat data telemetri AP: ${err.message}
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        function renderClientRows(clients, isFilter = false) {
+            const tbody = document.getElementById('apClientsTableBody');
+            if (!tbody) return;
+
+            if (!clients || !clients.length) {
+                if (isFilter) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="6" style="text-align:center; padding:30px; color:#94a3b8;">
+                                Tidak ada klien yang cocok dengan pencarian / filter.
+                            </td>
+                        </tr>
+                    `;
+                } else if (currentApSummaryObj && !currentApSummaryObj.is_reachable) {
+                    const ap = currentApDataObj;
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="6" style="text-align:center; padding:35px 20px; background:rgba(255, 255, 255, 0.015); border-radius:8px;">
+                                <div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
+                                    <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" style="color:#94a3b8;">
+                                        <path d="M5 12.55a11 11 0 0 1 14.08 0"></path>
+                                        <path d="M1.42 9a16 16 0 0 1 21.16 0"></path>
+                                        <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+                                        <line x1="12" y1="20" x2="12.01" y2="20"></line>
+                                    </svg>
+                                    <div style="font-size:13px; font-weight:600; color:#e2e8f0;">Belum Ada Klien Terdeteksi</div>
+                                    <div style="font-size:12px; color:#94a3b8; max-width:550px; line-height:1.5;">
+                                        Saat ini tidak ada MAC address atau perangkat klien yang aktif terasosiasi pada port Access Point ini (IP: <strong>${ap ? ap.ip_address : ''}</strong>).
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                } else {
+                    const descr = (currentApDataObj && currentApDataObj.system_description) ? currentApDataObj.system_description : 'AP Online via Switch Port';
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="6" style="text-align:center; padding:35px 20px; color:#94a3b8;">
+                                <div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
+                                    <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" style="color:#10b981;">
+                                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                    </svg>
+                                    <div style="font-size:13px; font-weight:600; color:#f8fafc;">${descr} &bull; 0 Klien Terdeteksi</div>
+                                    <div style="font-size:12px; color:#64748b;">
+                                        Tidak ada perangkat klien yang sedang aktif di tabel forwarding port switch ini.
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }
+                return;
+            }
+
+            const ap = currentApDataObj || {};
+            tbody.innerHTML = clients.map(c => {
+                // OS icon SVG
+                let osSvg = '';
+                if (c.os_type === 'apple') {
+                    osSvg = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="color:#94a3b8; flex-shrink:0;"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.62-.75 1.04-1.8 0.93-2.85-.9.04-1.99.6-2.63 1.35-.57.65-1.07 1.72-.94 2.74 1 .08 2.02-.49 2.64-1.24z"/></svg>';
+                } else if (c.os_type === 'windows') {
+                    osSvg = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="color:#38bdf8; flex-shrink:0;"><path d="M3 5.55 10.36 4.5v6.95H3V5.55zm0 12.9 7.36 1.05v-6.95H3v5.9zm8.54 1.22L21 21v-8.45h-9.46v7.12zm0-15.34V11.45H21V3l-9.46 1.33z"/></svg>';
+                } else if (c.os_type === 'linux') {
+                    osSvg = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" style="color:#f59e0b; flex-shrink:0;"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 9h6v6H9z"/></svg>';
+                } else {
+                    osSvg = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" style="color:#10b981; flex-shrink:0;"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>';
+                }
+
+                const portDisplay = c.port || ap.connected_port || 'PoE Port';
+                const switchDisplay = ap.connected_switch || 'Switch';
+                const rxDisplay = c.throughput_rx || '0 Kbps';
+                const txDisplay = c.throughput_tx || '0 Kbps';
+
+                return `
+                    <tr>
+                        <td>
+                            <div class="client-host">
+                                ${osSvg}
+                                <div>
+                                    <div style="font-weight:600; color:#f8fafc;">${c.hostname}</div>
+                                    <div style="font-size:11px; color:#94a3b8;">${c.os}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div style="font-family:'JetBrains Mono', monospace; font-size:12px; color:#38bdf8; font-weight:600;">${c.ip || '-'}</div>
+                            <div style="font-family:'JetBrains Mono', monospace; font-size:11px; color:#64748b;">${c.mac}</div>
+                        </td>
+                        <td>
+                            <div style="font-weight:600; color:#e2e8f0; font-size:12px;">${portDisplay}</div>
+                            <div style="font-size:11px; color:#64748b;">${switchDisplay}</div>
+                        </td>
+                        <td>
+                            <div style="display:flex; flex-direction:column; gap:2px;">
+                                <div style="font-family:'JetBrains Mono', monospace; font-size:12px; font-weight:700;">
+                                    <span style="color:#38bdf8;" title="Download (Rx)">↓ ${rxDisplay}</span> &nbsp;
+                                    <span style="color:#fbbf24;" title="Upload (Tx)">↑ ${txDisplay}</span>
+                                </div>
+                                ${c.top_app && c.top_app !== 'Idle' && c.top_app !== 'Standby' ? 
+                                    `<div style="font-size:10px; color:#94a3b8; display:flex; align-items:center; gap:4px;">
+                                        <span style="display:inline-block; width:5px; height:5px; border-radius:50%; background:#10b981;"></span>
+                                        ${c.top_app}
+                                    </div>` : 
+                                    `<div style="font-size:10px; color:#64748b;">Standby</div>`}
+                            </div>
+                        </td>
+                        <td>
+                            <div style="font-family:'JetBrains Mono', monospace; font-size:12px; font-weight:700; color:#f8fafc;">
+                                ${c.cumulative_usage || '< 1 MB'}
+                            </div>
+                            <div style="font-size:10px; color:#64748b;">${c.sessions || 0} active sessions</div>
+                        </td>
+                        <td>
+                            <span class="ap-live-badge" style="background:rgba(16, 185, 129, 0.15); border-color:rgba(16, 185, 129, 0.3); color:#34d399; font-size:11px; padding:3px 9px; display:inline-flex; align-items:center; gap:5px;">
+                                <span class="ap-live-dot" style="background:#10b981; box-shadow:0 0 6px #10b981;"></span>Active
+                            </span>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function filterApClients() {
+            const query = (document.getElementById('apClientSearchInput').value || '').toLowerCase().trim();
+            if (!query) {
+                renderClientRows(currentApClientsCache, false);
+                document.getElementById('apFilteredCountBadge').textContent = `Showing all (${currentApClientsCache.length})`;
+                return;
+            }
+            const filtered = currentApClientsCache.filter(c =>
+                (c.hostname && c.hostname.toLowerCase().includes(query)) ||
+                (c.ip && c.ip.toLowerCase().includes(query)) ||
+                (c.mac && c.mac.toLowerCase().includes(query)) ||
+                (c.ssid && c.ssid.toLowerCase().includes(query)) ||
+                (c.os && c.os.toLowerCase().includes(query))
+            );
+            renderClientRows(filtered, true);
+            document.getElementById('apFilteredCountBadge').textContent = `${filtered.length} of ${currentApClientsCache.length}`;
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeApModal();
+            }
+        });
+    </script>
 </body>
 
 </html>

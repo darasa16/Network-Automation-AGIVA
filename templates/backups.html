@@ -660,7 +660,18 @@
                 <button type="button" class="modal-close-btn" onclick="closeConfigModal()"
                     title="Close Modal">&times;</button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body" style="position:relative; min-height:220px;">
+                <div id="modalLoadingState" style="display:none; padding:45px 20px; text-align:center;">
+                    <div class="speedtest-gauge-wrap"
+                        style="display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                        <div class="speedtest-spinner"></div>
+                        <div class="speedtest-testing-txt"
+                            style="margin-top:14px; font-size:14px; font-weight:600; color:#f8fafc;">Fetching Archive
+                            File</div>
+                        <div class="speedtest-step-sub" style="font-size:12px; color:#94a3b8; margin-top:4px;">
+                            Retrieving stored content from server</div>
+                    </div>
+                </div>
                 <pre id="modalContentBox" class="modal-code-viewer">Loading file content...</pre>
             </div>
             <div class="modal-footer">
@@ -1078,26 +1089,42 @@
             titleEl.textContent = devName ? `Archive File - ${devName}` : 'File Viewer';
             catBadge.textContent = category ? category.toUpperCase() : 'SYSTEM';
             pathEl.textContent = filePath || '';
-            codeBox.textContent = '⏳ Fetching file from storage server...';
             timeEl.textContent = '';
+
+            const loadingEl = document.getElementById('modalLoadingState');
+            if (loadingEl) loadingEl.style.display = 'block';
+            if (codeBox) {
+                codeBox.style.display = 'none';
+                codeBox.textContent = '';
+            }
             modal.style.display = 'flex';
 
             if (backupId) {
                 fetch(`/api/backup/content/${backupId}`)
                     .then(res => res.json())
                     .then(data => {
-                        if (data.success) {
-                            codeBox.textContent = data.content || '(Empty file)';
+                        if (loadingEl) loadingEl.style.display = 'none';
+                        if (codeBox) codeBox.style.display = 'block';
+
+                        if (data.success && data.content && data.content.trim() !== '') {
+                            codeBox.textContent = data.content;
                             timeEl.textContent = `Backup Date: ${data.date} • Size: ${data.file_size}`;
                         } else {
-                            codeBox.textContent = `[Info] ${data.error || 'Failed to load file content.'}\n\nLocation: ${data.file_path || filePath}\nStatus: Physical file not yet stored on server disk.\n\nType /backup ${devName} in Telegram bot to fetch files directly via SSH/API.`;
+                            codeBox.textContent = 'Physical file not yet stored on server disk.';
+                            timeEl.textContent = '';
                         }
                     })
                     .catch(err => {
-                        codeBox.textContent = `[Network Error] Failed to contact API server: ${err}`;
+                        if (loadingEl) loadingEl.style.display = 'none';
+                        if (codeBox) codeBox.style.display = 'block';
+                        codeBox.textContent = 'Failed to contact API server';
+                        timeEl.textContent = '';
                     });
             } else {
-                codeBox.textContent = `// SAMPLE LOG / CONFIGURATION FILE VIEW\n// Device   : ${devName}\n// Category : ${category}\n// Path     : ${filePath}\n\n======================================================================\nAGIVA NOC LOG ARCHIVE [${category ? category.toUpperCase() : 'SYSTEM'}]\n======================================================================\nI 11/02/26 02:00:12 ports: port 1 is now on-line (1000FDx)\nI 11/02/26 02:00:15 ssh: SSH client 192.168.1.50 logged in for user admin\nW 11/02/26 02:00:18 ST-P: CST Root changed from 32768:00... to 32768:11...\n\n[INFO] Run /backup ${devName} command in Telegram bot to pull real logs directly from device!`;
+                if (loadingEl) loadingEl.style.display = 'none';
+                if (codeBox) codeBox.style.display = 'block';
+                codeBox.textContent = 'Physical file not yet stored on server disk.';
+                timeEl.textContent = '';
             }
         }
 

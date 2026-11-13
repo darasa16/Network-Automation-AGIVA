@@ -249,3 +249,57 @@ class BackupHistory(Base):
     status = Column(String(20), nullable=False)  # 'SUCCESS' / 'FAILED'
 
     device = relationship("Device", back_populates="backups")
+
+
+# 5. AP CLIENT TELEMETRY MODEL (Opsi 1 - Database Persistence)
+class ApClientTelemetry(Base):
+    """Tabel: ap_client_telemetry (Data Klien Nirkabel & Bandwidth Palo Alto per AP di PostgreSQL)"""
+    __tablename__ = 'ap_client_telemetry'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    ap_name = Column(String(64), nullable=False, index=True)
+    client_ip = Column(String(45), nullable=False, index=True)
+    client_mac = Column(String(32), nullable=False, index=True)
+    hostname = Column(String(128), default="Station")
+    vendor = Column(String(64), default="Unknown")
+    os_label = Column(String(128), default="Station Device")
+    os_type = Column(String(32), default="generic")
+    connected_port = Column(String(64), default="PoE Port")
+    connected_switch = Column(String(64), default="Switch")
+    rx_mbps = Column(Float, default=0.0)
+    tx_mbps = Column(Float, default=0.0)
+    total_mbps = Column(Float, default=0.0)
+    throughput_rx = Column(String(32), default="0 Kbps")
+    throughput_tx = Column(String(32), default="0 Kbps")
+    cumulative_bytes = Column(BigInteger().with_variant(Integer, "sqlite"), default=0)
+    cumulative_fmt = Column(String(32), default="< 1 MB")
+    top_app = Column(String(64), default="Idle")
+    sessions = Column(Integer, default=0)
+    status = Column(String(32), default="Active")
+    last_seen = Column(DateTime, default=datetime.now, nullable=False)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "ap_name": self.ap_name,
+            "hostname": self.hostname,
+            "ip": self.client_ip,
+            "mac": self.client_mac,
+            "vendor": self.vendor,
+            "os": self.os_label,
+            "os_type": self.os_type,
+            "port": self.connected_port,
+            "switch": self.connected_switch,
+            "rx_mbps": self.rx_mbps or 0.0,
+            "tx_mbps": self.tx_mbps or 0.0,
+            "total_mbps": self.total_mbps or 0.0,
+            "throughput_rx": self.throughput_rx or "0 Kbps",
+            "throughput_tx": self.throughput_tx or "0 Kbps",
+            "throughput_fmt": f"Rx: {self.throughput_rx or '0 Kbps'} • Tx: {self.throughput_tx or '0 Kbps'}",
+            "cumulative_bytes": self.cumulative_bytes or 0,
+            "cumulative_usage": self.cumulative_fmt or "< 1 MB",
+            "top_app": self.top_app or "Idle",
+            "sessions": self.sessions or 0,
+            "status": self.status or "Active",
+            "last_seen": self.last_seen.strftime("%Y-%m-%d %H:%M:%S") if self.last_seen else "-"
+        }

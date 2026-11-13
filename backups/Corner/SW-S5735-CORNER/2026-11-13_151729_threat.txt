@@ -1,0 +1,15 @@
+======================================================================
+AGIVA NOC RAW SNAPSHOT [THREAT]
+Execution Time: 2026-11-13 15:17:29 WIB
+Device        : SW-S5735-CORNER (192.168.1.155)
+Site          : Corner
+Category      : Threat
+Triggered By  : Telegram (@Dara Samsara)
+======================================================================
+
+--------------------------------------------------------------------------------
+SecurePort           MaxSecureAddr CurrentAddr SecurityViolation ProtectAction
+                           (count)     (count)           (count)
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+Total Secured MAC Addresses in System: 0

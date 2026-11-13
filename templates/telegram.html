@@ -661,20 +661,41 @@
                 .replace(/'/g, "&#039;");
         }
 
+        function getLogTypeDisplay(rawType) {
+            const t = String(rawType || '').toUpperCase();
+            if (t === 'ALERT_NOTIFICATION') return 'ALERT NOTIF';
+            if (t === 'DIAGNOSTIC_TEST') return 'TEST PING';
+            if (t === 'BACKUP_SUMMARY') return 'BACKUP SUMMARY';
+            return 'CMD REPLY';
+        }
+
         function getFilteredLogs() {
             const q = currentLogsSearch.trim().toLowerCase();
             if (!q) return allLogs;
             return allLogs.filter(l => {
-                const type = String(l.type || '').toLowerCase();
+                const rawType = String(l.type || '').toLowerCase();
+                const displayType = getLogTypeDisplay(l.type).toLowerCase();
                 const content = String(l.content || '').toLowerCase();
                 const status = String(l.status || '').toLowerCase();
 
-                let typeLabel = '';
-                if (l.type === 'ALERT_NOTIFICATION') typeLabel = 'alert notif alert notification';
-                else if (l.type === 'DIAGNOSTIC_TEST') typeLabel = 'test ping diagnostic test';
-                else if (l.type === 'COMMAND_RESPONSE' || l.type === 'CMD_REPLY') typeLabel = 'cmd reply command response';
+                let typeAliases = '';
+                if (rawType.includes('alert')) {
+                    typeAliases = 'alert notif alert notification';
+                } else if (rawType.includes('diagnostic') || rawType.includes('test')) {
+                    typeAliases = 'test ping diagnostic test';
+                } else if (rawType.includes('backup')) {
+                    typeAliases = 'backup summary backup';
+                } else {
+                    typeAliases = 'cmd reply command reply command response cmd command';
+                }
 
-                return type.includes(q) || typeLabel.includes(q) ||
+                // Match by raw type, display badge label, aliases, or generic words "message type" / "type"
+                const matchesType = rawType.includes(q) ||
+                    displayType.includes(q) ||
+                    typeAliases.includes(q) ||
+                    (q === 'message type' || q === 'type' || q === 'message');
+
+                return matchesType ||
                     content.includes(q) ||
                     status.includes(q);
             });
@@ -753,11 +774,7 @@
 
             let html = '';
             for (const l of pageData) {
-                let typeLabel = l.type === 'ALERT_NOTIFICATION'
-                    ? 'ALERT NOTIF'
-                    : (l.type === 'DIAGNOSTIC_TEST'
-                        ? 'TEST PING'
-                        : 'CMD REPLY');
+                const typeLabel = getLogTypeDisplay(l.type);
 
                 const rawStatus = (l.status || 'SENT').trim();
                 const isSuccess = rawStatus.toUpperCase() === 'SENT' || rawStatus.toUpperCase() === 'SUCCESS';

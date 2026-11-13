@@ -143,14 +143,20 @@
                     <div class="wan-info-block">
                         <div class="wan-title-meta">
                             <div class="wan-tag-row">
-                                <span class="wan-badge-status status-{{ 'up' if (not wan or wan.status == 'UP') else 'down' }}" id="wanLinkBadge">
-                                    <span class="live-dot dot-{{ 'green' if (not wan or wan.status == 'UP') else 'red' }}" id="wanStatusDot"></span>
+                                <span
+                                    class="wan-badge-status status-{{ 'up' if (not wan or wan.status == 'UP') else 'down' }}"
+                                    id="wanLinkBadge">
+                                    <span
+                                        class="live-dot dot-{{ 'green' if (not wan or wan.status == 'UP') else 'red' }}"
+                                        id="wanStatusDot"></span>
                                     <span id="wanStatusText">{{ wan.status if wan else 'UP' }}</span>
                                 </span>
                             </div>
                             <h3 class="wan-title">Biznet Dedicated Internet</h3>
                             <span class="wan-meta-sub">
-                                <span id="wanDevice">FW-PA220-1</span> &bull; Port: <span id="wanPort">ethernet1/3</span> &bull; IP: <span id="wanIp">{{ wan.ip_address if wan else '192.168.18.226' }}</span>
+                                <span id="wanDevice">FW-PA220-1</span> &bull; Port: <span
+                                    id="wanPort">ethernet1/3</span> &bull; IP: <span id="wanIp">{{ wan.ip_address if wan
+                                    else '-' }}</span>
                             </span>
                         </div>
                     </div>
@@ -160,87 +166,107 @@
                         <div class="wan-metric-cell">
                             <span class="wan-metric-lbl">Download (Ingress)</span>
                             <div class="wan-metric-val-wrap">
-                                <span class="wan-val dl-color" id="wanDownloadVal">{{ wan.download_mbps if wan else '27.4' }}</span>
+                                <span class="wan-val dl-color" id="wanDownloadVal">{{ wan.download_mbps if wan else
+                                    '0.0' }}</span>
                                 <span class="wan-unit">Mbps</span>
                             </div>
                             <div class="wan-progress-bar">
-                                <div class="wan-progress-fill fill-dl" id="wanDlProgress" {{ ('style="width: ' ~ (((wan.download_mbps / (wan.capacity_mbps or 100)) * 100)|round(1) if wan else '27.4') ~ '%;"') | safe }}></div>
+                                <div class="wan-progress-fill fill-dl" id="wanDlProgress" {{
+                                    ('style="width: ' ~ (((wan.download_mbps / (wan.capacity_mbps or 100)) * 100)|round(1) if wan else '0') ~ '%;"') | safe }}></div>
                             </div>
                         </div>
 
                         <div class="wan-metric-cell">
                             <span class="wan-metric-lbl">Upload (Egress)</span>
                             <div class="wan-metric-val-wrap">
-                                <span class="wan-val ul-color" id="wanUploadVal">{{ wan.upload_mbps if wan else '3.1' }}</span>
-                                <span class="wan-unit">Mbps</span>
-                            </div>
-                            <div class="wan-progress-bar">
-                                <div class="wan-progress-fill fill-ul" id="wanUlProgress" {{ ('style="width: ' ~ (((wan.upload_mbps / (wan.capacity_mbps or 100)) * 100)|round(1) if wan else '3.1') ~ '%;"') | safe }}></div>
+                                <span class="wan-val ul-color" id="wanUploadVal">{{ wan.upload_mbps if wan else ' 0.0'
+                                    }}</span>
+                                    <span class="wan-unit">Mbps</span>
+                                </div>
+                                <div class="wan-progress-bar">
+                                    <div class="wan-progress-fill fill-ul" id="wanUlProgress" {{
+                                        ('style="width: ' ~ (((wan.upload_mbps / (wan.capacity_mbps or 100)) * 100)|round(1) if wan else '0') ~ '%;"') | safe }}></div>
                             </div>
                         </div>
 
                         <!-- Combined Bandwidth Utilization Row across both metrics -->
                         <div class="wan-util-combined-row">
                             <span class="wan-util-combined-lbl">Bandwidth Utilization:</span>
-                            <strong class="wan-util-combined-val" id="wanUtilCombinedVal">{{ wan.utilization_pct if wan else '30.5' }}%</strong>
-                            <span class="wan-util-combined-sub">of plan <strong class="wan-util-combined-cap" id="wanCapValCombined">{{ wan.capacity_mbps if wan else '100' }}</strong> <span class="wan-unit">Mbps</span></span>
-                        </div>
-                    </div>
+                            <strong class="wan-util-combined-val" id="wanUtilCombinedVal">{{ wan.utilization_pct if wan else '
+                                        0.0' }}%</strong>
+                                        <span class="wan-util-combined-sub">of plan <strong
+                                                class="wan-util-combined-cap" id="wanCapValCombined">{{
+                                                wan.capacity_mbps if wan else '100' }}</strong> <span
+                                                class="wan-unit">Mbps</span></span>
+                                    </div>
+                                </div>
 
-                    <!-- Right: Quality Indicators, Double Ping & Actions -->
-                    <div class="wan-quality-block">
-                        <div class="wan-ping-grid">
-                            <div class="wan-ping-item">
-                                <span class="ping-lbl">Ping Internet (1.1.1.1):</span>
-                                <span class="ping-val-wrap">
-                                    <strong class="ping-num" id="wanLatencyVal">{{ wan.latency_ms if wan else '9.5' }}</strong>
-                                    <span class="ping-unit">ms</span>
-                                </span>
+                                <!-- Right: Quality Indicators, Double Ping & Actions -->
+                                <div class="wan-quality-block">
+                                    <div class="wan-ping-grid">
+                                        <div class="wan-ping-item">
+                                            <span class="ping-lbl">Ping Internet (1.1.1.1):</span>
+                                            <span class="ping-val-wrap">
+                                                <strong class="ping-num" id="wanLatencyVal">{{ wan.latency_ms if wan
+                                                    else '0.0' }}</strong>
+                                                <span class="ping-unit">ms</span>
+                                            </span>
+                                        </div>
+                                        <div class="wan-ping-item">
+                                            <span class="ping-lbl">Packet Loss:</span>
+                                            <span class="ping-val-wrap">
+                                                <strong class="ping-num" id="wanLossVal">{{ wan.packet_loss if wan else
+                                                    '0.0' }}</strong>
+                                                <span class="ping-unit">%</span>
+                                            </span>
+                                        </div>
+                                        <div class="wan-ping-item">
+                                            <span class="ping-lbl">Ping Gateway (192.168.18.1):</span>
+                                            <span class="ping-val-wrap">
+                                                <strong class="ping-num" id="wanGwLatencyVal">{{ wan.gateway_latency_ms
+                                                    if wan else '0.0' }}</strong>
+                                                <span class="ping-unit">ms</span>
+                                            </span>
+                                        </div>
+                                        <div class="wan-ping-item">
+                                            <span class="ping-lbl">Interface Errors (Rx/Tx):</span>
+                                            <span class="ping-val-wrap">
+                                                <strong class="ping-num" id="wanErrorsVal">{{ wan.rx_errors or 0 }} / {{
+                                                    wan.tx_errors or 0 }}</strong>
+                                                <span class="ping-unit">pkts</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="wan-footer-row">
+                                        <span class="wan-sync-time">Last Polled: <span id="wanLastSync">{{
+                                                wan.last_updated if wan else '-' }}</span></span>
+                                        <div class="wan-actions-row">
+                                            <button type="button" id="btnWanSpeedtest"
+                                                class="btn-wan-action btn-speedtest"
+                                                title="Execute Real-Time Speedtest Now">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                    stroke-width="2.2" class="btn-icon">
+                                                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                                                </svg>
+                                                <span class="btn-wan-text">Speedtest</span>
+                                            </button>
+                                            <button type="button" id="btnWanSeeLog" class="btn-wan-action btn-seelog"
+                                                title="View Biznet 24-Hour Log History">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                    stroke-width="2" class="btn-icon">
+                                                    <path
+                                                        d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z">
+                                                    </path>
+                                                    <polyline points="14 2 14 8 20 8"></polyline>
+                                                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                                                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                                                </svg>
+                                                <span>See Log</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="wan-ping-item">
-                                <span class="ping-lbl">Packet Loss:</span>
-                                <span class="ping-val-wrap">
-                                    <strong class="ping-num" id="wanLossVal">{{ wan.packet_loss if wan else '0.0' }}</strong>
-                                    <span class="ping-unit">%</span>
-                                </span>
-                            </div>
-                            <div class="wan-ping-item">
-                                <span class="ping-lbl">Modem Gateway (192.168.18.1):</span>
-                                <span class="ping-val-wrap">
-                                    <strong class="ping-num" id="wanGwLatencyVal">{{ wan.gateway_latency_ms if wan else '1.1' }}</strong>
-                                    <span class="ping-unit">ms</span>
-                                </span>
-                            </div>
-                            <div class="wan-ping-item">
-                                <span class="ping-lbl">Interface Errors (Rx/Tx):</span>
-                                <span class="ping-val-wrap">
-                                    <strong class="ping-num" id="wanErrorsVal">{{ wan.rx_errors or 0 }} / {{ wan.tx_errors or 0 }}</strong>
-                                    <span class="ping-unit">pkts</span>
-                                </span>
-                            </div>
-                        </div>
-                        <div class="wan-footer-row">
-                            <span class="wan-sync-time">Last Polled: <span id="wanLastSync">{{ wan.last_updated if wan else 'Just now' }}</span></span>
-                            <div class="wan-actions-row">
-                                <button type="button" id="btnWanSpeedtest" class="btn-wan-action btn-speedtest" title="Execute Real-Time Speedtest Now">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" class="btn-icon">
-                                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
-                                    </svg>
-                                    <span class="btn-wan-text">Speedtest</span>
-                                </button>
-                                <button type="button" id="btnWanSeeLog" class="btn-wan-action btn-seelog" title="View Biznet 24-Hour Log History">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon">
-                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                                        <polyline points="14 2 14 8 20 8"></polyline>
-                                        <line x1="16" y1="13" x2="8" y2="13"></line>
-                                        <line x1="16" y1="17" x2="8" y2="17"></line>
-                                    </svg>
-                                    <span>See Log</span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </section>
 
             <!-- 2. Main Analytics & Alerts Grid -->
@@ -368,14 +394,16 @@
                                                 <div class="mini-bar-row">
                                                     <span class="mini-lbl">C:</span>
                                                     <div class="progress-bar-bg">
-                                                        <div class="progress-bar-fill fill-cpu" {{ ('style="width: ' ~ dev.cpu ~ '%;"') | safe }}></div>
+                                                        <div class="progress-bar-fill fill-cpu" {{
+                                                            ('style="width: ' ~ dev.cpu ~ '%;"') | safe }}></div>
                                                     </div>
                                                     <span class="mini-val">{{ dev.cpu }}%</span>
                                                 </div>
                                                 <div class="mini-bar-row">
                                                     <span class="mini-lbl">M:</span>
                                                     <div class="progress-bar-bg">
-                                                        <div class="progress-bar-fill fill-mem" {{ ('style="width: ' ~ dev.mem ~ '%;"') | safe }}></div>
+                                                        <div class="progress-bar-fill fill-mem" {{ ('
+                                                            style="width: ' ~ dev.mem ~ '%;"') | safe }}></div>
                                                     </div>
                                                     <span class="mini-val">{{ dev.mem }}%</span>
                                                 </div>
@@ -478,7 +506,8 @@
             <div class="modal-header">
                 <div>
                     <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                        <h3 style="margin: 0; font-size: 17px; font-weight: 700; color: #f8fafc;">Biznet 24 Hour Polling Log</h3>
+                        <h3 style="margin: 0; font-size: 17px; font-weight: 700; color: #f8fafc;">Biznet 24 Hour Polling
+                            Log</h3>
                     </div>
                     <p style="margin: 4px 0 0; font-size: 12px; color: #94a3b8;">
                         Biznet Dedicated Internet link performance history
@@ -486,19 +515,23 @@
                 </div>
                 <button type="button" class="modal-close-btn" id="btnWanLogClose" title="Close Modal">&times;</button>
             </div>
-            
+
             <div class="wan-log-modal-toolbar">
                 <div style="display: flex; gap: 8px; align-items: center; margin-left: auto;">
-                    <button type="button" class="btn-modal-action" id="btnWanLogRefresh" title="Reload logs from database">
-                        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
+                    <button type="button" class="btn-modal-action" id="btnWanLogRefresh"
+                        title="Reload logs from database">
+                        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor"
+                            stroke-width="2">
                             <path d="M23 4v6h-6"></path>
                             <path d="M1 20v-6h6"></path>
                             <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
                         </svg>
                         <span>Refresh</span>
                     </button>
-                    <button type="button" class="btn-modal-action" id="btnWanLogExport" title="Export log data as CSV file">
-                        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
+                    <button type="button" class="btn-modal-action" id="btnWanLogExport"
+                        title="Export log data as CSV file">
+                        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor"
+                            stroke-width="2">
                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                             <polyline points="7 10 12 15 17 10"></polyline>
                             <line x1="12" y1="15" x2="12" y2="3"></line>
@@ -513,15 +546,15 @@
                     <table class="wan-log-table" id="wanLogTable">
                         <thead>
                             <tr>
-                                <th>Polling Timestamp (WIB)</th>
+                                <th>Timestamp</th>
                                 <th>Link Status</th>
                                 <th>Download</th>
                                 <th>Upload</th>
                                 <th>Total</th>
                                 <th>Ping 1.1.1.1</th>
-                                <th>Gateway 192.168.18.1</th>
+                                <th>Ping 192.168.18.1</th>
                                 <th>Packet Loss</th>
-                                <th>Interface Errors (Rx/Tx)</th>
+                                <th>Errors (Rx/Tx)</th>
                             </tr>
                         </thead>
                         <tbody id="wanLogTableBody">
@@ -535,7 +568,8 @@
                 </div>
             </div>
 
-            <div class="modal-footer" style="padding: 12px 20px; display: flex; justify-content: flex-start; align-items: center; border-top: 1px solid rgba(255,255,255,0.08);">
+            <div class="modal-footer"
+                style="padding: 12px 20px; display: flex; justify-content: flex-start; align-items: center; border-top: 1px solid rgba(255,255,255,0.08);">
                 <span style="font-size: 11px; color: #64748b;">
                     * Data recorded automatically every 2 minutes.
                 </span>
@@ -549,13 +583,15 @@
             <div class="modal-header">
                 <div>
                     <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                        <h3 style="margin: 0; font-size: 17px; font-weight: 700; color: #f8fafc;">Real-Time Speedtest</h3>
+                        <h3 style="margin: 0; font-size: 17px; font-weight: 700; color: #f8fafc;">Real-Time Speedtest
+                        </h3>
                     </div>
                     <p style="margin: 4px 0 0; font-size: 12px; color: #94a3b8;">
                         Testing peak bandwidth capacity limit.
                     </p>
                 </div>
-                <button type="button" class="modal-close-btn" id="btnWanSpeedtestClose" title="Close Modal">&times;</button>
+                <button type="button" class="modal-close-btn" id="btnWanSpeedtestClose"
+                    title="Close Modal">&times;</button>
             </div>
 
             <div class="modal-body wan-speedtest-body">
@@ -563,7 +599,7 @@
                 <div id="speedtestLoadingState" class="speedtest-state-box" style="display: none;">
                     <div class="speedtest-gauge-wrap">
                         <div class="speedtest-spinner"></div>
-                        <div class="speedtest-testing-txt">Testing Real-Time Link Performance...</div>
+                        <div class="speedtest-testing-txt">Testing Real-Time Link Performance</div>
                         <div class="speedtest-step-sub" id="speedtestStepMsg">Measuring Biznet link quality</div>
                     </div>
                 </div>
@@ -616,12 +652,14 @@
                         </div>
                         <div class="st-metric-item">
                             <span class="st-m-lbl">Link Quality:</span>
-                            <strong class="st-m-val" id="stModalQualityPill" style="color: #ffffff !important; font-weight: 600;">Normal Connection</strong>
+                            <strong class="st-m-val" id="stModalQualityPill"
+                                style="color: #ffffff !important; font-weight: 600;">Normal Connection</strong>
                         </div>
                     </div>
 
                     <div class="speedtest-meta-banner">
-                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
+                            stroke-width="2">
                             <circle cx="12" cy="12" r="10"></circle>
                             <polyline points="12 6 12 12 16 14"></polyline>
                         </svg>
@@ -630,8 +668,10 @@
                 </div>
             </div>
 
-            <div class="modal-footer" style="padding: 12px 20px; display: flex; justify-content: flex-end; align-items: center; border-top: 1px solid rgba(255,255,255,0.08);">
-                <button type="button" class="btn-wan-action btn-speedtest" id="btnStModalRetest" style="padding: 6px 16px; font-size: 0.78rem;">
+            <div class="modal-footer"
+                style="padding: 12px 20px; display: flex; justify-content: flex-end; align-items: center; border-top: 1px solid rgba(255,255,255,0.08);">
+                <button type="button" class="btn-wan-action btn-speedtest" id="btnStModalRetest"
+                    style="padding: 6px 16px; font-size: 0.78rem;">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" class="btn-icon">
                         <path d="M23 4v6h-6"></path>
                         <path d="M1 20v-6h6"></path>

@@ -81,7 +81,7 @@ def measure_ping_metrics(host, count=3, timeout_sec=1):
             if lat_lin:
                 avg_latency = float(lat_lin.group(1))
             elif '<1ms' in out.lower() and loss_pct < 100.0:
-                avg_latency = 0.5
+                avg_latency = 0.0
 
         is_up = loss_pct < 100.0
         return is_up, avg_latency, loss_pct
@@ -154,18 +154,29 @@ OID_IF_HIGH_SPEED = "1.3.6.1.2.1.31.1.1.1.15"    # Link Speed in Mbps
 # --- VENDOR SPECIFIC CPU, MEMORY & BUFFER OIDS ---
 # 1. Aruba 2930F (HP-Enterprise MIB)
 OID_ARUBA_CPU_UTIL = "1.3.6.1.4.1.11.2.14.11.5.1.9.6.1.0"          # hpSwitchCpuStat (1 min avg)
-OID_ARUBA_MEM_TOTAL = "1.3.6.1.4.1.11.2.14.11.5.1.1.2.2.1.1.5.1"   # Total Memory (Bytes)
-OID_ARUBA_MEM_FREE = "1.3.6.1.4.1.11.2.14.11.5.1.1.2.2.1.1.7.1"    # Free Memory (Bytes)
+OID_ARUBA_MEM_TOTAL = "1.3.6.1.4.1.11.2.14.11.5.1.1.2.2.1.1.5.1"   # Total Memory (Bytes) - hpGlobalMemTotalBytes
+OID_ARUBA_MEM_FREE = "1.3.6.1.4.1.11.2.14.11.5.1.1.2.2.1.1.6.1"    # Free Memory (Bytes) - hpGlobalMemFreeBytes
+OID_ARUBA_MEM_ALLOC = "1.3.6.1.4.1.11.2.14.11.5.1.1.2.2.1.1.7.1"   # Allocated Memory (Bytes) - hpGlobalMemAllocBytes
 OID_ARUBA_PKT_BUF_TOTAL = "1.3.6.1.4.1.11.2.14.11.5.1.1.1.1.1.1.4.1" # Total Packet Buffers
 OID_ARUBA_PKT_BUF_FREE = "1.3.6.1.4.1.11.2.14.11.5.1.1.1.1.1.1.3.1"  # Free Packet Buffers
 OID_ARUBA_MSG_BUF_TOTAL = "1.3.6.1.4.1.11.2.14.11.5.1.1.1.2.1.1.4.1" # Total Message Buffers
 OID_ARUBA_MSG_BUF_FREE = "1.3.6.1.4.1.11.2.14.11.5.1.1.1.2.1.1.3.1"  # Free Message Buffers
 OID_ARUBA_POE_PORT_POWER = "1.3.6.1.4.1.11.2.14.11.1.9.1.1.1.1.1"    # Real Port PoE Power Draw
 
-# 2. Huawei CloudEngine S5735 (Huawei VRP MIB)
+# 2. Huawei CloudEngine S5735 (Huawei VRP / YunShan MIB & Entity-MIB)
 OID_HUAWEI_CPU_UTIL = "1.3.6.1.4.1.2011.5.25.31.1.1.1.1.5.16842753"  # hwEntityCpuUsage
 OID_HUAWEI_MEM_UTIL = "1.3.6.1.4.1.2011.5.25.31.1.1.1.1.7.16842753"  # hwEntityMemUsage (%)
 OID_HUAWEI_TEMP = "1.3.6.1.4.1.2011.5.25.31.1.1.1.1.11.16842753"     # hwEntityTemperature (°C)
+OID_HUAWEI_SERIAL = "1.3.6.1.2.1.47.1.1.1.1.11.16842753"              # Board Serial Number (entPhysicalSerialNum)
+OID_HUAWEI_CHASSIS_SERIAL = "1.3.6.1.2.1.47.1.1.1.1.11.16777216"      # Chassis Serial Number
+OID_HUAWEI_MODEL = "1.3.6.1.2.1.47.1.1.1.1.13.16842753"               # Model Name (entPhysicalModelName)
+OID_HUAWEI_HW_REV = "1.3.6.1.2.1.47.1.1.1.1.8.16842753"                # Hardware Revision (entPhysicalHardwareRev)
+OID_HUAWEI_RAM_TOTAL = "1.3.6.1.4.1.2011.6.3.5.1.1.2.1.1.0"           # Total Memory Bytes (hwMemoryDevSize)
+OID_HUAWEI_FAN1_STATUS = "1.3.6.1.4.1.2011.5.25.31.1.1.10.1.7.1.1"    # Fan 1 Status (1=Normal)
+OID_HUAWEI_FAN2_STATUS = "1.3.6.1.4.1.2011.5.25.31.1.1.10.1.7.1.2"    # Fan 2 Status (1=Normal)
+OID_BRIDGE_BASE_MAC = "1.3.6.1.2.1.17.1.1.0"                          # dot1dBaseBridgeAddress (Bridge MAC)
+OID_ENT_PHYSICAL_SERIAL = "1.3.6.1.2.1.47.1.1.1.1.11"                  # entPhysicalSerialNum (Base Walk)
+OID_DOT1Q_VLAN_STATIC_NAME = "1.3.6.1.2.1.17.7.1.4.3.1.1"              # dot1qVlanStaticName (Q-BRIDGE-MIB)
 
 # 3. Palo Alto PA-220 (HOST-RESOURCES-MIB & PAN-COMMON-MIB)
 OID_PA_CPU_DP0 = "1.3.6.1.2.1.25.3.3.1.2.1"          # hrProcessorLoad (Data Plane DP0)
@@ -174,7 +185,11 @@ OID_PA_MEM_TOTAL = "1.3.6.1.2.1.25.2.3.1.5.1020"    # hrStorageSize (Slot-1 Mana
 OID_PA_MEM_USED = "1.3.6.1.2.1.25.2.3.1.6.1020"     # hrStorageUsed (Slot-1 Management Memory)
 OID_PA_SW_VERSION = "1.3.6.1.4.1.25461.2.1.2.1.1.0" # panSysSwVersion
 OID_PA_SERIAL = "1.3.6.1.4.1.25461.2.1.2.1.3.0"     # panSysSerialNumber
+OID_PA_SESSION_UTIL = "1.3.6.1.4.1.25461.2.1.2.3.1.0" # panSessionUtilization (%)
+OID_PA_SESSION_MAX = "1.3.6.1.4.1.25461.2.1.2.3.2.0"  # panSessionMax (Max sessions)
 OID_PA_ACTIVE_SESSIONS = "1.3.6.1.4.1.25461.2.1.2.3.3.0" # panSysActiveSessions
+OID_PA_ACTIVE_TCP = "1.3.6.1.4.1.25461.2.1.2.3.4.0" # panSessionActiveTcp
+OID_PA_ACTIVE_UDP = "1.3.6.1.4.1.25461.2.1.2.3.5.0" # panSessionActiveUdp
 OID_ARUBA_POE_CONSUMPTION = "1.3.6.1.2.1.105.1.3.1.1.4.1" # pethMainPseConsumptionPower
 
 # Universal 64-bit HC Packet Counters
@@ -394,9 +409,10 @@ def parse_snmp_response(packet: bytes) -> Dict[str, Any]:
 
 # ==================== HIGH-LEVEL SNMP API ====================
 
-def snmp_get(host: str, oids: List[str], community: str = "public", port: int = 161, timeout: float = 2.0, retries: int = 1) -> Optional[Dict[str, Any]]:
+def snmp_get(host: str, oids: List[str], community: str = "public", port: int = 161, timeout: float = 2.5, retries: int = 1) -> Optional[Dict[str, Any]]:
     """
     Eksekusi SNMP v2c GET query ke host. Mengembalikan dict {oid: val} atau None.
+    Default timeout 2.5s dan retries 1x untuk respon cepat tanpa blocking siklus polling.
     """
     pkt, _ = build_pdu(oids, community=community, pdu_type=PDU_GET)
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -418,7 +434,7 @@ def snmp_get(host: str, oids: List[str], community: str = "public", port: int = 
     return None
 
 
-def snmp_getnext(host: str, oid: str, community: str = "public", port: int = 161, timeout: float = 2.0) -> Optional[Tuple[str, Any]]:
+def snmp_getnext(host: str, oid: str, community: str = "public", port: int = 161, timeout: float = 2.5) -> Optional[Tuple[str, Any]]:
     pkt, _ = build_pdu([oid], community=community, pdu_type=PDU_GETNEXT)
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.settimeout(timeout)
@@ -436,7 +452,7 @@ def snmp_getnext(host: str, oid: str, community: str = "public", port: int = 161
     return None
 
 
-def snmp_walk(host: str, root_oid: str, community: str = "public", port: int = 161, timeout: float = 2.0, max_repetitions: int = 120) -> Dict[str, Any]:
+def snmp_walk(host: str, root_oid: str, community: str = "public", port: int = 161, timeout: float = 2.5, max_repetitions: int = 120) -> Dict[str, Any]:
     """
     Eksekusi SNMP v2c Walk mulai dari root_oid.
     """
@@ -474,15 +490,31 @@ def format_timeticks(ticks: int) -> str:
 
 def get_device_community(device) -> str:
     """Mengambil SNMP community string yang tepat untuk tiap perangkat."""
+    explicit_comm = getattr(device, 'snmp_community', None)
+    if explicit_comm:
+        return explicit_comm
+
     dev_name = getattr(device, 'name', '').lower()
     ip = getattr(device, 'ip_address', '')
+    vendor = getattr(device, 'vendor', '').lower()
     
-    if "corner" in dev_name or "155" in ip or "huawei" in getattr(device, 'vendor', '').lower():
-        return os.getenv("HUAWEI_SNMP_COMMUNITY", "agiva_mon")
-    elif "ho" in dev_name or "10" in ip or "aruba" in getattr(device, 'vendor', '').lower():
+    # Aruba Access Points (HO AP-505)
+    if any(x in ip for x in ["193", "183", "177"]) or "ap-505" in dev_name or ("aruba" in vendor and "ap" in dev_name):
+        return os.getenv("ARUBA_AP_COMMUNITY", "HODevice")
+    # Aruba Switch HO (SW-2930F-HO)
+    elif "sw-2930f" in dev_name or ip == "192.168.1.10" or ("aruba" in vendor and ("sw" in dev_name or "switch" in dev_name)):
         return os.getenv("ARUBA_SNMP_COMMUNITY", "public")
-    elif "pa" in dev_name or "11" in ip or "palo" in getattr(device, 'vendor', '').lower():
+    # Huawei Access Points (Corner AP-AE5776)
+    elif any(x in ip for x in ["154", "173", "156"]) or "ap-ae5776" in dev_name or ("huawei" in vendor and "ap" in dev_name):
+        return os.getenv("HUAWEI_AP_COMMUNITY", "CornerDevice")
+    # Huawei Switch Corner (SW-S5735-CORNER)
+    elif "sw-s5735" in dev_name or ip == "192.168.1.155" or "corner" in dev_name or ("huawei" in vendor and ("sw" in dev_name or "switch" in dev_name)):
+        return os.getenv("HUAWEI_SNMP_COMMUNITY", "agiva_mon")
+    # Palo Alto Firewall (HO Gateway)
+    elif "pa" in dev_name or "11" in ip or "palo" in vendor:
         return os.getenv("PA_SNMP_COMMUNITY", "publik")
+    elif "ho" in dev_name or "aruba" in vendor:
+        return os.getenv("ARUBA_SNMP_COMMUNITY", "public")
     return os.getenv("SNMP_COMMUNITY_DEFAULT", "public")
 
 
@@ -544,6 +576,7 @@ def poll_device_telemetry_snmp(device) -> Dict[str, Any]:
             OID_ARUBA_CPU_UTIL, 
             OID_ARUBA_MEM_TOTAL, 
             OID_ARUBA_MEM_FREE,
+            OID_ARUBA_MEM_ALLOC,
             OID_ARUBA_PKT_BUF_TOTAL,
             OID_ARUBA_PKT_BUF_FREE,
             OID_ARUBA_MSG_BUF_TOTAL,
@@ -557,6 +590,8 @@ def poll_device_telemetry_snmp(device) -> Dict[str, Any]:
             OID_PA_CPU_MP,
             OID_PA_MEM_TOTAL,
             OID_PA_MEM_USED,
+            OID_PA_SESSION_UTIL,
+            OID_PA_SESSION_MAX,
             OID_PA_ACTIVE_SESSIONS
         ])
         # Port LAN ethernet1/2 (Index 7 pada PA-220)
@@ -572,8 +607,8 @@ def poll_device_telemetry_snmp(device) -> Dict[str, Any]:
         f"{OID_IF_OUT_DISCARDS}.{uplink_idx}"
     ])
     
-    # Eksekusi SNMP GET ke perangkat
-    res = snmp_get(ip, query_oids, community=community, timeout=2.5, retries=1)
+    # Eksekusi SNMP GET ke perangkat (timeout 3.0 detik, 1 kali retry demi keandalan tanpa blocking)
+    res = snmp_get(ip, query_oids, community=community, timeout=3.0, retries=1)
     
     if not res:
         logger.warning(f"SNMP polling timeout ke {device.name} ({ip}) [community: {community}]")
@@ -586,51 +621,59 @@ def poll_device_telemetry_snmp(device) -> Dict[str, Any]:
     if ticks is not None and isinstance(ticks, int):
         metrics["uptime"] = format_timeticks(ticks)
         
-    # 3. Parse CPU & Memory per Vendor
+    # 3. Parse CPU & Memory per Vendor (100% Data Riil dari Sensor/Register SNMP, Tanpa Dummy)
     if "huawei" in vendor or "155" in ip:
         # Huawei CPU
         hw_cpu = res.get(OID_HUAWEI_CPU_UTIL)
-        if hw_cpu is not None:
-            metrics["cpu"] = float(hw_cpu)
-        else:
-            metrics["cpu"] = 1.0
+        metrics["cpu"] = float(hw_cpu) if hw_cpu is not None else 0.0
             
         # Huawei Memory
         hw_mem = res.get(OID_HUAWEI_MEM_UTIL)
-        if hw_mem is not None:
-            metrics["mem"] = float(hw_mem)
-        else:
-            metrics["mem"] = 50.0
+        metrics["mem"] = float(hw_mem) if hw_mem is not None else 0.0
+
+        # Huawei Buffer Congestion (Opsi 2: Data Riil Egress & Ingress Queue Buffer Drops pada Uplink)
+        hw_tx_drop = int(res.get(f"{OID_IF_OUT_DISCARDS}.{uplink_idx}") or 0)
+        hw_rx_drop = int(res.get(f"{OID_IF_IN_DISCARDS}.{uplink_idx}") or 0)
+        metrics["packet_buffers"] = float(hw_tx_drop)
+        metrics["message_buffers"] = float(hw_rx_drop)
             
     elif "aruba" in vendor or "10" in ip:
         # Aruba CPU
         ar_cpu = res.get(OID_ARUBA_CPU_UTIL)
-        if ar_cpu is not None:
-            metrics["cpu"] = float(ar_cpu)
-        else:
-            metrics["cpu"] = 2.0
+        metrics["cpu"] = float(ar_cpu) if ar_cpu is not None else 0.0
             
-        # Aruba Memory Utilization: (Total - Free) / Total * 100%
+        # Aruba Memory Utilization:
+        # MIB NETSWITCH-MIB: .5.1 = Total, .6.1 = Free, .7.1 = Allocated
         mem_tot = res.get(OID_ARUBA_MEM_TOTAL)
+        mem_alloc = res.get(OID_ARUBA_MEM_ALLOC)
         mem_free = res.get(OID_ARUBA_MEM_FREE)
-        if mem_tot and mem_free and mem_tot > 0:
-            used = mem_tot - mem_free
-            metrics["mem"] = round((used / mem_tot) * 100.0, 1)
+        if mem_tot and mem_tot > 0:
+            if mem_alloc is not None and mem_alloc > 0:
+                metrics["mem"] = round((float(mem_alloc) / float(mem_tot)) * 100.0, 1)
+            elif mem_free is not None:
+                used = mem_tot - mem_free
+                metrics["mem"] = round((float(used) / float(mem_tot)) * 100.0, 1)
+            else:
+                metrics["mem"] = 0.0
         else:
-            metrics["mem"] = 38.0
+            metrics["mem"] = 0.0
             
         # Aruba Packet Buffers & Message Buffers
         buf_tot = res.get(OID_ARUBA_PKT_BUF_TOTAL)
         buf_free = res.get(OID_ARUBA_PKT_BUF_FREE)
         if buf_tot and buf_free and buf_tot > 0:
             metrics["packet_buffers"] = round(((buf_tot - buf_free) / buf_tot) * 100.0, 1)
+        else:
+            metrics["packet_buffers"] = 0.0
 
         msg_tot = res.get(OID_ARUBA_MSG_BUF_TOTAL)
         msg_free = res.get(OID_ARUBA_MSG_BUF_FREE)
         if msg_tot and msg_free and msg_tot > 0:
             metrics["message_buffers"] = round(((msg_tot - msg_free) / msg_tot) * 100.0, 1)
+        else:
+            metrics["message_buffers"] = 0.0
             
-    else:  # Palo Alto PA-220
+    else:  # Palo Alto PA-220 NGFW
         # Palo Alto Data Plane CPU (Max of DP0 and MP)
         pa_dp_cpu = res.get(OID_PA_CPU_DP0)
         pa_mp_cpu = res.get(OID_PA_CPU_MP)
@@ -647,10 +690,27 @@ def poll_device_telemetry_snmp(device) -> Dict[str, Any]:
         else:
             metrics["mem"] = 0.0
             
-        metrics["packet_buffers"] = 1.2
-        metrics["message_buffers"] = 1.0
+        # Palo Alto Firewall Session Capacity & Active Sessions (Data Riil PAN-COMMON-MIB)
+        pa_sess_util = res.get(OID_PA_SESSION_UTIL)
+        pa_sess_act = res.get(OID_PA_ACTIVE_SESSIONS)
+        pa_sess_max = res.get(OID_PA_SESSION_MAX)
 
-    # 4. Parse Error & Discard Counters
+        if pa_sess_util is not None:
+            metrics["packet_buffers"] = float(pa_sess_util)
+        elif pa_sess_act is not None and pa_sess_max and pa_sess_max > 0:
+            metrics["packet_buffers"] = round((float(pa_sess_act) / float(pa_sess_max)) * 100.0, 2)
+        else:
+            metrics["packet_buffers"] = 0.0
+
+        # Simpan Active Sessions count riil
+        if pa_sess_act is not None:
+            metrics["message_buffers"] = float(pa_sess_act)
+        elif pa_dp_cpu is not None:
+            metrics["message_buffers"] = float(pa_dp_cpu)
+        else:
+            metrics["message_buffers"] = 0.0
+
+    # 4. Parse Error & Discard Counters (Fast single-packet extraction from uplink OID - 100% Pure Hardware SNMP)
     metrics["rx_errors"] = int(res.get(f"{OID_IF_IN_ERRORS}.{uplink_idx}") or 0)
     metrics["tx_errors"] = int(res.get(f"{OID_IF_OUT_ERRORS}.{uplink_idx}") or 0)
     metrics["tx_drops"] = int(res.get(f"{OID_IF_OUT_DISCARDS}.{uplink_idx}") or 0)
@@ -711,7 +771,7 @@ def poll_wan_status_snmp(ip: str = "192.168.1.11", community: str = "publik", wa
         f"{OID_IF_OUT_ERRORS}.{wan_idx}"
     ]
     
-    res = snmp_get(ip, query_oids, community=community, timeout=2.0)
+    res = snmp_get(ip, query_oids, community=community, timeout=2.5, retries=1)
     if not res:
         return wan_data
         
@@ -793,7 +853,7 @@ def _execute_device_poll(device):
     """
     Eksekusi satu kali pengambilan metrik telemetri ke perangkat MURNI via SNMP v2c (Multi-Vendor).
     Seragam untuk Aruba 2930F, Huawei S5735, dan Palo Alto PA-220 tanpa overhead SSH atau XML API.
-    Pengukuran Latency RTT & Packet Loss diukur presisi via Layer-3 ICMP Ping.
+    Pengukuran ketersediaan fisik (Host Reachability) dan transmisi Layer-3 diukur presisi via ICMP Ping.
     """
     metrics = {
         "status": "DOWN",
@@ -815,11 +875,13 @@ def _execute_device_poll(device):
     # ========================================================
     # 1. PURE SNMP v2c TELEMETRY (Aruba, Huawei, Palo Alto)
     # ========================================================
+    snmp_success = False
     try:
         snmp_res = poll_device_telemetry_snmp(device)
         if snmp_res and snmp_res.get("status") == "UP":
             logger.info(f"[{device.name}] Berhasil polling telemetri via SNMP v2c ({device.ip_address})")
             metrics.update(snmp_res)
+            snmp_success = True
 
             # Polling WAN khusus gateway Palo Alto via SNMP v2c
             vendor_clean = (device.vendor or "").lower()
@@ -834,24 +896,68 @@ def _execute_device_poll(device):
                     metrics["wan_data"] = wan_metrics
                 except Exception as e_w:
                     logger.warning(f"Gagal polling WAN SNMP Palo Alto: {e_w}")
+
+                # Pre-fetch cache telemetri sesi wireless client dari Palo Alto (Opsi 1)
+                try:
+                    from telemetry_helper import fetch_palo_alto_client_telemetry
+                    fetch_palo_alto_client_telemetry(device.ip_address)
+                except Exception as e_pa_cli:
+                    logger.debug(f"Palo Alto client telemetry pre-fetch skipped: {e_pa_cli}")
         else:
             logger.warning(f"[{device.name}] SNMP query tidak merespons (UDP 161 timeout)")
-            metrics["status"] = "DOWN"
     except Exception as e_snmp:
         logger.error(f"[{device.name}] Exception pada SNMP polling: {e_snmp}")
-        metrics["status"] = "DOWN"
 
     # ========================================================
-    # 2. METRIK TRANSMISI LAYER-3 (ICMP PING LATENCY & LOSS)
-    # Status perangkat (UP/DOWN) ditentukan 100% oleh SNMP v2c.
-    # ICMP Ping hanya digunakan untuk mengukur transmisi fisik (Latency & Loss).
+    # 2. METRIK TRANSMISI LAYER-3 (ICMP PING REACHABILITY & LATENCY)
+    # Standar Industri NOC: Host Reachability (UP/DOWN) ditentukan oleh ICMP Ping.
+    # Jika ICMP merespons (loss < 100%), perangkat fisik terbukti UP di kantor.
     # ========================================================
     try:
-        _, lat_val, loss_val = measure_ping_metrics(device.ip_address, count=3, timeout_sec=1)
+        is_ping_up, lat_val, loss_val = measure_ping_metrics(device.ip_address, count=2, timeout_sec=2)
         metrics["latency"] = lat_val
         metrics["packet_loss"] = loss_val
+
+        if is_ping_up:
+            metrics["status"] = "UP"
+            if not snmp_success:
+                logger.info(f"[{device.name}] Perangkat merespons ICMP Ping (RTT: {lat_val:.1f}ms, Loss: {loss_val:.0f}%) -> Status: UP (SNMP timeout).")
+                # Pertahankan metrik terakhir agar dashboard & threshold tidak drop palsu ke 0
+                if getattr(device, 'cpu_usage', None) is not None and float(device.cpu_usage) > 0:
+                    metrics["cpu"] = float(device.cpu_usage)
+                if getattr(device, 'mem_usage', None) is not None and float(device.mem_usage) > 0:
+                    metrics["mem"] = float(device.mem_usage)
+                if getattr(device, 'uptime', None) and device.uptime not in ["Offline", "Unknown"]:
+                    metrics["uptime"] = device.uptime
+
+                # Pertahankan juga metrik traffic terakhir agar grafik dashboard tidak drop ke 0
+                try:
+                    s_hist = db_session()
+                    last_l = s_hist.query(DeviceStatusLog).filter_by(device_id=device.device_id).order_by(DeviceStatusLog.log_id.desc()).first()
+                    if last_l:
+                        if not metrics.get("cpu") and last_l.cpu_usage:
+                            metrics["cpu"] = float(last_l.cpu_usage)
+                        if not metrics.get("mem") and last_l.mem_usage:
+                            metrics["mem"] = float(last_l.mem_usage)
+                        if last_l.traffic_mbps:
+                            metrics["traffic"] = float(last_l.traffic_mbps)
+                            metrics["ingress"] = float(last_l.ingress_mbps or 0.0)
+                            metrics["egress"] = float(last_l.egress_mbps or 0.0)
+                    s_hist.close()
+                except Exception:
+                    pass
+        else:
+            # Jika Ping 100% loss DAN SNMP gagal, maka perangkat benar-benar DOWN
+            if not snmp_success:
+                logger.warning(f"[{device.name}] Tidak merespons ICMP Ping (100% loss) & SNMP timeout -> Status: DOWN")
+                metrics["status"] = "DOWN"
+            else:
+                # SNMP aktif tapi Ping ditolak (ICMP disabled/blocked oleh firewall) -> Tetap UP
+                metrics["status"] = "UP"
     except Exception as e_ping:
         logger.warning(f"Gagal mengukur ICMP latency/loss untuk {device.name}: {e_ping}")
+        if not snmp_success:
+            metrics["status"] = "DOWN"
 
     return metrics
 
@@ -859,24 +965,24 @@ def _execute_device_poll(device):
 def poll_device(device):
     """
     Sesuai instruksi LLD & spesifikasi arsitektur:
-    Setiap koneksi ke device dibungkus try/except dengan retry terbatas (2x)
+    Setiap koneksi ke device dibungkus try/except dengan retry terbatas (3x)
     dan timeout eksplisit, sehingga satu device bermasalah tidak memblokir
     siklus polling device lain.
     """
-    max_retries = 2
+    max_retries = 3
     for attempt in range(1, max_retries + 1):
         try:
             metrics = _execute_device_poll(device)
-            # Jika polling menghasilkan status DOWN dan belum percobaan terakhir, retry 1x lagi
+            # Jika polling menghasilkan status DOWN dan belum percobaan terakhir, retry
             if metrics.get("status") == "DOWN" and attempt < max_retries:
-                logger.warning(f"Percobaan {attempt}/{max_retries} ke {device.name} terdeteksi DOWN/Timeout. Melakukan retry...")
-                time.sleep(1)
+                logger.warning(f"Percobaan {attempt}/{max_retries} ke {device.name} terdeteksi DOWN. Melakukan retry dalam 2 detik...")
+                time.sleep(2)
                 continue
             return metrics
         except Exception as e:
             logger.warning(f"Percobaan {attempt}/{max_retries} koneksi ke {device.name} ({device.ip_address}) gagal: {e}")
             if attempt < max_retries:
-                time.sleep(1)
+                time.sleep(2)
             else:
                 logger.error(f"[DataCollector] Koneksi polling ke {device.name} ({device.ip_address}) gagal setelah {max_retries}x percobaan: {e}")
                 return {
@@ -996,6 +1102,13 @@ def run_polling_cycle():
         except Exception as e:
             logger.error(f"Siklus polling gagal pada perangkat {device.name}: {e}")
         
+    # Sinkronisasi berkala (2 menit) telemetri klien nirkabel AP ke tabel PostgreSQL ap_client_telemetry
+    try:
+        from telemetry_helper import sync_all_ap_telemetry_to_db
+        sync_all_ap_telemetry_to_db()
+    except Exception as e_ap:
+        logger.debug(f"Sinkronisasi berkala AP client telemetry ke database dilewati: {e_ap}")
+
     duration = (datetime.now() - awal_polling).total_seconds()
     next_str_end = get_next_polling_time(awal_polling)
     logger.info(f"=== END POLLING CYCLE (Durasi: {duration:.2f}s) ===")

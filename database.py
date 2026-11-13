@@ -59,10 +59,12 @@ def ensure_postgres_running():
                 [pg_ctl, "start", "-D", pg_data, "-l", pg_log, "-w"],
                 creationflags=flags
             )
-            # Tunggu server aktif
-            for _ in range(12):
+            # Tunggu server aktif dan siap menerima query
+            for _ in range(20):
                 time.sleep(0.5)
                 if is_db_alive(DATABASE_URL):
+                    # Beri jeda singkat agar PostgreSQL selesai proses recovery/startup
+                    time.sleep(1.0)
                     print("[*] Server PostgreSQL berhasil dinyalakan dan siap melayani koneksi!")
                     return
         except Exception as err:
@@ -86,7 +88,7 @@ def get_engine():
     )
 
     # Coba koneksi dengan toleransi saat server baru booting
-    max_retries = 8
+    max_retries = 15
     for attempt in range(max_retries):
         try:
             with engine.connect() as conn:
@@ -94,12 +96,14 @@ def get_engine():
                 return engine
         except Exception as e:
             err_str = str(e).lower()
-            if ("starting up" in err_str or "connection timeout" in err_str) and attempt < max_retries - 1:
-                time.sleep(1.0)
+            if ("starting up" in err_str or "connection timeout" in err_str or "tidak siap" in err_str) and attempt < max_retries - 1:
+                if attempt % 3 == 0:
+                    print("[*] Menunggu sistem database PostgreSQL selesai startup...")
+                time.sleep(0.8)
                 continue
             if attempt == max_retries - 1:
-                print(f"\n[FATAL ERROR] Gagal menghubungkan ke database PostgreSQL di {db_url}: {e}")
-                raise e
+                print(f"[*] Info: Database PostgreSQL belum aktif atau koneksi ditolak ({e}). Engine tetap disiapkan.")
+                return engine
             time.sleep(0.5)
     return engine
 
@@ -108,8 +112,22 @@ db_session = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind
 
 def init_db():
     """Create all tables and seed realistic sample data if empty in PostgreSQL."""
-    from models import Base, Device, DeviceStatusLog, WanStatusLog, Alert, IncidentLog, TelegramWhitelist, TelegramMessageLog, BackupHistory
-    Base.metadata.create_all(bind=engine)
+    from models import Base, Device, DeviceStatusLog, WanStatusLog, Alert, IncidentLog, TelegramWhitelist, TelegramMessageLog, BackupHistory, ApClientTelemetry
+    
+    # Toleransi startup database jika masih dalam proses inisialisasi WAL/buffer
+    try:
+        for attempt in range(5):
+            try:
+                Base.metadata.create_all(bind=engine)
+                break
+            except Exception as e:
+                if "starting up" in str(e).lower() and attempt < 4:
+                    time.sleep(1.0)
+                    continue
+                raise e
+    except Exception as err:
+        print(f"[*] Info: Inisialisasi tabel ditunda (Database belum siap/offline: {err})")
+        return
     
     # Auto-migration: pastikan kolom latency_ms dan packet_loss ada di PostgreSQL
     try:
