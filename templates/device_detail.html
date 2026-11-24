@@ -156,7 +156,6 @@
 
         .modal-header-ap {
             padding: 16px 22px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -188,70 +187,40 @@
             gap: 18px;
         }
 
-        .ap-grid-summary {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 12px;
-        }
-
-        .ap-stat-card {
-            background: rgba(30, 41, 59, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            border-radius: 10px;
-            padding: 12px 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .ap-stat-card .label {
-            font-size: 11px;
-            color: #94a3b8;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-weight: 600;
-        }
-
-        .ap-stat-card .val {
-            font-size: 15px;
-            font-weight: 700;
-            color: #f1f5f9;
-        }
-
-        .ap-stat-card .sub {
-            font-size: 11px;
-            color: #64748b;
-            font-family: 'JetBrains Mono', monospace;
-        }
-
         .client-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 12px;
+            font-size: 0.75rem;
+            text-align: left;
+            font-family: inherit;
         }
 
         .client-table th {
-            background: rgba(15, 23, 42, 0.95);
+            background: #0f172a;
             color: #94a3b8;
             text-align: left;
-            padding: 10px 12px;
-            font-size: 11px;
+            padding: 11px 14px;
+            font-size: 0.68rem;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.04em;
             border-bottom: 1px solid rgba(255, 255, 255, 0.08);
             position: sticky;
             top: 0;
             z-index: 10;
+            white-space: nowrap;
         }
 
         .client-table td {
-            padding: 11px 12px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 9px 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            color: #ffffff;
+            font-family: inherit;
             vertical-align: middle;
+            white-space: nowrap;
         }
 
         .client-table tr:hover td {
-            background: rgba(255, 255, 255, 0.02);
+            background: rgba(6, 182, 212, 0.04);
         }
 
         .client-host {
@@ -259,7 +228,7 @@
             align-items: center;
             gap: 8px;
             font-weight: 600;
-            color: #f8fafc;
+            color: #ffffff;
         }
 
         .badge-rssi-excel {
@@ -831,8 +800,7 @@
                                 </td>
                                 <td>
                                     {% if p.neighbor %}
-                                    {% if p.neighbor.is_ap or 'ap-' in p.neighbor.name.lower() or 'access point' in
-                                    p.neighbor.desc.lower() %}
+                                    {% if (p.neighbor.is_ap or 'ap-' in p.neighbor.name.lower() or 'access point' in p.neighbor.desc.lower()) and 'ruckus' not in p.neighbor.name.lower() and 'ruckus' not in p.neighbor.desc.lower() %}
                                     <div class="neighbor-name"
                                         style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
                                         <button type="button" class="ap-neighbor-btn"
@@ -915,7 +883,7 @@
             <div class="modal-header-ap">
                 <div style="display:flex; align-items:center; gap:12px;">
                     <div
-                        style="width:38px; height:38px; border-radius:8px; background:rgba(56, 189, 248, 0.15); border:1px solid rgba(56, 189, 248, 0.3); display:flex; align-items:center; justify-content:center; color:#38bdf8;">
+                        style="width:38px; height:38px; border-radius:8px; background:var(--gradient-agiva); display:flex; align-items:center; justify-content:center; color:#ffffff; box-shadow:var(--shadow-agiva);">
                         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
                             stroke-width="2">
                             <path d="M5 12.55a11 11 0 0 1 14.08 0"></path>
@@ -926,70 +894,22 @@
                     </div>
                     <div>
                         <div style="display:flex; align-items:center; gap:8px;">
-                            <h3 id="modalApTitle" style="margin:0; font-size:17px; font-weight:700; color:#f8fafc;">
+                            <h3 id="modalApTitle" style="margin:0; font-size:17px; font-weight:700; color:#ffffff;">
                                 AP-Aruba-HO-1</h3>
                             <span id="modalApVendorBadge" class="ap-live-badge"><span
                                     class="ap-live-dot"></span>Online</span>
                         </div>
-                        <p id="modalApSubtitle" style="margin:3px 0 0 0; font-size:12px; color:#94a3b8;">Aruba AP-505
+                        <p id="modalApSubtitle" style="margin:3px 0 0 0; font-size:12px; color:#ffffff;">Aruba AP-505
                             Campus Access Point &bull; Port 2</p>
                     </div>
                 </div>
                 <div style="display:flex; align-items:center; gap:10px;">
-                    <button type="button" class="btn-refresh" id="btnRefreshApClients" onclick="refreshApModal()"
-                        title="Refresh live telemetry" style="padding:5px 10px; font-size:12px;">
-                        <svg class="refresh-icon" viewBox="0 0 24 24" width="13" height="13" fill="none"
-                            stroke="currentColor" stroke-width="2.5"
-                            style="display:inline-block; vertical-align:middle; margin-right:4px;">
-                            <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
-                        </svg>
-                        <span>Refresh</span>
-                    </button>
                     <button type="button" class="modal-close-btn" onclick="closeApModal()"
                         title="Close">&times;</button>
                 </div>
             </div>
 
             <div class="modal-body-ap">
-                <!-- Summary Cards -->
-                <div class="ap-grid-summary">
-                    <div class="ap-stat-card">
-                        <span class="label">Access Point Hardware</span>
-                        <span class="val" id="apModelText">-</span>
-                        <span class="sub" id="apIpMacText">-</span>
-                    </div>
-                    <div class="ap-stat-card">
-                        <span class="label">Location & Switch Port</span>
-                        <span class="val" id="apLocationText">-</span>
-                        <span class="sub" id="apPortPoeText">-</span>
-                    </div>
-                    <div class="ap-stat-card">
-                        <span class="label">Active Wi-Fi Clients</span>
-                        <span class="val" id="apClientsCount" style="color:#38bdf8;">0 Devices</span>
-                        <span class="sub" id="apRadioText">Switch Port FDB Station</span>
-                    </div>
-                    <div class="ap-stat-card">
-                        <span class="label">Live AP Bandwidth (Switch PoE)</span>
-                        <span class="val" id="apThroughputText" style="color:#34d399;">0.0 Mbps</span>
-                        <span class="sub" id="apTrafficBreakdown">Rx: 0 Mbps &bull; Tx: 0 Mbps</span>
-                    </div>
-                </div>
-
-                <!-- Controls & Search -->
-                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <span style="font-size:13px; font-weight:700; color:#e2e8f0;">Associated Wireless Clients</span>
-                        <span id="apFilteredCountBadge"
-                            style="font-size:11px; padding:2px 8px; border-radius:10px; background:rgba(255,255,255,0.06); color:#94a3b8;">Showing
-                            all</span>
-                    </div>
-                    <div style="display:flex; gap:8px; align-items:center;">
-                        <input type="text" id="apClientSearchInput" placeholder="Filter hostname, IP, MAC, SSID..."
-                            oninput="filterApClients()"
-                            style="background:#1e293b; border:1px solid rgba(255,255,255,0.12); color:#f8fafc; font-size:12px; padding:6px 12px; border-radius:6px; min-width:240px; outline:none;" />
-                    </div>
-                </div>
-
                 <!-- Clients Table -->
                 <div class="table-responsive"
                     style="max-height: 420px; overflow-y:auto; border:1px solid rgba(255,255,255,0.08); border-radius:8px;">
@@ -1001,12 +921,11 @@
                                 <th>Associated Port &amp; AP</th>
                                 <th style="min-width: 175px;">Live Throughput (Rx / Tx)</th>
                                 <th style="min-width: 130px;">Cumulative Usage</th>
-                                <th>Status</th>
                             </tr>
                         </thead>
                         <tbody id="apClientsTableBody">
                             <tr>
-                                <td colspan="6" style="text-align:center; padding:30px; color:#94a3b8;">
+                                <td colspan="5" style="text-align:center; padding:30px; color:#ffffff;">
                                     Loading client telemetry via Palo Alto &amp; SNMP...
                                 </td>
                             </tr>
@@ -1016,11 +935,10 @@
             </div>
 
             <div
-                style="padding:12px 24px; background:rgba(15,23,42,0.9); border-top:1px solid rgba(255,255,255,0.06); display:flex; justify-content:space-between; align-items:center;">
+                style="padding:12px 24px; background:rgba(15,23,42,0.9); border-top:1px solid rgba(255,255,255,0.06); display:flex; align-items:center;">
                 <span id="apLastUpdatedText"
-                    style="font-size:11px; color:#64748b; font-family:'JetBrains Mono', monospace;">Last Polled:
+                    style="font-size:12px; color:#ffffff; font-family:inherit;">Last Polled:
                     -</span>
-                <span style="font-size:11px; color:#64748b;">Source: Palo Alto Networks PA-220 L7 Traffic Telemetry &amp; Hardware Switch FDB</span>
             </div>
         </div>
     </div>
@@ -1065,11 +983,10 @@
 
             document.getElementById('modalApTitle').textContent = apName;
             document.getElementById('modalApSubtitle').textContent = `Associated with ${portName || 'Port'} (${speed || '1 Gbps'})`;
-            document.getElementById('apClientSearchInput').value = '';
 
             const apLoadingHtml = `
                 <tr>
-                    <td colspan="6" style="text-align:center; padding:45px 20px;">
+                    <td colspan="5" style="text-align:center; padding:45px 20px;">
                         <div class="speedtest-gauge-wrap" style="display:flex; flex-direction:column; align-items:center; justify-content:center;">
                             <div class="speedtest-spinner"></div>
                             <div class="speedtest-testing-txt" style="margin-top:14px; font-size:14px; font-weight:600; color:#f8fafc;">Memuat Telemetri Nirkabel AP</div>
@@ -1089,28 +1006,6 @@
             document.body.style.overflow = '';
         }
 
-        async function refreshApModal() {
-            if (!currentApName) return;
-            const btn = document.getElementById('btnRefreshApClients');
-            if (btn) btn.classList.add('loading');
-
-            const apLoadingHtml = `
-                <tr>
-                    <td colspan="6" style="text-align:center; padding:45px 20px;">
-                        <div class="speedtest-gauge-wrap" style="display:flex; flex-direction:column; align-items:center; justify-content:center;">
-                            <div class="speedtest-spinner"></div>
-                            <div class="speedtest-testing-txt" style="margin-top:14px; font-size:14px; font-weight:600; color:#f8fafc;">Memuat Telemetri Nirkabel AP...</div>
-                            <div class="speedtest-step-sub" style="font-size:12px; color:#94a3b8; margin-top:4px;">Menghubungkan Palo Alto PA-220 &amp; FDB Switch Table</div>
-                        </div>
-                    </td>
-                </tr>
-            `;
-            document.getElementById('apClientsTableBody').innerHTML = apLoadingHtml;
-
-            await loadApData(currentApName, true);
-            if (btn) btn.classList.remove('loading');
-        }
-
         async function loadApData(apName, force = false) {
             try {
                 const url = `/api/ap/${encodeURIComponent(apName)}/clients` + (force ? `?force=1&_t=${Date.now()}` : '');
@@ -1126,16 +1021,11 @@
                 currentApSummaryObj = summary;
                 currentApClientsCache = ap.clients || data.clients || [];
 
-                // Update Summary Cards
-                document.getElementById('modalApTitle').textContent = ap.name;
-                document.getElementById('modalApSubtitle').textContent = `${ap.vendor} • ${ap.model}`;
-                document.getElementById('apModelText').textContent = ap.model;
-                document.getElementById('apIpMacText').textContent = ap.esn ? `${ap.ip_address} • ESN: ${ap.esn}` : (ap.mac_address && ap.mac_address !== '-' ? `${ap.ip_address} • MAC: ${ap.mac_address}` : `${ap.ip_address} • SNMPv2c`);
-                document.getElementById('apLocationText').textContent = ap.location;
-                document.getElementById('apPortPoeText').textContent = `${ap.connected_switch} (${ap.connected_port}) • PoE: ${ap.poe_power}`;
-                document.getElementById('apClientsCount').textContent = `${summary.active_clients} Devices`;
+                // Update Modal Header
+                if (document.getElementById('modalApTitle')) document.getElementById('modalApTitle').textContent = ap.name;
+                if (document.getElementById('modalApSubtitle')) document.getElementById('modalApSubtitle').textContent = `${ap.vendor} • ${ap.model}`;
 
-                // Badge Online / Standby
+                // Badge Online / Offline
                 const badge = document.getElementById('modalApVendorBadge');
                 if (badge) {
                     if (summary.is_reachable) {
@@ -1143,27 +1033,29 @@
                         badge.style.background = 'rgba(16, 185, 129, 0.15)';
                         badge.style.borderColor = 'rgba(16, 185, 129, 0.3)';
                         badge.style.color = '#34d399';
-                        badge.innerHTML = `<span class="ap-live-dot" style="background:#10b981; box-shadow:0 0 8px #10b981;"></span>Online (${ap.uptime || 'Active'})`;
+                        badge.innerHTML = `<span class="ap-live-dot" style="background:#10b981; box-shadow:0 0 8px #10b981;"></span>Online`;
                     } else {
                         badge.className = 'ap-live-badge';
-                        badge.style.background = 'rgba(148, 163, 184, 0.12)';
-                        badge.style.borderColor = 'rgba(148, 163, 184, 0.25)';
-                        badge.style.color = '#94a3b8';
-                        badge.innerHTML = `<span class="ap-live-dot" style="background:#94a3b8; box-shadow:none;"></span>Standby / Belum Ada Klien`;
+                        badge.style.background = 'rgba(239, 68, 68, 0.15)';
+                        badge.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+                        badge.style.color = '#f87171';
+                        badge.innerHTML = `<span class="ap-live-dot" style="background:#ef4444; box-shadow:0 0 8px #ef4444;"></span>Offline`;
                     }
                 }
 
-                const radioInfo = ap.connected_switch ? `${ap.connected_switch} • ${ap.connected_port || 'PoE'}` : 'Switch Port FDB Station';
-                document.getElementById('apRadioText').textContent = radioInfo;
-
-                document.getElementById('apThroughputText').textContent = `${summary.total_mbps} Mbps`;
-                document.getElementById('apTrafficBreakdown').textContent = `Rx: ${summary.total_rx_mbps} Mbps • Tx: ${summary.total_tx_mbps} Mbps`;
-                document.getElementById('apLastUpdatedText').textContent = `Last Polled: ${summary.timestamp}`;
-                document.getElementById('apFilteredCountBadge').textContent = `Showing all (${currentApClientsCache.length})`;
+                if (document.getElementById('apLastUpdatedText')) document.getElementById('apLastUpdatedText').textContent = `Last Polled: ${summary.timestamp}`;
 
                 renderClientRows(currentApClientsCache);
             } catch (err) {
                 console.error('AP client telemetry error:', err);
+                const badge = document.getElementById('modalApVendorBadge');
+                if (badge) {
+                    badge.className = 'ap-live-badge';
+                    badge.style.background = 'rgba(239, 68, 68, 0.15)';
+                    badge.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+                    badge.style.color = '#f87171';
+                    badge.innerHTML = `<span class="ap-live-dot" style="background:#ef4444; box-shadow:0 0 8px #ef4444;"></span>Offline`;
+                }
                 document.getElementById('apClientsTableBody').innerHTML = `
                     <tr>
                         <td colspan="5" style="text-align:center; padding:30px; color:#94a3b8;">
@@ -1182,7 +1074,7 @@
                 if (isFilter) {
                     tbody.innerHTML = `
                         <tr>
-                            <td colspan="6" style="text-align:center; padding:30px; color:#94a3b8;">
+                            <td colspan="5" style="text-align:center; padding:30px; color:#94a3b8;">
                                 Tidak ada klien yang cocok dengan pencarian / filter.
                             </td>
                         </tr>
@@ -1191,7 +1083,7 @@
                     const ap = currentApDataObj;
                     tbody.innerHTML = `
                         <tr>
-                            <td colspan="6" style="text-align:center; padding:35px 20px; background:rgba(255, 255, 255, 0.015); border-radius:8px;">
+                            <td colspan="5" style="text-align:center; padding:35px 20px; background:rgba(255, 255, 255, 0.015); border-radius:8px;">
                                 <div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
                                     <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" style="color:#94a3b8;">
                                         <path d="M5 12.55a11 11 0 0 1 14.08 0"></path>
@@ -1211,7 +1103,7 @@
                     const descr = (currentApDataObj && currentApDataObj.system_description) ? currentApDataObj.system_description : 'AP Online via Switch Port';
                     tbody.innerHTML = `
                         <tr>
-                            <td colspan="6" style="text-align:center; padding:35px 20px; color:#94a3b8;">
+                            <td colspan="5" style="text-align:center; padding:35px 20px; color:#94a3b8;">
                                 <div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
                                     <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" style="color:#10b981;">
                                         <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
@@ -1231,14 +1123,14 @@
 
             const ap = currentApDataObj || {};
             tbody.innerHTML = clients.map(c => {
-                // OS icon SVG
+                // OS icon SVG (Green icon)
                 let osSvg = '';
                 if (c.os_type === 'apple') {
-                    osSvg = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="color:#94a3b8; flex-shrink:0;"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.62-.75 1.04-1.8 0.93-2.85-.9.04-1.99.6-2.63 1.35-.57.65-1.07 1.72-.94 2.74 1 .08 2.02-.49 2.64-1.24z"/></svg>';
+                    osSvg = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="color:#10b981; flex-shrink:0;"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.62-.75 1.04-1.8 0.93-2.85-.9.04-1.99.6-2.63 1.35-.57.65-1.07 1.72-.94 2.74 1 .08 2.02-.49 2.64-1.24z"/></svg>';
                 } else if (c.os_type === 'windows') {
-                    osSvg = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="color:#38bdf8; flex-shrink:0;"><path d="M3 5.55 10.36 4.5v6.95H3V5.55zm0 12.9 7.36 1.05v-6.95H3v5.9zm8.54 1.22L21 21v-8.45h-9.46v7.12zm0-15.34V11.45H21V3l-9.46 1.33z"/></svg>';
+                    osSvg = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="color:#10b981; flex-shrink:0;"><path d="M3 5.55 10.36 4.5v6.95H3V5.55zm0 12.9 7.36 1.05v-6.95H3v5.9zm8.54 1.22L21 21v-8.45h-9.46v7.12zm0-15.34V11.45H21V3l-9.46 1.33z"/></svg>';
                 } else if (c.os_type === 'linux') {
-                    osSvg = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" style="color:#f59e0b; flex-shrink:0;"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 9h6v6H9z"/></svg>';
+                    osSvg = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" style="color:#10b981; flex-shrink:0;"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 9h6v6H9z"/></svg>';
                 } else {
                     osSvg = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" style="color:#10b981; flex-shrink:0;"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>';
                 }
@@ -1254,65 +1146,33 @@
                             <div class="client-host">
                                 ${osSvg}
                                 <div>
-                                    <div style="font-weight:600; color:#f8fafc;">${c.hostname}</div>
-                                    <div style="font-size:11px; color:#94a3b8;">${c.os}</div>
+                                    <div style="font-weight:600; color:#ffffff;">${c.hostname}</div>
+                                    <div style="font-size:11px; color:#ffffff;">${c.os}</div>
                                 </div>
                             </div>
                         </td>
                         <td>
-                            <div style="font-family:'JetBrains Mono', monospace; font-size:12px; color:#38bdf8; font-weight:600;">${c.ip || '-'}</div>
-                            <div style="font-family:'JetBrains Mono', monospace; font-size:11px; color:#64748b;">${c.mac}</div>
+                            <div style="font-size:12px; color:#ffffff; font-weight:600;">${c.ip || '-'}</div>
+                            <div style="font-size:11px; color:#ffffff;">${c.mac}</div>
                         </td>
                         <td>
-                            <div style="font-weight:600; color:#e2e8f0; font-size:12px;">${portDisplay}</div>
-                            <div style="font-size:11px; color:#64748b;">${switchDisplay}</div>
+                            <div style="font-weight:600; color:#ffffff; font-size:12px;">${portDisplay}</div>
+                            <div style="font-size:11px; color:#ffffff;">${switchDisplay}</div>
                         </td>
                         <td>
-                            <div style="display:flex; flex-direction:column; gap:2px;">
-                                <div style="font-family:'JetBrains Mono', monospace; font-size:12px; font-weight:700;">
-                                    <span style="color:#38bdf8;" title="Download (Rx)">↓ ${rxDisplay}</span> &nbsp;
-                                    <span style="color:#fbbf24;" title="Upload (Tx)">↑ ${txDisplay}</span>
-                                </div>
-                                ${c.top_app && c.top_app !== 'Idle' && c.top_app !== 'Standby' ? 
-                                    `<div style="font-size:10px; color:#94a3b8; display:flex; align-items:center; gap:4px;">
-                                        <span style="display:inline-block; width:5px; height:5px; border-radius:50%; background:#10b981;"></span>
-                                        ${c.top_app}
-                                    </div>` : 
-                                    `<div style="font-size:10px; color:#64748b;">Standby</div>`}
+                            <div style="font-size:12px; font-weight:600; color:#ffffff;">
+                                <span>↓ ${rxDisplay}</span> &nbsp;
+                                <span>↑ ${txDisplay}</span>
                             </div>
                         </td>
                         <td>
-                            <div style="font-family:'JetBrains Mono', monospace; font-size:12px; font-weight:700; color:#f8fafc;">
+                            <div style="font-size:12px; font-weight:600; color:#ffffff;">
                                 ${c.cumulative_usage || '< 1 MB'}
                             </div>
-                            <div style="font-size:10px; color:#64748b;">${c.sessions || 0} active sessions</div>
-                        </td>
-                        <td>
-                            <span class="ap-live-badge" style="background:rgba(16, 185, 129, 0.15); border-color:rgba(16, 185, 129, 0.3); color:#34d399; font-size:11px; padding:3px 9px; display:inline-flex; align-items:center; gap:5px;">
-                                <span class="ap-live-dot" style="background:#10b981; box-shadow:0 0 6px #10b981;"></span>Active
-                            </span>
                         </td>
                     </tr>
                 `;
             }).join('');
-        }
-
-        function filterApClients() {
-            const query = (document.getElementById('apClientSearchInput').value || '').toLowerCase().trim();
-            if (!query) {
-                renderClientRows(currentApClientsCache, false);
-                document.getElementById('apFilteredCountBadge').textContent = `Showing all (${currentApClientsCache.length})`;
-                return;
-            }
-            const filtered = currentApClientsCache.filter(c =>
-                (c.hostname && c.hostname.toLowerCase().includes(query)) ||
-                (c.ip && c.ip.toLowerCase().includes(query)) ||
-                (c.mac && c.mac.toLowerCase().includes(query)) ||
-                (c.ssid && c.ssid.toLowerCase().includes(query)) ||
-                (c.os && c.os.toLowerCase().includes(query))
-            );
-            renderClientRows(filtered, true);
-            document.getElementById('apFilteredCountBadge').textContent = `${filtered.length} of ${currentApClientsCache.length}`;
         }
 
         document.addEventListener('keydown', (e) => {

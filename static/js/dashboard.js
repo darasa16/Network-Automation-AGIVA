@@ -173,6 +173,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Polling interval (every 5 seconds)
     setInterval(pollRealtimeStatus, 5000);
+
+    // Auto-refresh Top 10 client metrics every 10 seconds
+    setInterval(() => fetchTopClients(true), 10000);
 });
 
 /* --------------------------------------------------------------------------
@@ -1330,7 +1333,7 @@ function escapeHtml(str) {
 }
 
 function setupTableFilters() {
-    const filterButtons = document.querySelectorAll('.badge-filter');
+    const filterButtons = document.querySelectorAll('#monitored-devices .badge-filter');
     filterButtons.forEach(btn => {
         btn.addEventListener('click', () => {
             filterButtons.forEach(b => b.classList.remove('active'));
@@ -1343,6 +1346,120 @@ function setupTableFilters() {
         scrollToDevicesTable();
     }
 }
+
+/* --------------------------------------------------------------------------
+   Top 10 Client Monitoring (All Sites, Head Office, Agiva Corner)
+   -------------------------------------------------------------------------- */
+let currentClientTab = 'all';
+let topClientsData = window.INITIAL_TOP_CLIENTS || null;
+
+function switchClientTab(site) {
+    currentClientTab = site;
+    const tabBtns = document.querySelectorAll('.client-tab-btn');
+    tabBtns.forEach(btn => {
+        if (btn.getAttribute('data-site') === site) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+
+    if (topClientsData && topClientsData[site]) {
+        renderTopClientsTable(topClientsData[site]);
+    } else {
+        fetchTopClients(false);
+    }
+}
+
+function renderTopClientsTable(clients) {
+    const tbody = document.getElementById('topClientsTableBody');
+    if (!tbody) return;
+
+    if (!clients || clients.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="8" style="text-align: center; padding: 30px; color: #94a3b8;">
+                    No active clients found for this site.
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    tbody.innerHTML = clients.map(c => {
+        let rankClass = 'rank-default';
+        if (c.rank === 1) rankClass = 'rank-1';
+        else if (c.rank === 2) rankClass = 'rank-2';
+        else if (c.rank === 3) rankClass = 'rank-3';
+
+        const siteTag = c.site_code === 'ho' ? 'badge-aruba' : 'badge-huawei';
+        const hostnameSafe = escapeHtml(c.hostname || 'Station');
+        const osSafe = escapeHtml(c.os || 'Wireless Device');
+        const topAppSafe = escapeHtml(c.top_app || 'Idle');
+        const isActive = (c.status || 'Active').toLowerCase() === 'active';
+        const statusBadge = isActive 
+            ? '<span class="status-badge badge-up"><span class="badge-dot-green"></span> Active</span>'
+            : '<span class="status-badge badge-down"><span class="badge-dot-red"></span> Inactive</span>';
+
+        return `
+            <tr class="top-client-row site-${c.site_code || 'all'}" data-rank="${c.rank}">
+                <td style="text-align: center;">
+                    <span class="rank-pill ${rankClass}">#${c.rank}</span>
+                </td>
+                <td>
+                    <div>
+                        <strong>${hostnameSafe}</strong>
+                        <span style="font-size: 11px; color: var(--text-muted); display: block;">${osSafe}</span>
+                    </div>
+                </td>
+                <td>
+                    <code>${c.ip || '-'}</code>
+                    <span style="font-size: 11px; color: var(--text-muted); display: block;">${c.mac || '-'}</span>
+                </td>
+                <td>
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <span class="site-tag ${siteTag}">${c.site || 'Site'}</span>
+                        <span style="font-weight: 600; color: var(--text-primary); font-size: 13px;">${c.ap_name || '-'}</span>
+                    </div>
+                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">${c.switch || '-'} &bull; ${c.port || '-'}</div>
+                </td>
+                <td>
+                    <div style="font-size: 13px; font-weight: 600; color: #10b981; font-family: var(--font-sans);">
+                        ${c.throughput_rx || '0 Kbps'} <span style="color: var(--text-muted); font-weight: 400;">(Rx)</span> &bull; ${c.throughput_tx || '0 Kbps'} <span style="color: var(--text-muted); font-weight: 400;">(Tx)</span>
+                    </div>
+                </td>
+                <td>
+                    <span style="font-size: 13px; font-weight: 500; color: var(--text-primary); font-family: var(--font-sans);">${c.cumulative_usage || '< 1 MB'}</span>
+                </td>
+                <td>
+                    <span style="font-size: 13px; color: var(--text-secondary); font-family: var(--font-sans);">${topAppSafe}</span>
+                </td>
+                <td style="text-align: center;">
+                    ${statusBadge}
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+async function fetchTopClients(silent = false) {
+    try {
+        const res = await fetch('/api/clients/top10', { cache: 'no-store' });
+        const json = await res.json();
+        if (json.success && json.data) {
+            topClientsData = json.data;
+
+            if (topClientsData[currentClientTab]) {
+                renderTopClientsTable(topClientsData[currentClientTab]);
+            }
+        }
+    } catch (e) {
+        if (!silent) console.error('Failed to fetch top clients:', e);
+    }
+}
+
+window.switchClientTab = switchClientTab;
+window.refreshTopClients = () => fetchTopClients(false);
 
 
 

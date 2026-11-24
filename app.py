@@ -386,6 +386,82 @@ def logout():
     flask_session.clear()
     return redirect(url_for('login'))
 
+def get_top_clients_summary(session=None):
+    """
+    Mengambil data Top 10 Klien Nirkabel Aktif:
+    - all: Top 10 gabungan (HO + Corner)
+    - ho: Top 10 Head Office (Aruba APs)
+    - corner: Top 10 Agiva Corner (Huawei APs)
+    Diurutkan berdasarkan kecepatan real-time live throughput (total_mbps) dan akumulasi kuota data.
+    """
+    close_sess = False
+    if session is None:
+        session = db_session()
+        close_sess = True
+    try:
+        from models import ApClientTelemetry
+        all_clients = session.query(ApClientTelemetry).all()
+        
+        ho_list = []
+        corner_list = []
+        
+        from telemetry_helper import _format_app_name
+        for c in all_clients:
+            c_dict = c.to_dict()
+            ap_lower = (c.ap_name or "").lower()
+            sw_lower = (c.connected_switch or "").lower()
+            
+            # Ambil nama aplikasi mentah (raw App-ID string Palo Alto tanpa formatter)
+            raw_app = c_dict.get("top_app", "Idle")
+            is_active = (float(c_dict.get("total_mbps", 0.0) or 0.0) > 0) or (int(c_dict.get("cumulative_bytes", 0) or 0) > 0)
+            c_dict["top_app"] = _format_app_name(raw_app, has_traffic=is_active)
+            
+            # Tentukan Site secara eksplisit
+            if "corner" in ap_lower or "corner" in sw_lower or "5735" in sw_lower or "ae5776" in ap_lower:
+                c_dict["site"] = "Agiva Corner"
+                c_dict["site_code"] = "corner"
+                c_dict["site_badge"] = "badge-huawei"
+                corner_list.append(c_dict)
+            else:
+                c_dict["site"] = "Head Office"
+                c_dict["site_code"] = "ho"
+                c_dict["site_badge"] = "badge-aruba"
+                ho_list.append(c_dict)
+                
+        def sort_key(x):
+            # Penentuan Top 10: Kecepatan Real-Time (Throughput Mbps tertinggi)
+            # Jika kecepatan sama, urutkan berdasarkan abjad Nama Perangkat (A -> Z)
+            return (-float(x.get("total_mbps", 0.0) or 0.0), str(x.get("hostname", "") or "").lower())
+            
+        all_sorted = sorted(ho_list + corner_list, key=sort_key)
+        ho_sorted = sorted(ho_list, key=sort_key)
+        corner_sorted = sorted(corner_list, key=sort_key)
+        
+        def attach_rank(lst):
+            res = []
+            for idx, item in enumerate(lst[:10], start=1):
+                item_copy = dict(item)
+                item_copy["rank"] = idx
+                res.append(item_copy)
+            return res
+
+        return {
+            "all": attach_rank(all_sorted),
+            "ho": attach_rank(ho_sorted),
+            "corner": attach_rank(corner_sorted),
+            "counts": {
+                "all": len(all_sorted),
+                "ho": len(ho_sorted),
+                "corner": len(corner_sorted)
+            }
+        }
+    except Exception as e:
+        logger.error(f"Gagal memuat top clients summary: {e}")
+        return {"all": [], "ho": [], "corner": [], "counts": {"all": 0, "ho": 0, "corner": 0}}
+    finally:
+        if close_sess:
+            session.close()
+
 # 1. MONITORING ROUTES
 @app.route('/')
 @app.route('/index.html')
@@ -409,6 +485,7 @@ def dashboard():
     initial_chart_history = get_aggregated_chart_history(session=session)
     wan_summary = get_wan_metrics_summary(session=session)
     initial_wan_history = get_wan_chart_history('live', session=session)
+    top_clients = get_top_clients_summary(session=session)
     session.close()
 
     return render_template(
@@ -421,7 +498,8 @@ def dashboard():
         alerts=alert_list,
         initial_chart_history=initial_chart_history,
         wan=wan_summary,
-        initial_wan_history=initial_wan_history
+        initial_wan_history=initial_wan_history,
+        top_clients=top_clients
     )
 
 from telemetry_helper import get_device_full_telemetry, get_ap_client_telemetry
@@ -1719,6 +1797,20 @@ def api_ap_clients(ap_name):
         return jsonify({"success": True, "data": data})
     except Exception as e:
         logger.error(f"Gagal mengambil data klien AP {ap_name}: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route('/api/clients/top10')
+def api_top_clients():
+    """Mengambil data Top 10 Klien Nirkabel Aktif (All, HO, Corner) secara real-time via JSON."""
+    try:
+        data = get_top_clients_summary()
+        return jsonify({
+            "success": True,
+            "timestamp": datetime.now().strftime("%H:%M:%S"),
+            "data": data
+        })
+    except Exception as e:
+        logger.error(f"Error fetching top clients API: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
 
 if __name__ == '__main__':

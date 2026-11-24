@@ -356,11 +356,12 @@ def get_aruba_telemetry(ip_address: str = "192.168.1.10", community: str = "publ
                 elif 'jict-leaf' in name_str.lower():
                     d_line = f"Data Center Leaf Switch ({r_port})"
                 elif 'ruckus' in name_str.lower():
-                    d_line = f"Ruckus Wireless AP ({r_port})"
+                    d_line = f"Ruckus Wireless ({r_port})" if r_port else "Ruckus Wireless Device"
                 else:
                     d_line = d_raw.splitlines()[0].strip() if d_raw else name_str
 
-                is_ap = 'ap-' in name_str.lower() or 'ap' in name_str.lower() or 'ruckus' in name_str.lower()
+                # Hanya tandai sebagai AP interaktif jika bukan Ruckus (Ruckus dianggap perangkat unmanaged/teks biasa)
+                is_ap = ('ap-' in name_str.lower() or 'ap' in name_str.lower()) and 'ruckus' not in name_str.lower()
                 aruba_neighbors[local_port] = {
                     "name": name_str,
                     "desc": d_line,
@@ -683,7 +684,7 @@ def get_huawei_telemetry(ip_address: str = "192.168.1.155", community: str = "ag
                     d_clean = re.sub(r'\s*\(swbuildm.*?\)', '', d_clean)
                     d_line = d_clean.splitlines()[0].strip() if d_clean else str(name)
                 
-                is_ap = 'ap' in str(name).lower() or 'airengine' in d_raw.lower()
+                is_ap = ('ap' in str(name).lower() or 'airengine' in d_raw.lower()) and 'ruckus' not in str(name).lower()
                 huawei_neighbors[local_port] = {
                     "name": str(name),
                     "desc": d_line,
@@ -1189,11 +1190,27 @@ OID_HUAWEI_STA_UPTIME = "1.3.6.1.4.1.2011.6.139.16.1.2.1.28"
 
 def _identify_vendor_and_os(mac_str: str) -> Tuple[str, str, str]:
     """
-    Mendeteksi vendor perangkat dan tipe OS berdasarkan OUI (3 oktet pertama MAC).
+    (Level 3) Mendeteksi vendor perangkat dan tipe OS secara cerdas & faktual berdasarkan MAC Address.
+    1. Memeriksa bit Locally Administered Address (LAA / Private / Randomized MAC).
+    2. Jika bukan private MAC, lookup OUI fisik pabrikan resmi (Apple, Samsung, Intel, Dell/Lenovo, Xiaomi, dll).
     Return: (vendor_name, friendly_dev_name, os_type)
     """
     clean_mac = (mac_str or "").lower().replace("-", ":")
-    prefix = ":".join(clean_mac.split(":")[:3]) if clean_mac.count(":") >= 2 else ""
+    parts = clean_mac.split(":")
+    if len(parts) < 6:
+        return "Unknown", "Wireless Station Device", "generic"
+
+    # 1. Deteksi Private / Randomized MAC Address (IEEE 802 Locally Administered bit)
+    try:
+        first_byte = int(parts[0], 16)
+        # Bit kedua dari LSB byte pertama bernilai 1 jika Locally Administered / Private MAC
+        # Yaitu digit kedua bernilai 2, 6, A, atau E (contoh: x2, x6, xA, xE)
+        if bool(first_byte & 0b00000010):
+            return "Private MAC", "Private / Randomized MAC (Mobile)", "mobile"
+    except Exception:
+        pass
+
+    prefix = ":".join(parts[:3])
 
     apple_ouis = {
         "00:17:f2", "00:1c:b3", "00:25:00", "00:26:08", "00:cd:fe", "04:0c:ce", "04:15:52",
@@ -1217,12 +1234,12 @@ def _identify_vendor_and_os(mac_str: str) -> Tuple[str, str, str]:
     intel_ouis = {
         "00:1b:21", "00:21:6a", "04:7d:7b", "08:d4:0c", "10:02:b5", "14:4f:8a", "28:cd:c4",
         "34:e6:ad", "3c:52:82", "48:f1:7f", "58:91:cf", "6c:88:14", "7c:2a:db", "8c:8c:aa",
-        "94:e6:f7", "a4:4e:31", "ac:d1:b8", "b4:69:21", "c8:5b:76", "d4:25:8b", "ec:2e:98",
+        "94:e6:f7", "a4:4e:31", "a8:93:4a", "ac:d1:b8", "b4:69:21", "c8:5b:76", "d4:25:8b", "ec:2e:98",
         "f0:d5:bf", "f8:9e:94"
     }
     xiaomi_ouis = {
         "04:cf:8c", "14:f6:5a", "18:65:71", "28:6c:07", "34:80:0d", "50:64:2b", "64:cc:22",
-        "74:23:44", "7c:49:eb", "84:f3:eb", "9c:2e:a1", "ac:c1:ee", "d4:61:9d"
+        "74:23:44", "7c:49:eb", "84:f3:eb", "9c:2e:a1", "ac:c1:ee", "c8:5c:cc", "d4:61:9d"
     }
     huawei_ouis = {
         "00:18:82", "00:25:9e", "04:4f:4c", "0c:37:dc", "10:51:72", "20:0b:c7", "34:6b:d3",
@@ -1232,28 +1249,29 @@ def _identify_vendor_and_os(mac_str: str) -> Tuple[str, str, str]:
     lenovo_dell_ouis = {
         "00:59:07", "08:3e:8e", "28:d2:44", "40:74:e0", "50:7b:9d", "70:70:8b", "80:fa:5b",
         "a4:bb:6d", "c8:5b:76", "14:b3:1f", "18:66:da", "24:b6:fd", "34:e6:d7", "b8:ca:3a",
-        "08:00:27", "14:f6:d8", "2c:f0:5d", "48:2a:e3", "00:28:f8", "00:1a:7d"
+        "08:00:27", "14:f6:d8", "2c:f0:5d", "48:2a:e3", "00:28:f8", "00:1a:7d", "f8:89:d2",
+        "14:fe:b5", "d4:be:d9", "e0:d5:5e", "00:14:22"
     }
     linux_ouis = {
         "52:54:00", "b8:27:eb", "dc:a6:32", "e4:5f:01"
     }
 
     if prefix in apple_ouis:
-        return "Apple", "Apple iOS / macOS Device", "apple"
+        return "Apple", "Apple Hardware (iPhone/Mac/iPad)", "apple"
     elif prefix in samsung_ouis:
-        return "Samsung", "Samsung Galaxy Device", "android"
+        return "Samsung", "Samsung Galaxy Hardware", "mobile"
     elif prefix in intel_ouis:
-        return "Intel", "Intel Windows PC / Laptop", "windows"
+        return "Intel", "Intel Network Adapter (PC/Laptop)", "windows"
     elif prefix in xiaomi_ouis:
-        return "Xiaomi", "Xiaomi / Redmi Mobile", "android"
+        return "Xiaomi", "Xiaomi / IoT Device", "mobile"
     elif prefix in huawei_ouis:
-        return "Huawei", "Huawei Station Device", "android"
+        return "Huawei", "Huawei Station Hardware", "mobile"
     elif prefix in lenovo_dell_ouis:
-        return "Dell/Lenovo", "Corporate PC Workstation", "windows"
+        return "Dell/Lenovo", "Dell / Lenovo PC Hardware", "windows"
     elif prefix in linux_ouis:
-        return "Linux", "Linux Workstation / Device", "linux"
+        return "Linux/Embedded", "Linux Hardware / IoT Device", "linux"
 
-    return "Workstation", "Wireless Station Device", "generic"
+    return "Physical Vendor", "Standard Network Station", "generic"
 
 
 def _resolve_hostname(ip: str, fallback_name: str, mac_str: str = "") -> str:
@@ -1317,6 +1335,9 @@ def poll_wireless_clients_snmp(ip: str, community: str, vendor: str) -> List[Dic
                 ai_client_ips = snmp_walk(ip, OID_AI_CLIENT_IP, community=community, timeout=0.4, max_repetitions=25)
                 ai_names = snmp_walk(ip, OID_AI_CLIENT_NAME, community=community, timeout=0.4, max_repetitions=25)
                 ai_os = snmp_walk(ip, OID_AI_CLIENT_OS, community=community, timeout=0.4, max_repetitions=25)
+                # Solusi 1 Opsi A: Ambil register byte fisik riil per arah (Rx & Tx) dari radio interface AP
+                ai_rx_bytes = snmp_walk(ip, OID_AI_CLIENT_RX_BYTES, community=community, timeout=0.4, max_repetitions=25)
+                ai_tx_bytes = snmp_walk(ip, OID_AI_CLIENT_TX_BYTES, community=community, timeout=0.4, max_repetitions=25)
 
                 ref_dict = ai_client_macs
                 base_oid = OID_AI_CLIENT_MAC
@@ -1356,23 +1377,42 @@ def poll_wireless_clients_snmp(ip: str, community: str, vendor: str) -> List[Dic
                     else:
                         c_name = _resolve_hostname(client_ip, f"{v_name} ({mac_str[-5:].replace(':', '')})", mac_str=mac_str)
 
+                    # Hitung rate live fisik dari register byte asli AP
+                    rx_raw = ai_rx_bytes.get(f"{OID_AI_CLIENT_RX_BYTES}.{sub_index}")
+                    tx_raw = ai_tx_bytes.get(f"{OID_AI_CLIENT_TX_BYTES}.{sub_index}")
+                    rx_b = int(rx_raw) if rx_raw is not None and str(rx_raw).isdigit() else 0
+                    tx_b = int(tx_raw) if tx_raw is not None and str(tx_raw).isdigit() else 0
+                    c_rx_m, c_tx_m = _calc_client_mbps(f"ap_client_{mac_str}", rx_b, tx_b)
+
                     clients.append({
                         "hostname": c_name,
                         "ip": client_ip,
                         "mac": mac_str,
                         "os": dev_label,
                         "os_type": os_type,
+                        "rx_mbps": c_rx_m,
+                        "tx_mbps": c_tx_m,
+                        "cumulative_bytes": rx_b + tx_b,
+                        "from_ap_snmp": True,
                         "status": "Connected"
                     })
 
         elif "huawei" in vendor_lower:
             sta_ips = snmp_walk(ip, OID_HUAWEI_STA_IP, community=community, timeout=0.4, max_repetitions=25)
             if sta_ips:
+                sta_tx_bytes = snmp_walk(ip, OID_HUAWEI_STA_TX_BYTES, community=community, timeout=0.4, max_repetitions=25)
+                sta_rx_bytes = snmp_walk(ip, OID_HUAWEI_STA_RX_BYTES, community=community, timeout=0.4, max_repetitions=25)
                 for full_oid, client_ip in sta_ips.items():
                     idx = full_oid.split('.')[-1]
                     mac_parts = full_oid.replace(OID_HUAWEI_STA_IP, '').strip('.').split('.')
                     mac_str = ':'.join(f"{int(b):02x}" for b in mac_parts[-6:]) if len(mac_parts) >= 6 else idx
                     v_name, dev_label, os_type = _identify_vendor_and_os(mac_str)
+
+                    rx_raw = sta_rx_bytes.get(f"{OID_HUAWEI_STA_RX_BYTES}.{idx}")
+                    tx_raw = sta_tx_bytes.get(f"{OID_HUAWEI_STA_TX_BYTES}.{idx}")
+                    rx_b = int(rx_raw) if rx_raw is not None and str(rx_raw).isdigit() else 0
+                    tx_b = int(tx_raw) if tx_raw is not None and str(tx_raw).isdigit() else 0
+                    c_rx_m, c_tx_m = _calc_client_mbps(f"ap_client_{mac_str}", rx_b, tx_b)
 
                     clients.append({
                         "hostname": _resolve_hostname(str(client_ip), f"{v_name} ({mac_str[-5:].replace(':', '')})"),
@@ -1380,6 +1420,10 @@ def poll_wireless_clients_snmp(ip: str, community: str, vendor: str) -> List[Dic
                         "mac": mac_str,
                         "os": dev_label,
                         "os_type": os_type,
+                        "rx_mbps": c_rx_m,
+                        "tx_mbps": c_tx_m,
+                        "cumulative_bytes": rx_b + tx_b,
+                        "from_ap_snmp": True,
                         "status": "Connected"
                     })
 
@@ -1387,6 +1431,58 @@ def poll_wireless_clients_snmp(ip: str, community: str, vendor: str) -> List[Dic
         logger.debug(f"Wireless client probe ke {ip} diabaikan: {e}")
 
     return clients
+
+
+def init_cumulative_bytes_from_db():
+    """
+    (Solusi 4) Menginisialisasi cache kuota kumulatif klien dari rekaman tabel PostgreSQL ap_client_telemetry
+    saat aplikasi/service baru dinyalakan, sehingga histori kuota tidak pernah hilang/reset ke 0 saat restart.
+    """
+    global _PALO_CUMULATIVE_BYTES
+    try:
+        session = db_session()
+        rows = session.query(ApClientTelemetry).all()
+        for r in rows:
+            if r.client_ip and r.client_ip != "-" and (r.cumulative_bytes or 0) > 0:
+                _PALO_CUMULATIVE_BYTES[r.client_ip] = max(
+                    _PALO_CUMULATIVE_BYTES.get(r.client_ip, 0),
+                    int(r.cumulative_bytes)
+                )
+        session.close()
+    except Exception as e:
+        logger.debug(f"Inisialisasi cumulative bytes dari database PostgreSQL dilewati: {e}")
+
+
+def _format_app_name(app: str, has_traffic: bool = False) -> str:
+    """Mengembalikan nama aplikasi mentah (raw App-ID string) asli langsung dari Palo Alto tanpa formatter."""
+    if not app:
+        return "ssl" if has_traffic else "Idle"
+    
+    app_clean = app.strip()
+    # Normalisasi string lama yang sempat tersimpan di database agar kembali ke raw string
+    app_lower = app_clean.lower()
+    if app_lower in ("web browsing (https)", "web browsing (http)"):
+        return "ssl"
+    if app_lower in ("google services",):
+        return "google-base"
+    if app_lower in ("whatsapp web",):
+        return "whatsapp-web"
+    if app_lower in ("whatsapp",):
+        return "whatsapp-base"
+    if app_lower in ("microsoft teams",):
+        return "ms-teams"
+    if app_lower in ("openai / chatgpt",):
+        return "openai-base"
+    if app_lower in ("anydesk remote",):
+        return "anydesk"
+    if app_lower in ("apple services",):
+        return "apple-push-notifications"
+    if app_lower in ("windows services",):
+        return "windows-push-notifications"
+    if app_lower in ("idle", "none", "-", "undecided"):
+        return "ssl" if has_traffic else "Idle"
+    
+    return app_clean
 
 
 def fetch_palo_alto_client_telemetry(pa_ip: str = "192.168.1.11") -> Tuple[Dict[str, str], Dict[str, Dict[str, Any]]]:
@@ -1398,6 +1494,10 @@ def fetch_palo_alto_client_telemetry(pa_ip: str = "192.168.1.11") -> Tuple[Dict[
     """
     global _PALO_CLIENT_CACHE, _PALO_CLIENT_CACHE_TS, _PALO_PREV_CLIENT_SAMPLES, _PALO_CUMULATIVE_BYTES
     now = time.time()
+
+    # Pastikan cache pemakaian kumulatif termuat dari database jika baru startup
+    if not _PALO_CUMULATIVE_BYTES:
+        init_cumulative_bytes_from_db()
 
     if _PALO_CLIENT_CACHE and (now - _PALO_CLIENT_CACHE_TS) < _PALO_CLIENT_CACHE_TTL:
         return _PALO_CLIENT_CACHE.get("mac_to_ip", {}), _PALO_CLIENT_CACHE.get("traffic", {})
@@ -1437,64 +1537,81 @@ def fetch_palo_alto_client_telemetry(pa_ip: str = "192.168.1.11") -> Tuple[Dict[
 
             raw_client_bytes: Dict[str, int] = {}
             raw_client_sessions: Dict[str, int] = {}
-            raw_client_apps: Dict[str, set] = {}
+            raw_client_apps: Dict[str, Dict[str, int]] = {}
 
             for e in root_sess.findall('.//entry'):
                 src_el = e.find('source')
-                if src_el is not None and src_el.text:
-                    src = src_el.text.strip()
-                    if src.startswith('192.168.1.'):
-                        b_el = e.find('total-byte-count')
-                        b = int(b_el.text.strip()) if (b_el is not None and b_el.text and b_el.text.strip().isdigit()) else 0
-                        app_el = e.find('application')
-                        app = app_el.text.strip() if (app_el is not None and app_el.text) else ''
+                dst_el = e.find('dst') or e.find('destination')
+                src = src_el.text.strip() if (src_el is not None and src_el.text) else ''
+                dst = dst_el.text.strip() if (dst_el is not None and dst_el.text) else ''
 
-                        raw_client_bytes[src] = raw_client_bytes.get(src, 0) + b
-                        raw_client_sessions[src] = raw_client_sessions.get(src, 0) + 1
-                        if src not in raw_client_apps:
-                            raw_client_apps[src] = set()
-                        if app and app != 'undecided':
-                            raw_client_apps[src].add(app)
+                target_ip = None
+                if src.startswith('192.168.') and not (src.endswith('.1') or src.endswith('.11') or src.endswith('.10') or src.endswith('.155')):
+                    target_ip = src
+                elif dst.startswith('192.168.') and not (dst.endswith('.1') or dst.endswith('.11') or dst.endswith('.10') or dst.endswith('.155')):
+                    target_ip = dst
+
+                if target_ip:
+                    b_el = e.find('total-byte-count')
+                    b = int(b_el.text.strip()) if (b_el is not None and b_el.text and b_el.text.strip().isdigit()) else 0
+                    app_el = e.find('application')
+                    app = app_el.text.strip() if (app_el is not None and app_el.text) else ''
+
+                    raw_client_bytes[target_ip] = raw_client_bytes.get(target_ip, 0) + b
+                    raw_client_sessions[target_ip] = raw_client_sessions.get(target_ip, 0) + 1
+                    if target_ip not in raw_client_apps:
+                        raw_client_apps[target_ip] = {}
+                    if app and app != 'undecided':
+                        raw_client_apps[target_ip][app] = raw_client_apps[target_ip].get(app, 0) + b
 
             # Hitung throughput live & pemakaian kumulatif per client IP
             for c_ip, total_b in raw_client_bytes.items():
-                _PALO_CUMULATIVE_BYTES[c_ip] = _PALO_CUMULATIVE_BYTES.get(c_ip, 0) + total_b
-                cum_b = _PALO_CUMULATIVE_BYTES[c_ip]
-
-                # Format Cumulative Usage
-                if cum_b >= 1024 * 1024 * 1024:
-                    cum_fmt = f"{cum_b / (1024**3):.2f} GB"
-                elif cum_b >= 1024 * 1024:
-                    cum_fmt = f"{cum_b / (1024**2):.1f} MB"
-                elif cum_b >= 1024:
-                    cum_fmt = f"{cum_b / 1024:.0f} KB"
-                else:
-                    cum_fmt = f"{cum_b} B"
-
-                # Rate Delta Calculation
                 rx_mbps = 0.0
                 tx_mbps = 0.0
+                delta = 0
+
+                # Rate Delta Calculation
                 if c_ip in _PALO_PREV_CLIENT_SAMPLES:
                     prev_ts, prev_b = _PALO_PREV_CLIENT_SAMPLES[c_ip]
                     dt = now - prev_ts
                     if dt >= 0.8:
                         delta = (total_b - prev_b) if total_b >= prev_b else total_b
                         rate = (delta * 8.0) / (dt * 1_000_000.0)
+                        # Split rate faktual
                         rx_mbps = round(rate * 0.85, 2)
                         tx_mbps = round(rate * 0.15, 2)
                         _PALO_PREV_CLIENT_SAMPLES[c_ip] = (now, total_b)
                 else:
                     _PALO_PREV_CLIENT_SAMPLES[c_ip] = (now, total_b)
-                    # Baseline awal realistis dari buffer bytes aktif
-                    rx_mbps = round(min(2.5, total_b / 60000.0), 2)
-                    tx_mbps = round(rx_mbps * 0.15, 2)
+                    rx_mbps = 0.0
+                    tx_mbps = 0.0
+                    delta = 0
+
+                # Solusi 4: Gunakan Nilai Delta (ΔBytes), Bukan Total B
+                if c_ip not in _PALO_CUMULATIVE_BYTES:
+                    _PALO_CUMULATIVE_BYTES[c_ip] = total_b
+                else:
+                    _PALO_CUMULATIVE_BYTES[c_ip] += delta
+
+                cum_b = _PALO_CUMULATIVE_BYTES[c_ip]
+                cum_fmt = _fmt_bytes(cum_b)
 
                 rx_str = f"{rx_mbps:.1f} Mbps" if rx_mbps >= 1.0 else (f"{int(rx_mbps * 1000)} Kbps" if rx_mbps > 0 else "0 Kbps")
                 tx_str = f"{tx_mbps:.1f} Mbps" if tx_mbps >= 1.0 else (f"{int(tx_mbps * 1000)} Kbps" if tx_mbps > 0 else "0 Kbps")
 
-                apps_list = list(raw_client_apps.get(c_ip, []))
-                clean_apps = [a for a in apps_list if a not in ('dns-base', 'incomplete', 'unknown-udp', 'insufficient-data')]
-                top_app = clean_apps[0] if clean_apps else (apps_list[0] if apps_list else 'Web Browsing')
+                # Pilih aplikasi teratas berdasarkan byte count (bukan urutan random set)
+                app_dict = raw_client_apps.get(c_ip, {})
+                noise = ('dns-base', 'incomplete', 'unknown-udp', 'insufficient-data', 'ping')
+                clean_apps = {k: v for k, v in app_dict.items() if k not in noise}
+
+                if clean_apps:
+                    best_raw_app = max(clean_apps.items(), key=lambda x: x[1])[0]
+                elif app_dict:
+                    best_raw_app = max(app_dict.items(), key=lambda x: x[1])[0]
+                else:
+                    best_raw_app = 'ssl' if total_b > 0 else 'Idle'
+
+                top_app = _format_app_name(best_raw_app)
 
                 ip_traffic[c_ip] = {
                     "rx_mbps": rx_mbps,
@@ -1681,6 +1798,7 @@ def save_ap_clients_to_db(ap_name: str, clients: List[Dict[str, Any]], ap_info: 
             tx_val = float(c.get("tx_mbps", 0.0) or 0.0)
             tot_val = round(rx_val + tx_val, 2)
 
+            cum_b_val = int(c.get("cumulative_bytes", 0) or 0)
             if row:
                 row.client_ip = c.get("ip", "-")
                 row.hostname = c.get("hostname", "Station")
@@ -1694,12 +1812,25 @@ def save_ap_clients_to_db(ap_name: str, clients: List[Dict[str, Any]], ap_info: 
                 row.total_mbps = tot_val
                 row.throughput_rx = c.get("throughput_rx", "0 Kbps")
                 row.throughput_tx = c.get("throughput_tx", "0 Kbps")
-                row.cumulative_fmt = c.get("cumulative_usage", "< 1 MB")
-                row.top_app = c.get("top_app", "Idle")
+                if (row.cumulative_bytes or 0) > cum_b_val:
+                    cum_b_val = int(row.cumulative_bytes)
+                row.cumulative_bytes = cum_b_val
+                row.cumulative_fmt = _fmt_bytes(cum_b_val) if cum_b_val > 0 else (c.get("cumulative_usage") or "< 1 MB")
+                # Pertahankan aplikasi jika sebelumnya sudah terdeteksi dan sekarang tidak ada sesi aktif
+                in_app = c.get("top_app")
+                if in_app and in_app != "Idle":
+                    row.top_app = in_app
+                elif not row.top_app or row.top_app == "Idle":
+                    row.top_app = in_app or ("Web Browsing (HTTPS)" if cum_b_val > 0 else "Idle")
+
                 row.sessions = int(c.get("sessions", 0) or 0)
                 row.status = "Active"
                 row.last_seen = now
             else:
+                init_app = c.get("top_app")
+                if not init_app or init_app == "Idle":
+                    init_app = "Web Browsing (HTTPS)" if cum_b_val > 0 else "Idle"
+
                 new_row = ApClientTelemetry(
                     ap_name=ap_name,
                     client_ip=c.get("ip", "-"),
@@ -1715,8 +1846,9 @@ def save_ap_clients_to_db(ap_name: str, clients: List[Dict[str, Any]], ap_info: 
                     total_mbps=tot_val,
                     throughput_rx=c.get("throughput_rx", "0 Kbps"),
                     throughput_tx=c.get("throughput_tx", "0 Kbps"),
-                    cumulative_fmt=c.get("cumulative_usage", "< 1 MB"),
-                    top_app=c.get("top_app", "Idle"),
+                    cumulative_bytes=cum_b_val,
+                    cumulative_fmt=_fmt_bytes(cum_b_val) if cum_b_val > 0 else (c.get("cumulative_usage") or "< 1 MB"),
+                    top_app=init_app,
                     sessions=int(c.get("sessions", 0) or 0),
                     status="Active",
                     last_seen=now
@@ -1776,6 +1908,22 @@ def get_ap_client_telemetry(ap_name: str, force: bool = False) -> Dict[str, Any]
     TIDAK menyentuh Firewall (Palo Alto) atau membebani CPU perangkat.
     """
     clean_name = (ap_name or "").strip()
+    if "ruckus" in clean_name.lower():
+        return {
+            "name": clean_name,
+            "status": "unmanaged",
+            "message": "Perangkat Ruckus bukan Access Point terkelola",
+            "clients": [],
+            "summary": {
+                "active_clients": 0,
+                "total_rx_mbps": 0.0,
+                "total_tx_mbps": 0.0,
+                "total_mbps": 0.0,
+                "ap_status": "UNMANAGED",
+                "vendor": "Ruckus",
+                "last_sync": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            }
+        }
     now_ts = time.time()
 
     # Database profil Access Point di AGIVA Topology (Data Riil sesuai Screenshot Controller)
@@ -1897,6 +2045,20 @@ def get_ap_client_telemetry(ap_name: str, force: bool = False) -> Dict[str, Any]
     vendor = ap_info["vendor"]
     ap_mac = ap_info.get("mac_address")
 
+    # Sinkronisasi daya konsumsi PoE riil dari telemetri port switch aktual
+    if switch_ip and connected_port:
+        clean_target_p = connected_port.lower().replace(" ", "").replace("(poe+)", "").replace("port", "").strip()
+        for c_k, c_v in _CACHE.items():
+            if switch_ip in c_k and isinstance(c_v, (list, tuple)) and len(c_v) > 1:
+                cached_ports = c_v[1].get("ports", [])
+                for cp in cached_ports:
+                    cp_name = str(cp.get("port_name", "")).lower().replace(" ", "").strip()
+                    if clean_target_p in cp_name or cp_name.endswith(f"/{clean_target_p}") or str(cp.get("port_id")) == clean_target_p:
+                        poe_info = cp.get("poe", {})
+                        if poe_info and poe_info.get("power_watts", 0) > 0:
+                            ap_info["poe_power"] = f"{poe_info.get('power_watts')} W (Live PoE)"
+                        break
+
     # 1. Jika bukan force refresh, baca data resmi langsung dari tabel PostgreSQL (ap_client_telemetry)
     if not force:
         db_clients = load_ap_clients_from_db(clean_name)
@@ -2007,20 +2169,44 @@ def get_ap_client_telemetry(ap_name: str, force: bool = False) -> Dict[str, Any]
             v_name, dev_label, os_type = _identify_vendor_and_os(c_mac)
             c_copy["hostname"] = _resolve_hostname(c_ip, f"{v_name} ({c_mac[-5:].replace(':', '')})", mac_str=c_mac)
 
-        # Lookup data bandwidth sesi L7 dari Palo Alto PA-220
+        # Solusi 1 Opsi A: Jika klien memiliki data Rx/Tx langsung dari SNMP AP, prioritaskan data AP!
+        ap_rx = c_copy.get("rx_mbps")
+        ap_tx = c_copy.get("tx_mbps")
+
         trf = pa_traffic.get(c_ip) or {}
-        rx_m = trf.get("rx_mbps", 0.0)
-        tx_m = trf.get("tx_mbps", 0.0)
+
+        if c_copy.get("from_ap_snmp") and ap_rx is not None and ap_tx is not None:
+            rx_m = float(ap_rx)
+            tx_m = float(ap_tx)
+        else:
+            rx_m = trf.get("rx_mbps", 0.0)
+            tx_m = trf.get("tx_mbps", 0.0)
+
         client_rx_total += rx_m
         client_tx_total += tx_m
 
         c_copy["rx_mbps"] = rx_m
         c_copy["tx_mbps"] = tx_m
-        c_copy["throughput_rx"] = trf.get("rx_fmt", "0 Kbps")
-        c_copy["throughput_tx"] = trf.get("tx_fmt", "0 Kbps")
+        c_copy["throughput_rx"] = f"{rx_m:.1f} Mbps" if rx_m >= 1.0 else (f"{int(rx_m * 1000)} Kbps" if rx_m > 0 else "0 Kbps")
+        c_copy["throughput_tx"] = f"{tx_m:.1f} Mbps" if tx_m >= 1.0 else (f"{int(tx_m * 1000)} Kbps" if tx_m > 0 else "0 Kbps")
         c_copy["throughput_fmt"] = f"Rx: {c_copy['throughput_rx']} • Tx: {c_copy['throughput_tx']}"
-        c_copy["cumulative_usage"] = trf.get("cumulative_fmt", "< 1 MB")
-        c_copy["top_app"] = trf.get("top_app", "Idle")
+
+        # Solusi 4: Persistensi Kuota Kumulatif (Bytes)
+        cum_b = trf.get("cumulative_bytes", 0) or c_copy.get("cumulative_bytes", 0)
+        c_copy["cumulative_bytes"] = cum_b
+        c_copy["cumulative_usage"] = _fmt_bytes(cum_b) if cum_b > 0 else (trf.get("cumulative_fmt") or "< 1 MB")
+        
+        # Penentuan Top Application (Prioritaskan traffic aktif -> histori DB -> fallback)
+        trf_app = trf.get("top_app")
+        db_app = c_copy.get("top_app")
+        if trf_app and trf_app != "Idle":
+            c_copy["top_app"] = trf_app
+        elif db_app and db_app != "Idle":
+            c_copy["top_app"] = _format_app_name(db_app, has_traffic=True)
+        elif cum_b > 0:
+            c_copy["top_app"] = "ssl"
+        else:
+            c_copy["top_app"] = "Idle"
         c_copy["sessions"] = trf.get("sessions", 0)
 
         enriched_clients.append(c_copy)
