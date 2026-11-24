@@ -29222,3 +29222,496 @@ You can also look at the Netmiko session_log or debug log for more information.
 2026-11-24 12:13:57 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 11.73s) ===
 2026-11-24 12:13:57 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-24 12:13:45
 2026-11-24 12:13:57 [INFO] [DataCollector]: [*] Next Polling : 2026-11-24 12:15:45
+2026-11-24 12:15:45 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-24 12:15:45 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-24 12:15:45
+2026-11-24 12:15:45 [INFO] [DataCollector]: [*] Next Polling : 2026-11-24 12:17:45 (Interval: 2 menit)
+2026-11-24 12:15:45 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-24 12:15:45 [INFO] [DataCollector]: [SW-2930F-HO] Berhasil polling telemetri via SNMP v2c (192.168.1.10)
+2026-11-24 12:15:46 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-2930F-HO - HOST_DOWN returned to normal, but Alert #23 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:15:46 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-2930F-HO - HIGH_LATENCY returned to normal, but Alert #22 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:15:46 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-24 12:15:47 [INFO] [DataCollector]: [SW-S5735-CORNER] Berhasil polling telemetri via SNMP v2c (192.168.1.155)
+2026-11-24 12:15:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - HOST_DOWN returned to normal, but Alert #25 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:15:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - PACKET_LOSS returned to normal, but Alert #26 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:15:48 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-24 12:15:48 [INFO] [DataCollector]: [FW-PA220-1] Berhasil polling telemetri via SNMP v2c (192.168.1.11)
+2026-11-24 12:15:53 [INFO] [RuleEngine]: [RuleEngine] Metrics for FW-PA220-1 - HOST_DOWN returned to normal, but Alert #24 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:15:53 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: FW-PA220-1 - HIGH_LATENCY (16.0 ms). Evaluasi senyap 10 menit dimulai (Telegram silent).
+2026-11-24 12:15:53 [INFO] [RuleEngine]: [RuleEngine] Metrics for FW-PA220-1 - PACKET_LOSS returned to normal, but Alert #27 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:15:57 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 12.20s) ===
+2026-11-24 12:15:57 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-24 12:15:45
+2026-11-24 12:15:57 [INFO] [DataCollector]: [*] Next Polling : 2026-11-24 12:17:45
+2026-11-24 12:17:45 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-24 12:17:45 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-24 12:17:45
+2026-11-24 12:17:45 [INFO] [DataCollector]: [*] Next Polling : 2026-11-24 12:19:45 (Interval: 2 menit)
+2026-11-24 12:17:45 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-24 12:17:45 [INFO] [DataCollector]: [SW-2930F-HO] Berhasil polling telemetri via SNMP v2c (192.168.1.10)
+2026-11-24 12:17:46 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-2930F-HO - HOST_DOWN returned to normal, but Alert #23 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:17:46 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-24 12:17:47 [INFO] [DataCollector]: [SW-S5735-CORNER] Berhasil polling telemetri via SNMP v2c (192.168.1.155)
+2026-11-24 12:17:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - HOST_DOWN returned to normal, but Alert #25 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:17:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - PACKET_LOSS returned to normal, but Alert #26 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:17:48 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-24 12:17:48 [INFO] [DataCollector]: [FW-PA220-1] Berhasil polling telemetri via SNMP v2c (192.168.1.11)
+2026-11-24 12:17:53 [INFO] [RuleEngine]: [RuleEngine] Metrics for FW-PA220-1 - HOST_DOWN returned to normal, but Alert #24 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:17:53 [INFO] [RuleEngine]: [RuleEngine] Insiden #894 (FW-PA220-1 - HIGH_LATENCY) pulih dalam 2m 0s -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-24 12:17:53 [INFO] [RuleEngine]: [RuleEngine] Metrics for FW-PA220-1 - PACKET_LOSS returned to normal, but Alert #27 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:17:59 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 13.82s) ===
+2026-11-24 12:17:59 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-24 12:17:45
+2026-11-24 12:17:59 [INFO] [DataCollector]: [*] Next Polling : 2026-11-24 12:19:45
+2026-11-24 12:19:45 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-24 12:19:45 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-24 12:19:45
+2026-11-24 12:19:45 [INFO] [DataCollector]: [*] Next Polling : 2026-11-24 12:21:45 (Interval: 2 menit)
+2026-11-24 12:19:45 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-24 12:19:45 [INFO] [DataCollector]: [SW-2930F-HO] Berhasil polling telemetri via SNMP v2c (192.168.1.10)
+2026-11-24 12:19:46 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-2930F-HO - HOST_DOWN returned to normal, but Alert #23 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:19:47 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-24 12:19:47 [INFO] [DataCollector]: [SW-S5735-CORNER] Berhasil polling telemetri via SNMP v2c (192.168.1.155)
+2026-11-24 12:19:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - HOST_DOWN returned to normal, but Alert #25 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:19:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - HIGH_LATENCY returned to normal, but Alert #21 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:19:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - PACKET_LOSS returned to normal, but Alert #26 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:19:48 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-24 12:19:48 [INFO] [DataCollector]: [FW-PA220-1] Berhasil polling telemetri via SNMP v2c (192.168.1.11)
+2026-11-24 12:19:53 [INFO] [RuleEngine]: [RuleEngine] Metrics for FW-PA220-1 - HOST_DOWN returned to normal, but Alert #24 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:19:53 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: FW-PA220-1 - HIGH_LATENCY (28.0 ms). Evaluasi senyap 10 menit dimulai (Telegram silent).
+2026-11-24 12:19:53 [INFO] [RuleEngine]: [RuleEngine] Metrics for FW-PA220-1 - PACKET_LOSS returned to normal, but Alert #27 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:19:59 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 13.50s) ===
+2026-11-24 12:19:59 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-24 12:19:45
+2026-11-24 12:19:59 [INFO] [DataCollector]: [*] Next Polling : 2026-11-24 12:21:45
+2026-11-24 12:21:45 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-24 12:21:45 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-24 12:21:45
+2026-11-24 12:21:45 [INFO] [DataCollector]: [*] Next Polling : 2026-11-24 12:23:45 (Interval: 2 menit)
+2026-11-24 12:21:45 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-24 12:21:45 [INFO] [DataCollector]: [SW-2930F-HO] Berhasil polling telemetri via SNMP v2c (192.168.1.10)
+2026-11-24 12:21:46 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-2930F-HO - HOST_DOWN returned to normal, but Alert #23 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:21:46 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-2930F-HO - HIGH_LATENCY returned to normal, but Alert #22 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:21:46 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-24 12:21:47 [INFO] [DataCollector]: [SW-S5735-CORNER] Berhasil polling telemetri via SNMP v2c (192.168.1.155)
+2026-11-24 12:21:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - HOST_DOWN returned to normal, but Alert #25 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:21:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - HIGH_LATENCY returned to normal, but Alert #21 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:21:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - PACKET_LOSS returned to normal, but Alert #26 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:21:48 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-24 12:21:48 [INFO] [DataCollector]: [FW-PA220-1] Berhasil polling telemetri via SNMP v2c (192.168.1.11)
+2026-11-24 12:21:53 [INFO] [RuleEngine]: [RuleEngine] Metrics for FW-PA220-1 - HOST_DOWN returned to normal, but Alert #24 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:21:53 [INFO] [RuleEngine]: [RuleEngine] Insiden #895 (FW-PA220-1 - HIGH_LATENCY) pulih dalam 1m 59s -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-24 12:21:53 [INFO] [RuleEngine]: [RuleEngine] Metrics for FW-PA220-1 - PACKET_LOSS returned to normal, but Alert #27 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:21:57 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 12.08s) ===
+2026-11-24 12:21:57 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-24 12:21:45
+2026-11-24 12:21:57 [INFO] [DataCollector]: [*] Next Polling : 2026-11-24 12:23:45
+2026-11-24 12:23:45 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-24 12:23:45 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-24 12:23:45
+2026-11-24 12:23:45 [INFO] [DataCollector]: [*] Next Polling : 2026-11-24 12:25:45 (Interval: 2 menit)
+2026-11-24 12:23:45 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-24 12:23:45 [INFO] [DataCollector]: [SW-2930F-HO] Berhasil polling telemetri via SNMP v2c (192.168.1.10)
+2026-11-24 12:23:46 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-2930F-HO - HOST_DOWN returned to normal, but Alert #23 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:23:46 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-24 12:23:47 [INFO] [DataCollector]: [SW-S5735-CORNER] Berhasil polling telemetri via SNMP v2c (192.168.1.155)
+2026-11-24 12:23:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - HOST_DOWN returned to normal, but Alert #25 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:23:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - PACKET_LOSS returned to normal, but Alert #26 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:23:48 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-24 12:23:48 [INFO] [DataCollector]: [FW-PA220-1] Berhasil polling telemetri via SNMP v2c (192.168.1.11)
+2026-11-24 12:23:53 [INFO] [RuleEngine]: [RuleEngine] Metrics for FW-PA220-1 - HOST_DOWN returned to normal, but Alert #24 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:23:53 [INFO] [RuleEngine]: [RuleEngine] Metrics for FW-PA220-1 - PACKET_LOSS returned to normal, but Alert #27 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:23:58 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 12.65s) ===
+2026-11-24 12:23:58 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-24 12:23:45
+2026-11-24 12:23:58 [INFO] [DataCollector]: [*] Next Polling : 2026-11-24 12:25:45
+2026-11-24 12:25:45 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-24 12:25:45 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-24 12:25:45
+2026-11-24 12:25:45 [INFO] [DataCollector]: [*] Next Polling : 2026-11-24 12:27:45 (Interval: 2 menit)
+2026-11-24 12:25:45 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-24 12:25:45 [INFO] [DataCollector]: [SW-2930F-HO] Berhasil polling telemetri via SNMP v2c (192.168.1.10)
+2026-11-24 12:25:46 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-2930F-HO - HOST_DOWN returned to normal, but Alert #23 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:25:46 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-2930F-HO - HIGH_LATENCY returned to normal, but Alert #22 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:25:46 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-24 12:25:47 [INFO] [DataCollector]: [SW-S5735-CORNER] Berhasil polling telemetri via SNMP v2c (192.168.1.155)
+2026-11-24 12:25:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - HOST_DOWN returned to normal, but Alert #25 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:25:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - PACKET_LOSS returned to normal, but Alert #26 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:25:48 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-24 12:25:48 [INFO] [DataCollector]: [FW-PA220-1] Berhasil polling telemetri via SNMP v2c (192.168.1.11)
+2026-11-24 12:25:53 [INFO] [RuleEngine]: [RuleEngine] Metrics for FW-PA220-1 - HOST_DOWN returned to normal, but Alert #24 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:25:53 [INFO] [RuleEngine]: [RuleEngine] Metrics for FW-PA220-1 - PACKET_LOSS returned to normal, but Alert #27 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:25:59 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 13.40s) ===
+2026-11-24 12:25:59 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-24 12:25:45
+2026-11-24 12:25:59 [INFO] [DataCollector]: [*] Next Polling : 2026-11-24 12:27:45
+2026-11-24 12:27:45 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-24 12:27:45 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-24 12:27:45
+2026-11-24 12:27:45 [INFO] [DataCollector]: [*] Next Polling : 2026-11-24 12:29:45 (Interval: 2 menit)
+2026-11-24 12:27:45 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-24 12:27:45 [INFO] [DataCollector]: [SW-2930F-HO] Berhasil polling telemetri via SNMP v2c (192.168.1.10)
+2026-11-24 12:27:47 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-2930F-HO - HOST_DOWN returned to normal, but Alert #23 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:27:47 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-24 12:27:47 [INFO] [DataCollector]: [SW-S5735-CORNER] Berhasil polling telemetri via SNMP v2c (192.168.1.155)
+2026-11-24 12:27:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - HOST_DOWN returned to normal, but Alert #25 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:27:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - HIGH_LATENCY returned to normal, but Alert #21 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:27:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - PACKET_LOSS returned to normal, but Alert #26 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:27:48 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-24 12:27:48 [INFO] [DataCollector]: [FW-PA220-1] Berhasil polling telemetri via SNMP v2c (192.168.1.11)
+2026-11-24 12:27:54 [INFO] [RuleEngine]: [RuleEngine] Metrics for FW-PA220-1 - HOST_DOWN returned to normal, but Alert #24 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:27:54 [INFO] [RuleEngine]: [RuleEngine] Metrics for FW-PA220-1 - PACKET_LOSS returned to normal, but Alert #27 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:28:02 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 16.27s) ===
+2026-11-24 12:28:02 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-24 12:27:45
+2026-11-24 12:28:02 [INFO] [DataCollector]: [*] Next Polling : 2026-11-24 12:29:45
+2026-11-24 12:29:45 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-24 12:29:45 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-24 12:29:45
+2026-11-24 12:29:45 [INFO] [DataCollector]: [*] Next Polling : 2026-11-24 12:31:45 (Interval: 2 menit)
+2026-11-24 12:29:45 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-24 12:29:45 [INFO] [DataCollector]: [SW-2930F-HO] Berhasil polling telemetri via SNMP v2c (192.168.1.10)
+2026-11-24 12:29:46 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-2930F-HO - HOST_DOWN returned to normal, but Alert #23 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:29:46 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-2930F-HO - HIGH_LATENCY returned to normal, but Alert #22 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:29:46 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-24 12:29:47 [INFO] [DataCollector]: [SW-S5735-CORNER] Berhasil polling telemetri via SNMP v2c (192.168.1.155)
+2026-11-24 12:29:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - HOST_DOWN returned to normal, but Alert #25 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:29:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - PACKET_LOSS returned to normal, but Alert #26 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:29:48 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-24 12:29:48 [INFO] [DataCollector]: [FW-PA220-1] Berhasil polling telemetri via SNMP v2c (192.168.1.11)
+2026-11-24 12:29:56 [INFO] [RuleEngine]: [RuleEngine] Metrics for FW-PA220-1 - HOST_DOWN returned to normal, but Alert #24 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:29:56 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: FW-PA220-1 - HIGH_LATENCY (8.0 ms). Evaluasi senyap 10 menit dimulai (Telegram silent).
+2026-11-24 12:29:56 [INFO] [RuleEngine]: [RuleEngine] Metrics for FW-PA220-1 - PACKET_LOSS returned to normal, but Alert #27 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:30:05 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 19.80s) ===
+2026-11-24 12:30:05 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-24 12:29:45
+2026-11-24 12:30:05 [INFO] [DataCollector]: [*] Next Polling : 2026-11-24 12:31:45
+2026-11-24 12:31:45 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-24 12:31:45 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-24 12:31:45
+2026-11-24 12:31:45 [INFO] [DataCollector]: [*] Next Polling : 2026-11-24 12:33:45 (Interval: 2 menit)
+2026-11-24 12:31:45 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-24 12:31:51 [WARNING] [DataCollector]: SNMP polling timeout ke SW-2930F-HO (192.168.1.10) [community: public]
+2026-11-24 12:31:51 [WARNING] [DataCollector]: [SW-2930F-HO] SNMP query tidak merespons (UDP 161 timeout)
+2026-11-24 12:31:52 [WARNING] [DataCollector]: [SW-2930F-HO] Tidak merespons ICMP Ping (100% loss) & SNMP timeout -> Status: DOWN
+2026-11-24 12:31:52 [WARNING] [DataCollector]: Percobaan 1/3 ke SW-2930F-HO terdeteksi DOWN. Melakukan retry dalam 2 detik...
+2026-11-24 12:32:00 [WARNING] [DataCollector]: SNMP polling timeout ke SW-2930F-HO (192.168.1.10) [community: public]
+2026-11-24 12:32:00 [WARNING] [DataCollector]: [SW-2930F-HO] SNMP query tidak merespons (UDP 161 timeout)
+2026-11-24 12:32:05 [WARNING] [DataCollector]: [SW-2930F-HO] Tidak merespons ICMP Ping (100% loss) & SNMP timeout -> Status: DOWN
+2026-11-24 12:32:05 [WARNING] [DataCollector]: Percobaan 2/3 ke SW-2930F-HO terdeteksi DOWN. Melakukan retry dalam 2 detik...
+2026-11-24 12:32:07 [INFO] [DataCollector]: [SW-2930F-HO] Berhasil polling telemetri via SNMP v2c (192.168.1.10)
+2026-11-24 12:32:08 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-2930F-HO - HOST_DOWN returned to normal, but Alert #23 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:32:08 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-24 12:32:09 [INFO] [DataCollector]: [SW-S5735-CORNER] Berhasil polling telemetri via SNMP v2c (192.168.1.155)
+2026-11-24 12:32:10 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - HOST_DOWN returned to normal, but Alert #25 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:32:10 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - PACKET_LOSS returned to normal, but Alert #26 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:32:10 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-24 12:32:10 [INFO] [DataCollector]: [FW-PA220-1] Berhasil polling telemetri via SNMP v2c (192.168.1.11)
+2026-11-24 12:32:15 [INFO] [RuleEngine]: [RuleEngine] Metrics for FW-PA220-1 - HOST_DOWN returned to normal, but Alert #24 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:32:15 [INFO] [RuleEngine]: [RuleEngine] Metrics for FW-PA220-1 - PACKET_LOSS returned to normal, but Alert #27 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:32:19 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 34.20s) ===
+2026-11-24 12:32:20 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-24 12:31:45
+2026-11-24 12:32:20 [INFO] [DataCollector]: [*] Next Polling : 2026-11-24 12:33:45
+2026-11-24 12:33:45 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-24 12:33:45 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-24 12:33:45
+2026-11-24 12:33:45 [INFO] [DataCollector]: [*] Next Polling : 2026-11-24 12:35:45 (Interval: 2 menit)
+2026-11-24 12:33:45 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-24 12:33:45 [INFO] [DataCollector]: [SW-2930F-HO] Berhasil polling telemetri via SNMP v2c (192.168.1.10)
+2026-11-24 12:33:46 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-2930F-HO - HOST_DOWN returned to normal, but Alert #23 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:33:47 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-24 12:33:47 [INFO] [DataCollector]: [SW-S5735-CORNER] Berhasil polling telemetri via SNMP v2c (192.168.1.155)
+2026-11-24 12:33:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - HOST_DOWN returned to normal, but Alert #25 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:33:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - HIGH_LATENCY returned to normal, but Alert #21 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:33:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - PACKET_LOSS returned to normal, but Alert #26 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:33:48 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-24 12:33:48 [INFO] [DataCollector]: [FW-PA220-1] Berhasil polling telemetri via SNMP v2c (192.168.1.11)
+2026-11-24 12:33:54 [INFO] [RuleEngine]: [RuleEngine] Metrics for FW-PA220-1 - HOST_DOWN returned to normal, but Alert #24 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:33:54 [INFO] [RuleEngine]: [RuleEngine] Insiden #896 (FW-PA220-1 - HIGH_LATENCY) pulih dalam 3m 58s -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-24 12:33:54 [INFO] [RuleEngine]: [RuleEngine] Metrics for FW-PA220-1 - PACKET_LOSS returned to normal, but Alert #27 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:33:59 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 13.46s) ===
+2026-11-24 12:33:59 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-24 12:33:45
+2026-11-24 12:33:59 [INFO] [DataCollector]: [*] Next Polling : 2026-11-24 12:35:45
+2026-11-24 12:35:45 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-24 12:35:45 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-24 12:35:45
+2026-11-24 12:35:45 [INFO] [DataCollector]: [*] Next Polling : 2026-11-24 12:37:45 (Interval: 2 menit)
+2026-11-24 12:35:45 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-24 12:35:45 [INFO] [DataCollector]: [SW-2930F-HO] Berhasil polling telemetri via SNMP v2c (192.168.1.10)
+2026-11-24 12:35:46 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-2930F-HO - HOST_DOWN returned to normal, but Alert #23 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:35:46 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-2930F-HO - HIGH_LATENCY returned to normal, but Alert #22 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:35:46 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-24 12:35:47 [INFO] [DataCollector]: [SW-S5735-CORNER] Berhasil polling telemetri via SNMP v2c (192.168.1.155)
+2026-11-24 12:35:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - HOST_DOWN returned to normal, but Alert #25 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:35:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - HIGH_LATENCY returned to normal, but Alert #21 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:35:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - PACKET_LOSS returned to normal, but Alert #26 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:35:48 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-24 12:35:48 [INFO] [DataCollector]: [FW-PA220-1] Berhasil polling telemetri via SNMP v2c (192.168.1.11)
+2026-11-24 12:35:53 [INFO] [RuleEngine]: [RuleEngine] Metrics for FW-PA220-1 - HOST_DOWN returned to normal, but Alert #24 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:35:53 [INFO] [RuleEngine]: [RuleEngine] Metrics for FW-PA220-1 - PACKET_LOSS returned to normal, but Alert #27 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:35:58 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 12.37s) ===
+2026-11-24 12:35:58 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-24 12:35:45
+2026-11-24 12:35:58 [INFO] [DataCollector]: [*] Next Polling : 2026-11-24 12:37:45
+2026-11-24 12:37:45 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-24 12:37:45 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-24 12:37:45
+2026-11-24 12:37:45 [INFO] [DataCollector]: [*] Next Polling : 2026-11-24 12:39:45 (Interval: 2 menit)
+2026-11-24 12:37:45 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-24 12:37:45 [INFO] [DataCollector]: [SW-2930F-HO] Berhasil polling telemetri via SNMP v2c (192.168.1.10)
+2026-11-24 12:37:46 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-2930F-HO - HOST_DOWN returned to normal, but Alert #23 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:37:47 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-24 12:37:47 [INFO] [DataCollector]: [SW-S5735-CORNER] Berhasil polling telemetri via SNMP v2c (192.168.1.155)
+2026-11-24 12:37:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - HOST_DOWN returned to normal, but Alert #25 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:37:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - HIGH_LATENCY returned to normal, but Alert #21 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:37:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - PACKET_LOSS returned to normal, but Alert #26 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:37:48 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-24 12:37:48 [INFO] [DataCollector]: [FW-PA220-1] Berhasil polling telemetri via SNMP v2c (192.168.1.11)
+2026-11-24 12:37:53 [INFO] [RuleEngine]: [RuleEngine] Metrics for FW-PA220-1 - HOST_DOWN returned to normal, but Alert #24 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:37:53 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: FW-PA220-1 - HIGH_LATENCY (6.0 ms). Evaluasi senyap 10 menit dimulai (Telegram silent).
+2026-11-24 12:37:53 [INFO] [RuleEngine]: [RuleEngine] Metrics for FW-PA220-1 - PACKET_LOSS returned to normal, but Alert #27 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:38:00 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 14.28s) ===
+2026-11-24 12:38:00 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-24 12:37:45
+2026-11-24 12:38:00 [INFO] [DataCollector]: [*] Next Polling : 2026-11-24 12:39:45
+2026-11-24 12:39:45 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-24 12:39:45 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-24 12:39:45
+2026-11-24 12:39:45 [INFO] [DataCollector]: [*] Next Polling : 2026-11-24 12:41:45 (Interval: 2 menit)
+2026-11-24 12:39:45 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-24 12:39:45 [INFO] [DataCollector]: [SW-2930F-HO] Berhasil polling telemetri via SNMP v2c (192.168.1.10)
+2026-11-24 12:39:46 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-2930F-HO - HOST_DOWN returned to normal, but Alert #23 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:39:46 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-2930F-HO - HIGH_LATENCY returned to normal, but Alert #22 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:39:47 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-24 12:39:47 [INFO] [DataCollector]: [SW-S5735-CORNER] Berhasil polling telemetri via SNMP v2c (192.168.1.155)
+2026-11-24 12:39:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - HOST_DOWN returned to normal, but Alert #25 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:39:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - HIGH_LATENCY returned to normal, but Alert #21 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:39:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - PACKET_LOSS returned to normal, but Alert #26 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:39:48 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-24 12:39:48 [INFO] [DataCollector]: [FW-PA220-1] Berhasil polling telemetri via SNMP v2c (192.168.1.11)
+2026-11-24 12:39:53 [INFO] [RuleEngine]: [RuleEngine] Metrics for FW-PA220-1 - HOST_DOWN returned to normal, but Alert #24 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:39:53 [INFO] [RuleEngine]: [RuleEngine] Insiden #897 (FW-PA220-1 - HIGH_LATENCY) pulih dalam 2m 0s -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-24 12:39:53 [INFO] [RuleEngine]: [RuleEngine] Metrics for FW-PA220-1 - PACKET_LOSS returned to normal, but Alert #27 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:39:57 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 12.20s) ===
+2026-11-24 12:39:57 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-24 12:39:45
+2026-11-24 12:39:58 [INFO] [DataCollector]: [*] Next Polling : 2026-11-24 12:41:45
+2026-11-24 12:41:45 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-24 12:41:45 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-24 12:41:45
+2026-11-24 12:41:45 [INFO] [DataCollector]: [*] Next Polling : 2026-11-24 12:43:45 (Interval: 2 menit)
+2026-11-24 12:41:45 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-24 12:41:45 [INFO] [DataCollector]: [SW-2930F-HO] Berhasil polling telemetri via SNMP v2c (192.168.1.10)
+2026-11-24 12:41:46 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-2930F-HO - HOST_DOWN returned to normal, but Alert #23 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:41:46 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-24 12:41:47 [INFO] [DataCollector]: [SW-S5735-CORNER] Berhasil polling telemetri via SNMP v2c (192.168.1.155)
+2026-11-24 12:41:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - HOST_DOWN returned to normal, but Alert #25 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:41:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - HIGH_LATENCY returned to normal, but Alert #21 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:41:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - PACKET_LOSS returned to normal, but Alert #26 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:41:48 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-24 12:41:48 [INFO] [DataCollector]: [FW-PA220-1] Berhasil polling telemetri via SNMP v2c (192.168.1.11)
+2026-11-24 12:41:53 [INFO] [RuleEngine]: [RuleEngine] Metrics for FW-PA220-1 - HOST_DOWN returned to normal, but Alert #24 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:41:53 [INFO] [RuleEngine]: [RuleEngine] Metrics for FW-PA220-1 - PACKET_LOSS returned to normal, but Alert #27 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:41:58 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 12.34s) ===
+2026-11-24 12:41:58 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-24 12:41:45
+2026-11-24 12:41:58 [INFO] [DataCollector]: [*] Next Polling : 2026-11-24 12:43:45
+2026-11-24 12:43:45 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-24 12:43:45 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-24 12:43:45
+2026-11-24 12:43:45 [INFO] [DataCollector]: [*] Next Polling : 2026-11-24 12:45:45 (Interval: 2 menit)
+2026-11-24 12:43:45 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-24 12:43:45 [INFO] [DataCollector]: [SW-2930F-HO] Berhasil polling telemetri via SNMP v2c (192.168.1.10)
+2026-11-24 12:43:46 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-2930F-HO - HOST_DOWN returned to normal, but Alert #23 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:43:46 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-2930F-HO - HIGH_LATENCY returned to normal, but Alert #22 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:43:46 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-24 12:43:47 [INFO] [DataCollector]: [SW-S5735-CORNER] Berhasil polling telemetri via SNMP v2c (192.168.1.155)
+2026-11-24 12:43:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - HOST_DOWN returned to normal, but Alert #25 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:43:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - PACKET_LOSS returned to normal, but Alert #26 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:43:48 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-24 12:43:48 [INFO] [DataCollector]: [FW-PA220-1] Berhasil polling telemetri via SNMP v2c (192.168.1.11)
+2026-11-24 12:43:52 [INFO] [RuleEngine]: [RuleEngine] Metrics for FW-PA220-1 - HOST_DOWN returned to normal, but Alert #24 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:43:52 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: FW-PA220-1 - HIGH_LATENCY (7.0 ms). Evaluasi senyap 10 menit dimulai (Telegram silent).
+2026-11-24 12:43:52 [INFO] [RuleEngine]: [RuleEngine] Metrics for FW-PA220-1 - PACKET_LOSS returned to normal, but Alert #27 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:44:00 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 15.02s) ===
+2026-11-24 12:44:00 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-24 12:43:45
+2026-11-24 12:44:00 [INFO] [DataCollector]: [*] Next Polling : 2026-11-24 12:45:45
+2026-11-24 12:45:45 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-24 12:45:45 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-24 12:45:45
+2026-11-24 12:45:45 [INFO] [DataCollector]: [*] Next Polling : 2026-11-24 12:47:45 (Interval: 2 menit)
+2026-11-24 12:45:45 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-24 12:45:45 [INFO] [DataCollector]: [SW-2930F-HO] Berhasil polling telemetri via SNMP v2c (192.168.1.10)
+2026-11-24 12:45:46 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-2930F-HO - HOST_DOWN returned to normal, but Alert #23 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:45:46 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-2930F-HO - HIGH_LATENCY returned to normal, but Alert #22 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:45:46 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-24 12:45:47 [INFO] [DataCollector]: [SW-S5735-CORNER] Berhasil polling telemetri via SNMP v2c (192.168.1.155)
+2026-11-24 12:45:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - HOST_DOWN returned to normal, but Alert #25 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:45:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - PACKET_LOSS returned to normal, but Alert #26 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:45:48 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-24 12:45:48 [INFO] [DataCollector]: [FW-PA220-1] Berhasil polling telemetri via SNMP v2c (192.168.1.11)
+2026-11-24 12:45:53 [INFO] [RuleEngine]: [RuleEngine] Metrics for FW-PA220-1 - HOST_DOWN returned to normal, but Alert #24 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:45:54 [INFO] [RuleEngine]: [RuleEngine] Insiden #898 (FW-PA220-1 - HIGH_LATENCY) pulih dalam 2m 1s -> AUTO_COOLDOWN dicatat senyap (Telegram silent).
+2026-11-24 12:45:54 [INFO] [RuleEngine]: [RuleEngine] Metrics for FW-PA220-1 - PACKET_LOSS returned to normal, but Alert #27 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:45:58 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 13.11s) ===
+2026-11-24 12:45:58 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-24 12:45:45
+2026-11-24 12:45:58 [INFO] [DataCollector]: [*] Next Polling : 2026-11-24 12:47:45
+2026-11-24 12:47:45 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-24 12:47:45 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-24 12:47:45
+2026-11-24 12:47:45 [INFO] [DataCollector]: [*] Next Polling : 2026-11-24 12:49:45 (Interval: 2 menit)
+2026-11-24 12:47:45 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-24 12:47:45 [INFO] [DataCollector]: [SW-2930F-HO] Berhasil polling telemetri via SNMP v2c (192.168.1.10)
+2026-11-24 12:47:46 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-2930F-HO - HOST_DOWN returned to normal, but Alert #23 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:47:46 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-2930F-HO - HIGH_LATENCY returned to normal, but Alert #22 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:47:46 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-24 12:47:47 [INFO] [DataCollector]: [SW-S5735-CORNER] Berhasil polling telemetri via SNMP v2c (192.168.1.155)
+2026-11-24 12:47:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - HOST_DOWN returned to normal, but Alert #25 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:47:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - PACKET_LOSS returned to normal, but Alert #26 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:47:48 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-24 12:47:48 [INFO] [DataCollector]: [FW-PA220-1] Berhasil polling telemetri via SNMP v2c (192.168.1.11)
+2026-11-24 12:47:53 [INFO] [RuleEngine]: [RuleEngine] Metrics for FW-PA220-1 - HOST_DOWN returned to normal, but Alert #24 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:47:53 [INFO] [RuleEngine]: [RuleEngine] Metrics for FW-PA220-1 - PACKET_LOSS returned to normal, but Alert #27 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:47:58 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 12.99s) ===
+2026-11-24 12:47:58 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-24 12:47:45
+2026-11-24 12:47:58 [INFO] [DataCollector]: [*] Next Polling : 2026-11-24 12:49:45
+2026-11-24 12:49:45 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-24 12:49:45 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-24 12:49:45
+2026-11-24 12:49:45 [INFO] [DataCollector]: [*] Next Polling : 2026-11-24 12:51:45 (Interval: 2 menit)
+2026-11-24 12:49:45 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-24 12:49:45 [INFO] [DataCollector]: [SW-2930F-HO] Berhasil polling telemetri via SNMP v2c (192.168.1.10)
+2026-11-24 12:49:46 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-2930F-HO - HOST_DOWN returned to normal, but Alert #23 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:49:46 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-2930F-HO - HIGH_LATENCY returned to normal, but Alert #22 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:49:46 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-24 12:49:47 [INFO] [DataCollector]: [SW-S5735-CORNER] Berhasil polling telemetri via SNMP v2c (192.168.1.155)
+2026-11-24 12:49:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - HOST_DOWN returned to normal, but Alert #25 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:49:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - HIGH_LATENCY returned to normal, but Alert #21 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:49:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - PACKET_LOSS returned to normal, but Alert #26 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:49:48 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-24 12:49:48 [INFO] [DataCollector]: [FW-PA220-1] Berhasil polling telemetri via SNMP v2c (192.168.1.11)
+2026-11-24 12:49:53 [INFO] [RuleEngine]: [RuleEngine] Metrics for FW-PA220-1 - HOST_DOWN returned to normal, but Alert #24 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:49:53 [INFO] [RuleEngine]: [RuleEngine] Metrics for FW-PA220-1 - PACKET_LOSS returned to normal, but Alert #27 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:49:57 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 11.92s) ===
+2026-11-24 12:49:57 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-24 12:49:45
+2026-11-24 12:49:57 [INFO] [DataCollector]: [*] Next Polling : 2026-11-24 12:51:45
+2026-11-24 12:51:45 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-24 12:51:45 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-24 12:51:45
+2026-11-24 12:51:45 [INFO] [DataCollector]: [*] Next Polling : 2026-11-24 12:53:45 (Interval: 2 menit)
+2026-11-24 12:51:45 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-24 12:51:45 [INFO] [DataCollector]: [SW-2930F-HO] Berhasil polling telemetri via SNMP v2c (192.168.1.10)
+2026-11-24 12:51:46 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-2930F-HO - HOST_DOWN returned to normal, but Alert #23 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:51:46 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-2930F-HO - HIGH_LATENCY returned to normal, but Alert #22 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:51:46 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-24 12:51:47 [INFO] [DataCollector]: [SW-S5735-CORNER] Berhasil polling telemetri via SNMP v2c (192.168.1.155)
+2026-11-24 12:51:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - HOST_DOWN returned to normal, but Alert #25 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:51:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - HIGH_LATENCY returned to normal, but Alert #21 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:51:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - PACKET_LOSS returned to normal, but Alert #26 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:51:48 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-24 12:51:48 [INFO] [DataCollector]: [FW-PA220-1] Berhasil polling telemetri via SNMP v2c (192.168.1.11)
+2026-11-24 12:51:52 [INFO] [RuleEngine]: [RuleEngine] Metrics for FW-PA220-1 - HOST_DOWN returned to normal, but Alert #24 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:51:52 [INFO] [RuleEngine]: [RuleEngine] Metrics for FW-PA220-1 - PACKET_LOSS returned to normal, but Alert #27 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:51:57 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 11.49s) ===
+2026-11-24 12:51:57 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-24 12:51:45
+2026-11-24 12:51:57 [INFO] [DataCollector]: [*] Next Polling : 2026-11-24 12:53:45
+2026-11-24 12:53:45 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-24 12:53:45 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-24 12:53:45
+2026-11-24 12:53:45 [INFO] [DataCollector]: [*] Next Polling : 2026-11-24 12:55:45 (Interval: 2 menit)
+2026-11-24 12:53:45 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-24 12:53:45 [INFO] [DataCollector]: [SW-2930F-HO] Berhasil polling telemetri via SNMP v2c (192.168.1.10)
+2026-11-24 12:53:46 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-2930F-HO - HOST_DOWN returned to normal, but Alert #23 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:53:46 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-2930F-HO - HIGH_LATENCY returned to normal, but Alert #22 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:53:46 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-24 12:53:47 [INFO] [DataCollector]: [SW-S5735-CORNER] Berhasil polling telemetri via SNMP v2c (192.168.1.155)
+2026-11-24 12:53:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - HOST_DOWN returned to normal, but Alert #25 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:53:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - HIGH_LATENCY returned to normal, but Alert #21 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:53:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - PACKET_LOSS returned to normal, but Alert #26 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:53:48 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-24 12:53:48 [INFO] [DataCollector]: [FW-PA220-1] Berhasil polling telemetri via SNMP v2c (192.168.1.11)
+2026-11-24 12:53:52 [INFO] [RuleEngine]: [RuleEngine] Metrics for FW-PA220-1 - HOST_DOWN returned to normal, but Alert #24 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:53:52 [INFO] [RuleEngine]: [RuleEngine] Metrics for FW-PA220-1 - PACKET_LOSS returned to normal, but Alert #27 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:53:57 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 11.39s) ===
+2026-11-24 12:53:57 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-24 12:53:45
+2026-11-24 12:53:57 [INFO] [DataCollector]: [*] Next Polling : 2026-11-24 12:55:45
+2026-11-24 12:55:45 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-24 12:55:45 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-24 12:55:45
+2026-11-24 12:55:45 [INFO] [DataCollector]: [*] Next Polling : 2026-11-24 12:57:45 (Interval: 2 menit)
+2026-11-24 12:55:45 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-24 12:55:45 [INFO] [DataCollector]: [SW-2930F-HO] Berhasil polling telemetri via SNMP v2c (192.168.1.10)
+2026-11-24 12:55:46 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-2930F-HO - HOST_DOWN returned to normal, but Alert #23 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:55:47 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-24 12:55:47 [INFO] [DataCollector]: [SW-S5735-CORNER] Berhasil polling telemetri via SNMP v2c (192.168.1.155)
+2026-11-24 12:55:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - HOST_DOWN returned to normal, but Alert #25 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:55:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - HIGH_LATENCY returned to normal, but Alert #21 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:55:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - PACKET_LOSS returned to normal, but Alert #26 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:55:48 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-24 12:55:48 [INFO] [DataCollector]: [FW-PA220-1] Berhasil polling telemetri via SNMP v2c (192.168.1.11)
+2026-11-24 12:55:52 [INFO] [RuleEngine]: [RuleEngine] Metrics for FW-PA220-1 - HOST_DOWN returned to normal, but Alert #24 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:55:52 [INFO] [RuleEngine]: [RuleEngine] Metrics for FW-PA220-1 - PACKET_LOSS returned to normal, but Alert #27 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:55:56 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 10.80s) ===
+2026-11-24 12:55:56 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-24 12:55:45
+2026-11-24 12:55:56 [INFO] [DataCollector]: [*] Next Polling : 2026-11-24 12:57:45
+2026-11-24 12:57:45 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-24 12:57:45 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-24 12:57:45
+2026-11-24 12:57:45 [INFO] [DataCollector]: [*] Next Polling : 2026-11-24 12:59:45 (Interval: 2 menit)
+2026-11-24 12:57:45 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-24 12:57:45 [INFO] [DataCollector]: [SW-2930F-HO] Berhasil polling telemetri via SNMP v2c (192.168.1.10)
+2026-11-24 12:57:46 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-2930F-HO - HOST_DOWN returned to normal, but Alert #23 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:57:46 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-24 12:57:47 [INFO] [DataCollector]: [SW-S5735-CORNER] Berhasil polling telemetri via SNMP v2c (192.168.1.155)
+2026-11-24 12:57:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - HOST_DOWN returned to normal, but Alert #25 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:57:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - HIGH_LATENCY returned to normal, but Alert #21 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:57:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - PACKET_LOSS returned to normal, but Alert #26 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:57:48 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-24 12:57:48 [INFO] [DataCollector]: [FW-PA220-1] Berhasil polling telemetri via SNMP v2c (192.168.1.11)
+2026-11-24 12:57:52 [INFO] [RuleEngine]: [RuleEngine] Metrics for FW-PA220-1 - HOST_DOWN returned to normal, but Alert #24 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:57:52 [INFO] [RuleEngine]: [RuleEngine] Metrics for FW-PA220-1 - PACKET_LOSS returned to normal, but Alert #27 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:57:56 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 11.15s) ===
+2026-11-24 12:57:56 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-24 12:57:45
+2026-11-24 12:57:56 [INFO] [DataCollector]: [*] Next Polling : 2026-11-24 12:59:45
+2026-11-24 12:59:45 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-24 12:59:45 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-24 12:59:45
+2026-11-24 12:59:45 [INFO] [DataCollector]: [*] Next Polling : 2026-11-24 13:01:45 (Interval: 2 menit)
+2026-11-24 12:59:45 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-24 12:59:45 [INFO] [DataCollector]: [SW-2930F-HO] Berhasil polling telemetri via SNMP v2c (192.168.1.10)
+2026-11-24 12:59:46 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-2930F-HO - HOST_DOWN returned to normal, but Alert #23 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:59:46 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-2930F-HO - HIGH_LATENCY returned to normal, but Alert #22 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:59:46 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-24 12:59:47 [INFO] [DataCollector]: [SW-S5735-CORNER] Berhasil polling telemetri via SNMP v2c (192.168.1.155)
+2026-11-24 12:59:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - HOST_DOWN returned to normal, but Alert #25 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:59:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - HIGH_LATENCY returned to normal, but Alert #21 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:59:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - PACKET_LOSS returned to normal, but Alert #26 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:59:48 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-24 12:59:48 [INFO] [DataCollector]: [FW-PA220-1] Berhasil polling telemetri via SNMP v2c (192.168.1.11)
+2026-11-24 12:59:52 [INFO] [RuleEngine]: [RuleEngine] Metrics for FW-PA220-1 - HOST_DOWN returned to normal, but Alert #24 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:59:52 [INFO] [RuleEngine]: [RuleEngine] Metrics for FW-PA220-1 - PACKET_LOSS returned to normal, but Alert #27 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 12:59:56 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 11.08s) ===
+2026-11-24 12:59:56 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-24 12:59:45
+2026-11-24 12:59:56 [INFO] [DataCollector]: [*] Next Polling : 2026-11-24 13:01:45
+2026-11-24 13:01:45 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-24 13:01:45 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-24 13:01:45
+2026-11-24 13:01:45 [INFO] [DataCollector]: [*] Next Polling : 2026-11-24 13:03:45 (Interval: 2 menit)
+2026-11-24 13:01:45 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-24 13:01:45 [INFO] [DataCollector]: [SW-2930F-HO] Berhasil polling telemetri via SNMP v2c (192.168.1.10)
+2026-11-24 13:01:46 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-2930F-HO - HOST_DOWN returned to normal, but Alert #23 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 13:01:46 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-2930F-HO - HIGH_LATENCY returned to normal, but Alert #22 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 13:01:46 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-24 13:01:47 [INFO] [DataCollector]: [SW-S5735-CORNER] Berhasil polling telemetri via SNMP v2c (192.168.1.155)
+2026-11-24 13:01:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - HOST_DOWN returned to normal, but Alert #25 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 13:01:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - HIGH_LATENCY returned to normal, but Alert #21 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 13:01:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - PACKET_LOSS returned to normal, but Alert #26 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 13:01:48 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-24 13:01:48 [INFO] [DataCollector]: [FW-PA220-1] Berhasil polling telemetri via SNMP v2c (192.168.1.11)
+2026-11-24 13:01:54 [INFO] [RuleEngine]: [RuleEngine] Metrics for FW-PA220-1 - HOST_DOWN returned to normal, but Alert #24 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 13:01:54 [INFO] [RuleEngine]: [RuleEngine] Metrics for FW-PA220-1 - PACKET_LOSS returned to normal, but Alert #27 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 13:01:58 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 12.40s) ===
+2026-11-24 13:01:58 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-24 13:01:45
+2026-11-24 13:01:58 [INFO] [DataCollector]: [*] Next Polling : 2026-11-24 13:03:45
+2026-11-24 13:02:50 [INFO] [FlaskApp]: Super Admin login successful: Agiva
+2026-11-24 13:03:45 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-24 13:03:45 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-24 13:03:45
+2026-11-24 13:03:45 [INFO] [DataCollector]: [*] Next Polling : 2026-11-24 13:05:45 (Interval: 2 menit)
+2026-11-24 13:03:45 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-24 13:03:45 [INFO] [DataCollector]: [SW-2930F-HO] Berhasil polling telemetri via SNMP v2c (192.168.1.10)
+2026-11-24 13:03:46 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-2930F-HO - HOST_DOWN returned to normal, but Alert #23 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 13:03:46 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-2930F-HO - HIGH_LATENCY returned to normal, but Alert #22 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 13:03:46 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-24 13:03:47 [INFO] [DataCollector]: [SW-S5735-CORNER] Berhasil polling telemetri via SNMP v2c (192.168.1.155)
+2026-11-24 13:03:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - HOST_DOWN returned to normal, but Alert #25 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 13:03:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - HIGH_LATENCY returned to normal, but Alert #21 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 13:03:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - PACKET_LOSS returned to normal, but Alert #26 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 13:03:48 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-24 13:03:48 [INFO] [DataCollector]: [FW-PA220-1] Berhasil polling telemetri via SNMP v2c (192.168.1.11)
+2026-11-24 13:03:53 [INFO] [RuleEngine]: [RuleEngine] Metrics for FW-PA220-1 - HOST_DOWN returned to normal, but Alert #24 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 13:03:53 [INFO] [RuleEngine]: [RuleEngine] Anomali terdeteksi: FW-PA220-1 - HIGH_LATENCY (9.0 ms). Evaluasi senyap 10 menit dimulai (Telegram silent).
+2026-11-24 13:03:53 [INFO] [RuleEngine]: [RuleEngine] Metrics for FW-PA220-1 - PACKET_LOSS returned to normal, but Alert #27 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 13:03:56 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 11.06s) ===
+2026-11-24 13:03:56 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-24 13:03:45
+2026-11-24 13:03:56 [INFO] [DataCollector]: [*] Next Polling : 2026-11-24 13:05:45
+2026-11-24 13:05:45 [INFO] [DataCollector]: === START POLLING CYCLE ===
+2026-11-24 13:05:45 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-24 13:05:45
+2026-11-24 13:05:45 [INFO] [DataCollector]: [*] Next Polling : 2026-11-24 13:07:45 (Interval: 2 menit)
+2026-11-24 13:05:45 [INFO] [DataCollector]: Polling SW-2930F-HO (Aruba)...
+2026-11-24 13:05:45 [INFO] [DataCollector]: [SW-2930F-HO] Berhasil polling telemetri via SNMP v2c (192.168.1.10)
+2026-11-24 13:05:46 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-2930F-HO - HOST_DOWN returned to normal, but Alert #23 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 13:05:46 [INFO] [DataCollector]: Polling SW-S5735-CORNER (Huawei)...
+2026-11-24 13:05:47 [INFO] [DataCollector]: [SW-S5735-CORNER] Berhasil polling telemetri via SNMP v2c (192.168.1.155)
+2026-11-24 13:05:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - HOST_DOWN returned to normal, but Alert #25 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 13:05:48 [INFO] [RuleEngine]: [RuleEngine] Metrics for SW-S5735-CORNER - PACKET_LOSS returned to normal, but Alert #26 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 13:05:48 [INFO] [DataCollector]: Polling FW-PA220-1 (Palo Alto)...
+2026-11-24 13:05:48 [INFO] [DataCollector]: [FW-PA220-1] Berhasil polling telemetri via SNMP v2c (192.168.1.11)
+2026-11-24 13:05:53 [INFO] [RuleEngine]: [RuleEngine] Metrics for FW-PA220-1 - HOST_DOWN returned to normal, but Alert #24 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 13:05:53 [INFO] [RuleEngine]: [RuleEngine] Metrics for FW-PA220-1 - PACKET_LOSS returned to normal, but Alert #27 remains OPEN in Active Alerts awaiting manual /resolve via Telegram or Web.
+2026-11-24 13:05:59 [INFO] [DataCollector]: === END POLLING CYCLE (Durasi: 13.31s) ===
+2026-11-24 13:05:59 [INFO] [DataCollector]: [*] Awal Polling : 2026-11-24 13:05:45
+2026-11-24 13:05:59 [INFO] [DataCollector]: [*] Next Polling : 2026-11-24 13:07:45

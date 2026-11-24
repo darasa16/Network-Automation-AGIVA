@@ -238,8 +238,7 @@
                                         </div>
                                     </div>
                                     <div class="wan-footer-row">
-                                        <span class="wan-sync-time">Last Polled: <span id="wanLastSync">{{
-                                                wan.last_updated if wan else '-' }}</span></span>
+                                        <span class="wan-sync-time">Last Polled: <span id="wanLastSync">{{ wan.last_updated if wan else '-' }}</span></span>
                                         <div class="wan-actions-row">
                                             <button type="button" id="btnWanSpeedtest"
                                                 class="btn-wan-action btn-speedtest"
@@ -454,145 +453,169 @@
                             id="alert-card-{{ alert.id }}">
                             <div class="alert-card-header">
                                 <div class="alert-title-wrap">
-                                    <span class="alert-severity-badge {% if alert.severity == 'CRITICAL' %}badge-crit{% else %}badge-warn{% endif %}">{{ alert.severity }}</span>
-                                    <span class="alert-time">{{ alert.triggered_at }}</span>
+                                    <span class="alert-severity-badge {% if alert.severity == ' CRITICAL'
+                                                            %}badge-crit{% else %}badge-warn{% endif %}">{{
+                                                            alert.severity }}</span>
+                                                            <span class="alert-time">{{ alert.triggered_at }}</span>
+                                                        </div>
+                                                        <span class="alert-id">#{{ alert.id }}</span>
+                                                    </div>
+                                                    <div class="alert-device-name">
+                                                        <strong>{{ alert.device_name }}</strong> ({{ alert.ip }})
+                                                    </div>
+                                                    <p class="alert-message">{{ alert.message }}</p>
+                                                    <div class="alert-footer">
+                                                        {% if alert.acknowledged %}
+                                                        <span class="badge-ack-state text-warning">
+                                                            <svg viewBox="0 0 24 24" width="11" height="11" fill="none"
+                                                                stroke="currentColor" stroke-width="2.5"
+                                                                style="display:inline-block; vertical-align:middle; margin-right:3px;">
+                                                                <polyline points="20 6 9 17 4 12"></polyline>
+                                                            </svg>Acknowledged</span>
+                                                        <span class="text-muted-xs">{{ alert.acknowledged_by or
+                                                            'Confirmed' }}</span>
+                                                        {% else %}
+                                                        <span class="badge-ack-state text-warning">Pending ACK</span>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                                {% else %}
+                                                <div style="text-align: center; padding: 40px 10px; color: #64748b;">
+                                                    <svg style="width: 40px; height: 40px; stroke: #10b981; fill: none; margin: 0 auto 8px auto; display: block;"
+                                                        viewBox="0 0 24 24">
+                                                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" stroke-width="2"
+                                                            stroke-linecap="round" stroke-linejoin="round" />
+                                                        <polyline points="22 4 12 14.01 9 11.01" stroke-width="2"
+                                                            stroke-linecap="round" stroke-linejoin="round" />
+                                                    </svg>
+                                                    <p
+                                                        style="font-size: 0.9rem; font-weight: 500; color: #94a3b8; margin: 0 0 4px 0;">
+                                                        All Systems Operational</p>
+                                                    <span style="font-size: 0.75rem; color: #64748b;">No active alerts
+                                                        requiring mitigation</span>
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                            </aside>
+                        </div>
+
+                        <!-- Top 10 Client Monitoring Table Panel (Full Width - Mentok Sejajar dengan Garis Kanan Alerts Sidebar) -->
+                        <div class="table-panel" id="top-clients-panel" style="margin-top: 28px;">
+                            <div class="panel-header table-header-flex" style="flex-wrap: wrap; gap: 12px;">
+                                <div>
+                                    <h3 class="panel-title" style="margin: 0;">Top 10 Client Monitoring</h3>
+                                    <span class="panel-sub">Top bandwidth consumers by daily usage</span>
                                 </div>
-                                <span class="alert-id">#{{ alert.id }}</span>
+                                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                                    <div class="table-actions" id="topClientTabs">
+                                        <button type="button" class="client-tab-btn active" data-site="all"
+                                            onclick="switchClientTab('all')">
+                                            All Sites
+                                        </button>
+                                        <button type="button" class="client-tab-btn" data-site="ho"
+                                            onclick="switchClientTab('ho')">
+                                            Head Office (HO)
+                                        </button>
+                                        <button type="button" class="client-tab-btn" data-site="corner"
+                                            onclick="switchClientTab('corner')">
+                                            Agiva Corner
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="alert-device-name">
-                                <strong>{{ alert.device_name }}</strong> ({{ alert.ip }})
-                            </div>
-                            <p class="alert-message">{{ alert.message }}</p>
-                            <div class="alert-footer">
-                                {% if alert.acknowledged %}
-                                <span class="badge-ack-state text-warning">
-                                    <svg viewBox="0 0 24 24" width="11" height="11" fill="none"
-                                        stroke="currentColor" stroke-width="2.5"
-                                        style="display:inline-block; vertical-align:middle; margin-right:3px;">
-                                        <polyline points="20 6 9 17 4 12"></polyline>
-                                    </svg>Acknowledged</span>
-                                <span class="text-muted-xs">{{ alert.acknowledged_by or 'Confirmed' }}</span>
-                                {% else %}
-                                <span class="badge-ack-state text-warning">Pending ACK</span>
-                                {% endif %}
-                            </div>
-                        </div>
-                        {% else %}
-                        <div style="text-align: center; padding: 40px 10px; color: #64748b;">
-                            <svg style="width: 40px; height: 40px; stroke: #10b981; fill: none; margin: 0 auto 8px auto; display: block;"
-                                viewBox="0 0 24 24">
-                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" stroke-width="2"
-                                    stroke-linecap="round" stroke-linejoin="round" />
-                                <polyline points="22 4 12 14.01 9 11.01" stroke-width="2" stroke-linecap="round"
-                                    stroke-linejoin="round" />
-                            </svg>
-                            <p style="font-size: 0.9rem; font-weight: 500; color: #94a3b8; margin: 0 0 4px 0;">All Systems Operational</p>
-                            <span style="font-size: 0.75rem; color: #64748b;">No active alerts requiring mitigation</span>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </aside>
-            </div>
 
-            <!-- Top 10 Client Monitoring Table Panel (Full Width - Mentok Sejajar dengan Garis Kanan Alerts Sidebar) -->
-            <div class="table-panel" id="top-clients-panel" style="margin-top: 28px;">
-                <div class="panel-header table-header-flex" style="flex-wrap: wrap; gap: 12px;">
-                    <div>
-                        <h3 class="panel-title" style="margin: 0;">Top 10 Client Monitoring</h3>
-                        <span class="panel-sub">Top bandwidth consumers by real-time throughput</span>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                        <div class="table-actions" id="topClientTabs">
-                            <button type="button" class="client-tab-btn active" data-site="all" onclick="switchClientTab('all')">
-                                All Sites (HO + Corner)
-                            </button>
-                            <button type="button" class="client-tab-btn" data-site="ho" onclick="switchClientTab('ho')">
-                                Head Office (HO)
-                            </button>
-                            <button type="button" class="client-tab-btn" data-site="corner" onclick="switchClientTab('corner')">
-                                Agiva Corner
-                            </button>
+                            <div class="table-responsive">
+                                <table class="data-table" id="topClientsTable" style="min-width: 100%; width: 100%;">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 55px; text-align: center;">Rank</th>
+                                            <th>Client Device</th>
+                                            <th>IP &amp; MAC Address</th>
+                                            <th>Site &amp; Access Point</th>
+                                            <th style="min-width: 140px;">Live Throughput (Rx / Tx)</th>
+                                            <th style="min-width: 110px;">Daily Usage</th>
+                                            <th>Top Application</th>
+                                            <th style="text-align: center; width: 95px;">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="topClientsTableBody">
+                                        {% if top_clients and top_clients.all %}
+                                        {% for c in top_clients.all %}
+                                        <tr class="top-client-row site-{{ c.site_code }}" data-rank="{{ c.rank }}">
+                                            <td style="text-align: center;">
+                                                {% if c.rank == 1 %}
+                                                <span class="rank-pill rank-1">#1</span>
+                                                {% elif c.rank == 2 %}
+                                                <span class="rank-pill rank-2">#2</span>
+                                                {% elif c.rank == 3 %}
+                                                <span class="rank-pill rank-3">#3</span>
+                                                {% else %}
+                                                <span class="rank-pill rank-default">#{{ c.rank }}</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div>
+                                                    <strong>{{ c.hostname }}</strong>
+                                                    <span
+                                                        style="font-size: 11px; color: var(--text-muted); display: block;">{{
+                                                        c.os }}</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <code>{{ c.ip }}</code>
+                                                <span
+                                                    style="font-size: 11px; color: var(--text-muted); display: block;">{{
+                                                    c.mac }}</span>
+                                            </td>
+                                            <td>
+                                                <div style="display: flex; align-items: center; gap: 6px;">
+                                                    <span class="site-tag {{ c.site_badge }}">{{ c.site }}</span>
+                                                    <span
+                                                        style="font-weight: 600; color: var(--text-primary); font-size: 13px;">{{
+                                                        c.ap_name }}</span>
+                                                </div>
+                                                <div
+                                                    style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">
+                                                    {{ c.switch }} &bull; {{ c.port }}</div>
+                                            </td>
+                                            <td>
+                                                <div
+                                                    style="font-size: 13px; font-weight: 500; color: var(--text-primary); font-family: var(--font-sans);">
+                                                    {{ c.throughput_rx }}/{{ c.throughput_tx }}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span
+                                                    style="font-size: 13px; font-weight: 500; color: var(--text-primary); font-family: var(--font-sans);">{{
+                                                    c.cumulative_usage }}</span>
+                                            </td>
+                                            <td>
+                                                <span
+                                                    style="font-size: 13px; color: var(--text-secondary); font-family: var(--font-sans);">{{
+                                                    c.top_app }}</span>
+                                            </td>
+                                            <td style="text-align: center;">
+                                                {% if c.status == 'Active' %}
+                                                <span class="status-badge badge-up"><span
+                                                        class="badge-dot-green"></span> Active</span>
+                                                {% else %}
+                                                <span class="status-badge badge-down"><span
+                                                        class="badge-dot-red"></span> Inactive</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                        {% else %}
+                                        <tr>
+                                            <td colspan="8" style="text-align: center; padding: 30px; color: #94a3b8;">
+                                                No active client telemetry records found.
+                                            </td>
+                                        </tr>
+                                        {% endif %}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
-                    </div>
-                </div>
-
-                <div class="table-responsive">
-                    <table class="data-table" id="topClientsTable" style="min-width: 100%; width: 100%;">
-                        <thead>
-                            <tr>
-                                <th style="width: 55px; text-align: center;">Rank</th>
-                                <th>Client Device</th>
-                                <th>IP &amp; MAC Address</th>
-                                <th>Site &amp; Access Point</th>
-                                <th style="min-width: 150px;">Live Throughput (Rx / Tx)</th>
-                                <th style="min-width: 130px;">Cumulative Usage</th>
-                                <th>Top Application</th>
-                                <th style="text-align: center; width: 95px;">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="topClientsTableBody">
-                            {% if top_clients and top_clients.all %}
-                            {% for c in top_clients.all %}
-                            <tr class="top-client-row site-{{ c.site_code }}" data-rank="{{ c.rank }}">
-                                <td style="text-align: center;">
-                                    {% if c.rank == 1 %}
-                                    <span class="rank-pill rank-1">#1</span>
-                                    {% elif c.rank == 2 %}
-                                    <span class="rank-pill rank-2">#2</span>
-                                    {% elif c.rank == 3 %}
-                                    <span class="rank-pill rank-3">#3</span>
-                                    {% else %}
-                                    <span class="rank-pill rank-default">#{{ c.rank }}</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    <div>
-                                        <strong>{{ c.hostname }}</strong>
-                                        <span style="font-size: 11px; color: var(--text-muted); display: block;">{{ c.os }}</span>
-                                    </div>
-                                </td>
-                                <td>
-                                    <code>{{ c.ip }}</code>
-                                    <span style="font-size: 11px; color: var(--text-muted); display: block;">{{ c.mac }}</span>
-                                </td>
-                                <td>
-                                    <div style="display: flex; align-items: center; gap: 6px;">
-                                        <span class="site-tag {{ c.site_badge }}">{{ c.site }}</span>
-                                        <span style="font-weight: 600; color: var(--text-primary); font-size: 13px;">{{ c.ap_name }}</span>
-                                    </div>
-                                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">{{ c.switch }} &bull; {{ c.port }}</div>
-                                </td>
-                                <td>
-                                    <div style="font-size: 13px; font-weight: 600; color: #10b981; font-family: var(--font-sans);">
-                                        {{ c.throughput_rx }} <span style="color: var(--text-muted); font-weight: 400;">(Rx)</span> &bull; {{ c.throughput_tx }} <span style="color: var(--text-muted); font-weight: 400;">(Tx)</span>
-                                    </div>
-                                </td>
-                                <td>
-                                    <span style="font-size: 13px; font-weight: 500; color: var(--text-primary); font-family: var(--font-sans);">{{ c.cumulative_usage }}</span>
-                                </td>
-                                <td>
-                                    <span style="font-size: 13px; color: var(--text-secondary); font-family: var(--font-sans);">{{ c.top_app }}</span>
-                                </td>
-                                <td style="text-align: center;">
-                                    {% if c.status == 'Active' %}
-                                    <span class="status-badge badge-up"><span class="badge-dot-green"></span> Active</span>
-                                    {% else %}
-                                    <span class="status-badge badge-down"><span class="badge-dot-red"></span> Inactive</span>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                            {% endfor %}
-                            {% else %}
-                            <tr>
-                                <td colspan="8" style="text-align: center; padding: 30px; color: #94a3b8;">
-                                    No active client telemetry records found.
-                                </td>
-                            </tr>
-                            {% endif %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
     </main>
 
     <!-- Modal: Biznet WAN 24-Hour Logs -->

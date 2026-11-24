@@ -4008,33 +4008,34 @@ body.nav-dragging-active * {
 }
 
 .wan-sync-time {
-    font-size: 0.68rem;
-    color: #64748b;
+    font-size: 0.7rem;
+    color: #94a3b8;
     font-family: inherit;
     white-space: nowrap;
     margin-top: 0;
 }
 
 #wanLastSync {
-    color: inherit;
+    color: #f1f5f9;
     font-weight: 500;
 }
 
 /* WAN Card Actions (Speedtest & See Log) */
 .wan-footer-row {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-    margin-top: 6px;
-    flex-wrap: wrap;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    margin-top: 8px;
+    width: 100%;
 }
 
 .wan-actions-row {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     flex-shrink: 0;
+    flex-wrap: nowrap;
 }
 
 .btn-wan-action {

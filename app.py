@@ -363,20 +363,25 @@ def login():
     error = None
     if request.method == 'POST':
         username = request.form.get('username', '').strip()
-        password = request.form.get('password', '')
+        password = request.form.get('password', '').strip()
 
-        super_user = os.getenv('SUPER_ADMIN_USERNAME', 'admin')
-        super_pass = os.getenv('SUPER_ADMIN_PASSWORD', 'agiva_admin123')
+        # Muat ulang .env secara dinamis agar kredensial murni bersumber dari .env tanpa restart server
+        load_dotenv(override=True)
+        super_user = (os.getenv('SUPER_ADMIN_USERNAME') or '').strip()
+        super_pass = (os.getenv('SUPER_ADMIN_PASSWORD') or '').strip()
 
-        if username == super_user and password == super_pass:
+        # Verifikasi kredensial murni dari .env (tidak ada hardcode di app.py)
+        if super_user and super_pass and username == super_user and password == super_pass:
             flask_session['logged_in'] = True
-            flask_session['username'] = username
+            flask_session['username'] = super_user
             flask_session['role'] = 'Administrator'
+            logger.info(f"Super Admin login successful: {super_user}")
             next_url = request.args.get('next')
             if next_url and next_url.startswith('/') and not next_url.startswith('//'):
                 return redirect(next_url)
             return redirect(url_for('dashboard'))
         else:
+            logger.warning(f"Failed login attempt for username '{username}'.")
             error = 'Invalid username or password. Please verify your credentials.'
 
     return render_template('login.html', error=error)
@@ -429,9 +434,9 @@ def get_top_clients_summary(session=None):
                 ho_list.append(c_dict)
                 
         def sort_key(x):
-            # Penentuan Top 10: Kecepatan Real-Time (Throughput Mbps tertinggi)
-            # Jika kecepatan sama, urutkan berdasarkan abjad Nama Perangkat (A -> Z)
-            return (-float(x.get("total_mbps", 0.0) or 0.0), str(x.get("hostname", "") or "").lower())
+            # Penentuan Top 10 murni berdasarkan Daily Usage (kuota harian tertinggi)
+            # Jika kuota sama, urutkan berdasarkan abjad Nama Perangkat (A -> Z)
+            return (-int(x.get("cumulative_bytes", 0) or 0), str(x.get("hostname", "") or "").lower())
             
         all_sorted = sorted(ho_list + corner_list, key=sort_key)
         ho_sorted = sorted(ho_list, key=sort_key)

@@ -295,7 +295,7 @@ class ApClientTelemetry(Base):
             "total_mbps": self.total_mbps or 0.0,
             "throughput_rx": self.throughput_rx or "0 Kbps",
             "throughput_tx": self.throughput_tx or "0 Kbps",
-            "throughput_fmt": f"Rx: {self.throughput_rx or '0 Kbps'} • Tx: {self.throughput_tx or '0 Kbps'}",
+            "throughput_fmt": f"{self.throughput_rx or '0 Kbps'}/{self.throughput_tx or '0 Kbps'}",
             "cumulative_bytes": self.cumulative_bytes or 0,
             "cumulative_usage": self.cumulative_fmt or "< 1 MB",
             "top_app": self.top_app or "Idle",

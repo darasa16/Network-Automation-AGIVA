@@ -121,6 +121,29 @@ _PALO_CLIENT_CACHE_TS: float = 0.0
 _PALO_CLIENT_CACHE_TTL = 30.0  # seconds
 _PALO_PREV_CLIENT_SAMPLES: Dict[str, Tuple[float, int]] = {}
 _PALO_CUMULATIVE_BYTES: Dict[str, int] = {}
+_CURRENT_USAGE_DATE: str = datetime.now().strftime("%Y-%m-%d")
+
+def check_daily_reset() -> bool:
+    """Mengecek apakah sudah melewati tengah malam (00:00). Jika ya, reset akumulasi kuota harian ke 0."""
+    global _CURRENT_USAGE_DATE, _PALO_CUMULATIVE_BYTES
+    today_str = datetime.now().strftime("%Y-%m-%d")
+    if _CURRENT_USAGE_DATE and _CURRENT_USAGE_DATE != today_str:
+        logger.info(f"Pergantian hari terdeteksi ({_CURRENT_USAGE_DATE} -> {today_str}). Mereset kuota harian klien ke 0.")
+        _CURRENT_USAGE_DATE = today_str
+        _PALO_CUMULATIVE_BYTES.clear()
+        try:
+            session = db_session()
+            session.query(ApClientTelemetry).update({
+                ApClientTelemetry.cumulative_bytes: 0,
+                ApClientTelemetry.cumulative_fmt: "< 1 MB"
+            })
+            session.commit()
+            session.close()
+        except Exception as e:
+            logger.debug(f"Reset harian database dilewati: {e}")
+        return True
+    _CURRENT_USAGE_DATE = today_str
+    return False
 
 # Global cache nama host nyata yang terdeteksi dari DHCP/AP/NetBIOS
 _KNOWN_HOSTNAMES: Dict[str, str] = {
@@ -1435,22 +1458,30 @@ def poll_wireless_clients_snmp(ip: str, community: str, vendor: str) -> List[Dic
 
 def init_cumulative_bytes_from_db():
     """
-    (Solusi 4) Menginisialisasi cache kuota kumulatif klien dari rekaman tabel PostgreSQL ap_client_telemetry
-    saat aplikasi/service baru dinyalakan, sehingga histori kuota tidak pernah hilang/reset ke 0 saat restart.
+    (Solusi 4) Menginisialisasi cache kuota harian klien dari rekaman tabel PostgreSQL ap_client_telemetry
+    khusus untuk tanggal hari ini. Data dari hari sebelumnya otomatis di-reset ke 0.
     """
-    global _PALO_CUMULATIVE_BYTES
+    global _PALO_CUMULATIVE_BYTES, _CURRENT_USAGE_DATE
+    now = datetime.now()
+    today_date = now.date()
+    _CURRENT_USAGE_DATE = now.strftime("%Y-%m-%d")
     try:
         session = db_session()
         rows = session.query(ApClientTelemetry).all()
         for r in rows:
-            if r.client_ip and r.client_ip != "-" and (r.cumulative_bytes or 0) > 0:
-                _PALO_CUMULATIVE_BYTES[r.client_ip] = max(
-                    _PALO_CUMULATIVE_BYTES.get(r.client_ip, 0),
-                    int(r.cumulative_bytes)
-                )
+            if r.client_ip and r.client_ip != "-":
+                if r.last_seen and r.last_seen.date() == today_date and (r.cumulative_bytes or 0) > 0:
+                    _PALO_CUMULATIVE_BYTES[r.client_ip] = max(
+                        _PALO_CUMULATIVE_BYTES.get(r.client_ip, 0),
+                        int(r.cumulative_bytes)
+                    )
+                elif r.last_seen and r.last_seen.date() < today_date:
+                    r.cumulative_bytes = 0
+                    r.cumulative_fmt = "< 1 MB"
+        session.commit()
         session.close()
     except Exception as e:
-        logger.debug(f"Inisialisasi cumulative bytes dari database PostgreSQL dilewati: {e}")
+        logger.debug(f"Inisialisasi daily usage dari database PostgreSQL dilewati: {e}")
 
 
 def _format_app_name(app: str, has_traffic: bool = False) -> str:
@@ -1495,7 +1526,10 @@ def fetch_palo_alto_client_telemetry(pa_ip: str = "192.168.1.11") -> Tuple[Dict[
     global _PALO_CLIENT_CACHE, _PALO_CLIENT_CACHE_TS, _PALO_PREV_CLIENT_SAMPLES, _PALO_CUMULATIVE_BYTES
     now = time.time()
 
-    # Pastikan cache pemakaian kumulatif termuat dari database jika baru startup
+    # Periksa apakah terjadi pergantian hari (00:00 tengah malam)
+    check_daily_reset()
+
+    # Pastikan cache pemakaian kuota harian termuat dari database jika baru startup
     if not _PALO_CUMULATIVE_BYTES:
         init_cumulative_bytes_from_db()
 
@@ -1781,10 +1815,12 @@ def poll_port_fdb_clients_snmp(switch_ip: str, port_name: str, community: str, e
 
 
 def save_ap_clients_to_db(ap_name: str, clients: List[Dict[str, Any]], ap_info: Dict[str, Any]):
-    """Menyimpan atau meng-update (UPSERT) data telemetri klien nirkabel & bandwidth ke database PostgreSQL."""
+    """Menyimpan atau meng-update (UPSERT) data telemetri klien nirkabel & kuota harian ke database PostgreSQL."""
+    check_daily_reset()
     session = db_session()
     try:
         now = datetime.now()
+        today_date = now.date()
         existing_rows = {r.client_mac: r for r in session.query(ApClientTelemetry).filter_by(ap_name=ap_name).all()}
         seen_macs = set()
 
@@ -1800,6 +1836,11 @@ def save_ap_clients_to_db(ap_name: str, clients: List[Dict[str, Any]], ap_info: 
 
             cum_b_val = int(c.get("cumulative_bytes", 0) or 0)
             if row:
+                # Jika data record berasal dari hari sebelumnya, reset pemakaian harian ke 0
+                if row.last_seen and row.last_seen.date() < today_date:
+                    row.cumulative_bytes = 0
+                    cum_b_val = 0
+
                 row.client_ip = c.get("ip", "-")
                 row.hostname = c.get("hostname", "Station")
                 row.vendor = c.get("vendor", "Unknown")
@@ -1821,7 +1862,7 @@ def save_ap_clients_to_db(ap_name: str, clients: List[Dict[str, Any]], ap_info: 
                 if in_app and in_app != "Idle":
                     row.top_app = in_app
                 elif not row.top_app or row.top_app == "Idle":
-                    row.top_app = in_app or ("Web Browsing (HTTPS)" if cum_b_val > 0 else "Idle")
+                    row.top_app = in_app or ("ssl" if cum_b_val > 0 else "Idle")
 
                 row.sessions = int(c.get("sessions", 0) or 0)
                 row.status = "Active"
@@ -1829,7 +1870,7 @@ def save_ap_clients_to_db(ap_name: str, clients: List[Dict[str, Any]], ap_info: 
             else:
                 init_app = c.get("top_app")
                 if not init_app or init_app == "Idle":
-                    init_app = "Web Browsing (HTTPS)" if cum_b_val > 0 else "Idle"
+                    init_app = "ssl" if cum_b_val > 0 else "Idle"
 
                 new_row = ApClientTelemetry(
                     ap_name=ap_name,
@@ -2189,7 +2230,7 @@ def get_ap_client_telemetry(ap_name: str, force: bool = False) -> Dict[str, Any]
         c_copy["tx_mbps"] = tx_m
         c_copy["throughput_rx"] = f"{rx_m:.1f} Mbps" if rx_m >= 1.0 else (f"{int(rx_m * 1000)} Kbps" if rx_m > 0 else "0 Kbps")
         c_copy["throughput_tx"] = f"{tx_m:.1f} Mbps" if tx_m >= 1.0 else (f"{int(tx_m * 1000)} Kbps" if tx_m > 0 else "0 Kbps")
-        c_copy["throughput_fmt"] = f"Rx: {c_copy['throughput_rx']} • Tx: {c_copy['throughput_tx']}"
+        c_copy["throughput_fmt"] = f"{c_copy['throughput_rx']}/{c_copy['throughput_tx']}"
 
         # Solusi 4: Persistensi Kuota Kumulatif (Bytes)
         cum_b = trf.get("cumulative_bytes", 0) or c_copy.get("cumulative_bytes", 0)

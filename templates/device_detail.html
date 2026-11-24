@@ -920,7 +920,7 @@
                                 <th>IP &amp; MAC Address</th>
                                 <th>Associated Port &amp; AP</th>
                                 <th style="min-width: 175px;">Live Throughput (Rx / Tx)</th>
-                                <th style="min-width: 130px;">Cumulative Usage</th>
+                                <th style="min-width: 130px;">Daily Usage</th>
                             </tr>
                         </thead>
                         <tbody id="apClientsTableBody">
@@ -1161,8 +1161,7 @@
                         </td>
                         <td>
                             <div style="font-size:12px; font-weight:600; color:#ffffff;">
-                                <span>↓ ${rxDisplay}</span> &nbsp;
-                                <span>↑ ${txDisplay}</span>
+                                ${rxDisplay}/${txDisplay}
                             </div>
                         </td>
                         <td>

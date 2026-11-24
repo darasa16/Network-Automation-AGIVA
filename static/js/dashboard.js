@@ -1424,8 +1424,8 @@ function renderTopClientsTable(clients) {
                     <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">${c.switch || '-'} &bull; ${c.port || '-'}</div>
                 </td>
                 <td>
-                    <div style="font-size: 13px; font-weight: 600; color: #10b981; font-family: var(--font-sans);">
-                        ${c.throughput_rx || '0 Kbps'} <span style="color: var(--text-muted); font-weight: 400;">(Rx)</span> &bull; ${c.throughput_tx || '0 Kbps'} <span style="color: var(--text-muted); font-weight: 400;">(Tx)</span>
+                    <div style="font-size: 13px; font-weight: 500; color: var(--text-primary); font-family: var(--font-sans);">
+                        ${c.throughput_rx || '0 Kbps'}/${c.throughput_tx || '0 Kbps'}
                     </div>
                 </td>
                 <td>
