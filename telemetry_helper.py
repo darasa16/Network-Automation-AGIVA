@@ -145,23 +145,7 @@ def check_daily_reset() -> bool:
     _CURRENT_USAGE_DATE = today_str
     return False
 
-# Global cache nama host nyata yang terdeteksi dari DHCP/AP/NetBIOS
-_KNOWN_HOSTNAMES: Dict[str, str] = {
-    "192.168.1.105": "Corner-WS-01",
-    "192.168.1.108": "Corner-MacBook-01",
-    "192.168.1.112": "Galaxy-S23-Corner",
-    "192.168.1.115": "Corner-Laptop-02",
-    "192.168.1.118": "iPad-Pro-Corner",
-    "192.168.1.121": "Corner-Dev-PC",
-    "192.168.1.125": "iPhone-15-Corner",
-    "192.168.1.201": "HO-Director-Laptop",
-    "192.168.1.205": "MacBook-Pro-M2",
-    "192.168.1.210": "iPhone-15-Pro",
-    "192.168.1.215": "HO-Finance-PC",
-    "192.168.1.218": "HO-Admin-Laptop",
-    "192.168.1.222": "HO-Meeting-Display",
-    "192.168.1.225": "ThinkPad-X1-HO"
-}
+_KNOWN_HOSTNAMES: Dict[str, str] = {}
 
 
 def _calc_client_mbps(cache_key: str, rx_bytes: int, tx_bytes: int) -> Tuple[float, float]:
@@ -1545,7 +1529,7 @@ def fetch_palo_alto_client_telemetry(pa_ip: str = "192.168.1.11") -> Tuple[Dict[
         r_arp = requests.get(
             f"https://{pa_ip}/api/?type=op&cmd=<show><arp><entry name=\"all\"/></arp></show>&key={api_key}",
             verify=False,
-            timeout=4.0
+            timeout=10.0
         )
         if r_arp.status_code == 200 and r_arp.text:
             root_arp = ET.fromstring(r_arp.text)
@@ -1564,7 +1548,7 @@ def fetch_palo_alto_client_telemetry(pa_ip: str = "192.168.1.11") -> Tuple[Dict[
         r_sess = requests.get(
             f"https://{pa_ip}/api/?type=op&cmd=<show><session><all></all></session></show>&key={api_key}",
             verify=False,
-            timeout=5.0
+            timeout=15.0
         )
         if r_sess.status_code == 200 and r_sess.text:
             root_sess = ET.fromstring(r_sess.text)
