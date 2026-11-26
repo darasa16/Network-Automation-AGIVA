@@ -483,7 +483,7 @@ def get_aruba_telemetry(ip_address: str = "192.168.1.10", community: str = "publ
             "errors_tx": tx_err,
             "errors_rx": rx_err,
             "drops_tx": tx_drop,
-            "neighbor": aruba_neighbors.get(p_num) if is_up else None,
+            "neighbor": aruba_neighbors.get(p_num),
             "poe": poe_info
         })
 
@@ -775,7 +775,7 @@ def get_huawei_telemetry(ip_address: str = "192.168.1.155", community: str = "ag
             "errors_tx": tx_err,
             "errors_rx": rx_err,
             "drops_tx": tx_drop,
-            "neighbor": huawei_neighbors.get(idx) if is_up else None,
+            "neighbor": huawei_neighbors.get(idx),
             "poe": None
         })
 
@@ -834,7 +834,7 @@ def get_huawei_telemetry(ip_address: str = "192.168.1.155", community: str = "ag
             "errors_tx": tx_err,
             "errors_rx": rx_err,
             "drops_tx": tx_drop,
-            "neighbor": huawei_neighbors.get(idx) if is_up else None,
+            "neighbor": huawei_neighbors.get(idx),
             "poe": None
         })
 
@@ -1066,7 +1066,7 @@ def get_paloalto_telemetry(ip_address: str = "192.168.1.11", community: str = "p
             "errors_tx": tx_err,
             "errors_rx": rx_err,
             "drops_tx": tx_drop,
-            "neighbor": pa_neighbors.get(idx) if is_up else None,
+            "neighbor": pa_neighbors.get(idx),
             "poe": None
         })
 

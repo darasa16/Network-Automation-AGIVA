@@ -39,36 +39,49 @@
             line-height: 1.4;
         }
 
-        /* AP Neighbor Interactive Button */
-        .ap-neighbor-btn {
+        /* AP Neighbor Action Chip */
+        .ap-clients-chip {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            padding: 4px 10px;
-            background: rgba(56, 189, 248, 0.08);
-            border: 1px solid rgba(56, 189, 248, 0.3);
-            border-radius: 6px;
+            gap: 4px;
+            padding: 2px 9px;
+            background: rgba(56, 189, 248, 0.1);
+            border: 1px solid rgba(56, 189, 248, 0.28);
+            border-radius: 9999px;
             color: #38bdf8;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 600;
+            line-height: 1.4;
             cursor: pointer;
             transition: all 0.2s ease;
-            text-align: left;
             font-family: inherit;
+            white-space: nowrap;
         }
 
-        .ap-neighbor-btn:hover {
+        .ap-clients-chip:hover {
             background: rgba(56, 189, 248, 0.2);
             border-color: #38bdf8;
-            box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
+            color: #f8fafc;
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.22);
             transform: translateY(-1px);
         }
 
-        .wifi-icon-svg {
-            width: 14px;
-            height: 14px;
+        .ap-clients-chip:active {
+            transform: translateY(0);
+        }
+
+        .ap-clients-chip svg {
+            width: 11px;
+            height: 11px;
             stroke: currentColor;
             flex-shrink: 0;
+            opacity: 0.85;
+            transition: transform 0.2s ease;
+        }
+
+        .ap-clients-chip:hover svg.chip-arrow {
+            transform: translate(1px, -1px);
+            opacity: 1;
         }
 
         .ap-live-badge {
@@ -803,21 +816,24 @@
                                     {% if (p.neighbor.is_ap or 'ap-' in p.neighbor.name.lower() or 'access point' in p.neighbor.desc.lower()) and 'ruckus' not in p.neighbor.name.lower() and 'ruckus' not in p.neighbor.desc.lower() %}
                                     <div class="neighbor-name"
                                         style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-                                        <button type="button" class="ap-neighbor-btn"
+                                        <span>{{ p.neighbor.name }}</span>
+                                        <code class="neighbor-remote-port">({{ p.neighbor.remote_port }})</code>
+                                        <button type="button" class="ap-clients-chip"
                                             onclick="openApModal('{{ p.neighbor.name }}', '{{ p.port_name }}', '{{ p.speed }}')"
                                             title="Klik untuk memantau klien nirkabel & penggunaan bandwidth Wi-Fi">
-                                            <svg class="wifi-icon-svg" viewBox="0 0 24 24" fill="none"
-                                                stroke="currentColor" stroke-width="2">
-                                                <path d="M5 12.55a11 11 0 0 1 14.08 0"></path>
-                                                <path d="M1.42 9a16 16 0 0 1 21.16 0"></path>
-                                                <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
-                                                <line x1="12" y1="20" x2="12.01" y2="20"></line>
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                                <circle cx="9" cy="7" r="4"></circle>
+                                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                                             </svg>
-                                            <span>{{ p.neighbor.name }}</span>
-                                            <span class="ap-live-badge"><span class="ap-live-dot"></span>WiFi
-                                                Clients</span>
+                                            <span>Clients</span>
+                                            <svg class="chip-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                stroke-width="2.2">
+                                                <line x1="7" y1="17" x2="17" y2="7"></line>
+                                                <polyline points="7 7 17 7 17 17"></polyline>
+                                            </svg>
                                         </button>
-                                        <code class="neighbor-remote-port">({{ p.neighbor.remote_port }})</code>
                                     </div>
                                     <div class="neighbor-desc">{{ p.neighbor.desc }}</div>
                                     {% else %}
