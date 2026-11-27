@@ -5,16 +5,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Network Configuration & Log Backups - AGIVA NOC</title>
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
         rel="stylesheet">
-    <!-- Relative CSS -->
     <link rel="stylesheet" href="/static/css/style.css?v=10.7">
-    <style>
-        #backupsTable td,
+    <style>        #backupsTable td,
         #backupsTable td span,
         #backupsTable td code,
         #backupsTable td strong {
@@ -29,7 +26,6 @@
             color: #ffffff !important;
         }
 
-        /* Empty State Styling - Matching All Systems Operational style */
         #backupsTable tr.empty-state-row td,
         #backupsTable tr.empty-state-row td p,
         #backupsTable tr.empty-state-row td span {
@@ -57,7 +53,6 @@
             display: block !important;
         }
 
-        /* Device Sub-Site Label (Aligned with .neighbor-desc: 11px, var(--text-muted)) */
         #backupsTable .device-site-sub {
             font-size: 11px !important;
             color: var(--text-muted) !important;
@@ -65,7 +60,6 @@
             display: inline-block;
         }
 
-        /* Exclude category badge, status, and action buttons */
         #backupsTable .badge-category-orange,
         #backupsTable .badge-category-orange * {
             font-size: 11px !important;
@@ -96,7 +90,6 @@
             color: var(--color-red) !important;
         }
 
-        /* Remove dot circle on status badge */
         #backupsTable .badge-dot-green,
         #backupsTable .badge-dot-red {
             display: none !important;
@@ -150,7 +143,6 @@
             text-transform: uppercase;
         }
 
-        /* Category Filter Buttons - Aligned with AGIVA Filter Tab/Badge Design */
         .category-filters-container {
             display: flex;
             align-items: center;
@@ -191,7 +183,6 @@
             font-weight: 700;
         }
 
-        /* Modal Viewer Styles */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -329,7 +320,6 @@
             transform: translateY(-1px) !important;
         }
 
-        /* Pagination Bar & Controls */
         .pagination-container {
             display: flex;
             justify-content: space-between;
@@ -426,7 +416,6 @@
 </head>
 
 <body>
-    <!-- Top Navigation Bar -->
     <header class="navbar">
         <div class="nav-left">
             <a href="/" class="brand-logo">
@@ -476,7 +465,6 @@
         </div>
     </header>
 
-    <!-- Main Container -->
     <main class="main-container">
         <div class="backups-page-container">
             <div class="page-header-row">
@@ -490,7 +478,6 @@
                 </div>
             </div>
 
-            <!-- Backup Info KPI Cards -->
             <div class="kpi-grid">
                 <div class="kpi-card">
                     <div class="kpi-info">
@@ -557,7 +544,6 @@
                 </div>
             </div>
 
-            <!-- Backups Table Panel -->
             <div class="table-panel">
                 <div class="panel-header" style="flex-wrap: wrap; gap: 12px;">
                     <div>
@@ -577,7 +563,6 @@
                     </div>
                 </div>
 
-                <!-- Category Filter Pills Bar & Local In-Table Search -->
                 <div class="category-filters-container"
                     style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
                     <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
@@ -630,12 +615,10 @@
                             </tr>
                         </thead>
                         <tbody id="backupsTableBody">
-                            <!-- Populated dynamically by JavaScript -->
                         </tbody>
                     </table>
                 </div>
 
-                <!-- Pagination Bar for Configuration Backup & Audit Log History -->
                 <div class="pagination-container" id="backupsPaginationContainer">
                     <div id="backupsPageInfo" class="pagination-info">Showing 0 records</div>
                     <div class="pagination-controls" id="backupsPaginationControls"></div>
@@ -644,7 +627,6 @@
         </div>
     </main>
 
-    <!-- Modal View Log / Config -->
     <div id="configViewerModal" class="modal-overlay" style="display: none;">
         <div class="modal-card">
             <div class="modal-header">
@@ -691,11 +673,10 @@
         </div>
     </div>
 
-    <!-- Toast Notification Container -->
     <div id="toastContainer" class="toast-container"></div>
 
     <script id="backupsData" type="application/json">{{ backups | tojson }}</script>
-    <script>
+    <script>        // Update the live WIB clock display in the navbar.
         function updateClock() {
             const now = new Date();
             const timeStr = now.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' WIB';
@@ -705,6 +686,7 @@
         setInterval(updateClock, 1000);
         updateClock();
 
+        // Show refreshing state and reload the backups page.
         function refreshBackups(btn) {
             if (btn) {
                 btn.disabled = true;
@@ -733,6 +715,7 @@
         let currentCategoryFilter = 'ALL';
         let currentBackupsSearch = '';
 
+        // Escape HTML special characters to prevent XSS.
         function escapeHtml(text) {
             if (!text) return '';
             return String(text)
@@ -743,6 +726,7 @@
                 .replace(/'/g, "&#039;");
         }
 
+        // Filter backup history records by category and search query.
         function getFilteredBackups() {
             const q = currentBackupsSearch.trim().toLowerCase();
             return allBackups.filter(b => {
@@ -758,6 +742,7 @@
             });
         }
 
+        // Update backup count badges for each category filter button.
         function updateCategoryCounts() {
             let total = allBackups.length;
             let sys = 0, cfg = 0, trf = 0, thr = 0;
@@ -782,6 +767,7 @@
             if (countThrEl) countThrEl.textContent = `(${thr})`;
         }
 
+        // Jump to the pagination page containing a targeted backup row.
         function checkTargetBackupPage(targetRowId) {
             let rowId = targetRowId;
             if (!rowId && window.location.hash) {
@@ -811,6 +797,7 @@
         }
         window.checkTargetBackupPage = checkTargetBackupPage;
 
+        // Render paginated backup history table rows.
         function renderBackupsTable(targetRowId) {
             if (targetRowId) {
                 checkTargetBackupPage(targetRowId);
@@ -904,8 +891,7 @@
                                 style="padding: 4px 10px !important; font-size: 11px !important;"
                                 onclick="viewConfig('${b.id}', '${escapeHtml(b.device || '')}', '${escapeHtml(b.category || '')}', '${escapeHtml(b.file || '')}')">View</button>
                             <a href="/api/backup/download/${b.id}" class="btn-secondary"
-                                style="padding: 4px 10px !important; font-size: 11px !important; text-decoration:none; display:inline-flex; align-items:center;"
-                                title="Download .txt File">Download</a>
+                                style="padding: 4px 10px !important; font-size: 11px !important; text-decoration:none; display:inline-flex; align-items:center;">Download</a>
                         </div>
                     </td>
                 </tr>`;
@@ -920,26 +906,24 @@
         }
         window.renderBackupsTable = renderBackupsTable;
 
+        // Render pagination controls for the backups table.
         function renderBackupsPaginationButtons(totalPages) {
             const controls = document.getElementById('backupsPaginationControls');
             if (!controls) return;
 
             let btnHtml = '';
 
-            // Prev Button (‹ Prev)
             btnHtml += `<button type="button" class="pagination-nav-btn ${currentBackupPage === 1 ? 'disabled' : ''}" 
                          onclick="gotoBackupPage(${currentBackupPage - 1})" ${currentBackupPage === 1 ? 'disabled' : ''}>
                          <span>&#8249;</span> <span>Prev</span>
                         </button>`;
 
-            // Smart pagination formatting (1 ... 9 [10] 11 ... 20)
             if (totalPages <= 7) {
                 for (let p = 1; p <= totalPages; p++) {
                     btnHtml += `<button type="button" class="pagination-num-btn ${p === currentBackupPage ? 'active' : ''}" 
                                  onclick="gotoBackupPage(${p})">${p}</button>`;
                 }
             } else {
-                // Always display page 1
                 btnHtml += `<button type="button" class="pagination-num-btn ${currentBackupPage === 1 ? 'active' : ''}" 
                              onclick="gotoBackupPage(1)">1</button>`;
 
@@ -967,12 +951,10 @@
                     btnHtml += `<span class="pagination-dots">...</span>`;
                 }
 
-                // Always display last page
                 btnHtml += `<button type="button" class="pagination-num-btn ${currentBackupPage === totalPages ? 'active' : ''}" 
                              onclick="gotoBackupPage(${totalPages})">${totalPages}</button>`;
             }
 
-            // Next Button (Next ›)
             btnHtml += `<button type="button" class="pagination-nav-btn ${currentBackupPage === totalPages ? 'disabled' : ''}" 
                          onclick="gotoBackupPage(${currentBackupPage + 1})" ${currentBackupPage === totalPages ? 'disabled' : ''}>
                          <span>Next</span> <span>&#8250;</span>
@@ -981,6 +963,7 @@
             controls.innerHTML = btnHtml;
         }
 
+        // Smoothly scroll to the top of a table.
         function scrollToTableTop(elementId) {
             requestAnimationFrame(() => {
                 const el = document.getElementById(elementId);
@@ -993,12 +976,12 @@
         }
         window.scrollToTableTop = scrollToTableTop;
 
+        // Navigate to a specific page in the backups table.
         function gotoBackupPage(page) {
             const filteredBackups = getFilteredBackups();
             const totalPages = Math.ceil(filteredBackups.length / backupsPerPage) || 1;
             if (page < 1 || page > totalPages) return;
             currentBackupPage = page;
-            // Clear anchor hash if present so pagination is not locked to a search target
             if (window.location.hash && window.location.hash.startsWith('#backup-row-')) {
                 history.replaceState(null, '', window.location.pathname + window.location.search);
             }
@@ -1007,6 +990,7 @@
         }
         window.gotoBackupPage = gotoBackupPage;
 
+        // Apply selected backup category filter and re-render table.
         function setCategoryFilter(cat, btn) {
             currentCategoryFilter = (cat || 'ALL').toUpperCase();
             currentBackupPage = 1;
@@ -1018,7 +1002,6 @@
             renderBackupsTable();
         }
 
-        // Local In-Table Search Input Listeners
         const backupSearchInput = document.getElementById('backupTableSearch');
         const backupSearchClear = document.getElementById('backupTableSearchClear');
         if (backupSearchInput) {
@@ -1045,7 +1028,6 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            // Check URL search parameter (?search=...)
             const urlParams = new URLSearchParams(window.location.search);
             const searchParam = urlParams.get('search');
             if (searchParam) {
@@ -1058,7 +1040,6 @@
             checkTargetBackupPage();
             renderBackupsTable();
 
-            // Smooth scroll to table if targeted
             if (window.location.hash === '#backupsTable') {
                 const el = document.getElementById('backupsTable');
                 if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1074,6 +1055,7 @@
         let currentModalCategory = 'SYSTEM';
         let currentModalBackupId = null;
 
+        // Open backup viewer modal and fetch file content from /api/backup/content/<id>.
         function viewConfig(backupId, devName, category, filePath) {
             currentModalDevice = devName;
             currentModalCategory = category || 'SYSTEM';
@@ -1128,17 +1110,20 @@
             }
         }
 
+        // Close the backup file viewer modal.
         function closeConfigModal() {
             const modal = document.getElementById('configViewerModal');
             if (modal) modal.style.display = 'none';
         }
 
+        // Copy displayed backup file content to clipboard.
         function copyModalContent(btn) {
             const codeBox = document.getElementById('modalContentBox');
             if (!codeBox) return;
             const textToCopy = codeBox.textContent;
             const targetBtn = btn || document.getElementById('btnCopyModal');
 
+            // Show temporary copied confirmation state on the copy button.
             function triggerSuccess() {
                 if (targetBtn) {
                     targetBtn.classList.add('btn-copied');
@@ -1170,6 +1155,7 @@
             }
         }
 
+        // Copy text using a temporary textarea when Clipboard API is unavailable.
         function fallbackCopy(text, onSuccess) {
             const targetBtn = document.getElementById('btnCopyModal');
             try {
@@ -1190,6 +1176,7 @@
             }
         }
 
+        // Show temporary failure state on the copy button.
         function triggerCopyFailed(targetBtn) {
             if (!targetBtn) return;
             const originalHtml = targetBtn.innerHTML;
@@ -1207,7 +1194,6 @@
             }, 2000);
         }
 
-        // Close on ESC key or backdrop click
         window.addEventListener('keydown', function (e) {
             if (e.key === 'Escape') closeConfigModal();
         });
@@ -1216,8 +1202,8 @@
             if (e.target === modal) closeConfigModal();
         });
 
+        // No-op placeholder for toast notifications.
         function showToast(message, isError = false) {
-            // Disabled in favor of Inline Button Feedback
         }
 
     </script>

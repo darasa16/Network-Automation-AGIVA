@@ -1,16 +1,3 @@
-"""
-=============================================================================
-PT AGIVA INDONESIA - NETWORK OPERATIONS AUTOMATION
-Sentralisasi Logging Standar Python dengan RotatingFileHandler
-=============================================================================
-Spesifikasi:
-1. Modul logging bawaan Python (INFO, WARNING, ERROR).
-2. Rotasi file otomatis lewat RotatingFileHandler (5 MB per file, 5 backup).
-3. Logging konsol & file tersinkronisasi.
-4. Pencatatan log sistem ke file rotasi agiva_noc.log.
-=============================================================================
-"""
-
 import os
 import sys
 import logging
@@ -20,10 +7,8 @@ from datetime import datetime
 LOG_DIR = os.path.join(os.path.dirname(__file__), 'logs')
 LOG_FILE = os.path.join(LOG_DIR, 'agiva_noc.log')
 
-# Pastikan folder logs tersedia
 os.makedirs(LOG_DIR, exist_ok=True)
 
-# Format log terstandar
 LOG_FORMAT = '%(asctime)s [%(levelname)s] [%(name)s]: %(message)s'
 DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
 
@@ -38,21 +23,18 @@ def get_configured_logger(name="AgivaNOC", level=logging.INFO):
     logger = logging.getLogger(name)
     logger.setLevel(level)
 
-    # Hindari duplikasi handler jika sudah diinisialisasi
     if not logger.handlers:
         formatter = logging.Formatter(LOG_FORMAT, datefmt=DATE_FORMAT)
 
-        # 1. Console / Stream Handler
         console_handler = logging.StreamHandler(sys.stdout)
         console_handler.setLevel(level)
         console_handler.setFormatter(formatter)
         logger.addHandler(console_handler)
 
-        # 2. Rotating File Handler (5 MB per file, max 5 file cadangan)
         try:
             file_handler = RotatingFileHandler(
                 LOG_FILE,
-                maxBytes=5 * 1024 * 1024,  # 5 MB
+                maxBytes=5 * 1024 * 1024,
                 backupCount=5,
                 encoding='utf-8'
             )

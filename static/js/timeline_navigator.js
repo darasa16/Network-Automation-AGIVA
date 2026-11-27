@@ -1,16 +1,6 @@
-/**
- * Timeline Navigator (Mini-Map / Range Slider / Brush)
- * PT Agiva Indonesia - Network Operations Automation
- *
- * Implements an Overview + Detail timeline navigator for Chart.js.
- * Displays 100% pure raw data in a mini sparkline with an interactive
- * draggable & resizable brush window. Slices the main chart dynamically
- * to prevent dot crowding while preserving raw anomaly/spike visibility.
- *
- * Fully supports Touch (Lenovo Flex 7) and Mouse input.
- */
-
+// Interactive mini-map timeline brush and range slider for Chart.js.
 class TimelineNavigator {
+    // Initialize TimelineNavigator configuration, state, DOM, and event listeners.
     constructor(options) {
         this.container = typeof options.container === 'string'
             ? document.getElementById(options.container)
@@ -29,14 +19,11 @@ class TimelineNavigator {
         this.fullData = [];
         this.fullSecondaryData = [];
 
-        // Window fractions (0.0 to 1.0)
         this.startFrac = 0.0;
         this.endFrac = 1.0;
-        this.minWindowFrac = 0.04; // Minimum window: ~4% of range (at least 5-10 points)
-
-        // Dragging state
+        this.minWindowFrac = 0.04;
         this.isDragging = false;
-        this.dragTarget = null; // 'window', 'left', 'right'
+        this.dragTarget = null;
         this.startX = 0;
         this.initialStartFrac = 0.0;
         this.initialEndFrac = 1.0;
@@ -45,6 +32,7 @@ class TimelineNavigator {
         this.bindEvents();
     }
 
+    // Build the timeline navigator track, sparkline canvas, brush, and footer DOM.
     initDOM() {
         if (!this.container) return;
 
@@ -83,10 +71,10 @@ class TimelineNavigator {
         this.labelEnd = this.container.querySelector('.label-end');
     }
 
+    // Attach mouse, touch, resize, and track-click handlers for brush interaction.
     bindEvents() {
         if (!this.track) return;
 
-        // Mouse Down
         const onStart = (e, target) => {
             e.preventDefault();
             e.stopPropagation();
@@ -103,12 +91,10 @@ class TimelineNavigator {
         this.handleRight.addEventListener('mousedown', (e) => onStart(e, 'right'));
         this.brushWindow.addEventListener('mousedown', (e) => onStart(e, 'window'));
 
-        // Touch for Lenovo Flex 7
         this.handleLeft.addEventListener('touchstart', (e) => onStart(e, 'left'), { passive: false });
         this.handleRight.addEventListener('touchstart', (e) => onStart(e, 'right'), { passive: false });
         this.brushWindow.addEventListener('touchstart', (e) => onStart(e, 'window'), { passive: false });
 
-        // Click track outside window to jump
         this.track.addEventListener('click', (e) => {
             if (this.isDragging) return;
             const rect = this.track.getBoundingClientRect();
@@ -127,7 +113,6 @@ class TimelineNavigator {
             this.setWindow(newStart, newEnd);
         });
 
-        // Global Move & Up
         const onMove = (e) => {
             if (!this.isDragging) return;
             e.preventDefault();
@@ -167,7 +152,7 @@ class TimelineNavigator {
             this.isDragging = false;
             this.dragTarget = null;
             document.body.classList.remove('nav-dragging-active');
-            this.notifyChange(true); // Final committed change
+            this.notifyChange(true);
         };
 
         window.addEventListener('mousemove', onMove);
@@ -180,9 +165,7 @@ class TimelineNavigator {
         });
     }
 
-    /**
-     * Feed full raw series into the navigator
-     */
+    // Load full series data into the navigator and draw the sparkline.
     setData(labels, primaryData, secondaryData = [], defaultFractions = null) {
         this.fullLabels = labels || [];
         this.fullData = primaryData || [];
@@ -199,9 +182,6 @@ class TimelineNavigator {
             this.startFrac = defaultFractions.start;
             this.endFrac = defaultFractions.end;
         } else {
-            // Default window selection:
-            // For large sets (> 60 points, like 12h or 24h), focus on the last ~25%-35% window by default
-            // so individual dots are instantly visible and not crowded, while the sparkline shows all.
             const total = this.fullLabels.length;
             if (total > 60) {
                 const visibleTarget = Math.min(40, total);
@@ -219,11 +199,13 @@ class TimelineNavigator {
         this.notifyChange();
     }
 
+    // Set active brush window fractions and notify listeners.
     setWindow(startFrac, endFrac) {
         this.updateWindowDOM(startFrac, endFrac);
         this.notifyChange(true);
     }
 
+    // Update brush/curtain DOM positions and timestamp labels.
     updateWindowDOM(start, end) {
         this.startFrac = Math.max(0, Math.min(1, start));
         this.endFrac = Math.max(this.startFrac + this.minWindowFrac, Math.min(1, end));
@@ -239,7 +221,6 @@ class TimelineNavigator {
         }
         if (this.curtainRight) this.curtainRight.style.width = `${rightPct}%`;
 
-        // Update timestamps
         const total = this.fullLabels.length;
         if (total > 0) {
             const startIdx = Math.min(total - 1, Math.round(this.startFrac * (total - 1)));
@@ -251,6 +232,7 @@ class TimelineNavigator {
         }
     }
 
+    // Convert brush fractions to array indices and invoke onWindowChange callback.
     notifyChange(isFinal = false) {
         const total = this.fullLabels.length;
         if (total === 0) return;
@@ -263,6 +245,7 @@ class TimelineNavigator {
         }
     }
 
+    // Render primary and secondary data series onto the mini-map sparkline canvas.
     drawSparkline() {
         if (!this.canvas || !this.track) return;
 
@@ -292,7 +275,6 @@ class TimelineNavigator {
         const h = rect.height - padTop - padBottom;
         const step = rect.width / (total - 1);
 
-        // Helper to draw an area + line sparkline
         const drawSeries = (series, strokeCol, fillCol) => {
             ctx.beginPath();
             ctx.moveTo(0, rect.height - padBottom);
@@ -313,7 +295,6 @@ class TimelineNavigator {
             ctx.fillStyle = fillCol;
             ctx.fill();
 
-            // Line stroke
             ctx.beginPath();
             for (let i = 0; i < total; i++) {
                 const x = i * step;

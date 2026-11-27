@@ -4,7 +4,6 @@ from sqlalchemy.orm import declarative_base, relationship
 
 Base = declarative_base()
 
-# 1. MONITORING MODELS
 class Device(Base):
     """Tabel: devices (Inventaris Perangkat Jaringan & Status Terkini)"""
     __tablename__ = 'devices'
@@ -12,9 +11,9 @@ class Device(Base):
     device_id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(100), nullable=False)
     ip_address = Column(String(45), nullable=False, unique=True)
-    vendor = Column(String(50), nullable=False)  # 'MikroTik' / 'Cisco'
+    vendor = Column(String(50), nullable=False)
     site = Column(String(100), nullable=False)
-    status = Column(String(20), default='UP')   # 'UP' / 'DOWN'
+    status = Column(String(20), default='UP')
     cpu_usage = Column(Float, default=0.0)
     mem_usage = Column(Float, default=0.0)
     latency_ms = Column(Float, default=0.0)
@@ -23,13 +22,13 @@ class Device(Base):
     credential_ref = Column(String(100), default='env_vault')
     last_polled = Column(DateTime, default=datetime.now)
 
-    # Relationships
     logs = relationship("DeviceStatusLog", back_populates="device", cascade="all, delete-orphan")
     alerts = relationship("Alert", back_populates="device", cascade="all, delete-orphan")
     incidents = relationship("IncidentLog", back_populates="device", cascade="all, delete-orphan")
     backups = relationship("BackupHistory", back_populates="device", cascade="all, delete-orphan")
 
     def to_dict(self):
+        """Mengonversi objek Device menjadi dictionary JSON-serializable."""
         return {
             "id": self.device_id,
             "name": self.name,
@@ -45,7 +44,6 @@ class Device(Base):
             "last_polled": self.last_polled.strftime("%H:%M:%S") if self.last_polled else "-"
         }
 
-
 class DeviceStatusLog(Base):
     """Tabel: device_status_logs (Histori Metrik Polling Berkala untuk Chart.js)"""
     __tablename__ = 'device_status_logs'
@@ -53,7 +51,7 @@ class DeviceStatusLog(Base):
     log_id = Column(BigInteger().with_variant(Integer, "sqlite"), primary_key=True, autoincrement=True)
     device_id = Column(Integer, ForeignKey('devices.device_id', ondelete='CASCADE'), nullable=False)
     timestamp = Column(DateTime, default=datetime.now, nullable=False)
-    status = Column(String(20), nullable=False)  # 'UP' / 'DOWN'
+    status = Column(String(20), nullable=False)
     cpu_usage = Column(Float, default=0.0)
     mem_usage = Column(Float, default=0.0)
     latency_ms = Column(Float, default=0.0)
@@ -77,17 +75,18 @@ class WanStatusLog(Base):
     timestamp = Column(DateTime, default=datetime.now, nullable=False)
     interface_name = Column(String(50), default='ethernet1/3', nullable=False)
     provider = Column(String(50), default='Biznet', nullable=False)
-    status = Column(String(20), default='UP', nullable=False)  # 'UP' / 'DOWN'
+    status = Column(String(20), default='UP', nullable=False)
     download_mbps = Column(Float, default=0.0)
     upload_mbps = Column(Float, default=0.0)
     total_mbps = Column(Float, default=0.0)
-    latency_ms = Column(Float, default=0.0)          # Ping ke Internet (1.1.1.1)
-    gateway_latency_ms = Column(Float, default=0.0)  # Ping ke Gateway Modem (192.168.18.1)
+    latency_ms = Column(Float, default=0.0)
+    gateway_latency_ms = Column(Float, default=0.0)
     packet_loss = Column(Float, default=0.0)
     rx_errors = Column(Integer, default=0)
     tx_errors = Column(Integer, default=0)
 
     def to_dict(self):
+        """Mengonversi objek WanStatusLog menjadi dictionary JSON-serializable."""
         return {
             "id": self.id,
             "timestamp": self.timestamp.strftime("%Y-%m-%d %H:%M:%S") if self.timestamp else "-",
@@ -106,26 +105,25 @@ class WanStatusLog(Base):
             "total_errors": (self.rx_errors or 0) + (self.tx_errors or 0)
         }
 
-
-# 2. ALERT MODELS
 class Alert(Base):
     """Tabel: alerts (Log Kejadian Anomali / Trigger Rule Engine)"""
     __tablename__ = 'alerts'
 
     alert_id = Column(Integer, primary_key=True, autoincrement=True)
     device_id = Column(Integer, ForeignKey('devices.device_id', ondelete='CASCADE'), nullable=False)
-    type = Column(String(50), nullable=False)       # 'CPU_OVERLOAD', 'HOST_DOWN', 'INTERFACE_DOWN'
-    severity = Column(String(20), default='WARNING') # 'CRITICAL' / 'WARNING'
+    type = Column(String(50), nullable=False)
+    severity = Column(String(20), default='WARNING')
     message = Column(Text, nullable=False)
     triggered_at = Column(DateTime, default=datetime.now, nullable=False)
     acknowledged = Column(Boolean, default=False)
-    acknowledged_by = Column(String(100), nullable=True) # e.g. '@noc_engineer via Telegram' or 'Web Admin'
+    acknowledged_by = Column(String(100), nullable=True)
     resolved_at = Column(DateTime, nullable=True)
 
     device = relationship("Device", back_populates="alerts")
     telegram_logs = relationship("TelegramMessageLog", back_populates="alert")
 
     def to_dict(self):
+        """Mengonversi objek Alert menjadi dictionary JSON-serializable."""
         return {
             "id": self.alert_id,
             "device_id": self.device_id,
@@ -146,17 +144,18 @@ class IncidentLog(Base):
 
     incident_id = Column(Integer, primary_key=True, autoincrement=True)
     device_id = Column(Integer, ForeignKey('devices.device_id', ondelete='CASCADE'), nullable=False)
-    type = Column(String(50), nullable=False)        # 'CPU_OVERLOAD', 'MEMORY_OVERLOAD', 'HOST_DOWN'
-    severity = Column(String(20), default='WARNING') # 'CRITICAL' / 'WARNING'
-    peak_metric = Column(String(50), nullable=True)  # misal '92.4%' atau 'DOWN (Timeout)'
+    type = Column(String(50), nullable=False)
+    severity = Column(String(20), default='WARNING')
+    peak_metric = Column(String(50), nullable=True)
     started_at = Column(DateTime, default=datetime.now, nullable=False)
     resolved_at = Column(DateTime, nullable=True)
     duration_seconds = Column(Integer, default=0)
-    status = Column(String(30), default='ACTIVE_MONITORING') # 'ACTIVE_MONITORING', 'AUTO_COOLDOWN', 'ACTIVE_ALERT', 'RESOLVED_ALERT'
+    status = Column(String(30), default='ACTIVE_MONITORING')
 
     device = relationship("Device", back_populates="incidents")
 
     def to_dict(self):
+        """Mengonversi objek IncidentLog menjadi dictionary JSON-serializable."""
         duration_str = "-"
         if self.duration_seconds and self.duration_seconds > 0:
             m, s = divmod(self.duration_seconds, 60)
@@ -183,7 +182,6 @@ class IncidentLog(Base):
             "status": self.status
         }
 
-# 3. TELEGRAM BOT MODELS
 class TelegramWhitelist(Base):
     """Tabel: telegram_whitelist (Daftar Pengguna / Tim NOC yang Diizinkan Mengakses Bot)"""
     __tablename__ = 'telegram_whitelist'
@@ -192,11 +190,12 @@ class TelegramWhitelist(Base):
     chat_id = Column(String(50), unique=True, nullable=False)
     telegram_username = Column(String(100), nullable=False)
     engineer_name = Column(String(150), nullable=False)
-    role = Column(String(80), default='NOC Engineer') # 'Lead NOC', 'Senior Engineer', etc.
+    role = Column(String(80), default='NOC Engineer')
     is_active = Column(Boolean, default=True)
     registered_at = Column(DateTime, default=datetime.now)
 
     def to_dict(self):
+        """Mengonversi objek TelegramWhitelist menjadi dictionary JSON-serializable."""
         return {
             "id": self.id,
             "chat_id": self.chat_id,
@@ -207,7 +206,6 @@ class TelegramWhitelist(Base):
             "registered_at": self.registered_at.strftime("%Y-%m-%d")
         }
 
-
 class TelegramMessageLog(Base):
     """Tabel: telegram_message_logs (Riwayat Pengiriman Notifikasi & Command Bot Telegram)"""
     __tablename__ = 'telegram_message_logs'
@@ -215,14 +213,15 @@ class TelegramMessageLog(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     alert_id = Column(Integer, ForeignKey('alerts.alert_id', ondelete='SET NULL'), nullable=True)
     chat_id = Column(String(50), nullable=False)
-    message_type = Column(String(50), nullable=False) # 'ALERT_NOTIFICATION', 'COMMAND_REPLY', 'BACKUP_SUMMARY'
+    message_type = Column(String(50), nullable=False)
     content = Column(Text, nullable=False)
-    status = Column(String(100), default='SENT')      # 'SENT', 'FAILED', 'PENDING'
+    status = Column(String(100), default='SENT')
     sent_at = Column(DateTime, default=datetime.now)
 
     alert = relationship("Alert", back_populates="telegram_logs")
 
     def to_dict(self):
+        """Mengonversi objek TelegramMessageLog menjadi dictionary JSON-serializable."""
         return {
             "id": self.id,
             "alert_id": self.alert_id,
@@ -233,7 +232,6 @@ class TelegramMessageLog(Base):
             "sent_at": self.sent_at.strftime("%Y-%m-%d %H:%M:%S") if self.sent_at else "-"
         }
 
-# 4. BACKUP HISTORY MODEL
 class BackupHistory(Base):
     """Tabel: backup_history (Log Hasil Backup Konfigurasi)"""
     __tablename__ = 'backup_history'
@@ -246,12 +244,10 @@ class BackupHistory(Base):
     file_size = Column(String(50), default="0 B")
     trigger_by = Column(String(100), default="Scheduler (02:00 WIB)", nullable=False)
     data_range = Column(String(100), default="Snapshot", nullable=False)
-    status = Column(String(20), nullable=False)  # 'SUCCESS' / 'FAILED'
+    status = Column(String(20), nullable=False)
 
     device = relationship("Device", back_populates="backups")
 
-
-# 5. AP CLIENT TELEMETRY MODEL (Opsi 1 - Database Persistence)
 class ApClientTelemetry(Base):
     """Tabel: ap_client_telemetry (Data Klien Nirkabel & Bandwidth Palo Alto per AP di PostgreSQL)"""
     __tablename__ = 'ap_client_telemetry'
@@ -279,6 +275,7 @@ class ApClientTelemetry(Base):
     last_seen = Column(DateTime, default=datetime.now, nullable=False)
 
     def to_dict(self):
+        """Mengonversi objek ApClientTelemetry menjadi dictionary JSON-serializable."""
         return {
             "id": self.id,
             "ap_name": self.ap_name,

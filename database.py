@@ -1,4 +1,3 @@
-
 import os
 from datetime import datetime, timedelta
 from sqlalchemy import create_engine
@@ -35,7 +34,6 @@ def ensure_postgres_running():
     if is_db_alive(DATABASE_URL):
         return
 
-    # Lokasi instalasi PostgreSQL portable
     pg_ctl_candidates = [
         r"C:\Users\LENOVO FLEX 7\pgsql\bin\pg_ctl.exe",
         r"C:\Program Files\PostgreSQL\16\bin\pg_ctl.exe",
@@ -59,11 +57,9 @@ def ensure_postgres_running():
                 [pg_ctl, "start", "-D", pg_data, "-l", pg_log, "-w"],
                 creationflags=flags
             )
-            # Tunggu server aktif dan siap menerima query
             for _ in range(20):
                 time.sleep(0.5)
                 if is_db_alive(DATABASE_URL):
-                    # Beri jeda singkat agar PostgreSQL selesai proses recovery/startup
                     time.sleep(1.0)
                     print("[*] Server PostgreSQL berhasil dinyalakan dan siap melayani koneksi!")
                     return
@@ -76,7 +72,6 @@ def get_engine():
     if db_url.startswith('postgresql://'):
         db_url = db_url.replace('postgresql://', 'postgresql+psycopg2://', 1)
     
-    # Pastikan server PostgreSQL sudah aktif sebelum mencoba koneksi
     if db_url.startswith('postgresql'):
         ensure_postgres_running()
 
@@ -87,7 +82,6 @@ def get_engine():
         max_overflow=10
     )
 
-    # Coba koneksi dengan toleransi saat server baru booting
     max_retries = 15
     for attempt in range(max_retries):
         try:
@@ -114,7 +108,6 @@ def init_db():
     """Create all tables and seed realistic sample data if empty in PostgreSQL."""
     from models import Base, Device, DeviceStatusLog, WanStatusLog, Alert, IncidentLog, TelegramWhitelist, TelegramMessageLog, BackupHistory, ApClientTelemetry
     
-    # Toleransi startup database jika masih dalam proses inisialisasi WAL/buffer
     try:
         for attempt in range(5):
             try:
@@ -129,7 +122,6 @@ def init_db():
         print(f"[*] Info: Inisialisasi tabel ditunda (Database belum siap/offline: {err})")
         return
     
-    # Auto-migration: pastikan kolom latency_ms dan packet_loss ada di PostgreSQL
     try:
         from sqlalchemy import text
         with engine.connect() as conn:
@@ -145,10 +137,8 @@ def init_db():
     except Exception as e:
         print(f"[!] Migration check warning: {e}")
 
-    # Check if database needs seeding
     session = db_session()
     try:
-        # Seeding Telegram Whitelist if empty
         whitelist_count = session.query(TelegramWhitelist).count()
         if whitelist_count == 0:
             print("[*] Seeding Telegram Whitelist (Admin/NOC Security Access)...")
@@ -160,12 +150,11 @@ def init_db():
     finally:
         session.close()
 
-
 def seed_demo_data(session):
+    """Menyinkronkan inventaris perangkat dari devices.yaml dan mengisi whitelist awal."""
     import yaml
     from models import Device, DeviceStatusLog, Alert, TelegramWhitelist, TelegramMessageLog, BackupHistory
 
-    # 1. Sync Network Devices from devices.yaml
     yaml_path = os.path.join(os.path.dirname(__file__), 'devices.yaml')
     dev_objects = []
     if os.path.exists(yaml_path):
@@ -194,11 +183,11 @@ def seed_demo_data(session):
                         dev_objects.append(existing)
         session.commit()
 
-    # 2. Seed Telegram Whitelist
     seed_whitelist_only(session)
     print("[*] Database synchronized successfully with production network devices.")
 
 def seed_whitelist_only(session):
+    """Mengisi data awal daftar pengguna Telegram yang diizinkan ke tabel whitelist."""
     import os
     from models import TelegramWhitelist
     

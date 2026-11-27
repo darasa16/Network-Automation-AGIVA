@@ -5,25 +5,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign In &bull; PT Agiva Indonesia NOC</title>
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
         rel="stylesheet">
-    <!-- Custom CSS (Corporate Dark Theme matching Agiva) -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=8.2">
 </head>
 
 <body class="login-body">
-    <!-- Ambient Tech Glow Effects -->
     <div class="login-glow login-glow-1"></div>
     <div class="login-glow login-glow-2"></div>
     <div class="login-grid-pattern"></div>
 
     <main class="login-wrapper">
         <div class="login-card">
-            <!-- Header Brand -->
             <div class="login-header">
                 <div class="login-logo-container">
                     <img src="{{ url_for('static', filename='img/20260203-Agiva-Logo-Rect-1280px.png') }}"
@@ -36,7 +32,6 @@
                 </p>
             </div>
 
-            <!-- Error Alert Banner -->
             {% if error %}
             <div class="login-alert login-alert-danger" role="alert">
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
@@ -48,10 +43,8 @@
             </div>
             {% endif %}
 
-            <!-- Login Form -->
             <form action="{{ url_for('login', next=request.args.get('next')) }}" method="POST" class="login-form"
                 autocomplete="on">
-                <!-- Username Field -->
                 <div class="form-group">
                     <label for="username" class="form-label">
                         <span>Username</span>
@@ -66,7 +59,6 @@
                     </div>
                 </div>
 
-                <!-- Password Field -->
                 <div class="form-group">
                     <label for="password" class="form-label">
                         <span>Password</span>
@@ -89,7 +81,6 @@
                     </div>
                 </div>
 
-                <!-- Submit Button -->
                 <button type="submit" class="btn-login" id="submitBtn">
                     <span>Sign In to Control Center</span>
                     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
@@ -99,7 +90,6 @@
                 </button>
             </form>
 
-            <!-- Card Footer -->
             <div class="login-footer">
                 <div class="security-indicator">
                     <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
@@ -114,10 +104,7 @@
         </div>
     </main>
 
-    <!-- Interactive Script -->
-    <script>
-        // Toggle Password Visibility
-        const toggleBtn = document.getElementById('togglePasswordBtn');
+    <script>        const toggleBtn = document.getElementById('togglePasswordBtn');
         const passwordInput = document.getElementById('password');
         const eyeIcon = document.getElementById('eyeIcon');
 

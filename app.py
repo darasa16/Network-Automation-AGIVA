@@ -18,19 +18,18 @@ logger = get_configured_logger("FlaskApp")
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'agiva-noc-secret-key-2026')
 
-# Initialize DB tables and seed data
 init_db()
 
-
-# Import Rule Engine & Alerting System (Komponen 4 LLD)
 from rule_engine import send_telegram_broadcast, trigger_alert_with_antispam
 
 @app.teardown_appcontext
 def shutdown_session(exception=None):
+    """Menutup sesi SQLAlchemy saat request context selesai."""
     db_session.remove()
 
 @app.context_processor
 def inject_global_vars():
+    """Menyuntikkan jumlah alert aktif dan daftar perangkat ke semua template Jinja2."""
     session = db_session()
     active_alerts_count = session.query(Alert).filter(Alert.resolved_at == None).count()
     devices = session.query(Device).order_by(Device.device_id.asc()).all()
@@ -59,16 +58,16 @@ def get_aggregated_chart_history(range_mode='live', session=None):
 
     if range_mode == '1h':
         cutoff = now - timedelta(hours=1)
-        bucket_seconds = 120   # 2 menit data mentah (~30 titik)
+        bucket_seconds = 120
     elif range_mode == '12h':
         cutoff = now - timedelta(hours=12)
-        bucket_seconds = 120   # 2 menit data mentah (~360 titik)
+        bucket_seconds = 120
     elif range_mode == '24h':
         cutoff = now - timedelta(hours=24)
-        bucket_seconds = 120   # 2 menit data mentah (~720 titik)
-    else:  # 'live'
+        bucket_seconds = 120
+    else:
         cutoff = now - timedelta(minutes=36)
-        bucket_seconds = 120   # 2 menit (max 18 titik)
+        bucket_seconds = 120
 
     logs = session.query(DeviceStatusLog).filter(
         DeviceStatusLog.timestamp >= cutoff
@@ -76,7 +75,6 @@ def get_aggregated_chart_history(range_mode='live', session=None):
 
     limit_fallback = 720 if range_mode == '24h' else (360 if range_mode == '12h' else (60 if range_mode == '1h' else 72))
     if len(logs) < 18:
-        # Fallback to latest rows if database has fewer historical rows in cutoff
         logs = session.query(DeviceStatusLog).order_by(
             DeviceStatusLog.timestamp.desc()
         ).limit(limit_fallback).all()
@@ -94,7 +92,6 @@ def get_aggregated_chart_history(range_mode='live', session=None):
             "egress": [0.0]
         }
 
-    # Group into exact 2-minute cycle keys (tanpa perataan waktu multi-siklus)
     buckets = defaultdict(list)
     for l in logs:
         cycle_key = int(l.timestamp.timestamp()) // bucket_seconds
@@ -113,7 +110,7 @@ def get_aggregated_chart_history(range_mode='live', session=None):
             lbl = dt.strftime('%d/%m %H:%M') if dt.date() != now.date() else dt.strftime('%H:%M')
         elif range_mode in ['1h', '12h']:
             lbl = dt.strftime('%d/%m %H:%M') if dt.date() != now.date() else dt.strftime('%H:%M')
-        else: # 'live'
+        else:
             lbl = dt.strftime('%d/%m %H:%M') if dt.date() != now.date() else dt.strftime('%H:%M:%S')
 
         labels.append(lbl)
@@ -121,7 +118,6 @@ def get_aggregated_chart_history(range_mode='live', session=None):
         avg_cpu = round(sum(x.cpu_usage for x in up_logs) / len(up_logs), 1) if up_logs else 0.0
         avg_mem = round(sum(x.mem_usage for x in up_logs) / len(up_logs), 1) if up_logs else 0.0
 
-        # Nilai throughput murni siklus 2-menit tersebut (total perangkat)
         tot_ing = round(sum(x.ingress_mbps or 0.0 for x in cycle_logs), 1)
         tot_eg = round(sum(x.egress_mbps or 0.0 for x in cycle_logs), 1)
 
@@ -164,8 +160,6 @@ def get_wan_metrics_summary(session=None):
 
     capacity = float(os.getenv("BIZNET_CAPACITY_MBPS", "100.0"))
 
-    # Single Source of Truth: app.py murni membaca data riil dari database (dicatat oleh collector.py).
-    # Tidak membuat/memalsukan log baru saat collector.py tidak aktif.
     if latest:
         dl = round(latest.download_mbps or 0.0, 1)
         ul = round(latest.upload_mbps or 0.0, 1)
@@ -184,7 +178,6 @@ def get_wan_metrics_summary(session=None):
                     ts = datetime.fromisoformat(ts.replace('Z', '+00:00'))
                 except Exception:
                     ts = datetime.now()
-            # Seragamkan dengan time bucket interval grafik (kelipatan 120 detik / 2 menit)
             bucket_seconds = 120
             cycle_key = int(ts.timestamp()) // bucket_seconds
             floored_dt = datetime.fromtimestamp(cycle_key * bucket_seconds)
@@ -196,10 +189,8 @@ def get_wan_metrics_summary(session=None):
     else:
         dl, ul, tot, lat, gw_lat, loss, rx_err, tx_err, tot_err, st, updated = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0, 0, 0, "UP", "-"
 
-    # Metode Agregat Gabungan: Menghitung persentase pemakaian total trafik (Download + Upload) terhadap kapasitas paket
     utilization_pct = round(min(100.0, (tot / capacity) * 100.0), 1)
 
-    # Diagnostik Pintar Otomatis (Cukup Hijau: Koneksi Normal, Merah: Koneksi Abnormal)
     if st == "DOWN" or loss > 2.0 or lat > 45.0 or tot_err > 0 or utilization_pct >= 90.0:
         quality_status = "ABNORMAL"
         quality_label = "Abnormal Connection"
@@ -254,7 +245,7 @@ def get_wan_chart_history(range_mode='live', session=None):
     elif range_mode == '24h':
         cutoff = now - timedelta(hours=24)
         bucket_seconds = 120
-    else:  # 'live'
+    else:
         cutoff = now - timedelta(minutes=36)
         bucket_seconds = 120
 
@@ -335,28 +326,21 @@ def get_wan_chart_history(range_mode='live', session=None):
         "packet_loss": loss_vals
     }
 
-
-# ==============================================================
-# AUTHENTICATION & SESSION MANAGEMENT (Super Admin)
-# ==============================================================
 @app.before_request
 def check_authentication():
-    # Izinkan static assets tanpa otentikasi agar tampilan login ter-render sempurna
+    """Memverifikasi status sesi login pengguna sebelum mengakses route atau API."""
     if request.path.startswith('/static'):
         return None
-    # Izinkan endpoint login dan logout
     if request.path in ['/login', '/logout']:
         return None
-    # Verifikasi status login session
     if not flask_session.get('logged_in'):
-        # Jika request API/AJAX, kembalikan response 401 JSON
         if request.path.startswith('/api/'):
             return jsonify({'error': 'Unauthorized', 'message': 'Login session expired'}), 401
-        # Redirect ke halaman login dengan parameter next
         return redirect(url_for('login', next=request.full_path if request.query_string else request.path))
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    """Menangani otentikasi login Super Admin menggunakan kredensial dari .env."""
     if flask_session.get('logged_in'):
         return redirect(url_for('dashboard'))
 
@@ -365,12 +349,10 @@ def login():
         username = request.form.get('username', '').strip()
         password = request.form.get('password', '').strip()
 
-        # Muat ulang .env secara dinamis agar kredensial murni bersumber dari .env tanpa restart server
         load_dotenv(override=True)
         super_user = (os.getenv('SUPER_ADMIN_USERNAME') or '').strip()
         super_pass = (os.getenv('SUPER_ADMIN_PASSWORD') or '').strip()
 
-        # Verifikasi kredensial murni dari .env (tidak ada hardcode di app.py)
         if super_user and super_pass and username == super_user and password == super_pass:
             flask_session['logged_in'] = True
             flask_session['username'] = super_user
@@ -388,6 +370,7 @@ def login():
 
 @app.route('/logout')
 def logout():
+    """Menghapus sesi login aktif dan mengarahkan pengguna ke halaman login."""
     flask_session.clear()
     return redirect(url_for('login'))
 
@@ -416,12 +399,10 @@ def get_top_clients_summary(session=None):
             ap_lower = (c.ap_name or "").lower()
             sw_lower = (c.connected_switch or "").lower()
             
-            # Ambil nama aplikasi mentah (raw App-ID string Palo Alto tanpa formatter)
             raw_app = c_dict.get("top_app", "Idle")
             is_active = (float(c_dict.get("total_mbps", 0.0) or 0.0) > 0) or (int(c_dict.get("cumulative_bytes", 0) or 0) > 0)
             c_dict["top_app"] = _format_app_name(raw_app, has_traffic=is_active)
             
-            # Tentukan Site secara eksplisit
             if "corner" in ap_lower or "corner" in sw_lower or "5735" in sw_lower or "ae5776" in ap_lower:
                 c_dict["site"] = "Agiva Corner"
                 c_dict["site_code"] = "corner"
@@ -434,8 +415,7 @@ def get_top_clients_summary(session=None):
                 ho_list.append(c_dict)
                 
         def sort_key(x):
-            # Penentuan Top 10 murni berdasarkan Daily Usage (kuota harian tertinggi)
-            # Jika kuota sama, urutkan berdasarkan abjad Nama Perangkat (A -> Z)
+            """Menentukan kunci pengurutan Top 10 klien berdasarkan kuota harian dan hostname."""
             return (-int(x.get("cumulative_bytes", 0) or 0), str(x.get("hostname", "") or "").lower())
             
         all_sorted = sorted(ho_list + corner_list, key=sort_key)
@@ -443,6 +423,7 @@ def get_top_clients_summary(session=None):
         corner_sorted = sorted(corner_list, key=sort_key)
         
         def attach_rank(lst):
+            """Menambahkan peringkat 1 sampai 10 pada daftar klien yang sudah diurutkan."""
             res = []
             for idx, item in enumerate(lst[:10], start=1):
                 item_copy = dict(item)
@@ -467,7 +448,6 @@ def get_top_clients_summary(session=None):
         if close_sess:
             session.close()
 
-# 1. MONITORING ROUTES
 @app.route('/')
 @app.route('/index.html')
 def dashboard():
@@ -512,6 +492,7 @@ from telemetry_helper import get_device_full_telemetry, get_ap_client_telemetry
 @app.route('/device/<int:device_id>')
 @app.route('/device_detail.html')
 def device_detail(device_id=1):
+    """Menampilkan halaman detail telemetri perangkat, port, VLAN, dan metrik historis."""
     session = db_session()
     device = session.query(Device).filter(Device.device_id == device_id).first()
     if not device:
@@ -528,7 +509,6 @@ def device_detail(device_id=1):
     if res.get("memory_pct") is not None and "aruba" in device.vendor.lower():
         device.mem_usage = round(float(res.get("memory_pct")), 1)
 
-    # Sinkronisasi 100% Opsi B: Port 1 (Uplink) identik dengan titik log database terbaru
     latest_log = session.query(DeviceStatusLog).filter(
         DeviceStatusLog.device_id == device.device_id
     ).order_by(DeviceStatusLog.timestamp.desc()).first()
@@ -558,36 +538,36 @@ def device_detail(device_id=1):
 
 @app.route('/device/index.html')
 def redirect_device_index():
+    """Mengarahkan route /device/index.html ke halaman dashboard utama."""
     return redirect('/')
 
 @app.route('/device/alerts.html')
 def redirect_device_alerts():
+    """Mengarahkan route /device/alerts.html ke halaman alerts."""
     return redirect('/alerts')
 
 @app.route('/device/telegram.html')
 def redirect_device_telegram():
+    """Mengarahkan route /device/telegram.html ke halaman integrasi Telegram."""
     return redirect('/telegram')
 
 @app.route('/device/backups.html')
 def redirect_device_backups():
+    """Mengarahkan route /device/backups.html ke halaman backups."""
     return redirect('/backups')
-
-# 2. ALERTS ROUTES
 
 @app.route('/alerts')
 @app.route('/alerts.html')
 def alerts_page():
+    """Menampilkan halaman Active Alerts dan riwayat Incident Log 30 hari terakhir."""
     session = db_session()
     cutoff_30d = datetime.now() - timedelta(days=30)
     
-    # 1. Tabel Atas (Active & Sustained Alerts): Hanya menampilkan alert yang BELUM di-resolve
-    # Alert yang sudah Resolved otomatis pindah dan diarsipkan di tabel bawah (Incident Log & Cooldown History)
     alerts = session.query(Alert).filter(
         Alert.resolved_at == None
     ).order_by(Alert.triggered_at.desc()).all()
     alerts_data = [a.to_dict() for a in alerts]
     
-    # 2. Tabel Bawah (Incident Log & Cooldown History): 30 hari terakhir sesuai retensi
     incidents = session.query(IncidentLog).filter(
         IncidentLog.started_at >= cutoff_30d
     ).order_by(IncidentLog.started_at.desc()).all()
@@ -603,7 +583,6 @@ def alerts_page():
     cooldown_incidents = sum(1 for inc in incidents if inc.status == 'AUTO_COOLDOWN')
     resolved_incidents = sum(1 for inc in incidents if inc.status == 'RESOLVED_ALERT')
     
-    # Badge notifikasi hanya menghitung alert yang masih aktif memerlukan penanganan
     active_alerts_count = pending_alerts + acked_alerts
 
     session.close()
@@ -646,9 +625,6 @@ def api_resolve_alert(alert_id):
         "message": "Resolusi tiket via Web dinonaktifkan. tiket hanya dapat diselesaikan melalui Telegram Bot (/resolve <id>) oleh admin terverifikasi."
     }), 403
 
-# 3. TELEGRAM BOT INTEGRATION ROUTES
-
-# Cache untuk status Telegram Bot agar tidak membebani I/O setiap request
 _telegram_bot_status_cache = {
     "timestamp": 0,
     "is_online": False
@@ -682,7 +658,6 @@ def is_telegram_bot_online():
                 hb = json.load(f)
                 hb_status = hb.get('status', '').upper()
                 hb_timestamp = hb.get('timestamp', 0)
-                # Syarat Online: Status 'ONLINE' dan heartbeat terkirim dalam 15 detik terakhir
                 if hb_status == 'ONLINE' and (now - hb_timestamp <= 15):
                     is_online = True
         except Exception:
@@ -713,7 +688,6 @@ def telegram_page():
     Menampilkan status bot, daftar command NOC, whitelist engineer, dan log pesan terkirim.
     """
     session = db_session()
-    # 30-Day Auto Retention: Hapus log berumur lebih dari 30 hari
     cutoff_date = datetime.now() - timedelta(days=30)
     try:
         session.query(TelegramMessageLog).filter(TelegramMessageLog.sent_at < cutoff_date).delete()
@@ -726,7 +700,6 @@ def telegram_page():
         TelegramMessageLog.sent_at >= cutoff_date
     ).order_by(TelegramMessageLog.sent_at.desc(), TelegramMessageLog.id.desc()).all()
 
-    # Cek status koneksi Bot API Telegram (aktif baik di VPS maupun lokal)
     bot_is_online = is_telegram_bot_online()
 
     bot_info = {
@@ -776,7 +749,6 @@ def api_telegram_logs():
     ).order_by(TelegramMessageLog.sent_at.desc(), TelegramMessageLog.id.desc()).all()
     active_alerts_pushed = get_active_alerts_pushed_count(session, cutoff_date)
     
-    # Format the logs so it's easier to consume on the frontend
     logs_data = []
     for l in msg_logs:
         logs_data.append({
@@ -818,7 +790,6 @@ def api_test_telegram_alert():
     
     ok, delivery_status = send_telegram_broadcast(msg_content, parse_mode='Markdown')
     
-    # Catat ke dispatch log agar terlihat di Dashboard
     log_entry = TelegramMessageLog(
         alert_id=None,
         chat_id=tg_chat_id,
@@ -835,8 +806,6 @@ def api_test_telegram_alert():
         return jsonify({"success": True, "message": "Test connectivity message sent successfully!"})
     else:
         return jsonify({"success": False, "message": f"Failed: {delivery_status}"}), 500
-
-# 4. BACKUP ROUTE
 
 @app.route('/backups')
 @app.route('/backups.html')
@@ -951,8 +920,6 @@ def api_trigger_backup(device_name):
     res = run_device_backup(device_name, category_filter=category, trigger_by="Web Dashboard")
     return jsonify(res)
 
-# 5. REAL-TIME JSON APIS FOR DASHBOARD POLLING & OMNI-SEARCH
-
 @app.route('/api/search')
 def api_search():
     """
@@ -983,11 +950,9 @@ def api_search():
         clean_nospace = re.sub(r'[\s\-_]+', '', ql)
         cutoff_30d = datetime.now() - timedelta(days=30)
 
-        # Pre-cache all devices in memory (Hanya 3-10 perangkat, mencegah N+1 queries ribuan kali)
         all_devs = session.query(Device).order_by(Device.device_id.asc()).all()
         dev_map = {d.device_id: d for d in all_devs}
 
-        # 1. DEVICES: Match name, IP, vendor, site, status (UP/DOWN/Online/Offline), atau ports
         matched_devices = []
         for d in all_devs:
             d_name = (d.name or "").lower()
@@ -1030,7 +995,6 @@ def api_search():
                 if len(matched_devices) >= 10:
                     break
 
-        # 2. ACTIVE ALERTS (Antrean berjalan yang butuh mitigasi)
         active_alerts = session.query(Alert).filter(
             Alert.resolved_at == None
         ).order_by(Alert.triggered_at.desc()).all()
@@ -1077,7 +1041,6 @@ def api_search():
                 if len(matched_alerts) >= 10:
                     break
 
-        # 3. INCIDENT LOG & COOLDOWN HISTORY (Ultra fast using dev_map, zero extra SQL calls!)
         all_incidents = session.query(IncidentLog).filter(
             IncidentLog.started_at >= cutoff_30d
         ).order_by(IncidentLog.started_at.desc()).all()
@@ -1161,7 +1124,6 @@ def api_search():
                 if len(matched_incidents) >= 10:
                     break
 
-        # 4. CONFIGURATION BACKUPS (Ultra fast using dev_map, safe os.path.basename)
         all_backups = session.query(BackupHistory).order_by(BackupHistory.timestamp.desc(), BackupHistory.backup_id.desc()).all()
         matched_backups = []
         for b in all_backups:
@@ -1214,13 +1176,11 @@ def api_search():
                 if len(matched_backups) >= 10:
                     break
 
-        # 5. TELEGRAM BOT INTEGRATION
         matched_telegram = []
 
         all_tg_users = session.query(TelegramWhitelist).order_by(TelegramWhitelist.id.asc()).all()
         for u in all_tg_users:
             u_name = (u.engineer_name or "").lower()
-            # Whitelist search: strictly Technician Name only, include all matched data
             if ql in u_name:
                 matched_telegram.append({
                     "id": u.id,
@@ -1290,7 +1250,6 @@ def api_search():
                 if count_msg >= 3:
                     break
 
-        # 6. QUICK NAVIGATION MENUS
         navigation_items = [
             {
                 "title": "Monitoring Dashboard",
@@ -1430,7 +1389,6 @@ def api_wan_logs():
                 WanStatusLog.timestamp.desc()
             ).limit(720).all()
 
-        # Data riil dari database: baris paling atas di See Log adalah data polling terbaru yang sama persis dengan KPI Card.
         historical_logs = logs
 
         result = []
@@ -1481,6 +1439,7 @@ def api_wan_speedtest():
     import time
 
     def _ping(host, count=2, timeout_sec=1):
+        """Mengukur status jangkauan, latensi rata-rata, dan packet loss ke host via ICMP ping."""
         try:
             is_win = platform.system().lower() == "windows"
             timeout_ms = int(timeout_sec * 1000)
@@ -1506,18 +1465,15 @@ def api_wan_speedtest():
         except Exception:
             return False, 0.0, 100.0
 
-    # 1. Jalankan live ping
     inet_up, inet_lat, inet_loss = _ping("1.1.1.1", count=2, timeout_sec=1)
     gw_up, gw_lat, _ = _ping("192.168.18.1", count=1, timeout_sec=1)
 
-    # Validasi konektivitas: Jika tidak ada internet dan gateway tidak tembus
     if not inet_up and not gw_up:
         return jsonify({
             "status": "error",
             "message": "Cannot connect to Biznet internet link or Gateway (192.168.18.1). Please verify physical network connectivity."
         }), 503
 
-    # 2. Eksekusi pengujian kapasitas maksimal jalur Biznet ala Ookla Speedtest
     import subprocess
     import json
     import shutil
@@ -1528,7 +1484,6 @@ def api_wan_speedtest():
     loss_pct = inet_loss
     ookla_success = False
 
-    # A. Coba jalankan Ookla Speedtest CLI resmi (jika terinstall di sistem)
     ookla_bin_candidates = [
         os.path.expanduser(r"~\AppData\Local\Microsoft\WinGet\Links\speedtest.exe"),
         r"C:\Program Files\Speedtest\speedtest.exe",
@@ -1553,7 +1508,6 @@ def api_wan_speedtest():
             except Exception as e_ookla:
                 logger.warning(f"Ookla CLI runner attempt failed: {e_ookla}")
 
-    # B. Coba python speedtest-cli library (jika Ookla CLI gagal)
     if not ookla_success:
         try:
             cmd_py = ["python", "-m", "speedtest", "--secure", "--json"]
@@ -1568,7 +1522,6 @@ def api_wan_speedtest():
         except Exception as e_py:
             logger.warning(f"Python speedtest runner attempt failed: {e_py}")
 
-    # C. Jika pengujian benchmark gagal dieksekusi secara riil, kembalikan error (TIDAK ADA DATA DUMMY / SIMULASI)
     if not ookla_success or dl_mbps == 0.0:
         return jsonify({
             "status": "error",
@@ -1595,8 +1548,6 @@ def api_wan_speedtest():
         "last_updated": datetime.now().strftime('%H:%M:%S')
     }
 
-    # Penting: Speedtest on-demand ini KHUSUS untuk tampilan modal pengujian kapasitas maksimal,
-    # dan TIDAK disimpan ke WanStatusLog agar tidak menimpa data utilisasi pemakaian aktif di kartu dashboard.
     return jsonify({
         "status": "success",
         "message": f"Speedtest Completed Successfully! Download: {dl_mbps} Mbps, Upload: {ul_mbps} Mbps, Ping: {lat_ms} ms",
@@ -1618,16 +1569,16 @@ def api_device_metrics(device_id):
 
     if range_mode == '1h':
         cutoff = now - timedelta(hours=1)
-        bucket_seconds = 120   # 2 menit data mentah (~30 titik)
+        bucket_seconds = 120
     elif range_mode == '12h':
         cutoff = now - timedelta(hours=12)
-        bucket_seconds = 120   # 2 menit data mentah (~360 titik)
+        bucket_seconds = 120
     elif range_mode == '24h':
         cutoff = now - timedelta(hours=24)
-        bucket_seconds = 120   # 2 menit data mentah (~720 titik)
-    else:  # 'live'
+        bucket_seconds = 120
+    else:
         cutoff = now - timedelta(minutes=36)
-        bucket_seconds = 120   # 2 menit (max 18 titik)
+        bucket_seconds = 120
 
     logs = session.query(DeviceStatusLog).filter(
         DeviceStatusLog.device_id == device_id,
@@ -1636,7 +1587,6 @@ def api_device_metrics(device_id):
 
     limit_fallback = 720 if range_mode == '24h' else (360 if range_mode == '12h' else (60 if range_mode == '1h' else 24))
     if len(logs) < 18:
-        # Fallback to latest available logs for this device
         logs = session.query(DeviceStatusLog).filter(
             DeviceStatusLog.device_id == device_id
         ).order_by(DeviceStatusLog.timestamp.desc()).limit(limit_fallback).all()
@@ -1671,7 +1621,6 @@ def api_device_metrics(device_id):
         re_vals = [re_val]
         te_vals = [te_val]
     else:
-        # Group into exact 2-minute cycle keys (data mentah asli tanpa perataan)
         buckets = defaultdict(list)
         for l in logs:
             cycle_key = int(l.timestamp.timestamp()) // bucket_seconds
@@ -1697,14 +1646,12 @@ def api_device_metrics(device_id):
                 lbl = dt.strftime('%d/%m %H:%M') if dt.date() != now.date() else dt.strftime('%H:%M')
             elif range_mode in ['1h', '12h']:
                 lbl = dt.strftime('%d/%m %H:%M') if dt.date() != now.date() else dt.strftime('%H:%M')
-            else:  # live
+            else:
                 lbl = dt.strftime('%d/%m %H:%M') if dt.date() != now.date() else dt.strftime('%H:%M:%S')
             labels.append(lbl)
-            # Ambil data mentah riil siklus tersebut
             b = b_logs[-1]
             cpu_vals.append(round(b.cpu_usage or 0.0, 1))
             mem_val = round(b.mem_usage or 0.0, 1)
-            # Selaraskan jika ada titik histori lama Aruba yang sempat merekam nilai inversi (~60-65%):
             if "aruba" in device.vendor.lower() and mem_val > 50.0 and res.get("memory_pct", 0) < 50.0:
                 mem_val = round(100.0 - mem_val, 1)
             mem_vals.append(mem_val)
@@ -1715,7 +1662,6 @@ def api_device_metrics(device_id):
             trf_out_vals.append(round(b.egress_mbps or 0.0, 2))
             pb_vals.append(round(b.packet_buffers or 0.0, 1))
             mb_vals.append(round(b.message_buffers or 0.0, 1))
-            # Ambil data error & drop: selaraskan dengan akumulasi riil seluruh port perangkat
             cur_td = int(b.tx_drops or 0)
             cur_re = int(b.rx_errors or 0)
             cur_te = int(b.tx_errors or 0)
@@ -1779,7 +1725,6 @@ def api_device_metrics(device_id):
         "ports": ports,
         "summary": telemetry.get("summary", {}),
     }
-    # Sinkronisasi 100% Opsi B: Port Uplink identik dengan titik grafik traffic terbaru (Aruba Port 1, Huawei 10GE1/0/1, Palo Alto ethernet1/2)
     if trf_in_vals and trf_out_vals and ports:
         latest_ingress = trf_in_vals[-1]
         latest_egress = trf_out_vals[-1]
@@ -1823,4 +1768,3 @@ if __name__ == '__main__':
     print(f"[*] Starting PT Agiva Network Operations Dashboard on http://127.0.0.1:{port}")
     app.run(host='0.0.0.0', port=port, debug=True, threaded=True)
 
-# PostgreSQL reload trigger - full dynamic Palo Alto specs (All 10 hardware parameters + ports)

@@ -23,10 +23,8 @@ import re
 from database import db_session
 from models import TelegramWhitelist, TelegramMessageLog, Alert, IncidentLog, Device, BackupHistory
 
-# Set terminal encoding to UTF-8
 sys.stdout.reconfigure(encoding='utf-8')
 
-# Setup Logging
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
@@ -44,25 +42,22 @@ ACTIVE_CHATS = set()
 if primary_chat_id and primary_chat_id.strip().isdigit():
     ACTIVE_CHATS.add(int(primary_chat_id.strip()))
 
-# Timezone Helper
 def get_current_time_wib() -> str:
+    """Mengembalikan string waktu saat ini dalam format YYYY-MM-DD HH:MM:SS WIB."""
     try:
         return datetime.now(ZoneInfo("Asia/Jakarta")).strftime("%Y-%m-%d %H:%M:%S WIB")
     except Exception:
         return datetime.now().strftime("%Y-%m-%d %H:%M:%S WIB")
 
 def get_current_date() -> str:
+    """Mengembalikan string tanggal saat ini dalam format YYYY-MM-DD."""
     try:
         return datetime.now(ZoneInfo("Asia/Jakarta")).strftime("%Y-%m-%d")
     except Exception:
         return datetime.now().strftime("%Y-%m-%d")
 
-# ==================== DATA MODEL ====================
-# Data inventaris, telemetri, dan alert diproses langsung secara riil dari database PostgreSQL
 DEVICES = {}
 ALERTS = {}
-
-# ==================== FORMATTING & HELPERS ====================
 
 def make_progress_bar(percent: int, length: int = 10) -> str:
     """Generate visual percentage progress bar for telemetry"""
@@ -116,7 +111,6 @@ def log_telegram_message(chat_id: str, message_type: str, content: str, status: 
     session = None
     try:
         session = db_session()
-        # 30-Day Auto Retention: Hapus log berumur lebih dari 30 hari
         cutoff_date = datetime.now() - timedelta(days=30)
         try:
             session.query(TelegramMessageLog).filter(TelegramMessageLog.sent_at < cutoff_date).delete()
@@ -144,9 +138,6 @@ def log_telegram_message(chat_id: str, message_type: str, content: str, status: 
         if session:
             session.close()
         db_session.remove()
-
-
-# ==================== VIEW BUILDERS (FORMAL CORPORATE TEMPLATES) ====================
 
 def build_status_view() -> str:
     """Real NOC Status Summary View from Database"""
@@ -271,7 +262,6 @@ def build_device_detail_view(device_name: str) -> str:
         cpu_label = "Critical" if cpu_val >= 85 else ("High" if cpu_val >= 70 else "Normal")
         mem_label = "Critical" if mem_val >= 85 else ("High" if mem_val >= 70 else "Normal")
 
-        # Ambil riwayat backup terakhir riil dari BackupHistory
         last_bkp = session.query(BackupHistory).filter(
             BackupHistory.device_id == db_dev.device_id,
             BackupHistory.status == 'SUCCESS'
@@ -328,7 +318,6 @@ def build_alerts_view() -> str:
 
         time_wib = get_current_time_wib()
 
-        # Format 1: Jika tidak ada gangguan aktif
         if not db_alerts:
             msg = (
                 "<b>ACTIVE ALERTS PT AGIVA INDONESIA</b>\n"
@@ -342,7 +331,6 @@ def build_alerts_view() -> str:
             )
             return msg
 
-        # Format 2: Jika ada gangguan aktif (Tabel Status)
         type_map = {
             "HOST_DOWN": "HOST DOWN",
             "CPU_OVERLOAD": "HIGH CPU",
@@ -469,9 +457,6 @@ def build_start_view() -> str:
         "Authorize and approve new engineer access with specified role (Admin only)."
     )
 
-
-# ==================== TELEGRAM COMMAND HANDLERS ====================
-
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Command /start: Display Bot Operational Guide"""
     ACTIVE_CHATS.add(update.effective_chat.id)
@@ -538,7 +523,6 @@ async def ack_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         log_telegram_message(update.effective_chat.id, "COMMAND_REPLY", f"Access denied for /ack command to @{u_name} (ID: {user_id}) - Not in Whitelist")
         return
 
-    # Parse ID from arguments (/ack 10) or text (/ack10 or /ack_10)
     raw_id = ""
     if context.args:
         raw_id = context.args[0].strip()
@@ -631,7 +615,6 @@ async def resolve_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         log_telegram_message(update.effective_chat.id, "COMMAND_REPLY", f"Access denied for /resolve command to @{u_name} (ID: {user_id}) - Not in Whitelist")
         return
 
-    # Parse ID from arguments (/resolve 10) or text (/resolve10 or /resolve_10)
     raw_id = ""
     if context.args:
         raw_id = context.args[0].strip()
@@ -668,7 +651,6 @@ async def resolve_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 log_telegram_message(update.effective_chat.id, "COMMAND_REPLY", f"Response /resolve: Alert #{db_alert.alert_id} is already resolved (sent to @{handler_user})")
                 return
 
-            # Strict validation per PT AGIVA SOP: Alert must be acknowledged before it can be resolved
             if not db_alert.acknowledged:
                 dev_name = db_alert.device.name if db_alert.device else f"Device #{db_alert.device_id}"
                 await update.message.reply_text(
@@ -688,7 +670,6 @@ async def resolve_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             db_alert.resolved_at = now
             db_alert.acknowledged = True
 
-            # Sync with Incident Log
             active_inc = session.query(IncidentLog).filter(
                 IncidentLog.device_id == db_alert.device_id,
                 IncidentLog.type == db_alert.type,
@@ -792,7 +773,6 @@ async def backup_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     cat_desc = f"{category_param.upper()} category" if category_param and category_param != "all" else "all categories"
 
-    # Deteksi protokol komunikasi perangkat riil dari database (SSH vs API)
     method = "SSH"
     session_check = None
     try:
@@ -914,7 +894,6 @@ async def backup_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         status="SENT"
     )
 
-
 async def user_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Command /user: Display engineer profile, Telegram Chat ID, and NOC whitelist verification status"""
     ACTIVE_CHATS.add(update.effective_chat.id)
@@ -929,17 +908,14 @@ async def user_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     session = db_session()
     try:
-        # 1. Check if user is registered with this numerical chat_id
         entry = session.query(TelegramWhitelist).filter(TelegramWhitelist.chat_id == str(user_id)).first()
 
-        # 2. If not found by chat_id, check if approved by Admin via @username
         if not entry and raw_username:
             entry = session.query(TelegramWhitelist).filter(
                 (TelegramWhitelist.telegram_username.ilike(f"@{raw_username}")) |
                 (TelegramWhitelist.telegram_username.ilike(raw_username))
             ).first()
             if entry:
-                # Link user's real Telegram Chat ID
                 entry.chat_id = str(user_id)
                 if full_name:
                     entry.engineer_name = full_name
@@ -947,7 +923,6 @@ async def user_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 if entry.is_active and user_id not in WHITELIST_USERS:
                     WHITELIST_USERS.append(user_id)
 
-        # 3. If registered
         if entry:
             if entry.is_active and user_id not in WHITELIST_USERS:
                 WHITELIST_USERS.append(user_id)
@@ -969,7 +944,6 @@ async def user_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text(reply_msg, parse_mode=ParseMode.HTML)
             return
 
-        # 4. If not registered
         reply_msg = (
             "<b>TELEGRAM USER INFORMATION</b>\n\n"
             f"Name: <code>{html.escape(full_name)}</code>\n"
@@ -997,14 +971,12 @@ async def user_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         session.close()
         db_session.remove()
 
-
 async def approve_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Command /approve @username [role]: Authorize engineer access by Lead Engineer Dara Samsara"""
     user = update.effective_user
     if not user:
         return
 
-    # Authorization: ONLY Lead Engineer can approve
     lead_admin_id = 5419251159
     try:
         env_admin = os.getenv("TELEGRAM_CHAT_ID", "5419251159").strip()
@@ -1023,7 +995,6 @@ async def approve_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         log_telegram_message(update.effective_chat.id, "COMMAND_REPLY", f"Access denied for /approve command to @{u_name} (ID: {user.id}) - Admin privilege required")
         return
 
-    # Parse target parameter (@username) and custom role
     target = None
     custom_role = None
 
@@ -1054,7 +1025,6 @@ async def approve_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         log_telegram_message(update.effective_chat.id, "COMMAND_REPLY", "Response /approve: Rejected - Valid @username is required")
         return
 
-    # Normalize username format
     clean_target = target.lstrip("@").strip()
     username_tag = f"@{clean_target}"
     eng_name = clean_target.replace("_", " ").title()
@@ -1062,7 +1032,6 @@ async def approve_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     session = db_session()
     try:
-        # Search database by username
         entry = session.query(TelegramWhitelist).filter(
             (TelegramWhitelist.telegram_username.ilike(username_tag)) |
             (TelegramWhitelist.telegram_username.ilike(clean_target)) |
@@ -1085,7 +1054,6 @@ async def approve_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             log_telegram_message(update.effective_chat.id, "COMMAND_REPLY", f"Response /approve: Account {entry.telegram_username} updated and approved as {entry.role} by Admin")
             return
 
-        # If not yet in database, create new pending record
         new_entry = TelegramWhitelist(
             chat_id=f"Pending_{clean_target[:35]}",
             telegram_username=username_tag,
@@ -1112,9 +1080,6 @@ async def approve_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         session.close()
         db_session.remove()
 
-
-# ==================== MAIN APPLICATION INITIALIZATION ====================
-
 async def global_error_handler(update: object, context: ContextTypes.DEFAULT_TYPE):
     """Catch all exceptions to ensure bot resilience without crashing"""
     logger.error(f"Global Error Handler caught: {context.error}")
@@ -1136,6 +1101,7 @@ atexit.register(mark_bot_offline)
 def start_local_heartbeat():
     """Write local heartbeat file so local dashboard monitors bot status when running locally"""
     def _worker():
+        """Menulis heartbeat bot secara berkala setiap 5 detik ke file JSON."""
         hb_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'logs')
         os.makedirs(hb_dir, exist_ok=True)
         hb_path = os.path.join(hb_dir, 'bot_heartbeat.json')
@@ -1150,6 +1116,7 @@ def start_local_heartbeat():
     t.start()
 
 def main():
+    """Menginisialisasi heartbeat, handler command Telegram, dan menjalankan polling bot."""
     if not BOT_TOKEN:
         print("[Critical] TELEGRAM_BOT_TOKEN is not set in .env file!")
         return
@@ -1167,7 +1134,6 @@ def main():
 
     app = ApplicationBuilder().token(BOT_TOKEN).build()
 
-    # Command Handlers
     app.add_handler(CommandHandler("start", start_command))
     app.add_handler(CommandHandler("status", status_command))
     app.add_handler(CommandHandler("devices", devices_command))
@@ -1181,7 +1147,6 @@ def main():
     app.add_handler(CommandHandler("user", user_command))
     app.add_handler(CommandHandler("approve", approve_command))
 
-    # Global Error Handler
     app.add_error_handler(global_error_handler)
 
     try:

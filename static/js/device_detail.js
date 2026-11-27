@@ -1,9 +1,3 @@
-/**
- * Device Detail JavaScript - PT Agiva Indonesia Network Automation
- * Real-time metric polling, manual refresh interaction, and 8-card live charts.
- */
-
-// 6 Main Chart & Visual instances (Model 1: 3 rows x 2 panels)
 let chartCpuMem = null;
 let chartTraffic = null;
 let chartBuffers = null;
@@ -11,7 +5,6 @@ let chartErrorsDrops = null;
 let chartLatency = null;
 let chartPacketLoss = null;
 
-// 6 Timeline Navigator instances
 let navCpuMem = null;
 let navTraffic = null;
 let navBuffers = null;
@@ -29,7 +22,6 @@ document.addEventListener('DOMContentLoaded', () => {
     initPortControls();
     initTimeRangeSelector();
 
-    // Restore from cache if available for instant display when app.py terminates
     const devId = typeof CURRENT_DEVICE_ID !== 'undefined' ? CURRENT_DEVICE_ID : 1;
     const cached = loadDeviceMetricsFromStorage(devId, currentDeviceRange);
     if (cached) {
@@ -37,10 +29,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     fetchDeviceMetrics(false);
-    // Real-time polling per 5 detik
     setInterval(() => fetchDeviceMetrics(false), 5000);
 });
 
+// Bind click handlers for device detail time-range selector buttons.
 function initTimeRangeSelector() {
     const container = document.getElementById('deviceTimeRange');
     if (!container) return;
@@ -64,6 +56,7 @@ function initTimeRangeSelector() {
     });
 }
 
+// Bind click and input handlers for port filter tabs and search input.
 function initPortControls() {
     const tabs = document.querySelectorAll('#portFilterTabs .port-filter-btn');
     tabs.forEach(btn => {
@@ -84,6 +77,7 @@ function initPortControls() {
     }
 }
 
+// Filter device port rows by selected tab and search query.
 function applyPortFilters() {
     const rows = document.querySelectorAll('#portsTableBody .port-row');
     rows.forEach(row => {
@@ -117,13 +111,13 @@ function applyPortFilters() {
     });
 }
 
+// Update port status, speed, throughput, PoE, and error cells in place.
 function updatePortsTableRows(ports) {
     if (!ports || !ports.length) return;
     ports.forEach(p => {
         const row = document.querySelector(`#portsTableBody tr[data-port-id="${p.port_id}"]`);
         if (!row) return;
 
-        // 1. Status badge
         const currentStatus = row.getAttribute('data-status');
         if (currentStatus !== p.status) {
             row.setAttribute('data-status', p.status);
@@ -137,22 +131,18 @@ function updatePortsTableRows(ports) {
             }
         }
 
-        // 2. Speed (cell 4)
         if (row.children[4] && p.speed) {
             row.children[4].innerHTML = `<span>${p.speed}</span>`;
         }
 
-        // 3. Combined Throughput Tx / Rx (cell 5)
         if (row.children[5] && p.tx_mbps !== undefined && p.rx_mbps !== undefined) {
             row.children[5].innerHTML = `<span>${p.tx_mbps} / ${p.rx_mbps} Mbps</span>`;
         }
 
-        // 4. Total Transfer Tx/Rx (cell 6)
         if (row.children[6] && p.bytes_tx_fmt && p.bytes_rx_fmt) {
             row.children[6].innerHTML = `<span>${p.bytes_tx_fmt} / ${p.bytes_rx_fmt}</span>`;
         }
 
-        // 5. PoE Power (cell 7) - No badge, clean plain text
         if (row.children[7]) {
             let poeText = '0 W';
             const pidLower = (p.port_id || '').toString().toLowerCase();
@@ -173,7 +163,6 @@ function updatePortsTableRows(ports) {
             row.children[7].innerHTML = '<span>' + poeText + '</span>';
         }
 
-        // 6. Errors (Tx / Rx) / Drops (cell 8) - Transparent 1:1 without summation
         if (row.children[8]) {
             const errTx = (p.errors_tx || 0).toLocaleString('id-ID');
             const errRx = (p.errors_rx || 0).toLocaleString('id-ID');
@@ -183,6 +172,7 @@ function updatePortsTableRows(ports) {
     });
 }
 
+// Save device metrics payload for a given range to localStorage.
 function saveDeviceMetricsToStorage(devId, range, data) {
     if (!data) return;
     try {
@@ -193,6 +183,7 @@ function saveDeviceMetricsToStorage(devId, range, data) {
     }
 }
 
+// Load cached device metrics payload for a given range from localStorage.
 function loadDeviceMetricsFromStorage(devId, range) {
     try {
         const raw = localStorage.getItem(`agiva_device_${devId}_latest_${range}`);
@@ -205,6 +196,7 @@ function loadDeviceMetricsFromStorage(devId, range) {
     return null;
 }
 
+// Update device header, specs, port table, and charts from API response.
 function applyDeviceDataToUI(data) {
     if (!data) return;
 
@@ -287,7 +279,6 @@ function applyDeviceDataToUI(data) {
         if (dnsModeEl && data.specs.dns_mode) dnsModeEl.textContent = data.specs.dns_mode;
     }
 
-    // Synchronize Port Table with Latest 2-Minute Log Cycle
     if (data.ports && Array.isArray(data.ports)) {
         updatePortsTableRows(data.ports);
     }
@@ -295,6 +286,7 @@ function applyDeviceDataToUI(data) {
     renderDeviceCharts(data);
 }
 
+// Update navbar connection status indicator between live and stopped.
 function updateConnectionStatus(isOnline) {
     const indicator = document.querySelector('.status-indicator');
     if (!indicator) return;
@@ -311,10 +303,11 @@ function updateConnectionStatus(isOnline) {
     }
 }
 
+// No-op placeholder for toast notifications.
 function showToast(message, type = 'success') {
-    // Disabled in favor of Inline Button Feedback
 }
 
+// Fetch device telemetry and historical metrics from /api/device/<id>/metrics.
 async function fetchDeviceMetrics(isManual = false) {
     const btn = document.getElementById('btnRefreshDevice') || document.querySelector('.btn-refresh');
     const originalBtnHtml = `
@@ -397,6 +390,7 @@ async function fetchDeviceMetrics(isManual = false) {
     }
 }
 
+// Draw a 270-degree radial gauge arc on the target canvas.
 function drawRadialGauge(canvasId, value, maxVal, color) {
     const canvas = document.getElementById(canvasId);
     if (!canvas) return;
@@ -413,11 +407,10 @@ function drawRadialGauge(canvasId, value, maxVal, color) {
     const centerX = size / 2;
     const centerY = size / 2;
     const radius = (size / 2) - 9;
-    const startAngle = 0.75 * Math.PI; // 135 degrees
-    const endAngle = 2.25 * Math.PI;   // 405 degrees (270 deg sweep)
+    const startAngle = 0.75 * Math.PI;
+    const endAngle = 2.25 * Math.PI;
     const sweep = endAngle - startAngle;
 
-    // Background track
     ctx.beginPath();
     ctx.arc(centerX, centerY, radius, startAngle, endAngle, false);
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
@@ -425,7 +418,6 @@ function drawRadialGauge(canvasId, value, maxVal, color) {
     ctx.lineCap = 'round';
     ctx.stroke();
 
-    // Active progress arc
     const pct = Math.min(1, Math.max(0, value / maxVal));
     if (pct > 0.005) {
         const currentAngle = startAngle + (sweep * pct);
@@ -441,6 +433,7 @@ function drawRadialGauge(canvasId, value, maxVal, color) {
     }
 }
 
+// Create or update a dual-line Chart.js graph with dynamic Y-axis scaling.
 function createOrUpdateDualChart(existingChart, ctx, labels, ds1, ds2, unit = '', suggestedMax = 100, customTooltip = null) {
     if (!ctx) return null;
 
@@ -563,6 +556,7 @@ function createOrUpdateDualChart(existingChart, ctx, labels, ds1, ds2, unit = ''
     });
 }
 
+// Create or update a single-line Chart.js graph with dynamic Y-axis scaling.
 function createOrUpdateSingleLineChart(existingChart, ctx, labels, ds, unit = ' ms', suggestedMax = 10, lineColor = '#06b6d4', fillColor = 'rgba(6, 182, 212, 0.35)') {
     if (!ctx) return null;
 
@@ -657,6 +651,7 @@ function createOrUpdateSingleLineChart(existingChart, ctx, labels, ds, unit = ' 
     });
 }
 
+// Create or update a bar Chart.js histogram with compact axis formatting.
 function createOrUpdateBarChart(existingChart, ctx, labels, datasets, suggestedMax = 100, unit = '') {
     if (!ctx) return null;
 
@@ -753,6 +748,7 @@ function createOrUpdateBarChart(existingChart, ctx, labels, datasets, suggestedM
     });
 }
 
+// Render all 6 device charts and configure timeline navigators for historical ranges.
 function renderDeviceCharts(data) {
     if (!data) return;
     lastDeviceRawData = data;
@@ -760,7 +756,6 @@ function renderDeviceCharts(data) {
     const labels = data.labels || [];
     if (labels.length === 0) return;
 
-    // Ensure fallback array is populated if empty
     if (!data.cpu) data.cpu = labels.map(() => 0);
     if (!data.memory) data.memory = labels.map(() => 0);
     if (!data.traffic) data.traffic = labels.map(() => 0);
@@ -776,7 +771,6 @@ function renderDeviceCharts(data) {
 
     const navIds = ['navCpuMem', 'navTraffic', 'navBuffers', 'navErrorsDrops', 'navLatency', 'navPacketLoss'];
 
-    // If live mode: hide all 6 navigator sliders, render all live data
     if (currentDeviceRange === 'live') {
         navIds.forEach(id => {
             const el = document.getElementById(id);
@@ -786,10 +780,8 @@ function renderDeviceCharts(data) {
         return;
     }
 
-    // Historical mode: 1h, 12h, 24h -> Initialize 6 Timeline Navigators if not yet created
     initTimelineNavigators();
 
-    // Preserve active window boundaries if user is dragging slider
     const sampleNav = navCpuMem || navTraffic;
     const preserveFractions = (sampleNav && (sampleNav.isDragging || (sampleNav.fullLabels && sampleNav.fullLabels.length > 0)))
         ? { start: sampleNav.startFrac, end: sampleNav.endFrac }
@@ -807,7 +799,6 @@ function renderDeviceCharts(data) {
         isNavBatchUpdating = false;
     }
 
-    // Synchronize initial slider positions and render active chart segments
     const activeNav = navCpuMem || navTraffic;
     if (activeNav) {
         const total = labels.length;
@@ -819,6 +810,7 @@ function renderDeviceCharts(data) {
     }
 }
 
+// Initialize TimelineNavigator instances for all 6 device detail charts.
 function initTimelineNavigators() {
     if (typeof TimelineNavigator === 'undefined') return;
 
@@ -940,6 +932,7 @@ function initTimelineNavigators() {
     }
 }
 
+// Synchronize brush window positions across all 6 device timeline navigators.
 function syncAllNavigators(sourceId) {
     const navs = [navCpuMem, navTraffic, navBuffers, navErrorsDrops, navLatency, navPacketLoss];
     const sourceNav = navs.find(n => n && n.container && n.container.id === sourceId);
@@ -955,6 +948,7 @@ function syncAllNavigators(sourceId) {
     });
 }
 
+// Slice and render all 6 device detail charts for the active brush window.
 function renderDeviceChartsSlice(data, startIdx, endIdx) {
     if (!data) return;
     const allLabels = data.labels || [];
@@ -977,7 +971,6 @@ function renderDeviceChartsSlice(data, startIdx, endIdx) {
     const latVals = (data.latency || []).slice(s, e + 1);
     const lossVals = (data.packet_loss || []).slice(s, e + 1);
 
-    // 1. Chart CPU & Memory (Dual-Line)
     chartCpuMem = createOrUpdateDualChart(
         chartCpuMem,
         document.getElementById('chartCpuMem'),
@@ -988,7 +981,6 @@ function renderDeviceChartsSlice(data, startIdx, endIdx) {
         100
     );
 
-    // 2. Chart Traffic Ingress & Egress (Dual-Line with Ingress and Egress only)
     const trafficTooltip = {
         beforeBody: () => '',
         label: function (ctx) {
@@ -1010,7 +1002,6 @@ function renderDeviceChartsSlice(data, startIdx, endIdx) {
         trafficTooltip
     );
 
-    // 3. Chart Buffer Hardware Switch / Firewall Session Capacity / Huawei Buffer Congestion Drops
     const isHuawei = (data.name && data.name.toLowerCase().includes('s5735')) || (data.specs && data.specs.model && data.specs.model.toLowerCase().includes('huawei'));
     const isPalo = (data.name && data.name.toLowerCase().includes('pa220')) || (data.specs && data.specs.model && data.specs.model.toLowerCase().includes('palo'));
     const firstLabel = isPalo ? 'Session Utilization (%)' : (isHuawei ? 'Egress Drops (Tx)' : 'Packet Buffer');
@@ -1028,7 +1019,6 @@ function renderDeviceChartsSlice(data, startIdx, endIdx) {
         chartUnit
     );
 
-    // 4. Spike Bar Chart (Integritas Transmisi Fisik)
     chartErrorsDrops = createOrUpdateBarChart(
         chartErrorsDrops,
         document.getElementById('chartErrorsDrops'),
@@ -1042,7 +1032,6 @@ function renderDeviceChartsSlice(data, startIdx, endIdx) {
         ''
     );
 
-    // 5. Chart Latency (Single-Line ICMP Ping RTT ms)
     chartLatency = createOrUpdateSingleLineChart(
         chartLatency,
         document.getElementById('chartLatency'),
@@ -1052,7 +1041,6 @@ function renderDeviceChartsSlice(data, startIdx, endIdx) {
         10
     );
 
-    // 6. Spike Bar Chart (Ping Drop / Packet Loss %)
     chartPacketLoss = createOrUpdateBarChart(
         chartPacketLoss,
         document.getElementById('chartPacketLoss'),

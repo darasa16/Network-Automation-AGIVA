@@ -1,23 +1,3 @@
-"""
-=============================================================================
-PT AGIVA INDONESIA - NETWORK OPERATIONS AUTOMATION
-Komponen 4: Rule Engine, 10-Minute Incident State Machine & Resilient Alerting
-=============================================================================
-Tanggung Jawab:
-1. Evaluasi metrik telemetri perangkat terhadap batas ambang (Threshold).
-2. Mekanisme 10-Minute State Machine:
-   - Detik 0: Evaluasi Senyap (Silent Evaluation) untuk semua anomali (HOST_DOWN, CPU, RAM, Latency, Loss).
-   - < 10 Menit & Pulih: Masuk ke tabel incident_logs sebagai 'AUTO_COOLDOWN' 
-     (tabel Alert Aktif tetap bersih, Telegram senyap).
-   - >= 10 Menit & Belum Pulih: Eskalasi masuk ke tabel alerts (Active Alerts) 
-     dan kirim notifikasi darurat ke Telegram.
-   - SOP Manual Resolve: Alert yang sudah dieskalasi TETAP OPEN di antrean Active Alerts
-     sampai petugas secara manual mengetik /resolve <alert_id> di Telegram atau klik Resolve di Web.
-3. Resilient Telegram Dispatch: Retry 2x dengan timeout eksplisit dan fail-safe.
-4. Logging terpusat dengan RotatingFileHandler.
-=============================================================================
-"""
-
 import os
 import json
 import time
@@ -33,7 +13,6 @@ ENV_PATH = os.path.join(BASE_DIR, '.env')
 load_dotenv(ENV_PATH, override=True)
 
 logger = get_configured_logger("RuleEngine")
-
 
 def send_telegram_broadcast(message_text, parse_mode='HTML'):
     """
@@ -79,7 +58,6 @@ def send_telegram_broadcast(message_text, parse_mode='HTML'):
 
     return False, 'FAILED: Max retries exceeded'
 
-
 def trigger_alert_with_antispam(session, device, alert_type, severity, message, peak_metric_val=None):
     """
     Mekanisme Anomali & Aturan 10 Menit (State Machine Real-Time):
@@ -97,7 +75,6 @@ def trigger_alert_with_antispam(session, device, alert_type, severity, message, 
     target_chat_id = os.getenv('NOC_TELEGRAM_CHAT_ID', '-1004429503436')
     metric_display = str(peak_metric_val) if peak_metric_val else severity
 
-    # 1. Cek apakah ada insiden aktif yang sedang dalam pemantauan untuk anomali ini
     active_incident = session.query(IncidentLog).filter(
         IncidentLog.device_id == device.device_id,
         IncidentLog.type == alert_type,
@@ -107,10 +84,6 @@ def trigger_alert_with_antispam(session, device, alert_type, severity, message, 
 
     now = datetime.now()
 
-    # =========================================================================
-    # KASUS 1: Anomali Baru Pertama Kali Terdeteksi (Detik ke-0)
-    # Mode Senyap (Silent Evaluation Window 10 Menit) - Telegram Silent
-    # =========================================================================
     if not active_incident:
         new_incident = IncidentLog(
             device_id=device.device_id,
@@ -128,22 +101,15 @@ def trigger_alert_with_antispam(session, device, alert_type, severity, message, 
         logger.info(f"[RuleEngine] Anomali terdeteksi: {device.name} - {alert_type} ({metric_display}). Evaluasi senyap 10 menit dimulai (Telegram silent).")
         return True, new_incident, "Deteksi anomali baru, evaluasi senyap 10 menit aktif (Telegram silent)."
 
-    # =========================================================================
-    # KASUS 2: Anomali Masih Berlangsung (Evaluasi Durasi 10 Menit)
-    # =========================================================================
     elapsed_seconds = (now - active_incident.started_at).total_seconds()
     active_incident.duration_seconds = int(elapsed_seconds)
 
-    # Perbarui peak_metric jika ada
     if peak_metric_val and active_incident.peak_metric != metric_display:
         active_incident.peak_metric = metric_display
 
-    # Cek apakah durasi sudah mencapai atau melewati 10 menit (600 detik)
     if elapsed_seconds >= 600 and active_incident.status == 'ACTIVE_MONITORING':
-        # ESKALASI KE ACTIVE ALERTS!
         active_incident.status = 'ACTIVE_ALERT'
 
-        # Buat entri di tabel alerts
         existing_alert = session.query(Alert).filter(
             Alert.device_id == device.device_id,
             Alert.type == alert_type,
@@ -165,7 +131,6 @@ def trigger_alert_with_antispam(session, device, alert_type, severity, message, 
         else:
             alert_id = existing_alert.alert_id
 
-        # Format emergency escalation message to Telegram
         dur_mins = int(elapsed_seconds // 60)
         escalate_msg = (
             f"<b>{severity} ALERT</b>\n\n"
@@ -196,10 +161,8 @@ def trigger_alert_with_antispam(session, device, alert_type, severity, message, 
         logger.warning(f"[RuleEngine] ALERT ESCALATION #{alert_id}: {device.name} - {alert_type} active for {dur_mins} mins.")
         return True, active_incident, "Anomaly persisted ≥ 10 minutes, escalated to Active Alert."
 
-    # Spam suppressed during cooldown period or if already escalated
     session.commit()
     return False, active_incident, "Under active monitoring / cooldown."
-
 
 def auto_resolve_alert(session, device, alert_type, recovery_message=None):
     """
@@ -216,7 +179,6 @@ def auto_resolve_alert(session, device, alert_type, recovery_message=None):
     target_chat_id = os.getenv('NOC_TELEGRAM_CHAT_ID', '-1004429503436')
     now = datetime.now()
 
-    # 1. Cari incident log aktif
     active_incident = session.query(IncidentLog).filter(
         IncidentLog.device_id == device.device_id,
         IncidentLog.type == alert_type,
@@ -224,7 +186,6 @@ def auto_resolve_alert(session, device, alert_type, recovery_message=None):
         IncidentLog.status.in_(['ACTIVE_MONITORING', 'ACTIVE_ALERT', 'ESCALATED_TO_ALERT'])
     ).first()
 
-    # 2. Cari juga alert aktif jika ada
     active_alert = session.query(Alert).filter(
         Alert.device_id == device.device_id,
         Alert.type == alert_type,
@@ -234,7 +195,6 @@ def auto_resolve_alert(session, device, alert_type, recovery_message=None):
     if not active_incident and not active_alert:
         return False, None
 
-    # Hitung durasi anomali
     started_time = active_incident.started_at if active_incident else (active_alert.triggered_at if active_alert else now)
     dur_sec = max(1, int((now - started_time).total_seconds()))
     m, s = divmod(dur_sec, 60)
@@ -246,11 +206,6 @@ def auto_resolve_alert(session, device, alert_type, recovery_message=None):
     else:
         dur_str = f"{s}s"
 
-    # =========================================================================
-    # KASUS A: Anomali Belum Dieskalasi ke Alert Aktif (AUTO-COOLDOWN)
-    # Berlaku jika insiden hanya dalam pemantauan (ACTIVE_MONITORING) dan belum ada active_alert.
-    # Sesuai SOP PT AGIVA: Pulih < 10 Menit dicatat senyap (Telegram silent).
-    # =========================================================================
     is_monitoring_only = (active_alert is None) and (active_incident and active_incident.status == 'ACTIVE_MONITORING')
 
     if is_monitoring_only:
@@ -261,12 +216,6 @@ def auto_resolve_alert(session, device, alert_type, recovery_message=None):
         logger.info(f"[RuleEngine] Insiden #{active_incident.incident_id} ({device.name} - {alert_type}) pulih dalam {dur_str} -> AUTO_COOLDOWN dicatat senyap (Telegram silent).")
         return True, active_incident
 
-    # =========================================================================
-    # KASUS B: Anomali Telah Dieskalasi ke Alert (>= 10 Menit) - MANUAL RESOLVE ONLY
-    # =========================================================================
-    # Sesuai SOP PT AGIVA: Sistem TIDAK MENUTUP alert secara otomatis meskipun metrik sudah kembali normal.
-    # Alert TETAP TERBUKA di antrean Active & Sustained Alerts sampai petugas secara manual
-    # mengetik /resolve <alert_id> di Telegram Bot atau klik tombol Resolve di Web Dashboard.
     alert_ref = f"#{active_alert.alert_id}" if active_alert else (f"#INC-{active_incident.incident_id}" if active_incident else "-")
     logger.info(
         f"[RuleEngine] Metrics for {device.name} - {alert_type} returned to normal, "
@@ -274,9 +223,9 @@ def auto_resolve_alert(session, device, alert_type, recovery_message=None):
     )
     return False, None
 
-
 def evaluate_device_rules(session, device, metrics):
 
+    """Mengevaluasi status perangkat, CPU, memori, latensi, dan packet loss terhadap threshold alert."""
     if device.status == "DOWN":
         trigger_alert_with_antispam(
             session=session,
@@ -306,7 +255,6 @@ def evaluate_device_rules(session, device, metrics):
             peak_metric_val=f"{cpu_val:.1f}%"
         )
     elif cpu_val <= 80.0:
-        # Auto-resolve jika CPU sudah kembali di bawah 80%
         auto_resolve_alert(
             session=session,
             device=device,
@@ -314,7 +262,6 @@ def evaluate_device_rules(session, device, metrics):
             recovery_message=f"CPU load on {device.name} normalized ({cpu_val:.1f}%)."
         )
 
-    # 3. Evaluasi Penggunaan Memori (RAM)
     mem_val = float(device.mem_usage or 0.0)
     if mem_val > 90.0:
         severity = "CRITICAL" if mem_val >= 95.0 else "WARNING"
@@ -327,7 +274,6 @@ def evaluate_device_rules(session, device, metrics):
             peak_metric_val=f"{mem_val:.1f}%"
         )
     elif mem_val <= 80.0:
-        # Auto-resolve jika Memory sudah kembali di bawah 80%
         auto_resolve_alert(
             session=session,
             device=device,
@@ -335,7 +281,6 @@ def evaluate_device_rules(session, device, metrics):
             recovery_message=f"Memory utilization on {device.name} normalized ({mem_val:.1f}%)."
         )
 
-    # 4. Evaluasi Latency ICMP (ms)
     lat_val = float(device.latency_ms or 0.0)
     if device.status == "UP":
         if lat_val > 5.0:
@@ -356,10 +301,8 @@ def evaluate_device_rules(session, device, metrics):
                 recovery_message=f"Latency to {device.name} normalized ({lat_val:.1f} ms)."
             )
 
-    # 5. Evaluasi Ping Drop / Packet Loss (%)
     loss_val = float(device.packet_loss or 0.0)
     if device.status == "UP":
-        # Jika loss > 5% dan < 100% (100% adalah kondisi HOST_DOWN)
         if 5.0 < loss_val < 100.0:
             severity = "CRITICAL" if loss_val >= 25.0 else "WARNING"
             trigger_alert_with_antispam(

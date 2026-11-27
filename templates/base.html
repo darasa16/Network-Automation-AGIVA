@@ -5,20 +5,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}AGIVA NOC - Network Automation Dashboard{% endblock %}</title>
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
         rel="stylesheet">
-    <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
-    <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=10.7">
 </head>
 
 <body>
-    <!-- Top Navigation Bar -->
     <header class="navbar">
         <div class="nav-left">
             <a href="{{ url_for('dashboard') }}" class="brand-logo">
@@ -79,17 +75,13 @@
         </div>
     </header>
 
-    <!-- Main View Content -->
     <main class="main-container">
         {% block content %}{% endblock %}
     </main>
 
-    <!-- Toast Notification Container for Real-time Alerts -->
     <div id="toastContainer" class="toast-container"></div>
 
-    <!-- Base Scripts -->
-    <script>
-        // Update live clock display
+    <script>        // Update the live WIB clock display in the navbar.
         function updateClock() {
             const now = new Date();
             const timeStr = now.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' WIB';

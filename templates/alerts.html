@@ -10,10 +10,8 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
         rel="stylesheet">
-    <!-- Relative CSS -->
     <link rel="stylesheet" href="/static/css/style.css?v=10.7">
-    <style>
-        .section-separator {
+    <style>        .section-separator {
             margin-top: 1.5rem;
             padding-top: 2rem;
             border-top: 1px solid rgba(255, 255, 255, 0.08);
@@ -22,7 +20,6 @@
             gap: 24px;
         }
 
-        /* Standardize 100% Inter Font for ALL elements across both tables */
         #alertsTable,
         #incidentsTable,
         #alertsTable *,
@@ -82,7 +79,6 @@
             color: var(--color-copper) !important;
         }
 
-        /* Pagination Bar & Controls */
         .pagination-container {
             display: flex;
             justify-content: space-between;
@@ -177,7 +173,6 @@
 </head>
 
 <body>
-    <!-- Top Navigation Bar -->
     <header class="navbar">
         <div class="nav-left">
             <a href="/" class="brand-logo">
@@ -227,13 +222,9 @@
         </div>
     </header>
 
-    <!-- Main Container -->
     <main class="main-container">
         <div class="alerts-page-container">
 
-            <!-- ========================================================= -->
-            <!-- 1. ACTIVE & SUSTAINED ALERTS TABLE (>= 10 MINUTES)        -->
-            <!-- ========================================================= -->
             <div class="page-header-row">
                 <div>
                     <h2>Active & Sustained Alerts</h2>
@@ -252,7 +243,6 @@
                 </div>
             </div>
 
-            <!-- Alert Filters -->
             <div class="filter-bar" id="alertsFilterBar"
                 style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
                 <div style="display: flex; gap: 8px; flex-wrap: wrap;">
@@ -271,7 +261,6 @@
                 </div>
             </div>
 
-            <!-- Alerts Table Panel -->
             <div class="table-panel">
                 <div class="table-responsive">
                     <table class="data-table" id="alertsTable">
@@ -288,21 +277,16 @@
                             </tr>
                         </thead>
                         <tbody id="alertsTableBody">
-                            <!-- Populated dynamically by JavaScript -->
                         </tbody>
                     </table>
                 </div>
 
-                <!-- Pagination Bar for Active & Sustained Alerts -->
                 <div class="pagination-container" id="alertsPaginationContainer">
                     <div id="alertsPageInfo" class="pagination-info">Showing 0 logs</div>
                     <div class="pagination-controls" id="alertsPaginationControls"></div>
                 </div>
             </div>
 
-            <!-- ========================================================= -->
-            <!-- 2. INCIDENT HISTORY & COOLDOWN LOG TABLE (30-DAY RETENTION)-->
-            <!-- ========================================================= -->
             <div class="section-separator">
                 <div class="page-header-row">
                     <div>
@@ -311,7 +295,6 @@
                     </div>
                 </div>
 
-                <!-- Incident Filters -->
                 <div class="filter-bar" id="incidentsFilterBar"
                     style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
                     <div style="display: flex; gap: 8px; flex-wrap: wrap;">
@@ -336,7 +319,6 @@
                     </div>
                 </div>
 
-                <!-- Incidents Table Panel (Without Message column as requested) -->
                 <div class="table-panel">
                     <div class="table-responsive">
                         <table class="data-table" id="incidentsTable">
@@ -355,12 +337,10 @@
                                 </tr>
                             </thead>
                             <tbody id="incidentsTableBody">
-                                <!-- Populated dynamically by JavaScript -->
                             </tbody>
                         </table>
                     </div>
 
-                    <!-- Pagination Bar for Incident Log & Cooldown History -->
                     <div class="pagination-container" id="incidentsPaginationContainer">
                         <div id="incidentsPageInfo" class="pagination-info">Showing 0 logs</div>
                         <div class="pagination-controls" id="incidentsPaginationControls"></div>
@@ -371,12 +351,11 @@
         </div>
     </main>
 
-    <!-- Toast Notification Container -->
     <div id="toastContainer" class="toast-container"></div>
 
     <script id="alertsData" type="application/json">{{ alerts | tojson }}</script>
     <script id="incidentsData" type="application/json">{{ incidents | tojson }}</script>
-    <script>
+    <script>        // Update the live WIB clock display in the navbar.
         function updateClock() {
             const now = new Date();
             const timeStr = now.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' WIB';
@@ -402,6 +381,7 @@
             allIncidents = [];
         }
 
+        // Escape HTML special characters to prevent XSS.
         function escapeHtml(text) {
             if (!text) return '';
             return String(text)
@@ -412,14 +392,12 @@
                 .replace(/'/g, "&#039;");
         }
 
-        // =========================================================================
-        // 1. ACTIVE & SUSTAINED ALERTS TABLE (Data-Driven Paging 20 items/page)
-        // =========================================================================
         let currentAlertsPage = 1;
         const alertsPerPage = 20;
         let currentAlertFilter = 'all';
         let currentAlertsSearch = '';
 
+        // Filter active alerts by ACK state and search query.
         function getFilteredAlerts() {
             const q = currentAlertsSearch.trim().toLowerCase();
             return allAlerts.filter(a => {
@@ -438,6 +416,7 @@
             });
         }
 
+        // Jump to the pagination page containing a targeted alert row.
         function checkTargetAlertPage(targetRowId) {
             let rowId = targetRowId;
             if (!rowId && window.location.hash) {
@@ -467,6 +446,7 @@
         }
         window.checkTargetAlertPage = checkTargetAlertPage;
 
+        // Render paginated active alerts table rows.
         function renderAlertsTable(targetRowId) {
             if (targetRowId) {
                 checkTargetAlertPage(targetRowId);
@@ -553,19 +533,18 @@
         }
         window.renderAlertsTable = renderAlertsTable;
 
+        // Render pagination controls for the active alerts table.
         function renderAlertsPaginationButtons(totalPages) {
             const controls = document.getElementById('alertsPaginationControls');
             if (!controls) return;
 
             let btnHtml = '';
 
-            // Prev Button (‹ Prev)
             btnHtml += `<button type="button" class="pagination-nav-btn ${currentAlertsPage === 1 ? 'disabled' : ''}" 
                          onclick="gotoAlertPage(${currentAlertsPage - 1})" ${currentAlertsPage === 1 ? 'disabled' : ''}>
                          <span>&#8249;</span> <span>Prev</span>
                         </button>`;
 
-            // Smart pagination formatting (1 ... 9 [10] 11 ... 20)
             if (totalPages <= 7) {
                 for (let p = 1; p <= totalPages; p++) {
                     btnHtml += `<button type="button" class="pagination-num-btn ${p === currentAlertsPage ? 'active' : ''}" 
@@ -603,7 +582,6 @@
                              onclick="gotoAlertPage(${totalPages})">${totalPages}</button>`;
             }
 
-            // Next Button (Next ›)
             btnHtml += `<button type="button" class="pagination-nav-btn ${currentAlertsPage === totalPages ? 'disabled' : ''}" 
                          onclick="gotoAlertPage(${currentAlertsPage + 1})" ${currentAlertsPage === totalPages ? 'disabled' : ''}>
                          <span>Next</span> <span>&#8250;</span>
@@ -612,6 +590,7 @@
             controls.innerHTML = btnHtml;
         }
 
+        // Smoothly scroll to the top of a table.
         function scrollToTableTop(elementId) {
             requestAnimationFrame(() => {
                 const el = document.getElementById(elementId);
@@ -624,6 +603,7 @@
         }
         window.scrollToTableTop = scrollToTableTop;
 
+        // Navigate to a specific page in the active alerts table.
         function gotoAlertPage(page) {
             const filteredAlerts = getFilteredAlerts();
             const totalPages = Math.ceil(filteredAlerts.length / alertsPerPage) || 1;
@@ -637,7 +617,6 @@
         }
         window.gotoAlertPage = gotoAlertPage;
 
-        // Alerts Filter Tab Listeners
         document.querySelectorAll('#alertsFilterBar .filter-tab').forEach(tab => {
             tab.addEventListener('click', () => {
                 document.querySelectorAll('#alertsFilterBar .filter-tab').forEach(t => t.classList.remove('active'));
@@ -651,14 +630,12 @@
             });
         });
 
-        // =========================================================================
-        // 2. INCIDENT LOG & COOLDOWN HISTORY (Data-Driven Paging 20 items/page)
-        // =========================================================================
         let currentIncidentsPage = 1;
         const incidentsPerPage = 20;
         let currentIncidentFilter = 'all';
         let currentIncidentsSearch = '';
 
+        // Filter incident logs by status tab and search query.
         function getFilteredIncidents() {
             const q = currentIncidentsSearch.trim().toLowerCase();
             return allIncidents.filter(inc => {
@@ -680,6 +657,7 @@
             });
         }
 
+        // Jump to the pagination page containing a targeted incident row.
         function checkTargetIncidentPage(targetRowId) {
             let rowId = targetRowId;
             if (!rowId && window.location.hash) {
@@ -709,6 +687,7 @@
         }
         window.checkTargetIncidentPage = checkTargetIncidentPage;
 
+        // Render paginated incident log table rows.
         function renderIncidentsTable(targetRowId) {
             if (targetRowId) {
                 checkTargetIncidentPage(targetRowId);
@@ -805,19 +784,18 @@
         }
         window.renderIncidentsTable = renderIncidentsTable;
 
+        // Render pagination controls for the incident log table.
         function renderIncidentsPaginationButtons(totalPages) {
             const controls = document.getElementById('incidentsPaginationControls');
             if (!controls) return;
 
             let btnHtml = '';
 
-            // Prev Button (‹ Prev)
             btnHtml += `<button type="button" class="pagination-nav-btn ${currentIncidentsPage === 1 ? 'disabled' : ''}" 
                          onclick="gotoIncidentPage(${currentIncidentsPage - 1})" ${currentIncidentsPage === 1 ? 'disabled' : ''}>
                          <span>&#8249;</span> <span>Prev</span>
                         </button>`;
 
-            // Smart pagination formatting (1 ... 9 [10] 11 ... 20)
             if (totalPages <= 7) {
                 for (let p = 1; p <= totalPages; p++) {
                     btnHtml += `<button type="button" class="pagination-num-btn ${p === currentIncidentsPage ? 'active' : ''}" 
@@ -855,7 +833,6 @@
                              onclick="gotoIncidentPage(${totalPages})">${totalPages}</button>`;
             }
 
-            // Next Button (Next ›)
             btnHtml += `<button type="button" class="pagination-nav-btn ${currentIncidentsPage === totalPages ? 'disabled' : ''}" 
                          onclick="gotoIncidentPage(${currentIncidentsPage + 1})" ${currentIncidentsPage === totalPages ? 'disabled' : ''}>
                          <span>Next</span> <span>&#8250;</span>
@@ -864,6 +841,7 @@
             controls.innerHTML = btnHtml;
         }
 
+        // Navigate to a specific page in the incident log table.
         function gotoIncidentPage(page) {
             const filteredIncidents = getFilteredIncidents();
             const totalPages = Math.ceil(filteredIncidents.length / incidentsPerPage) || 1;
@@ -877,7 +855,6 @@
         }
         window.gotoIncidentPage = gotoIncidentPage;
 
-        // Incidents Filter Tab Listeners
         document.querySelectorAll('#incidentsFilterBar .filter-tab').forEach(tab => {
             tab.addEventListener('click', () => {
                 document.querySelectorAll('#incidentsFilterBar .filter-tab').forEach(t => t.classList.remove('active'));
@@ -891,7 +868,6 @@
             });
         });
 
-        // Setup In-Table Search Input Listeners
         const alertsSearchInput = document.getElementById('alertsTableSearch');
         const alertsSearchClear = document.getElementById('alertsTableSearchClear');
         if (alertsSearchInput) {
@@ -942,11 +918,8 @@
             });
         }
 
-        // =========================================================================
-        // 3. PAGE INITIALIZATION & HASH EVENT LISTENER
-        // =========================================================================
+        // Initialize URL search parameters, pagination, and hash scrolling.
         function initPagination() {
-            // Check URL query param (?search=...)
             const urlParams = new URLSearchParams(window.location.search);
             const searchParam = urlParams.get('search');
             const hash = window.location.hash;
@@ -969,7 +942,6 @@
             checkTargetIncidentPage();
             renderIncidentsTable();
 
-            // Smooth scroll to table if targeted
             if (hash === '#alertsTable') {
                 const el = document.getElementById('alertsTable');
                 if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -992,9 +964,7 @@
             renderIncidentsTable();
         });
 
-        // 4. ACTION HANDLERS (Refresh Data)
-        // =========================================================================
-        // Refresh Data with spinning animation
+        // Show refreshing state and reload the alerts page.
         function refreshAlerts(btn) {
             if (btn) {
                 btn.disabled = true;
@@ -1010,8 +980,8 @@
             }, 250);
         }
 
+        // No-op placeholder for toast notifications.
         function showToast(message, isError = false) {
-            // Disabled in favor of Inline Button Feedback
         }
     </script>
     <script id="nav-devices-data" type="application/json">{{ nav_devices | tojson }}</script>

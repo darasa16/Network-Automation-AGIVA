@@ -15,7 +15,6 @@ from dotenv import load_dotenv
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
-# Import database dan rule engine mandiri (Komponen 4 LLD)
 from database import db_session
 from models import Device, DeviceStatusLog, IncidentLog, WanStatusLog
 from rule_engine import evaluate_device_rules, trigger_alert_with_antispam
@@ -51,7 +50,6 @@ def get_next_polling_time(reference_time=None):
     next_dt = reference_time + timedelta(minutes=POLLING_INTERVAL_MINUTES)
     return next_dt.strftime("%Y-%m-%d %H:%M:%S")
 
-
 def measure_ping_metrics(host, count=3, timeout_sec=1):
     """
     Uji reachability dan metrik performa transmisi via ICMP Ping (Windows & Linux).
@@ -67,12 +65,10 @@ def measure_ping_metrics(host, count=3, timeout_sec=1):
         loss_pct = 100.0
         avg_latency = 0.0
 
-        # Regex Loss
         loss_m = re.search(r'\((\d+)%\s+loss\)', out, re.IGNORECASE) or re.search(r'(\d+)%\s+packet loss', out, re.IGNORECASE)
         if loss_m:
             loss_pct = float(loss_m.group(1))
 
-        # Regex Latency RTT
         lat_m = re.search(r'Average\s*=\s*(\d+)ms', out, re.IGNORECASE)
         if lat_m:
             avg_latency = float(lat_m.group(1))
@@ -88,7 +84,6 @@ def measure_ping_metrics(host, count=3, timeout_sec=1):
     except Exception:
         return False, 0.0, 100.0
 
-
 def ping_device(host, timeout_sec=2):
     """
     Uji reachability cepat via ICMP Ping (Windows & Linux).
@@ -98,11 +93,6 @@ def ping_device(host, timeout_sec=2):
     is_up, _, _ = measure_ping_metrics(host, count=1, timeout_sec=timeout_sec)
     return is_up
 
-
-# =========================================================================
-# MESIN PROTOKOL SNMP v2c (PURE PYTHON ASN.1 BER CLIENT) - ZERO DEPENDENCY
-# =========================================================================
-# ==================== ASN.1 & SNMP BER CONSTANTS ====================
 TAG_BOOLEAN = 0x01
 TAG_INTEGER = 0x02
 TAG_BITSTRING = 0x03
@@ -128,82 +118,70 @@ TAG_NO_SUCH_OBJECT = 0x80
 TAG_NO_SUCH_INSTANCE = 0x81
 TAG_END_OF_MIB_VIEW = 0x82
 
-# ==================== STANDARD & VENDOR MIB OIDS ====================
-# RFC 1213 / MIB-II
 OID_SYS_DESCR = "1.3.6.1.2.1.1.1.0"
 OID_SYS_UPTIME = "1.3.6.1.2.1.1.3.0"
 OID_SYS_CONTACT = "1.3.6.1.2.1.1.4.0"
 OID_SYS_NAME = "1.3.6.1.2.1.1.5.0"
 OID_SYS_LOCATION = "1.3.6.1.2.1.1.6.0"
 
-# RFC 2863 / IF-MIB (Universal Across Aruba, Huawei, Palo Alto)
 OID_IF_DESCR = "1.3.6.1.2.1.2.2.1.2"
-OID_IF_ADMIN_STATUS = "1.3.6.1.2.1.2.2.1.7"      # 1=UP, 2=DOWN, 3=TESTING
-OID_IF_OPER_STATUS = "1.3.6.1.2.1.2.2.1.8"       # 1=UP, 2=DOWN
+OID_IF_ADMIN_STATUS = "1.3.6.1.2.1.2.2.1.7"
+OID_IF_OPER_STATUS = "1.3.6.1.2.1.2.2.1.8"
 OID_IF_IN_ERRORS = "1.3.6.1.2.1.2.2.1.14"
 OID_IF_OUT_ERRORS = "1.3.6.1.2.1.2.2.1.20"
 OID_IF_IN_DISCARDS = "1.3.6.1.2.1.2.2.1.13"
 OID_IF_OUT_DISCARDS = "1.3.6.1.2.1.2.2.1.19"
 
-# 64-Bit High Capacity (HC) Counters (No 4GB 32-bit wrap limit)
 OID_IF_NAME = "1.3.6.1.2.1.31.1.1.1.1"
-OID_IF_HC_IN_OCTETS = "1.3.6.1.2.1.31.1.1.1.6"   # Rx Bytes (Ingress)
-OID_IF_HC_OUT_OCTETS = "1.3.6.1.2.1.31.1.1.1.10" # Tx Bytes (Egress)
-OID_IF_HIGH_SPEED = "1.3.6.1.2.1.31.1.1.1.15"    # Link Speed in Mbps
+OID_IF_HC_IN_OCTETS = "1.3.6.1.2.1.31.1.1.1.6"
+OID_IF_HC_OUT_OCTETS = "1.3.6.1.2.1.31.1.1.1.10"
+OID_IF_HIGH_SPEED = "1.3.6.1.2.1.31.1.1.1.15"
 
-# --- VENDOR SPECIFIC CPU, MEMORY & BUFFER OIDS ---
-# 1. Aruba 2930F (HP-Enterprise MIB)
-OID_ARUBA_CPU_UTIL = "1.3.6.1.4.1.11.2.14.11.5.1.9.6.1.0"          # hpSwitchCpuStat (1 min avg)
-OID_ARUBA_MEM_TOTAL = "1.3.6.1.4.1.11.2.14.11.5.1.1.2.2.1.1.5.1"   # Total Memory (Bytes) - hpGlobalMemTotalBytes
-OID_ARUBA_MEM_FREE = "1.3.6.1.4.1.11.2.14.11.5.1.1.2.2.1.1.6.1"    # Free Memory (Bytes) - hpGlobalMemFreeBytes
-OID_ARUBA_MEM_ALLOC = "1.3.6.1.4.1.11.2.14.11.5.1.1.2.2.1.1.7.1"   # Allocated Memory (Bytes) - hpGlobalMemAllocBytes
-OID_ARUBA_PKT_BUF_TOTAL = "1.3.6.1.4.1.11.2.14.11.5.1.1.1.1.1.1.4.1" # Total Packet Buffers
-OID_ARUBA_PKT_BUF_FREE = "1.3.6.1.4.1.11.2.14.11.5.1.1.1.1.1.1.3.1"  # Free Packet Buffers
-OID_ARUBA_MSG_BUF_TOTAL = "1.3.6.1.4.1.11.2.14.11.5.1.1.1.2.1.1.4.1" # Total Message Buffers
-OID_ARUBA_MSG_BUF_FREE = "1.3.6.1.4.1.11.2.14.11.5.1.1.1.2.1.1.3.1"  # Free Message Buffers
-OID_ARUBA_POE_PORT_POWER = "1.3.6.1.4.1.11.2.14.11.1.9.1.1.1.1.1"    # Real Port PoE Power Draw
+OID_ARUBA_CPU_UTIL = "1.3.6.1.4.1.11.2.14.11.5.1.9.6.1.0"
+OID_ARUBA_MEM_TOTAL = "1.3.6.1.4.1.11.2.14.11.5.1.1.2.2.1.1.5.1"
+OID_ARUBA_MEM_FREE = "1.3.6.1.4.1.11.2.14.11.5.1.1.2.2.1.1.6.1"
+OID_ARUBA_MEM_ALLOC = "1.3.6.1.4.1.11.2.14.11.5.1.1.2.2.1.1.7.1"
+OID_ARUBA_PKT_BUF_TOTAL = "1.3.6.1.4.1.11.2.14.11.5.1.1.1.1.1.1.4.1"
+OID_ARUBA_PKT_BUF_FREE = "1.3.6.1.4.1.11.2.14.11.5.1.1.1.1.1.1.3.1"
+OID_ARUBA_MSG_BUF_TOTAL = "1.3.6.1.4.1.11.2.14.11.5.1.1.1.2.1.1.4.1"
+OID_ARUBA_MSG_BUF_FREE = "1.3.6.1.4.1.11.2.14.11.5.1.1.1.2.1.1.3.1"
+OID_ARUBA_POE_PORT_POWER = "1.3.6.1.4.1.11.2.14.11.1.9.1.1.1.1.1"
 
-# 2. Huawei CloudEngine S5735 (Huawei VRP / YunShan MIB & Entity-MIB)
-OID_HUAWEI_CPU_UTIL = "1.3.6.1.4.1.2011.5.25.31.1.1.1.1.5.16842753"  # hwEntityCpuUsage
-OID_HUAWEI_MEM_UTIL = "1.3.6.1.4.1.2011.5.25.31.1.1.1.1.7.16842753"  # hwEntityMemUsage (%)
-OID_HUAWEI_TEMP = "1.3.6.1.4.1.2011.5.25.31.1.1.1.1.11.16842753"     # hwEntityTemperature (°C)
-OID_HUAWEI_SERIAL = "1.3.6.1.2.1.47.1.1.1.1.11.16842753"              # Board Serial Number (entPhysicalSerialNum)
-OID_HUAWEI_CHASSIS_SERIAL = "1.3.6.1.2.1.47.1.1.1.1.11.16777216"      # Chassis Serial Number
-OID_HUAWEI_MODEL = "1.3.6.1.2.1.47.1.1.1.1.13.16842753"               # Model Name (entPhysicalModelName)
-OID_HUAWEI_HW_REV = "1.3.6.1.2.1.47.1.1.1.1.8.16842753"                # Hardware Revision (entPhysicalHardwareRev)
-OID_HUAWEI_RAM_TOTAL = "1.3.6.1.4.1.2011.6.3.5.1.1.2.1.1.0"           # Total Memory Bytes (hwMemoryDevSize)
-OID_HUAWEI_FAN1_STATUS = "1.3.6.1.4.1.2011.5.25.31.1.1.10.1.7.1.1"    # Fan 1 Status (1=Normal)
-OID_HUAWEI_FAN2_STATUS = "1.3.6.1.4.1.2011.5.25.31.1.1.10.1.7.1.2"    # Fan 2 Status (1=Normal)
-OID_BRIDGE_BASE_MAC = "1.3.6.1.2.1.17.1.1.0"                          # dot1dBaseBridgeAddress (Bridge MAC)
-OID_ENT_PHYSICAL_SERIAL = "1.3.6.1.2.1.47.1.1.1.1.11"                  # entPhysicalSerialNum (Base Walk)
-OID_DOT1Q_VLAN_STATIC_NAME = "1.3.6.1.2.1.17.7.1.4.3.1.1"              # dot1qVlanStaticName (Q-BRIDGE-MIB)
+OID_HUAWEI_CPU_UTIL = "1.3.6.1.4.1.2011.5.25.31.1.1.1.1.5.16842753"
+OID_HUAWEI_MEM_UTIL = "1.3.6.1.4.1.2011.5.25.31.1.1.1.1.7.16842753"
+OID_HUAWEI_TEMP = "1.3.6.1.4.1.2011.5.25.31.1.1.1.1.11.16842753"
+OID_HUAWEI_SERIAL = "1.3.6.1.2.1.47.1.1.1.1.11.16842753"
+OID_HUAWEI_CHASSIS_SERIAL = "1.3.6.1.2.1.47.1.1.1.1.11.16777216"
+OID_HUAWEI_MODEL = "1.3.6.1.2.1.47.1.1.1.1.13.16842753"
+OID_HUAWEI_HW_REV = "1.3.6.1.2.1.47.1.1.1.1.8.16842753"
+OID_HUAWEI_RAM_TOTAL = "1.3.6.1.4.1.2011.6.3.5.1.1.2.1.1.0"
+OID_HUAWEI_FAN1_STATUS = "1.3.6.1.4.1.2011.5.25.31.1.1.10.1.7.1.1"
+OID_HUAWEI_FAN2_STATUS = "1.3.6.1.4.1.2011.5.25.31.1.1.10.1.7.1.2"
+OID_BRIDGE_BASE_MAC = "1.3.6.1.2.1.17.1.1.0"
+OID_ENT_PHYSICAL_SERIAL = "1.3.6.1.2.1.47.1.1.1.1.11"
+OID_DOT1Q_VLAN_STATIC_NAME = "1.3.6.1.2.1.17.7.1.4.3.1.1"
 
-# 3. Palo Alto PA-220 (HOST-RESOURCES-MIB & PAN-COMMON-MIB)
-OID_PA_CPU_DP0 = "1.3.6.1.2.1.25.3.3.1.2.1"          # hrProcessorLoad (Data Plane DP0)
-OID_PA_CPU_MP = "1.3.6.1.2.1.25.3.3.1.2.2"           # hrProcessorLoad (Management Plane MP)
-OID_PA_MEM_TOTAL = "1.3.6.1.2.1.25.2.3.1.5.1020"    # hrStorageSize (Slot-1 Management Memory)
-OID_PA_MEM_USED = "1.3.6.1.2.1.25.2.3.1.6.1020"     # hrStorageUsed (Slot-1 Management Memory)
-OID_PA_SW_VERSION = "1.3.6.1.4.1.25461.2.1.2.1.1.0" # panSysSwVersion
-OID_PA_SERIAL = "1.3.6.1.4.1.25461.2.1.2.1.3.0"     # panSysSerialNumber
-OID_PA_SESSION_UTIL = "1.3.6.1.4.1.25461.2.1.2.3.1.0" # panSessionUtilization (%)
-OID_PA_SESSION_MAX = "1.3.6.1.4.1.25461.2.1.2.3.2.0"  # panSessionMax (Max sessions)
-OID_PA_ACTIVE_SESSIONS = "1.3.6.1.4.1.25461.2.1.2.3.3.0" # panSysActiveSessions
-OID_PA_ACTIVE_TCP = "1.3.6.1.4.1.25461.2.1.2.3.4.0" # panSessionActiveTcp
-OID_PA_ACTIVE_UDP = "1.3.6.1.4.1.25461.2.1.2.3.5.0" # panSessionActiveUdp
-OID_ARUBA_POE_CONSUMPTION = "1.3.6.1.2.1.105.1.3.1.1.4.1" # pethMainPseConsumptionPower
+OID_PA_CPU_DP0 = "1.3.6.1.2.1.25.3.3.1.2.1"
+OID_PA_CPU_MP = "1.3.6.1.2.1.25.3.3.1.2.2"
+OID_PA_MEM_TOTAL = "1.3.6.1.2.1.25.2.3.1.5.1020"
+OID_PA_MEM_USED = "1.3.6.1.2.1.25.2.3.1.6.1020"
+OID_PA_SW_VERSION = "1.3.6.1.4.1.25461.2.1.2.1.1.0"
+OID_PA_SERIAL = "1.3.6.1.4.1.25461.2.1.2.1.3.0"
+OID_PA_SESSION_UTIL = "1.3.6.1.4.1.25461.2.1.2.3.1.0"
+OID_PA_SESSION_MAX = "1.3.6.1.4.1.25461.2.1.2.3.2.0"
+OID_PA_ACTIVE_SESSIONS = "1.3.6.1.4.1.25461.2.1.2.3.3.0"
+OID_PA_ACTIVE_TCP = "1.3.6.1.4.1.25461.2.1.2.3.4.0"
+OID_PA_ACTIVE_UDP = "1.3.6.1.4.1.25461.2.1.2.3.5.0"
+OID_ARUBA_POE_CONSUMPTION = "1.3.6.1.2.1.105.1.3.1.1.4.1"
 
-# Universal 64-bit HC Packet Counters
-OID_IF_HC_IN_UCAST_PKTS = "1.3.6.1.2.1.31.1.1.1.7"   # Ingress Unicast Packets (64-bit HC)
-OID_IF_HC_OUT_UCAST_PKTS = "1.3.6.1.2.1.31.1.1.1.11" # Egress Unicast Packets (64-bit HC)
+OID_IF_HC_IN_UCAST_PKTS = "1.3.6.1.2.1.31.1.1.1.7"
+OID_IF_HC_OUT_UCAST_PKTS = "1.3.6.1.2.1.31.1.1.1.11"
 
-# Persistent in-memory traffic counter cache to calculate Mbps delta: {device_id_or_ip: (ts, in_bytes, out_bytes)}
 _SNMP_PREV_COUNTERS: Dict[str, Tuple[float, int, int]] = {}
 _SNMP_WAN_PREV_COUNTERS: Dict[str, Tuple[float, int, int]] = {}
 
-
-# ==================== LOW-LEVEL ASN.1 BER ENGINE ====================
-
 def encode_length(length: int) -> bytes:
+    """Melakukan encoding panjang field ASN.1 BER ke format byte."""
     if length < 0x80:
         return bytes([length])
     len_bytes = []
@@ -212,8 +190,8 @@ def encode_length(length: int) -> bytes:
         length >>= 8
     return bytes([0x80 | len(len_bytes)] + len_bytes)
 
-
 def decode_length(data: bytes, offset: int) -> Tuple[int, int]:
+    """Melakukan decoding panjang field ASN.1 BER dari byte stream."""
     first = data[offset]
     offset += 1
     if first < 0x80:
@@ -225,8 +203,8 @@ def decode_length(data: bytes, offset: int) -> Tuple[int, int]:
         offset += 1
     return length, offset
 
-
 def encode_integer(val: int, tag=TAG_INTEGER) -> bytes:
+    """Melakukan encoding nilai integer ke format ASN.1 BER."""
     if val == 0:
         content = b'\x00'
     else:
@@ -241,8 +219,8 @@ def encode_integer(val: int, tag=TAG_INTEGER) -> bytes:
             content.insert(0, 0x00)
     return bytes([tag]) + encode_length(len(content)) + bytes(content)
 
-
 def decode_integer(data: bytes, offset: int, length: int) -> int:
+    """Melakukan decoding nilai integer bertanda dari byte stream ASN.1 BER."""
     val = 0
     negative = bool(data[offset] & 0x80)
     for i in range(length):
@@ -251,15 +229,15 @@ def decode_integer(data: bytes, offset: int, length: int) -> int:
         val -= (1 << (length * 8))
     return val
 
-
 def decode_unsigned(data: bytes, offset: int, length: int) -> int:
+    """Melakukan decoding nilai integer tak bertanda dari byte stream ASN.1 BER."""
     val = 0
     for i in range(length):
         val = (val << 8) | data[offset + i]
     return val
 
-
 def encode_oid(oid_str: str) -> bytes:
+    """Melakukan encoding string OID menjadi payload byte ASN.1 BER."""
     parts = [int(p) for p in oid_str.strip('.').split('.')]
     if len(parts) < 2:
         raise ValueError("OID must have at least 2 components")
@@ -278,8 +256,8 @@ def encode_oid(oid_str: str) -> bytes:
         encoded.extend(octets)
     return bytes([TAG_OID]) + encode_length(len(encoded)) + bytes(encoded)
 
-
 def decode_oid(data: bytes, offset: int, length: int) -> str:
+    """Melakukan decoding payload byte ASN.1 BER menjadi string OID."""
     end = offset + length
     first = data[offset]
     offset += 1
@@ -295,13 +273,13 @@ def decode_oid(data: bytes, offset: int, length: int) -> str:
         parts.append(val)
     return '.' + '.'.join(str(p) for p in parts)
 
-
 def encode_string(val: str, tag=TAG_OCTETSTRING) -> bytes:
+    """Melakukan encoding string UTF-8 menjadi OctetString ASN.1 BER."""
     b = val.encode('utf-8', errors='ignore')
     return bytes([tag]) + encode_length(len(b)) + b
 
-
 def build_pdu(oids: List[str], community: str = "public", request_id: int = None, pdu_type=PDU_GET) -> Tuple[bytes, int]:
+    """Membentuk paket PDU SNMP v2c lengkap beserta request ID acak."""
     if request_id is None:
         request_id = random.randint(100000, 999999)
     
@@ -316,37 +294,33 @@ def build_pdu(oids: List[str], community: str = "public", request_id: int = None
     pdu_body = encode_integer(request_id) + encode_integer(0) + encode_integer(0) + varbind_list
     pdu = bytes([pdu_type]) + encode_length(len(pdu_body)) + pdu_body
     
-    version_bytes = encode_integer(1)  # 1 = SNMP v2c (RFC 1905)
+    version_bytes = encode_integer(1)
     comm_bytes = encode_string(community)
     
     msg_body = version_bytes + comm_bytes + pdu
     return bytes([TAG_SEQUENCE]) + encode_length(len(msg_body)) + msg_body, request_id
 
-
 def parse_snmp_response(packet: bytes) -> Dict[str, Any]:
+    """Mem-parsing paket respons SNMP v2c menjadi dictionary OID dan nilainya."""
     offset = 0
     if len(packet) < 4 or packet[offset] != TAG_SEQUENCE:
         raise ValueError("Invalid SNMP packet header")
     offset += 1
     msg_len, offset = decode_length(packet, offset)
     
-    # Version
     offset += 1
     v_len, offset = decode_length(packet, offset)
     version = decode_integer(packet, offset, v_len)
     offset += v_len
     
-    # Community
     offset += 1
     c_len, offset = decode_length(packet, offset)
     offset += c_len
     
-    # PDU
     pdu_tag = packet[offset]
     offset += 1
     pdu_len, offset = decode_length(packet, offset)
     
-    # Req ID, Error Status, Error Index
     offset += 1
     req_len, offset = decode_length(packet, offset)
     offset += req_len
@@ -360,23 +334,20 @@ def parse_snmp_response(packet: bytes) -> Dict[str, Any]:
     idx_len, offset = decode_length(packet, offset)
     offset += idx_len
     
-    # Varbind List
     offset += 1
     vb_list_len, offset = decode_length(packet, offset)
     vb_list_end = offset + vb_list_len
     
     results = {}
     while offset < vb_list_end:
-        offset += 1  # TAG_SEQUENCE
+        offset += 1
         vb_len, offset = decode_length(packet, offset)
         
-        # OID
-        offset += 1  # TAG_OID
+        offset += 1
         oid_len, offset = decode_length(packet, offset)
         oid_str = decode_oid(packet, offset, oid_len).lstrip('.')
         offset += oid_len
         
-        # Value
         val_tag = packet[offset]
         offset += 1
         val_len, offset = decode_length(packet, offset)
@@ -406,9 +377,6 @@ def parse_snmp_response(packet: bytes) -> Dict[str, Any]:
         
     return results
 
-
-# ==================== HIGH-LEVEL SNMP API ====================
-
 def snmp_get(host: str, oids: List[str], community: str = "public", port: int = 161, timeout: float = 2.5, retries: int = 1) -> Optional[Dict[str, Any]]:
     """
     Eksekusi SNMP v2c GET query ke host. Mengembalikan dict {oid: val} atau None.
@@ -433,8 +401,8 @@ def snmp_get(host: str, oids: List[str], community: str = "public", port: int = 
         sock.close()
     return None
 
-
 def snmp_getnext(host: str, oid: str, community: str = "public", port: int = 161, timeout: float = 2.5) -> Optional[Tuple[str, Any]]:
+    """Mengirimkan request SNMP v2c GETNEXT untuk satu OID dan mengembalikan pasangan OID-nilai berikutnya."""
     pkt, _ = build_pdu([oid], community=community, pdu_type=PDU_GETNEXT)
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.settimeout(timeout)
@@ -450,7 +418,6 @@ def snmp_getnext(host: str, oid: str, community: str = "public", port: int = 161
     finally:
         sock.close()
     return None
-
 
 def snmp_walk(host: str, root_oid: str, community: str = "public", port: int = 161, timeout: float = 2.5, max_repetitions: int = 120) -> Dict[str, Any]:
     """
@@ -473,7 +440,6 @@ def snmp_walk(host: str, root_oid: str, community: str = "public", port: int = 1
         
     return results
 
-
 def format_timeticks(ticks: int) -> str:
     """Konversi TimeTicks (centiseconds) ke format readable: X days, HH:MM:SS"""
     if not ticks or ticks < 0:
@@ -487,7 +453,6 @@ def format_timeticks(ticks: int) -> str:
         return f"{days} days, {hours:02d}:{minutes:02d}:{secs:02d}"
     return f"{hours:02d}:{minutes:02d}:{secs:02d}"
 
-
 def get_device_community(device) -> str:
     """Mengambil SNMP community string yang tepat untuk tiap perangkat."""
     explicit_comm = getattr(device, 'snmp_community', None)
@@ -498,27 +463,19 @@ def get_device_community(device) -> str:
     ip = getattr(device, 'ip_address', '')
     vendor = getattr(device, 'vendor', '').lower()
     
-    # Aruba Access Points (HO AP-505)
     if any(x in ip for x in ["193", "183", "177"]) or "ap-505" in dev_name or ("aruba" in vendor and "ap" in dev_name):
         return os.getenv("ARUBA_AP_COMMUNITY", "HODevice")
-    # Aruba Switch HO (SW-2930F-HO)
     elif "sw-2930f" in dev_name or ip == "192.168.1.10" or ("aruba" in vendor and ("sw" in dev_name or "switch" in dev_name)):
         return os.getenv("ARUBA_SNMP_COMMUNITY", "public")
-    # Huawei Access Points (Corner AP-AE5776)
     elif any(x in ip for x in ["154", "173", "156"]) or "ap-ae5776" in dev_name or ("huawei" in vendor and "ap" in dev_name):
         return os.getenv("HUAWEI_AP_COMMUNITY", "CornerDevice")
-    # Huawei Switch Corner (SW-S5735-CORNER)
     elif "sw-s5735" in dev_name or ip == "192.168.1.155" or "corner" in dev_name or ("huawei" in vendor and ("sw" in dev_name or "switch" in dev_name)):
         return os.getenv("HUAWEI_SNMP_COMMUNITY", "agiva_mon")
-    # Palo Alto Firewall (HO Gateway)
     elif "pa" in dev_name or "11" in ip or "palo" in vendor:
         return os.getenv("PA_SNMP_COMMUNITY", "publik")
     elif "ho" in dev_name or "aruba" in vendor:
         return os.getenv("ARUBA_SNMP_COMMUNITY", "public")
     return os.getenv("SNMP_COMMUNITY_DEFAULT", "public")
-
-
-# ==================== UNIFIED POLLING TELEMETRY COLLECTOR ====================
 
 def poll_device_telemetry_snmp(device) -> Dict[str, Any]:
     """
@@ -564,12 +521,10 @@ def poll_device_telemetry_snmp(device) -> Dict[str, Any]:
         "tx_drops": 0
     }
     
-    # 1. Tentukan OID List untuk sekali query GET PDU (Multi-varbind)
     query_oids = [OID_SYS_UPTIME, OID_SYS_DESCR]
     
     if "huawei" in vendor or "155" in ip:
         query_oids.extend([OID_HUAWEI_CPU_UTIL, OID_HUAWEI_MEM_UTIL])
-        # Port Uplink Huawei 10GE1/0/1 (Index 25 pada Huawei ifTable)
         uplink_idx = "25"
     elif "aruba" in vendor or "10" in ip:
         query_oids.extend([
@@ -582,9 +537,8 @@ def poll_device_telemetry_snmp(device) -> Dict[str, Any]:
             OID_ARUBA_MSG_BUF_TOTAL,
             OID_ARUBA_MSG_BUF_FREE
         ])
-        # Port Uplink Aruba Port 1 (Index 1)
         uplink_idx = "1"
-    else:  # Palo Alto PA-220
+    else:
         query_oids.extend([
             OID_PA_CPU_DP0,
             OID_PA_CPU_MP,
@@ -594,10 +548,8 @@ def poll_device_telemetry_snmp(device) -> Dict[str, Any]:
             OID_PA_SESSION_MAX,
             OID_PA_ACTIVE_SESSIONS
         ])
-        # Port LAN ethernet1/2 (Index 7 pada PA-220)
         uplink_idx = "7"
 
-    # Tambahkan OID 64-bit HC counters dan health error/discard untuk port uplink
     query_oids.extend([
         f"{OID_IF_HC_IN_OCTETS}.{uplink_idx}",
         f"{OID_IF_HC_OUT_OCTETS}.{uplink_idx}",
@@ -607,7 +559,6 @@ def poll_device_telemetry_snmp(device) -> Dict[str, Any]:
         f"{OID_IF_OUT_DISCARDS}.{uplink_idx}"
     ])
     
-    # Eksekusi SNMP GET ke perangkat (timeout 3.0 detik, 1 kali retry demi keandalan tanpa blocking)
     res = snmp_get(ip, query_oids, community=community, timeout=3.0, retries=1)
     
     if not res:
@@ -616,34 +567,26 @@ def poll_device_telemetry_snmp(device) -> Dict[str, Any]:
     
     metrics["status"] = "UP"
     
-    # 2. Parse Uptime
     ticks = res.get(OID_SYS_UPTIME)
     if ticks is not None and isinstance(ticks, int):
         metrics["uptime"] = format_timeticks(ticks)
         
-    # 3. Parse CPU & Memory per Vendor (100% Data Riil dari Sensor/Register SNMP, Tanpa Dummy)
     if "huawei" in vendor or "155" in ip:
-        # Huawei CPU
         hw_cpu = res.get(OID_HUAWEI_CPU_UTIL)
         metrics["cpu"] = float(hw_cpu) if hw_cpu is not None else 0.0
             
-        # Huawei Memory
         hw_mem = res.get(OID_HUAWEI_MEM_UTIL)
         metrics["mem"] = float(hw_mem) if hw_mem is not None else 0.0
 
-        # Huawei Buffer Congestion (Opsi 2: Data Riil Egress & Ingress Queue Buffer Drops pada Uplink)
         hw_tx_drop = int(res.get(f"{OID_IF_OUT_DISCARDS}.{uplink_idx}") or 0)
         hw_rx_drop = int(res.get(f"{OID_IF_IN_DISCARDS}.{uplink_idx}") or 0)
         metrics["packet_buffers"] = float(hw_tx_drop)
         metrics["message_buffers"] = float(hw_rx_drop)
             
     elif "aruba" in vendor or "10" in ip:
-        # Aruba CPU
         ar_cpu = res.get(OID_ARUBA_CPU_UTIL)
         metrics["cpu"] = float(ar_cpu) if ar_cpu is not None else 0.0
             
-        # Aruba Memory Utilization:
-        # MIB NETSWITCH-MIB: .5.1 = Total, .6.1 = Free, .7.1 = Allocated
         mem_tot = res.get(OID_ARUBA_MEM_TOTAL)
         mem_alloc = res.get(OID_ARUBA_MEM_ALLOC)
         mem_free = res.get(OID_ARUBA_MEM_FREE)
@@ -658,7 +601,6 @@ def poll_device_telemetry_snmp(device) -> Dict[str, Any]:
         else:
             metrics["mem"] = 0.0
             
-        # Aruba Packet Buffers & Message Buffers
         buf_tot = res.get(OID_ARUBA_PKT_BUF_TOTAL)
         buf_free = res.get(OID_ARUBA_PKT_BUF_FREE)
         if buf_tot and buf_free and buf_tot > 0:
@@ -673,8 +615,7 @@ def poll_device_telemetry_snmp(device) -> Dict[str, Any]:
         else:
             metrics["message_buffers"] = 0.0
             
-    else:  # Palo Alto PA-220 NGFW
-        # Palo Alto Data Plane CPU (Max of DP0 and MP)
+    else:
         pa_dp_cpu = res.get(OID_PA_CPU_DP0)
         pa_mp_cpu = res.get(OID_PA_CPU_MP)
         if pa_dp_cpu is not None or pa_mp_cpu is not None:
@@ -682,7 +623,6 @@ def poll_device_telemetry_snmp(device) -> Dict[str, Any]:
         else:
             metrics["cpu"] = 0.0
             
-        # Palo Alto Memory Utilization: (used / total) * 100
         pa_m_tot = res.get(OID_PA_MEM_TOTAL)
         pa_m_used = res.get(OID_PA_MEM_USED)
         if pa_m_tot and pa_m_used and pa_m_tot > 0:
@@ -690,7 +630,6 @@ def poll_device_telemetry_snmp(device) -> Dict[str, Any]:
         else:
             metrics["mem"] = 0.0
             
-        # Palo Alto Firewall Session Capacity & Active Sessions (Data Riil PAN-COMMON-MIB)
         pa_sess_util = res.get(OID_PA_SESSION_UTIL)
         pa_sess_act = res.get(OID_PA_ACTIVE_SESSIONS)
         pa_sess_max = res.get(OID_PA_SESSION_MAX)
@@ -702,7 +641,6 @@ def poll_device_telemetry_snmp(device) -> Dict[str, Any]:
         else:
             metrics["packet_buffers"] = 0.0
 
-        # Simpan Active Sessions count riil
         if pa_sess_act is not None:
             metrics["message_buffers"] = float(pa_sess_act)
         elif pa_dp_cpu is not None:
@@ -710,12 +648,10 @@ def poll_device_telemetry_snmp(device) -> Dict[str, Any]:
         else:
             metrics["message_buffers"] = 0.0
 
-    # 4. Parse Error & Discard Counters (Fast single-packet extraction from uplink OID - 100% Pure Hardware SNMP)
     metrics["rx_errors"] = int(res.get(f"{OID_IF_IN_ERRORS}.{uplink_idx}") or 0)
     metrics["tx_errors"] = int(res.get(f"{OID_IF_OUT_ERRORS}.{uplink_idx}") or 0)
     metrics["tx_drops"] = int(res.get(f"{OID_IF_OUT_DISCARDS}.{uplink_idx}") or 0)
     
-    # 5. Parse Real Dynamic Throughput Ingress & Egress (64-bit HC Octets Delta)
     rx_bytes = res.get(f"{OID_IF_HC_IN_OCTETS}.{uplink_idx}")
     tx_bytes = res.get(f"{OID_IF_HC_OUT_OCTETS}.{uplink_idx}")
     
@@ -732,11 +668,9 @@ def poll_device_telemetry_snmp(device) -> Dict[str, Any]:
                 delta_rx = curr_rx - prev_rx if curr_rx >= prev_rx else (2**64 - prev_rx) + curr_rx
                 delta_tx = curr_tx - prev_tx if curr_tx >= prev_tx else (2**64 - prev_tx) + curr_tx
                 
-                # Konversi Bytes ke Megabits per second (Mbps): (Bytes * 8) / (dt * 1,000,000)
                 ing_mbps = round((delta_rx * 8.0) / (dt * 1_000_000.0), 2)
                 egr_mbps = round((delta_tx * 8.0) / (dt * 1_000_000.0), 2)
                 
-                # Batasi anomali spike di atas kapasitas link fisik (10 Gbps)
                 metrics["ingress"] = min(ing_mbps, 10000.0)
                 metrics["egress"] = min(egr_mbps, 10000.0)
                 metrics["traffic"] = round(metrics["ingress"] + metrics["egress"], 2)
@@ -744,9 +678,6 @@ def poll_device_telemetry_snmp(device) -> Dict[str, Any]:
         _SNMP_PREV_COUNTERS[dev_key] = (now_ts, curr_rx, curr_tx)
         
     return metrics
-
-
-# ==================== WAN STATUS SNMP POLLER (PALO ALTO BIZNET) ====================
 
 def poll_wan_status_snmp(ip: str = "192.168.1.11", community: str = "publik", wan_idx: str = "8") -> Dict[str, Any]:
     """
@@ -795,7 +726,6 @@ def poll_wan_status_snmp(ip: str = "192.168.1.11", community: str = "publik", wa
                 delta_rx = curr_rx - prev_rx if curr_rx >= prev_rx else 0
                 delta_tx = curr_tx - prev_tx if curr_tx >= prev_tx else 0
                 
-                # Ingress WAN = Download, Egress WAN = Upload
                 wan_data["download_mbps"] = round((delta_rx * 8.0) / (dt * 1_000_000.0), 2)
                 wan_data["upload_mbps"] = round((delta_tx * 8.0) / (dt * 1_000_000.0), 2)
                 wan_data["total_mbps"] = round(wan_data["download_mbps"] + wan_data["upload_mbps"], 2)
@@ -804,11 +734,6 @@ def poll_wan_status_snmp(ip: str = "192.168.1.11", community: str = "publik", wa
         
     return wan_data
 
-
-
-# ==========================================
-# 1. load_inventory()
-# ==========================================
 def load_inventory():
     """
     Sesuai LLD: baca daftar perangkat dari devices.yaml (atau DB).
@@ -816,7 +741,6 @@ def load_inventory():
     """
     session = db_session()
     
-    # 1. Sync dari devices.yaml
     yaml_path = os.path.join(os.path.dirname(__file__), 'devices.yaml')
     if os.path.exists(yaml_path):
         try:
@@ -824,7 +748,6 @@ def load_inventory():
                 data = yaml.safe_load(file)
                 if data and 'devices' in data:
                     for d_info in data['devices']:
-                        # Cek apakah device sudah ada di DB berdasarkan IP
                         existing = session.query(Device).filter_by(ip_address=d_info.get('ip_address')).first()
                         if not existing:
                             logger.info(f"Syncing perangkat baru dari YAML: {d_info.get('name')} ({d_info.get('ip_address')})")
@@ -841,14 +764,10 @@ def load_inventory():
             logger.error(f"Gagal memproses devices.yaml: {e}")
             session.rollback()
 
-    # 2. Ambil dari DB sebagai single source of truth
     devices = session.query(Device).order_by(Device.device_id.asc()).all()
     session.close()
     return devices
 
-# ==========================================
-# 2. poll_device(device) & Retry Wrapper
-# ==========================================
 def _execute_device_poll(device):
     """
     Eksekusi satu kali pengambilan metrik telemetri ke perangkat MURNI via SNMP v2c (Multi-Vendor).
@@ -872,9 +791,6 @@ def _execute_device_poll(device):
         "tx_drops": 0
     }
 
-    # ========================================================
-    # 1. PURE SNMP v2c TELEMETRY (Aruba, Huawei, Palo Alto)
-    # ========================================================
     snmp_success = False
     try:
         snmp_res = poll_device_telemetry_snmp(device)
@@ -883,7 +799,6 @@ def _execute_device_poll(device):
             metrics.update(snmp_res)
             snmp_success = True
 
-            # Polling WAN khusus gateway Palo Alto via SNMP v2c
             vendor_clean = (device.vendor or "").lower()
             if any(k in vendor_clean for k in ['palo', 'pan']) or '11' in device.ip_address:
                 try:
@@ -897,7 +812,6 @@ def _execute_device_poll(device):
                 except Exception as e_w:
                     logger.warning(f"Gagal polling WAN SNMP Palo Alto: {e_w}")
 
-                # Pre-fetch cache telemetri sesi wireless client dari Palo Alto (Opsi 1)
                 try:
                     from telemetry_helper import fetch_palo_alto_client_telemetry
                     fetch_palo_alto_client_telemetry(device.ip_address)
@@ -908,11 +822,6 @@ def _execute_device_poll(device):
     except Exception as e_snmp:
         logger.error(f"[{device.name}] Exception pada SNMP polling: {e_snmp}")
 
-    # ========================================================
-    # 2. METRIK TRANSMISI LAYER-3 (ICMP PING REACHABILITY & LATENCY)
-    # Standar Industri NOC: Host Reachability (UP/DOWN) ditentukan oleh ICMP Ping.
-    # Jika ICMP merespons (loss < 100%), perangkat fisik terbukti UP di kantor.
-    # ========================================================
     try:
         is_ping_up, lat_val, loss_val = measure_ping_metrics(device.ip_address, count=2, timeout_sec=2)
         metrics["latency"] = lat_val
@@ -922,7 +831,6 @@ def _execute_device_poll(device):
             metrics["status"] = "UP"
             if not snmp_success:
                 logger.info(f"[{device.name}] Perangkat merespons ICMP Ping (RTT: {lat_val:.1f}ms, Loss: {loss_val:.0f}%) -> Status: UP (SNMP timeout).")
-                # Pertahankan metrik terakhir agar dashboard & threshold tidak drop palsu ke 0
                 if getattr(device, 'cpu_usage', None) is not None and float(device.cpu_usage) > 0:
                     metrics["cpu"] = float(device.cpu_usage)
                 if getattr(device, 'mem_usage', None) is not None and float(device.mem_usage) > 0:
@@ -930,7 +838,6 @@ def _execute_device_poll(device):
                 if getattr(device, 'uptime', None) and device.uptime not in ["Offline", "Unknown"]:
                     metrics["uptime"] = device.uptime
 
-                # Pertahankan juga metrik traffic terakhir agar grafik dashboard tidak drop ke 0
                 try:
                     s_hist = db_session()
                     last_l = s_hist.query(DeviceStatusLog).filter_by(device_id=device.device_id).order_by(DeviceStatusLog.log_id.desc()).first()
@@ -947,12 +854,10 @@ def _execute_device_poll(device):
                 except Exception:
                     pass
         else:
-            # Jika Ping 100% loss DAN SNMP gagal, maka perangkat benar-benar DOWN
             if not snmp_success:
                 logger.warning(f"[{device.name}] Tidak merespons ICMP Ping (100% loss) & SNMP timeout -> Status: DOWN")
                 metrics["status"] = "DOWN"
             else:
-                # SNMP aktif tapi Ping ditolak (ICMP disabled/blocked oleh firewall) -> Tetap UP
                 metrics["status"] = "UP"
     except Exception as e_ping:
         logger.warning(f"Gagal mengukur ICMP latency/loss untuk {device.name}: {e_ping}")
@@ -960,7 +865,6 @@ def _execute_device_poll(device):
             metrics["status"] = "DOWN"
 
     return metrics
-
 
 def poll_device(device):
     """
@@ -973,7 +877,6 @@ def poll_device(device):
     for attempt in range(1, max_retries + 1):
         try:
             metrics = _execute_device_poll(device)
-            # Jika polling menghasilkan status DOWN dan belum percobaan terakhir, retry
             if metrics.get("status") == "DOWN" and attempt < max_retries:
                 logger.warning(f"Percobaan {attempt}/{max_retries} ke {device.name} terdeteksi DOWN. Melakukan retry dalam 2 detik...")
                 time.sleep(2)
@@ -1002,9 +905,6 @@ def poll_device(device):
                     "tx_drops": 0
                 }
 
-# ==========================================
-# 3. save_metrics(device_id, metrics)
-# ==========================================
 def save_metrics(device_id, metrics):
     """
     Sesuai LLD: simpan ke data store (update status di device dan catat histori).
@@ -1016,7 +916,6 @@ def save_metrics(device_id, metrics):
         session.close()
         return
 
-    # Update perangkat
     device.status = metrics["status"]
     device.cpu_usage = metrics["cpu"]
     device.mem_usage = metrics["mem"]
@@ -1025,7 +924,6 @@ def save_metrics(device_id, metrics):
     device.uptime = metrics["uptime"]
     device.last_polled = datetime.now()
 
-    # Log histori metrik
     log_entry = DeviceStatusLog(
         device_id=device.device_id,
         status=metrics["status"],
@@ -1046,7 +944,6 @@ def save_metrics(device_id, metrics):
     try:
         session.add(log_entry)
 
-        # Log WAN Biznet jika tersedia
         if metrics.get("wan_data"):
             w = metrics["wan_data"]
             wan_entry = WanStatusLog(
@@ -1065,7 +962,6 @@ def save_metrics(device_id, metrics):
             )
             session.add(wan_entry)
 
-        # Eksekusi Rule Engine & Anti-spam (Komponen 4 LLD)
         import importlib
         import rule_engine
         importlib.reload(rule_engine)
@@ -1077,9 +973,6 @@ def save_metrics(device_id, metrics):
     finally:
         session.close()
 
-# ==========================================
-# 4. run_polling_cycle()
-# ==========================================
 def run_polling_cycle():
     """
     Sesuai LLD: loop semua device, dipanggil scheduler.
@@ -1102,7 +995,6 @@ def run_polling_cycle():
         except Exception as e:
             logger.error(f"Siklus polling gagal pada perangkat {device.name}: {e}")
         
-    # Sinkronisasi berkala (2 menit) telemetri klien nirkabel AP ke tabel PostgreSQL ap_client_telemetry
     try:
         from telemetry_helper import sync_all_ap_telemetry_to_db
         sync_all_ap_telemetry_to_db()
@@ -1115,9 +1007,6 @@ def run_polling_cycle():
     logger.info(f"[*] Awal Polling : {awal_str}")
     logger.info(f"[*] Next Polling : {next_str_end}")
 
-# ==========================================
-# 5. Data Retention Policy (Housekeeping)
-# ==========================================
 def cleanup_old_device_logs(retention_days=None):
     """
     Data Retention Policy (Auto-Pruning / Housekeeping):
@@ -1178,17 +1067,15 @@ def cleanup_old_backup_history_job(retention_days=None):
         logger.error(f"[Housekeeping] Gagal menjalankan data retention cleanup backup_history: {e}")
 
 def start_scheduler():
+    """Memulai scheduler APScheduler untuk polling, housekeeping, dan backup harian otomatis."""
     global _scheduler
     _scheduler = BackgroundScheduler()
-    # LLD: Polling dijadwalkan tiap 1-5 menit. Menggunakan POLLING_INTERVAL_MINUTES (default 2 menit)
     _scheduler.add_job(run_polling_cycle, 'interval', minutes=POLLING_INTERVAL_MINUTES, id='polling_job')
     
-    # Data Retention Policy: Dijadwalkan otomatis setiap tengah malam (jam 00:00, 00:05, & 00:10 WIB)
     _scheduler.add_job(cleanup_old_device_logs, 'cron', hour=0, minute=0, id='cleanup_device_logs_job')
     _scheduler.add_job(cleanup_old_incident_logs, 'cron', hour=0, minute=5, id='cleanup_incident_logs_job')
     _scheduler.add_job(cleanup_old_backup_history_job, 'cron', hour=0, minute=10, id='cleanup_backup_history_job')
     
-    # Pencadangan Konfigurasi & Log Harian Otomatis: Setiap Pukul 02:00 WIB (Incremental via Checkpoint)
     backup_hour = int(os.getenv('BACKUP_CRON_HOUR', 2))
     backup_minute = int(os.getenv('BACKUP_CRON_MINUTE', 0))
     try:
@@ -1200,12 +1087,10 @@ def start_scheduler():
     
     _scheduler.start()
     
-    # Jalankan pemeriksaan awal retensi data saat collector pertama kali start
     cleanup_old_device_logs()
     cleanup_old_incident_logs()
     cleanup_old_backup_history_job()
     
-    # Langsung jalankan 1 siklus polling awal agar metrik riil terisi seketika tanpa harus menunggu interval
     run_polling_cycle()
     
     next_poll = get_next_polling_time()

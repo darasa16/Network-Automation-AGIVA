@@ -1,13 +1,9 @@
-/**
- * Global Navigation & Omni-Search (Command Palette) Handler - PT Agiva Indonesia
- * Pattern 3: Universal Omni-Search across Devices, Alerts, Backups, and Quick Navigation.
- */
-
 (function () {
     let debounceTimer = null;
     let selectedIndex = -1;
     let currentResults = [];
 
+    // Escape HTML special characters to prevent XSS.
     function escapeHtml(str) {
         if (!str) return '';
         return String(str)
@@ -18,6 +14,7 @@
             .replace(/'/g, '&#039;');
     }
 
+    // Query /api/search and render omni-search dropdown results.
     async function performSearch(query) {
         const dropdown = document.getElementById('searchResultsDropdown');
         if (!dropdown) return;
@@ -40,6 +37,7 @@
         }
     }
 
+    // Render grouped omni-search results across devices, alerts, incidents, backups, telegram, and navigation.
     function renderDropdown(data, query) {
         const dropdown = document.getElementById('searchResultsDropdown');
         if (!dropdown) return;
@@ -74,7 +72,6 @@
 
         let html = '<div class="search-dropdown-list">';
 
-        // 1. Devices Section
         if (devices.length > 0) {
             html += `
                 <div class="search-group-header">
@@ -126,7 +123,6 @@
             `;
         }
 
-        // 2. Active Alerts Section
         if (alerts.length > 0) {
             html += `
                 <div class="search-group-header">
@@ -176,7 +172,6 @@
             `;
         }
 
-        // 3. Incident Log & Cooldown History Section
         if (incidents.length > 0) {
             html += `
                 <div class="search-group-header">
@@ -238,7 +233,6 @@
             `;
         }
 
-        // 4. Backups Section
         if (backups.length > 0) {
             html += `
                 <div class="search-group-header">
@@ -289,14 +283,12 @@
             `;
         }
 
-        // 4. Telegram Section
         if (telegram.length > 0) {
             html += `
                 <div class="search-group-header">
                     <span>Telegram Bot Integration</span>
                 </div>
             `;
-            // Keep all matching whitelist engineer entries (small admin count as requested), slice other telegram items to top 5
             const whitelistItems = telegram.filter(t => t.is_whitelist || (t.url && t.url.includes('whitelist-row')));
             const otherTgItems = telegram.filter(t => !t.is_whitelist && (!t.url || !t.url.includes('whitelist-row'))).slice(0, 5);
             const displayTelegram = [...whitelistItems, ...otherTgItems];
@@ -340,7 +332,6 @@
             `;
         }
 
-        // 5. Navigation Section
         if (navItems.length > 0) {
             html += `
                 <div class="search-group-header">
@@ -373,7 +364,6 @@
 
         html += '</div>';
 
-        // Keyboard guidance footer
         html += `
             <div class="search-dropdown-footer">
                 <div class="search-kbd-guide">
@@ -390,12 +380,12 @@
         dropdown.innerHTML = html;
         dropdown.style.display = 'block';
 
-        // Auto select first item
         if (currentResults.length > 0) {
             setSelectedIndex(0);
         }
     }
 
+    // Highlight the selected item in the omni-search dropdown.
     function setSelectedIndex(idx) {
         const items = document.querySelectorAll('.search-dropdown-item');
         if (items.length === 0) return;
@@ -410,13 +400,13 @@
         }
     }
 
+    // Initialize omni-search input debounce, focus, outside-click, and keyboard navigation.
     function setupOmniSearch() {
         const searchInput = document.getElementById('globalSearch');
         const clearBtn = document.getElementById('clearSearchBtn');
         const dropdown = document.getElementById('searchResultsDropdown');
         if (!searchInput) return;
 
-        // Typing with Debounce
         searchInput.addEventListener('input', () => {
             const query = searchInput.value.trim();
             if (clearBtn) clearBtn.style.display = query ? 'flex' : 'none';
@@ -431,7 +421,6 @@
             }, 180);
         });
 
-        // Focus & Blur
         searchInput.addEventListener('focus', () => {
             const query = searchInput.value.trim();
             if (query) {
@@ -448,14 +437,12 @@
             });
         }
 
-        // Close on Click Outside
         document.addEventListener('click', (e) => {
             if (!e.target.closest('.nav-search')) {
                 if (dropdown) dropdown.style.display = 'none';
             }
         });
 
-        // Keyboard Navigation (Arrows, Enter, Escape)
         searchInput.addEventListener('keydown', (e) => {
             const items = document.querySelectorAll('.search-dropdown-item');
             if (e.key === 'Escape') {
@@ -484,14 +471,12 @@
         });
     }
 
-    // Navigation and Target Highlighting Logic
+    // Paginate if needed, scroll to target element, and trigger highlight animation.
     function triggerHighlightForId(targetId, retries = 35) {
         if (!targetId) return;
 
         targetId = String(targetId).replace(/^#/, '');
 
-        // 1. Exact pagination and table target check
-        // Special handling for backups paginated rows
         if (targetId.startsWith('backup-row-') || targetId.startsWith('backup-')) {
             if (typeof window.checkTargetBackupPage === 'function') {
                 window.checkTargetBackupPage(targetId);
@@ -501,7 +486,6 @@
             }
         }
 
-        // Special handling for telegram whitelist paginated rows
         if (targetId.startsWith('whitelist-row-') || targetId.startsWith('whitelist-')) {
             if (typeof window.checkTargetWhitelistPage === 'function') {
                 window.checkTargetWhitelistPage(targetId);
@@ -511,7 +495,6 @@
             }
         }
 
-        // Special handling for telegram paginated logs
         if (targetId.startsWith('msglog-row-') || targetId.startsWith('msglog-')) {
             if (typeof window.checkTargetLogPage === 'function') {
                 window.checkTargetLogPage(targetId);
@@ -521,7 +504,6 @@
             }
         }
 
-        // Special handling for paginated alerts
         if (targetId.startsWith('alert-row-') || targetId.startsWith('alert-')) {
             if (typeof window.checkTargetAlertPage === 'function') {
                 window.checkTargetAlertPage(targetId);
@@ -531,7 +513,6 @@
             }
         }
 
-        // Special handling for paginated incident logs
         if (targetId.startsWith('inc-row-') || targetId.startsWith('incident-row-') || targetId.startsWith('inc-')) {
             if (typeof window.checkTargetIncidentPage === 'function') {
                 window.checkTargetIncidentPage(targetId);
@@ -549,16 +530,13 @@
             return;
         }
 
-        // If row itself was hidden by inline style
         const row = el.tagName.toLowerCase() === 'tr' ? el : el.closest('tr');
         if (row && row.style.display === 'none') {
             row.style.display = '';
         }
 
-        // 2. Clear any existing highlights
         document.querySelectorAll('.search-target-highlight').forEach(n => n.classList.remove('search-target-highlight'));
 
-        // 3. Center element in viewport (taking fixed navbar into account)
         const scrollTarget = () => {
             const navbar = document.querySelector('.navbar');
             const navHeight = navbar ? navbar.offsetHeight : 70;
@@ -570,7 +548,6 @@
                 behavior: 'smooth'
             });
 
-            // Ensure horizontal scroll inside container if overflowed
             const container = el.closest('.table-responsive');
             if (container) {
                 const elLeft = el.offsetLeft;
@@ -585,11 +562,9 @@
             setTimeout(scrollTarget, 160);
         });
 
-        // 4. Trigger Agiva Copper Highlight Animation
-        void el.offsetWidth; // Force CSS reflow
+        void el.offsetWidth;
         el.classList.add('search-target-highlight');
 
-        // 5. Keep highlight active for animation duration, then remove class
         setTimeout(() => {
             el.classList.remove('search-target-highlight');
         }, 3600);
@@ -597,6 +572,7 @@
 
     window.triggerHighlightForId = triggerHighlightForId;
 
+    // Smoothly scroll to the top of a table accounting for fixed navbar height.
     window.scrollToTableTop = function(elementId) {
         requestAnimationFrame(() => {
             const el = document.getElementById(elementId);
@@ -608,6 +584,7 @@
         });
     };
 
+    // Highlight the target element matching the current URL hash.
     function handleTargetHashHighlight() {
         const hash = window.location.hash;
         if (!hash || hash.length < 2) return;
@@ -615,6 +592,7 @@
         triggerHighlightForId(targetId);
     }
 
+    // Navigate to or highlight a selected omni-search result.
     window.navigateToSearchResult = function(url) {
         if (!url) return;
         const currentPath = window.location.pathname.replace(/\/$/, '') || '/';
@@ -652,10 +630,8 @@
         }
     };
 
-    // Hash change event listener (for browser back/forward or hash changes)
     window.addEventListener('hashchange', handleTargetHashHighlight);
 
-    // Page Load Handlers
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', () => {
             setupOmniSearch();
@@ -666,7 +642,6 @@
         handleTargetHashHighlight();
     }
 
-    // Also trigger on full window load (after all stylesheets/fonts loaded)
     window.addEventListener('load', () => {
         handleTargetHashHighlight();
     });

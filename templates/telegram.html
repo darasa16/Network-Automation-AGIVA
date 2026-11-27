@@ -5,7 +5,6 @@
 {% block content %}
 <div class="telegram-page-container">
 
-    <!-- Page Header & Actions -->
     <div class="page-header-row">
         <div>
             <h2>Telegram Bot Integration & Notification</h2>
@@ -25,7 +24,6 @@
         </div>
     </div>
 
-    <!-- 1. Bot Status Card -->
     <div class="kpi-grid">
         <div class="kpi-card">
             <div class="kpi-info">
@@ -100,9 +98,7 @@
             </div>
         </div>
 
-        <!-- 2. Dual Panel: Whitelist & Commands -->
         <div class="content-layout">
-            <!-- Left: Whitelist Tim NOC -->
             <div class="table-panel">
                 <div class="panel-header" style="flex-wrap: wrap; gap: 12px;">
                     <div>
@@ -123,19 +119,16 @@
                             </tr>
                         </thead>
                         <tbody id="tgWhitelistBody">
-                            <!-- Loaded dynamically via JavaScript with pagination -->
                         </tbody>
                     </table>
                 </div>
 
-                <!-- Pagination Bar for Whitelist -->
                 <div class="pagination-container" id="tgWhitelistPaginationContainer">
                     <div id="tgWhitelistPageInfo" class="pagination-info">Showing 0 engineers</div>
                     <div class="pagination-controls" id="tgWhitelistPaginationControls"></div>
                 </div>
             </div>
 
-            <!-- Right: Bot Commands Cheat Sheet -->
             <div class="table-panel">
                 <div class="panel-header">
                     <div>
@@ -184,7 +177,6 @@
             </div>
         </div>
 
-        <!-- 3. Telegram Message Dispatch Log -->
         <div class="table-panel">
             <div class="panel-header" style="flex-wrap: wrap; gap: 12px;">
                 <div>
@@ -224,12 +216,10 @@
                         </tr>
                     </thead>
                     <tbody id="tgLogsBody">
-                        <!-- Loaded automatically via JavaScript with 20 rows/page pagination -->
                     </tbody>
                 </table>
             </div>
 
-            <!-- Pagination Bar -->
             <div class="pagination-container" id="tgPaginationContainer">
                 <div id="tgPageInfo" class="pagination-info">Showing 0 logs</div>
                 <div class="pagination-controls" id="tgPaginationControls"></div>
@@ -238,8 +228,7 @@
 
     </div>
 
-    <style>
-        .pagination-container {
+    <style>        .pagination-container {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -264,7 +253,6 @@
             flex-shrink: 0;
         }
 
-        /* Whitelist Pagination styling in Dual-Panel layout */
         #tgWhitelistPaginationContainer {
             padding: 12px 16px;
             gap: 10px;
@@ -365,7 +353,6 @@
             color: #94a3b8;
         }
 
-        /* Command column without badge box */
         #tgCommandsTable td:first-child code {
             background: transparent !important;
             border: none !important;
@@ -378,7 +365,6 @@
             color: #ffffff !important;
         }
 
-        /* Standardize Inter (Sans-serif) font for Telegram history table columns */
         #tgLogsTable,
         #tgLogsTable th,
         #tgLogsTable td,
@@ -446,8 +432,7 @@
     {% block scripts %}
     <script id="tgWhitelistData" type="application/json">{{ whitelist | tojson }}</script>
     <script id="tgLogsData" type="application/json">{{ logs | tojson }}</script>
-    <script>
-        let allWhitelist = [];
+    <script>        let allWhitelist = [];
         try {
             const rawWl = document.getElementById('tgWhitelistData');
             allWhitelist = rawWl ? JSON.parse(rawWl.textContent || '[]') : [];
@@ -457,10 +442,12 @@
         let currentWhitelistPage = 1;
         const whitelistPerPage = 5;
 
+        // Return whitelist entries for table rendering.
         function getFilteredWhitelist() {
             return allWhitelist;
         }
 
+        // Jump to the pagination page containing a targeted whitelist row.
         function checkTargetWhitelistPage(targetRowId) {
             let rowId = targetRowId;
             if (!rowId && window.location.hash) {
@@ -480,6 +467,7 @@
         }
         window.checkTargetWhitelistPage = checkTargetWhitelistPage;
 
+        // Render paginated Telegram whitelist table rows.
         function renderWhitelistTable(targetRowId) {
             if (targetRowId) {
                 checkTargetWhitelistPage(targetRowId);
@@ -553,26 +541,24 @@
         }
         window.renderWhitelistTable = renderWhitelistTable;
 
+        // Render pagination controls for the whitelist table.
         function renderWhitelistPaginationButtons(totalPages) {
             const controls = document.getElementById('tgWhitelistPaginationControls');
             if (!controls) return;
 
             let btnHtml = '';
 
-            // Prev Button (‹ Prev)
             btnHtml += `<button class="pagination-nav-btn ${currentWhitelistPage === 1 ? 'disabled' : ''}" 
                          onclick="gotoWhitelistPage(${currentWhitelistPage - 1})" ${currentWhitelistPage === 1 ? 'disabled' : ''}>
                          <span>&#8249;</span> <span>Prev</span>
                         </button>`;
 
-            // Smart pagination formatting (1 ... 9 [10] 11 ... 20)
             if (totalPages <= 7) {
                 for (let p = 1; p <= totalPages; p++) {
                     btnHtml += `<button class="pagination-num-btn ${p === currentWhitelistPage ? 'active' : ''}" 
                                  onclick="gotoWhitelistPage(${p})">${p}</button>`;
                 }
             } else {
-                // Always display page 1
                 btnHtml += `<button class="pagination-num-btn ${currentWhitelistPage === 1 ? 'active' : ''}" 
                              onclick="gotoWhitelistPage(1)">1</button>`;
 
@@ -600,12 +586,10 @@
                     btnHtml += `<span class="pagination-dots">...</span>`;
                 }
 
-                // Always display last page
                 btnHtml += `<button class="pagination-num-btn ${currentWhitelistPage === totalPages ? 'active' : ''}" 
                              onclick="gotoWhitelistPage(${totalPages})">${totalPages}</button>`;
             }
 
-            // Next Button (Next ›)
             btnHtml += `<button class="pagination-nav-btn ${currentWhitelistPage === totalPages ? 'disabled' : ''}" 
                          onclick="gotoWhitelistPage(${currentWhitelistPage + 1})" ${currentWhitelistPage === totalPages ? 'disabled' : ''}>
                          <span>Next</span> <span>&#8250;</span>
@@ -615,6 +599,7 @@
         }
         window.renderWhitelistPaginationButtons = renderWhitelistPaginationButtons;
 
+        // Smoothly scroll to the top of a table.
         function scrollToTableTop(elementId) {
             requestAnimationFrame(() => {
                 const el = document.getElementById(elementId);
@@ -627,6 +612,7 @@
         }
         window.scrollToTableTop = scrollToTableTop;
 
+        // Navigate to a specific page in the whitelist table.
         function gotoWhitelistPage(page) {
             const filteredWhitelist = getFilteredWhitelist();
             const totalPages = Math.ceil(filteredWhitelist.length / whitelistPerPage) || 1;
@@ -651,6 +637,7 @@
         const logsPerPage = 20;
         let currentLogsSearch = '';
 
+        // Escape HTML special characters to prevent XSS.
         function escapeHtml(text) {
             if (!text) return '';
             return String(text)
@@ -661,6 +648,7 @@
                 .replace(/'/g, "&#039;");
         }
 
+        // Format raw Telegram message type into display label.
         function getLogTypeDisplay(rawType) {
             const t = String(rawType || '').toUpperCase();
             if (t === 'ALERT_NOTIFICATION') return 'ALERT NOTIF';
@@ -669,6 +657,7 @@
             return 'CMD REPLY';
         }
 
+        // Filter Telegram dispatch logs by search query.
         function getFilteredLogs() {
             const q = currentLogsSearch.trim().toLowerCase();
             if (!q) return allLogs;
@@ -689,7 +678,6 @@
                     typeAliases = 'cmd reply command reply command response cmd command';
                 }
 
-                // Match by raw type, display badge label, aliases, or generic words "message type" / "type"
                 const matchesType = rawType.includes(q) ||
                     displayType.includes(q) ||
                     typeAliases.includes(q) ||
@@ -701,6 +689,7 @@
             });
         }
 
+        // Jump to the pagination page containing a targeted dispatch log row.
         function checkTargetLogPage(targetRowId) {
             let rowId = targetRowId;
             if (!rowId && window.location.hash) {
@@ -726,6 +715,7 @@
         }
         window.checkTargetLogPage = checkTargetLogPage;
 
+        // Render paginated Telegram dispatch history table rows.
         function renderLogsTable(targetRowId) {
             if (targetRowId) {
                 checkTargetLogPage(targetRowId);
@@ -805,26 +795,24 @@
         }
         window.renderLogsTable = renderLogsTable;
 
+        // Render pagination controls for the dispatch log table.
         function renderPaginationButtons(totalPages) {
             const controls = document.getElementById('tgPaginationControls');
             if (!controls) return;
 
             let btnHtml = '';
 
-            // Prev Button (‹ Prev)
             btnHtml += `<button class="pagination-nav-btn ${currentLogPage === 1 ? 'disabled' : ''}" 
                          onclick="gotoLogPage(${currentLogPage - 1})" ${currentLogPage === 1 ? 'disabled' : ''}>
                          <span>&#8249;</span> <span>Prev</span>
                         </button>`;
 
-            // Smart pagination formatting (1 ... 9 [10] 11 ... 20)
             if (totalPages <= 7) {
                 for (let p = 1; p <= totalPages; p++) {
                     btnHtml += `<button class="pagination-num-btn ${p === currentLogPage ? 'active' : ''}" 
                                  onclick="gotoLogPage(${p})">${p}</button>`;
                 }
             } else {
-                // Always display page 1
                 btnHtml += `<button class="pagination-num-btn ${currentLogPage === 1 ? 'active' : ''}" 
                              onclick="gotoLogPage(1)">1</button>`;
 
@@ -852,12 +840,10 @@
                     btnHtml += `<span class="pagination-dots">...</span>`;
                 }
 
-                // Always display last page
                 btnHtml += `<button class="pagination-num-btn ${currentLogPage === totalPages ? 'active' : ''}" 
                              onclick="gotoLogPage(${totalPages})">${totalPages}</button>`;
             }
 
-            // Next Button (Next ›)
             btnHtml += `<button class="pagination-nav-btn ${currentLogPage === totalPages ? 'disabled' : ''}" 
                          onclick="gotoLogPage(${currentLogPage + 1})" ${currentLogPage === totalPages ? 'disabled' : ''}>
                          <span>Next</span> <span>&#8250;</span>
@@ -866,12 +852,12 @@
             controls.innerHTML = btnHtml;
         }
 
+        // Navigate to a specific page in the dispatch log table.
         function gotoLogPage(page) {
             const filteredLogs = getFilteredLogs();
             const totalPages = Math.ceil(filteredLogs.length / logsPerPage) || 1;
             if (page < 1 || page > totalPages) return;
             currentLogPage = page;
-            // Clear anchor hash if present so pagination is not locked to a search target
             if (window.location.hash && window.location.hash.startsWith('#msglog-row-')) {
                 history.replaceState(null, '', window.location.pathname + window.location.search);
             }
@@ -880,7 +866,6 @@
         }
         window.gotoLogPage = gotoLogPage;
 
-        // In-Table Search Input Listeners for Dispatch History
         const logsSearchInput = document.getElementById('tgLogsTableSearch');
         const logsSearchClear = document.getElementById('tgLogsTableSearchClear');
         if (logsSearchInput) {
@@ -906,10 +891,11 @@
             });
         }
 
+        // No-op placeholder for toast notifications.
         function showToast(message, type = 'success') {
-            // Disabled in favor of Inline Button Feedback
         }
 
+        // Trigger /api/telegram/test-alert and show delivery feedback.
         async function sendTestTelegramAlert() {
             const btn = document.querySelector('.btn-send-test');
             if (!btn) return;
@@ -975,6 +961,7 @@
             }
         }
 
+        // Show refreshing state and reload the Telegram page.
         function refreshTelegram(btn) {
             if (btn) {
                 btn.disabled = true;
@@ -990,6 +977,7 @@
             }, 250);
         }
 
+        // Fetch latest Telegram logs and bot online status from /api/telegram/logs.
         async function fetchTelegramLogs() {
             try {
                 const res = await fetch('/api/telegram/logs');
@@ -1021,9 +1009,7 @@
             }
         }
 
-        // Initial table render once DOM is fully loaded
         document.addEventListener('DOMContentLoaded', () => {
-            // Check URL search parameter (?search=...)
             const urlParams = new URLSearchParams(window.location.search);
             const searchParam = urlParams.get('search');
             const hash = window.location.hash;
@@ -1045,7 +1031,6 @@
             checkTargetLogPage();
             renderLogsTable();
 
-            // Smooth scroll to table if targeted
             if (hash === '#tgWhitelistTable') {
                 const el = document.getElementById('tgWhitelistTable');
                 if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1055,7 +1040,6 @@
             }
         });
 
-        // Re-render if hash changes to log or whitelist on different page
         window.addEventListener('hashchange', () => {
             checkTargetWhitelistPage();
             renderWhitelistTable();
@@ -1063,7 +1047,6 @@
             renderLogsTable();
         });
 
-        // Auto-refresh telegram logs every 5 seconds
         setInterval(fetchTelegramLogs, 5000);
     </script>
     {% endblock %}

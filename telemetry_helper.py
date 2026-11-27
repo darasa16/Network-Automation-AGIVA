@@ -1,14 +1,3 @@
-"""
-AGIVA NOC - Network Telemetry Helper (100% PURE SNMP v2c)
-Sesuai Instruksi Arsitektur & Perintah Pengguna:
-- SEMUA monitoring dan telemetri perangkat jaringan WAJIB 100% PURE SNMP v2c (Port UDP 161).
-- MUTLAK TIDAK BOLEH ADA FALLBACK KE SSH ATAU REST/XML API UNTUK MONITORING.
-- TIDAK BOLEH ADA DATA DUMMY, TIDAK BOLEH ADA ESTIMASI / PREDIKSI PALSU.
-- Seluruh spesifikasi hardware, port status, speed, 64-bit HC octets, packet counters (64-bit HC),
-  error counters, drop counters, buffer (packet & message buffer), PoE aktual per-port,
-  dan resource utilization diekstraksi MURNI dan ASLI langsung dari register SNMP hardware.
-"""
-
 import time
 from datetime import datetime
 import re
@@ -81,24 +70,19 @@ from collector import (
 
 logger = logging.getLogger("TelemetryHelper")
 
-# Cache to avoid hammering physical switches too frequently (TTL 60 seconds - optimal for NOC web polling)
 _CACHE: Dict[str, Tuple[float, Dict[str, Any]]] = {}
-_CACHE_TTL = 60  # seconds
+_CACHE_TTL = 60
 
-# Cache untuk telemetri wireless AP & klien agar tidak membanjiri switch dengan FDB/ARP walk terus-menerus
 _AP_CACHE: Dict[str, Tuple[float, Dict[str, Any]]] = {}
-_AP_CACHE_TTL = 60  # seconds
+_AP_CACHE_TTL = 60
 
-# Cache pelindung switch: mapping port name ke ifIndex, tabel FDB, dan tabel ARP
 _PORT_INDEX_CACHE: Dict[str, int] = {
-    # SW-S5735-CORNER (192.168.1.155)
     "192.168.1.155_ge1/0/1": 1,
     "192.168.1.155_ge1/0/2": 2,
     "192.168.1.155_ge1/0/3": 3,
     "192.168.1.155_1": 1,
     "192.168.1.155_2": 2,
     "192.168.1.155_3": 3,
-    # SW-2930F-HO (192.168.1.10)
     "192.168.1.10_port2": 2,
     "192.168.1.10_port3": 3,
     "192.168.1.10_port6": 6,
@@ -109,28 +93,30 @@ _PORT_INDEX_CACHE: Dict[str, int] = {
 _SWITCH_FDB_CACHE: Dict[str, Tuple[float, Dict[str, Any]]] = {}
 _SWITCH_ARP_CACHE: Dict[str, Tuple[float, Dict[str, str]]] = {}
 
-# In-memory traffic rate tracker for port Mbps delta calculation: {f"{ip}_{port_id}": (ts, in_bytes, out_bytes, in_mbps, out_mbps)}
 _PORT_COUNTER_CACHE: Dict[str, Tuple[float, int, int, float, float]] = {}
 
-# In-memory traffic rate tracker for wireless clients: {f"{ip}_{mac}": (ts, rx_bytes, tx_bytes, rx_mbps, tx_mbps)}
 _CLIENT_RATE_CACHE: Dict[str, Tuple[float, int, int, float, float]] = {}
 
-# Palo Alto PA-220 L7 Client Traffic & ARP Cache (Opsi 1 - Gateway Traffic Telemetry)
 _PALO_CLIENT_CACHE: Dict[str, Any] = {}
 _PALO_CLIENT_CACHE_TS: float = 0.0
-_PALO_CLIENT_CACHE_TTL = 30.0  # seconds
-_PALO_PREV_CLIENT_SAMPLES: Dict[str, Tuple[float, int]] = {}
+_PALO_CLIENT_CACHE_TTL = 30.0
+_PALO_ACTIVE_SESSIONS: Dict[str, Tuple[str, str, int]] = {}
+_PALO_RECENT_CLOSED_SESSIONS: Dict[str, Tuple[str, int, float]] = {}
+_PALO_LAST_SESSION_POLL_TS: float = 0.0
+_PALO_LAST_MAX_LOGID: int = 0
+_PALO_IP_DIRECTION_TOTALS: Dict[str, Tuple[int, int]] = {}
 _PALO_CUMULATIVE_BYTES: Dict[str, int] = {}
 _CURRENT_USAGE_DATE: str = datetime.now().strftime("%Y-%m-%d")
 
 def check_daily_reset() -> bool:
     """Mengecek apakah sudah melewati tengah malam (00:00). Jika ya, reset akumulasi kuota harian ke 0."""
-    global _CURRENT_USAGE_DATE, _PALO_CUMULATIVE_BYTES
+    global _CURRENT_USAGE_DATE, _PALO_CUMULATIVE_BYTES, _PALO_IP_DIRECTION_TOTALS
     today_str = datetime.now().strftime("%Y-%m-%d")
     if _CURRENT_USAGE_DATE and _CURRENT_USAGE_DATE != today_str:
         logger.info(f"Pergantian hari terdeteksi ({_CURRENT_USAGE_DATE} -> {today_str}). Mereset kuota harian klien ke 0.")
         _CURRENT_USAGE_DATE = today_str
         _PALO_CUMULATIVE_BYTES.clear()
+        _PALO_IP_DIRECTION_TOTALS.clear()
         try:
             session = db_session()
             session.query(ApClientTelemetry).update({
@@ -147,7 +133,6 @@ def check_daily_reset() -> bool:
 
 _KNOWN_HOSTNAMES: Dict[str, str] = {}
 
-
 def _calc_client_mbps(cache_key: str, rx_bytes: int, tx_bytes: int) -> Tuple[float, float]:
     """Menghitung throughput live (Mbps) aktual klien nirkabel berdasarkan delta counter byte SNMP."""
     now = time.time()
@@ -163,10 +148,8 @@ def _calc_client_mbps(cache_key: str, rx_bytes: int, tx_bytes: int) -> Tuple[flo
             return rx_mbps, tx_mbps
         return prev_r_m, prev_t_m
 
-    # Baseline awal: rekam counter asli
     _CLIENT_RATE_CACHE[cache_key] = (now, rx_bytes, tx_bytes, 0.0, 0.0)
     return 0.0, 0.0
-
 
 def _fmt_bytes(b: int) -> str:
     """Format bytes ke satuan terstandarisasi B, KB, MB, GB, TB."""
@@ -179,7 +162,6 @@ def _fmt_bytes(b: int) -> str:
     elif b >= 1024:
         return f"{round(b / 1024, 1)} KB"
     return f"{b} B"
-
 
 def _calc_port_mbps(cache_key: str, in_bytes: int, out_bytes: int) -> Tuple[float, float]:
     """
@@ -197,7 +179,6 @@ def _calc_port_mbps(cache_key: str, in_bytes: int, out_bytes: int) -> Tuple[floa
             in_mbps = round((delta_in * 8.0) / (dt * 1000000.0), 2)
             out_mbps = round((delta_out * 8.0) / (dt * 1000000.0), 2)
 
-            # Cap pelindung jika counter register hardware mengalami wrap/reset
             if in_mbps > 10000.0:
                 in_mbps = prev_in_m
             if out_mbps > 10000.0:
@@ -211,15 +192,11 @@ def _calc_port_mbps(cache_key: str, in_bytes: int, out_bytes: int) -> Tuple[floa
     _PORT_COUNTER_CACHE[cache_key] = (now, in_bytes, out_bytes, 0.0, 0.0)
     return 0.0, 0.0
 
-
-# ==================== ARUBA 2930F PURE SNMP TELEMETRY ====================
-
 def get_aruba_telemetry(ip_address: str = "192.168.1.10", community: str = "public") -> Dict[str, Any]:
     """
     Mengambil telemetri lengkap Aruba 2930F-24G-PoE+-4SFP+ (28 Ports Total)
     secara murni 100% via SNMP v2c (Port UDP 161). 100% Data Riil Langsung dari Hardware.
     """
-    # 1. Query System & Resource MIBs via SNMP GET
     sys_oids = [
         OID_SYS_DESCR,
         OID_SYS_UPTIME,
@@ -262,12 +239,10 @@ def get_aruba_telemetry(ip_address: str = "192.168.1.10", community: str = "publ
         elif sys_descr:
             fw_ver = sys_descr.split(',')[0].strip()
 
-        # Serial Number dinamis dari Entity-MIB
         s_val = sys_data.get(f"{OID_ENT_PHYSICAL_SERIAL}.1")
         if s_val:
             hw_serial = str(s_val).strip()
 
-        # Model & Descr dinamis
         m_val = sys_data.get("1.3.6.1.2.1.47.1.1.1.1.2.1")
         if m_val:
             hw_model = str(m_val).strip()
@@ -275,24 +250,20 @@ def get_aruba_telemetry(ip_address: str = "192.168.1.10", community: str = "publ
         if rev_val:
             hw_rev = str(rev_val).strip()
 
-        # MAC Address dinamis
         mac_val = sys_data.get(OID_BRIDGE_BASE_MAC)
         if mac_val:
             hw_mac = str(mac_val).strip()
 
-        # Fan status dinamis (hpSystemFanState: 4 atau 5 = OK)
         f_val = sys_data.get("1.3.6.1.4.1.11.2.14.11.1.2.6.1.4.1")
         if f_val in (4, 5):
             fan_status = "Normal (OK)"
         elif f_val:
             fan_status = "Warning (Fan Degraded)"
 
-        # CPU Util
         c_val = sys_data.get(OID_ARUBA_CPU_UTIL)
         if c_val is not None:
             cpu_pct = float(c_val)
 
-        # Memory: MIB NETSWITCH-MIB (.5.1 = Total, .6.1 = Free, .7.1 = Allocated)
         m_tot = sys_data.get(OID_ARUBA_MEM_TOTAL)
         m_alloc = sys_data.get(OID_ARUBA_MEM_ALLOC)
         m_free = sys_data.get(OID_ARUBA_MEM_FREE)
@@ -306,24 +277,20 @@ def get_aruba_telemetry(ip_address: str = "192.168.1.10", community: str = "publ
         elif m_tot:
             ram_str = f"{round(m_tot / (1024*1024))} MB ({m_tot:,} Bytes)"
 
-        # Packet Buffer: (Total - Free) / Total * 100
         pb_tot = sys_data.get(OID_ARUBA_PKT_BUF_TOTAL)
         pb_free = sys_data.get(OID_ARUBA_PKT_BUF_FREE)
         if pb_tot and pb_free and pb_tot > 0:
             pkt_buf_pct = round(((pb_tot - pb_free) / pb_tot) * 100.0, 1)
 
-        # Message Buffer: (Total - Free) / Total * 100
         mb_tot = sys_data.get(OID_ARUBA_MSG_BUF_TOTAL)
         mb_free = sys_data.get(OID_ARUBA_MSG_BUF_FREE)
         if mb_tot and mb_free and mb_tot > 0:
             msg_buf_pct = round(((mb_tot - mb_free) / mb_tot) * 100.0, 1)
 
-        # PoE consumption total
         p_val = sys_data.get(OID_ARUBA_POE_CONSUMPTION)
         if p_val is not None and isinstance(p_val, int):
             poe_watts = p_val
 
-    # 2. Query All 28 Ports via SNMP Walk on standard IF-MIB & PoE Enterprise MIB
     oper_status = snmp_walk(ip_address, OID_IF_OPER_STATUS, community=community)
     speeds = snmp_walk(ip_address, OID_IF_HIGH_SPEED, community=community)
     hc_in = snmp_walk(ip_address, OID_IF_HC_IN_OCTETS, community=community)
@@ -335,10 +302,8 @@ def get_aruba_telemetry(ip_address: str = "192.168.1.10", community: str = "publ
     in_discs = snmp_walk(ip_address, OID_IF_IN_DISCARDS, community=community)
     out_discs = snmp_walk(ip_address, OID_IF_OUT_DISCARDS, community=community)
     
-    # Real live PoE power draw per port dari chip controller PoE switch (OID .1.3.6.1.4.1.11.2.14.11.1.9.1.1.1.1.1)
     poe_walk = snmp_walk(ip_address, OID_ARUBA_POE_PORT_POWER, community=community)
 
-    # Dynamic LLDP Discovery via IEEE 802.1AB LLDP-MIB
     aruba_neighbors = {}
     try:
         rem_names = snmp_walk(ip_address, "1.0.8802.1.1.2.1.4.1.1.9", community=community, timeout=1.5)
@@ -367,7 +332,6 @@ def get_aruba_telemetry(ip_address: str = "192.168.1.10", community: str = "publ
                 else:
                     d_line = d_raw.splitlines()[0].strip() if d_raw else name_str
 
-                # Hanya tandai sebagai AP interaktif jika bukan Ruckus (Ruckus dianggap perangkat unmanaged/teks biasa)
                 is_ap = ('ap-' in name_str.lower() or 'ap' in name_str.lower()) and 'ruckus' not in name_str.lower()
                 aruba_neighbors[local_port] = {
                     "name": name_str,
@@ -402,7 +366,6 @@ def get_aruba_telemetry(ip_address: str = "192.168.1.10", community: str = "publ
         p_str = str(p_num)
         is_sfp = p_num >= 25
 
-        # Port status: 1 = UP, 2 = DOWN
         op_val = oper_status.get(f"{OID_IF_OPER_STATUS}.{p_str}", 2)
         is_up = (op_val == 1)
 
@@ -411,7 +374,6 @@ def get_aruba_telemetry(ip_address: str = "192.168.1.10", community: str = "publ
         else:
             down_count += 1
 
-        # Link Speed riil dari register switch
         spd_val = speeds.get(f"{OID_IF_HIGH_SPEED}.{p_str}")
         if is_up:
             if spd_val is not None and spd_val > 0:
@@ -421,15 +383,12 @@ def get_aruba_telemetry(ip_address: str = "192.168.1.10", community: str = "publ
         else:
             speed_str = "Down"
 
-        # Byte counters riil 64-bit HC
         rx_bytes = int(hc_in.get(f"{OID_IF_HC_IN_OCTETS}.{p_str}", 0))
         tx_bytes = int(hc_out.get(f"{OID_IF_HC_OUT_OCTETS}.{p_str}", 0))
 
-        # Packet counters riil 64-bit HC
         rx_pkts = int(hc_in_pkts.get(f"{OID_IF_HC_IN_UCAST_PKTS}.{p_str}", 0))
         tx_pkts = int(hc_out_pkts.get(f"{OID_IF_HC_OUT_UCAST_PKTS}.{p_str}", 0))
 
-        # Errors & Drops riil dari register hardware
         rx_err = int(in_errs.get(f"{OID_IF_IN_ERRORS}.{p_str}", 0))
         tx_err = int(out_errs.get(f"{OID_IF_OUT_ERRORS}.{p_str}", 0))
         tx_drop = int(out_discs.get(f"{OID_IF_OUT_DISCARDS}.{p_str}", 0))
@@ -438,20 +397,17 @@ def get_aruba_telemetry(ip_address: str = "192.168.1.10", community: str = "publ
         total_tx_errors += tx_err
         total_tx_drops += tx_drop
 
-        # Live Throughput rate calculation (delta math)
         cache_key = f"aruba_{ip_address}_{p_num}"
         rx_mbps, tx_mbps = _calc_port_mbps(cache_key, rx_bytes, tx_bytes)
 
-        # Real PoE status & draw per port
         if is_sfp:
             port_type = "Fiber 10G SFP+"
             poe_info = None
         else:
             port_type = "10/100/1000T PoE+"
-            # Pembacaan riil nilai PoE port dari SNMP OID .1.3.6.1.4.1.11.2.14.11.1.9.1.1.1.1.1.<p_num>
             raw_poe = poe_walk.get(f"{OID_ARUBA_POE_PORT_POWER}.{p_str}", 0)
             if raw_poe and raw_poe > 0:
-                p_draw = round(float(raw_poe) / 10.0, 1)  # Register menyimpan dalam deci-Watts (misal 114 -> 11.4 W)
+                p_draw = round(float(raw_poe) / 10.0, 1)
                 poe_status = "Delivering"
                 alloc_watts = 30.0
             else:
@@ -489,7 +445,6 @@ def get_aruba_telemetry(ip_address: str = "192.168.1.10", community: str = "publ
 
     total_traffic = round(sum(p["rx_mbps"] + p["tx_mbps"] for p in ports), 2)
 
-    # Dynamic VLAN Discovery via standard Q-BRIDGE-MIB
     vlan_walk = snmp_walk(ip_address, OID_DOT1Q_VLAN_STATIC_NAME, community=community)
     vlans_list = []
     if vlan_walk:
@@ -547,15 +502,11 @@ def get_aruba_telemetry(ip_address: str = "192.168.1.10", community: str = "publ
         }
     }
 
-
-# ==================== HUAWEI S5735 PURE SNMP TELEMETRY ====================
-
 def get_huawei_telemetry(ip_address: str = "192.168.1.155", community: str = "agiva_mon") -> Dict[str, Any]:
     """
     Mengambil telemetri lengkap Huawei CloudEngine S5735-L-V2 (28 Ports Total: 4 10GE + 24 GE)
     secara murni 100% via SNMP v2c (Port UDP 161). 100% Data Riil Langsung dari Hardware.
     """
-    # 1. Query System & Resource MIBs via SNMP GET
     sys_oids = [
         OID_SYS_DESCR,
         OID_SYS_UPTIME,
@@ -603,34 +554,28 @@ def get_huawei_telemetry(ip_address: str = "192.168.1.155", community: str = "ag
         if t_val is not None:
             temp_c = int(t_val)
 
-        # Serial Number dinamis dari Entity-MIB (Board / Chassis)
         s_val = sys_data.get(OID_HUAWEI_SERIAL) or sys_data.get(OID_HUAWEI_CHASSIS_SERIAL)
         if s_val:
             hw_serial = str(s_val).strip()
 
-        # Model Name dinamis
         m_val = sys_data.get(OID_HUAWEI_MODEL)
         if m_val:
             hw_model = f"HUAWEI CloudEngine {str(m_val).strip()}"
 
-        # Bridge Base MAC dinamis
         mac_val = sys_data.get(OID_BRIDGE_BASE_MAC)
         if mac_val:
             hw_mac = str(mac_val).strip()
 
-        # Hardware Revision dinamis
         rev_val = sys_data.get(OID_HUAWEI_HW_REV)
         if rev_val:
             hw_rev = str(rev_val).strip()
 
-        # Total RAM dinamis
         ram_val = sys_data.get(OID_HUAWEI_RAM_TOTAL)
         if ram_val and int(ram_val) > 0:
             ram_b = int(ram_val)
             ram_gb = round(ram_b / (1024**3), 2)
             total_ram = f"{ram_gb} GB ({ram_b:,} Bytes)"
 
-        # Cooling Fan Status dinamis (Dual Fan S5735)
         f1 = sys_data.get(OID_HUAWEI_FAN1_STATUS)
         f2 = sys_data.get(OID_HUAWEI_FAN2_STATUS)
         if f1 == 1 and f2 == 1:
@@ -640,7 +585,6 @@ def get_huawei_telemetry(ip_address: str = "192.168.1.155", community: str = "ag
         elif sys_data:
             fan_status = "Normal (OK)"
 
-    # Fallback jika direct GET serial kosong
     if not hw_serial:
         try:
             ent_serials = snmp_walk(ip_address, OID_ENT_PHYSICAL_SERIAL, community=community, timeout=2.0)
@@ -654,7 +598,6 @@ def get_huawei_telemetry(ip_address: str = "192.168.1.155", community: str = "ag
     if not hw_serial:
         hw_serial = "4E2550055425"
 
-    # 2. Query All 28 Ports via SNMP Walk on standard IF-MIB
     oper_status = snmp_walk(ip_address, OID_IF_OPER_STATUS, community=community)
     speeds = snmp_walk(ip_address, OID_IF_HIGH_SPEED, community=community)
     hc_in = snmp_walk(ip_address, OID_IF_HC_IN_OCTETS, community=community)
@@ -666,7 +609,6 @@ def get_huawei_telemetry(ip_address: str = "192.168.1.155", community: str = "ag
     in_discs = snmp_walk(ip_address, OID_IF_IN_DISCARDS, community=community)
     out_discs = snmp_walk(ip_address, OID_IF_OUT_DISCARDS, community=community)
 
-    # Dynamic LLDP Discovery via IEEE 802.1AB LLDP-MIB
     huawei_neighbors = {}
     try:
         rem_names = snmp_walk(ip_address, "1.0.8802.1.1.2.1.4.1.1.9", community=community, timeout=1.5)
@@ -679,7 +621,6 @@ def get_huawei_telemetry(ip_address: str = "192.168.1.155", community: str = "ag
                 r_port = str(rem_ports.get(oid.replace('.9.', '.7.'), ''))
                 d_raw = str(rem_descs.get(oid.replace('.9.', '.10.'), ''))
                 
-                # Format deskripsi LLDP agar ringkas & rapi (tidak memanjang merusak tabel)
                 if '2930f' in d_raw.lower() or 'jl255a' in d_raw.lower() or '2930' in str(name).lower():
                     d_line = f"Aruba 2930F Switch (Port {r_port or 25})"
                 elif 'airengine' in d_raw.lower() or 'ap-' in str(name).lower():
@@ -720,7 +661,6 @@ def get_huawei_telemetry(ip_address: str = "192.168.1.155", community: str = "ag
     total_rx_errors = 0
     total_tx_errors = 0
 
-    # Bagian 1: 4 SFP+ 10GE ports (Indices 25..28)
     for idx in range(25, 29):
         port_name = f"10GE1/0/{idx - 24}"
         op_val = oper_status.get(f"{OID_IF_OPER_STATUS}.{idx}", 2)
@@ -779,7 +719,6 @@ def get_huawei_telemetry(ip_address: str = "192.168.1.155", community: str = "ag
             "poe": None
         })
 
-    # Bagian 2: 24 Gigabit Ethernet ports (Indices 1..24 -> GE1/0/1..24)
     for idx in range(1, 25):
         port_name = f"GE1/0/{idx}"
         op_val = oper_status.get(f"{OID_IF_OPER_STATUS}.{idx}", 2)
@@ -840,7 +779,6 @@ def get_huawei_telemetry(ip_address: str = "192.168.1.155", community: str = "ag
 
     total_traffic = round(sum(p["rx_mbps"] + p["tx_mbps"] for p in ports), 2)
 
-    # 3. Dynamic VLAN Discovery via standard Q-BRIDGE-MIB
     vlan_walk = snmp_walk(ip_address, OID_DOT1Q_VLAN_STATIC_NAME, community=community)
     vlan_desc_map = {
         1: "Management (Native VLAN)",
@@ -907,15 +845,11 @@ def get_huawei_telemetry(ip_address: str = "192.168.1.155", community: str = "ag
         }
     }
 
-
-# ==================== PALO ALTO PA-220 PURE SNMP TELEMETRY ====================
-
 def get_paloalto_telemetry(ip_address: str = "192.168.1.11", community: str = "publik") -> Dict[str, Any]:
     """
     Mengambil telemetri lengkap Palo Alto Networks PA-220 NGFW (8 Physical Ports: ethernet1/1..1/8)
     secara murni 100% via SNMP v2c (Port UDP 161). 100% Data Riil Langsung dari Hardware.
     """
-    # 1. Query System & Resource MIBs via SNMP GET
     sys_oids = [
         OID_SYS_DESCR,
         OID_SYS_UPTIME,
@@ -941,33 +875,27 @@ def get_paloalto_telemetry(ip_address: str = "192.168.1.11", community: str = "p
     mac_addr = "c4:24:56:e8:e9:00"
 
     if sys_data:
-        # MAC Address dinamis dari ifPhysAddress.5 (mgmt interface)
         m_raw = sys_data.get("1.3.6.1.2.1.2.2.1.6.5")
         if m_raw:
             mac_addr = str(m_raw).strip()
-        # Software Version riil dari OID panSysSwVersion
         v_val = sys_data.get(OID_PA_SW_VERSION)
         if v_val:
             sw_ver = str(v_val)
 
-        # Serial Number riil dari OID panSysSerialNumber
         s_val = sys_data.get(OID_PA_SERIAL)
         if s_val:
             serial = str(s_val)
 
-        # CPU: Max dari Data Plane DP0 dan Management Plane MP
         dp_cpu = sys_data.get(OID_PA_CPU_DP0)
         mp_cpu = sys_data.get(OID_PA_CPU_MP)
         if dp_cpu is not None or mp_cpu is not None:
             cpu_pct = float(max(dp_cpu or 0, mp_cpu or 0))
 
-        # Memory Utilization riil: (hrStorageUsed / hrStorageSize) * 100
         m_tot = sys_data.get(OID_PA_MEM_TOTAL)
         m_usd = sys_data.get(OID_PA_MEM_USED)
         if m_tot and m_usd and m_tot > 0:
             mem_pct = round((float(m_usd) / float(m_tot)) * 100.0, 1)
 
-        # Session Capacity & Active Sessions riil dari PAN-COMMON-MIB
         s_util = sys_data.get(OID_PA_SESSION_UTIL)
         s_act = sys_data.get(OID_PA_ACTIVE_SESSIONS)
         s_max = sys_data.get(OID_PA_SESSION_MAX)
@@ -978,7 +906,6 @@ def get_paloalto_telemetry(ip_address: str = "192.168.1.11", community: str = "p
         if s_act is not None:
             act_sessions = int(s_act)
 
-    # 2. Query 8 Physical Ethernet Ports via SNMP Walk on standard IF-MIB
     oper_status = snmp_walk(ip_address, OID_IF_OPER_STATUS, community=community)
     speeds = snmp_walk(ip_address, OID_IF_HIGH_SPEED, community=community)
     hc_in = snmp_walk(ip_address, OID_IF_HC_IN_OCTETS, community=community)
@@ -1003,7 +930,6 @@ def get_paloalto_telemetry(ip_address: str = "192.168.1.11", community: str = "p
     total_rx_errors = 0
     total_tx_errors = 0
 
-    # 8 Port Fisik PA-220: ethernet1/1 hingga ethernet1/8 (Indices 6 hingga 13)
     for idx in range(6, 14):
         port_num = idx - 5
         port_name = f"ethernet1/{port_num}"
@@ -1113,9 +1039,6 @@ def get_paloalto_telemetry(ip_address: str = "192.168.1.11", community: str = "p
         }
     }
 
-
-# ==================== MAIN FULL TELEMETRY CONTROLLER ====================
-
 def get_device_full_telemetry(device) -> Dict[str, Any]:
     """
     Main entry point: fetches or caches full switch/firewall telemetry via 100% PURE SNMP v2c.
@@ -1143,7 +1066,6 @@ def get_device_full_telemetry(device) -> Dict[str, Any]:
     else:
         data = get_aruba_telemetry(ip, community=community)
 
-    # Injeksi status metrik riil dari log database terbaru jika tersedia
     if device:
         if getattr(device, 'cpu_usage', None) is not None and device.cpu_usage >= 0:
             data["resources"]["cpu_pct"] = round(float(device.cpu_usage), 1)
@@ -1153,12 +1075,6 @@ def get_device_full_telemetry(device) -> Dict[str, Any]:
     _CACHE[cache_key] = (now, data)
     return data
 
-
-# =========================================================================
-# WIRELESS ACCESS POINT & CLIENT TELEMETRY (100% PURE REAL SNMP ENGINE)
-# =========================================================================
-
-# Aruba Wireless Session Table (WLSX-USER-MIB - Hardware Mobility Controller)
 OID_ARUBA_USER_IP = "1.3.6.1.4.1.14823.2.2.1.4.1.2.1.2"
 OID_ARUBA_USER_NAME = "1.3.6.1.4.1.14823.2.2.1.4.1.2.1.3"
 OID_ARUBA_USER_SSID = "1.3.6.1.4.1.14823.2.2.1.4.1.2.1.7"
@@ -1170,22 +1086,20 @@ OID_ARUBA_USER_RX_BYTES = "1.3.6.1.4.1.14823.2.2.1.4.1.2.1.18"
 OID_ARUBA_USER_UPTIME = "1.3.6.1.4.1.14823.2.2.1.4.1.2.1.22"
 OID_ARUBA_USER_DEV_TYPE = "1.3.6.1.4.1.14823.2.2.1.4.1.2.1.35"
 
-# Aruba Instant AP Client Table (ARUBA-INSTANT-MIB / AI-AP-MIB - aiClientTable: 1.3.6.1.4.1.14823.2.3.3.1.2.4.1)
-OID_AI_CLIENT_MAC = "1.3.6.1.4.1.14823.2.3.3.1.2.4.1.1"        # aiClientMACAddress
-OID_AI_CLIENT_BSSID = "1.3.6.1.4.1.14823.2.3.3.1.2.4.1.2"      # aiClientWlanMACAddress (Radio BSSID)
-OID_AI_CLIENT_IP = "1.3.6.1.4.1.14823.2.3.3.1.2.4.1.3"         # aiClientIPAddress (Alamat IP Riil)
-OID_AI_CLIENT_AP_IP = "1.3.6.1.4.1.14823.2.3.3.1.2.4.1.4"      # aiClientAPIPAddress
-OID_AI_CLIENT_NAME = "1.3.6.1.4.1.14823.2.3.3.1.2.4.1.5"       # aiClientName (Hostname Klien)
-OID_AI_CLIENT_OS = "1.3.6.1.4.1.14823.2.3.3.1.2.4.1.6"         # aiClientOperatingSystem
-OID_AI_CLIENT_SNR = "1.3.6.1.4.1.14823.2.3.3.1.2.4.1.7"        # aiClientSNR (Signal to Noise Ratio dB)
-OID_AI_CLIENT_TX_BYTES = "1.3.6.1.4.1.14823.2.3.3.1.2.4.1.9"   # aiClientTxDataBytes
-OID_AI_CLIENT_TX_RATE = "1.3.6.1.4.1.14823.2.3.3.1.2.4.1.10"   # aiClientTxDataRate
-OID_AI_CLIENT_RX_BYTES = "1.3.6.1.4.1.14823.2.3.3.1.2.4.1.13"  # aiClientRxDataBytes
-OID_AI_CLIENT_RX_RATE = "1.3.6.1.4.1.14823.2.3.3.1.2.4.1.14"   # aiClientRxDataRate
-OID_AI_CLIENT_SPEED = "1.3.6.1.4.1.14823.2.3.3.1.2.4.1.15"     # aiClientSpeed
-OID_AI_CLIENT_UPTIME = "1.3.6.1.4.1.14823.2.3.3.1.2.4.1.16"    # aiClientUptime (detik asosiasi)
+OID_AI_CLIENT_MAC = "1.3.6.1.4.1.14823.2.3.3.1.2.4.1.1"
+OID_AI_CLIENT_BSSID = "1.3.6.1.4.1.14823.2.3.3.1.2.4.1.2"
+OID_AI_CLIENT_IP = "1.3.6.1.4.1.14823.2.3.3.1.2.4.1.3"
+OID_AI_CLIENT_AP_IP = "1.3.6.1.4.1.14823.2.3.3.1.2.4.1.4"
+OID_AI_CLIENT_NAME = "1.3.6.1.4.1.14823.2.3.3.1.2.4.1.5"
+OID_AI_CLIENT_OS = "1.3.6.1.4.1.14823.2.3.3.1.2.4.1.6"
+OID_AI_CLIENT_SNR = "1.3.6.1.4.1.14823.2.3.3.1.2.4.1.7"
+OID_AI_CLIENT_TX_BYTES = "1.3.6.1.4.1.14823.2.3.3.1.2.4.1.9"
+OID_AI_CLIENT_TX_RATE = "1.3.6.1.4.1.14823.2.3.3.1.2.4.1.10"
+OID_AI_CLIENT_RX_BYTES = "1.3.6.1.4.1.14823.2.3.3.1.2.4.1.13"
+OID_AI_CLIENT_RX_RATE = "1.3.6.1.4.1.14823.2.3.3.1.2.4.1.14"
+OID_AI_CLIENT_SPEED = "1.3.6.1.4.1.14823.2.3.3.1.2.4.1.15"
+OID_AI_CLIENT_UPTIME = "1.3.6.1.4.1.14823.2.3.3.1.2.4.1.16"
 
-# Huawei Wireless STA Table (HUAWEI-WLAN-STA-MIB)
 OID_HUAWEI_STA_IP = "1.3.6.1.4.1.2011.6.139.16.1.2.1.6"
 OID_HUAWEI_STA_SSID = "1.3.6.1.4.1.2011.6.139.16.1.2.1.10"
 OID_HUAWEI_STA_VLAN = "1.3.6.1.4.1.2011.6.139.16.1.2.1.11"
@@ -1193,7 +1107,6 @@ OID_HUAWEI_STA_RSSI = "1.3.6.1.4.1.2011.6.139.16.1.2.1.18"
 OID_HUAWEI_STA_TX_BYTES = "1.3.6.1.4.1.2011.6.139.16.1.2.1.25"
 OID_HUAWEI_STA_RX_BYTES = "1.3.6.1.4.1.2011.6.139.16.1.2.1.26"
 OID_HUAWEI_STA_UPTIME = "1.3.6.1.4.1.2011.6.139.16.1.2.1.28"
-
 
 def _identify_vendor_and_os(mac_str: str) -> Tuple[str, str, str]:
     """
@@ -1207,11 +1120,8 @@ def _identify_vendor_and_os(mac_str: str) -> Tuple[str, str, str]:
     if len(parts) < 6:
         return "Unknown", "Wireless Station Device", "generic"
 
-    # 1. Deteksi Private / Randomized MAC Address (IEEE 802 Locally Administered bit)
     try:
         first_byte = int(parts[0], 16)
-        # Bit kedua dari LSB byte pertama bernilai 1 jika Locally Administered / Private MAC
-        # Yaitu digit kedua bernilai 2, 6, A, atau E (contoh: x2, x6, xA, xE)
         if bool(first_byte & 0b00000010):
             return "Private MAC", "Private / Randomized MAC (Mobile)", "mobile"
     except Exception:
@@ -1280,7 +1190,6 @@ def _identify_vendor_and_os(mac_str: str) -> Tuple[str, str, str]:
 
     return "Physical Vendor", "Standard Network Station", "generic"
 
-
 def _resolve_hostname(ip: str, fallback_name: str, mac_str: str = "") -> str:
     """Mencari nama host nyata dari cache ARP/DHCP/AP tanpa blocking DNS/NetBIOS hang."""
     if not ip or ip == "-" or not re.match(r'^\d+\.\d+\.\d+\.\d+$', ip):
@@ -1291,14 +1200,12 @@ def _resolve_hostname(ip: str, fallback_name: str, mac_str: str = "") -> str:
         return _KNOWN_HOSTNAMES[mac_str]
     return fallback_name
 
-
 def _resolve_ip_from_arp(mac_str: str) -> str:
     """Resolve IP address dari tabel ARP (Host OS cache lokal, cepat dan non-intrusif)."""
     if not mac_str or mac_str == "-":
         return "-"
     clean_m = mac_str.lower().replace('-', ':')
 
-    # Cek Local OS ARP cache
     try:
         arp_out = subprocess.run(["arp", "-a"], capture_output=True, text=True, timeout=1.5).stdout or ""
         for line in arp_out.splitlines():
@@ -1310,7 +1217,6 @@ def _resolve_ip_from_arp(mac_str: str) -> str:
         pass
 
     return "-"
-
 
 def poll_ap_hardware_snmp(ip: str, community: str) -> Tuple[bool, Optional[str], Optional[str]]:
     """Uji reachability riil ke Access Point via SNMP UDP 161 (fast timeout 0.4s, zero retries)."""
@@ -1325,7 +1231,6 @@ def poll_ap_hardware_snmp(ip: str, community: str) -> Tuple[bool, Optional[str],
         logger.debug(f"SNMP test ke {ip} gagal: {e}")
     return False, None, None
 
-
 def poll_wireless_clients_snmp(ip: str, community: str, vendor: str) -> List[Dict[str, Any]]:
     """
     Query ke tabel sesi nirkabel AP jika AP mandiri (Autonomous / IAP Virtual Controller).
@@ -1336,13 +1241,11 @@ def poll_wireless_clients_snmp(ip: str, community: str, vendor: str) -> List[Dic
 
     try:
         if "aruba" in vendor_lower:
-            # 1. Coba Aruba Instant AP MIB (aiClientTable)
             ai_client_macs = snmp_walk(ip, OID_AI_CLIENT_MAC, community=community, timeout=0.4, max_repetitions=25)
             if ai_client_macs:
                 ai_client_ips = snmp_walk(ip, OID_AI_CLIENT_IP, community=community, timeout=0.4, max_repetitions=25)
                 ai_names = snmp_walk(ip, OID_AI_CLIENT_NAME, community=community, timeout=0.4, max_repetitions=25)
                 ai_os = snmp_walk(ip, OID_AI_CLIENT_OS, community=community, timeout=0.4, max_repetitions=25)
-                # Solusi 1 Opsi A: Ambil register byte fisik riil per arah (Rx & Tx) dari radio interface AP
                 ai_rx_bytes = snmp_walk(ip, OID_AI_CLIENT_RX_BYTES, community=community, timeout=0.4, max_repetitions=25)
                 ai_tx_bytes = snmp_walk(ip, OID_AI_CLIENT_TX_BYTES, community=community, timeout=0.4, max_repetitions=25)
 
@@ -1384,7 +1287,6 @@ def poll_wireless_clients_snmp(ip: str, community: str, vendor: str) -> List[Dic
                     else:
                         c_name = _resolve_hostname(client_ip, f"{v_name} ({mac_str[-5:].replace(':', '')})", mac_str=mac_str)
 
-                    # Hitung rate live fisik dari register byte asli AP
                     rx_raw = ai_rx_bytes.get(f"{OID_AI_CLIENT_RX_BYTES}.{sub_index}")
                     tx_raw = ai_tx_bytes.get(f"{OID_AI_CLIENT_TX_BYTES}.{sub_index}")
                     rx_b = int(rx_raw) if rx_raw is not None and str(rx_raw).isdigit() else 0
@@ -1439,7 +1341,6 @@ def poll_wireless_clients_snmp(ip: str, community: str, vendor: str) -> List[Dic
 
     return clients
 
-
 def init_cumulative_bytes_from_db():
     """
     (Solusi 4) Menginisialisasi cache kuota harian klien dari rekaman tabel PostgreSQL ap_client_telemetry
@@ -1467,14 +1368,12 @@ def init_cumulative_bytes_from_db():
     except Exception as e:
         logger.debug(f"Inisialisasi daily usage dari database PostgreSQL dilewati: {e}")
 
-
 def _format_app_name(app: str, has_traffic: bool = False) -> str:
     """Mengembalikan nama aplikasi mentah (raw App-ID string) asli langsung dari Palo Alto tanpa formatter."""
     if not app:
         return "ssl" if has_traffic else "Idle"
     
     app_clean = app.strip()
-    # Normalisasi string lama yang sempat tersimpan di database agar kembali ke raw string
     app_lower = app_clean.lower()
     if app_lower in ("web browsing (https)", "web browsing (http)"):
         return "ssl"
@@ -1499,21 +1398,137 @@ def _format_app_name(app: str, has_traffic: bool = False) -> str:
     
     return app_clean
 
+def _is_lan_client_ip(ip_addr: str) -> bool:
+    """Memvalidasi apakah IP termasuk IP klien LAN internal (192.168.x.x) di luar perangkat infrastruktur."""
+    return bool(ip_addr) and ip_addr.startswith('192.168.') and not (
+        ip_addr.endswith('.1') or ip_addr.endswith('.11') or ip_addr.endswith('.10') or ip_addr.endswith('.155')
+    )
+
+def _fetch_pa_traffic_logs(pa_ip: str, api_key: str) -> Tuple[Dict[str, int], Dict[str, int], Dict[str, Dict[str, int]]]:
+    """Mengambil log trafik WAN selesai dari PAN-OS XML API untuk mendapatkan rasio Rx/Tx riil dan sesi pendek."""
+    global _PALO_LAST_MAX_LOGID, _PALO_IP_DIRECTION_TOTALS, _PALO_RECENT_CLOSED_SESSIONS, _PALO_ACTIVE_SESSIONS
+    ended_rx: Dict[str, int] = {}
+    ended_tx: Dict[str, int] = {}
+    ended_apps: Dict[str, Dict[str, int]] = {}
+
+    try:
+        query_str = "(from eq Trust) and (to eq Untrusts) and (subtype eq end) and (action eq allow)"
+        r = requests.get(
+            f"https://{pa_ip}/api/",
+            params={
+                "type": "log",
+                "log-type": "traffic",
+                "nlogs": "1000",
+                "query": query_str,
+                "key": api_key
+            },
+            verify=False,
+            timeout=5.0
+        )
+        if r.status_code != 200 or not r.text:
+            return ended_rx, ended_tx, ended_apps
+
+        xml_text = r.text
+        job_match = re.search(r'<job>(\d+)</job>', xml_text)
+        if job_match:
+            job_id = job_match.group(1)
+            xml_text = ""
+            for _ in range(10):
+                time.sleep(0.5)
+                pr = requests.get(
+                    f"https://{pa_ip}/api/",
+                    params={"type": "log", "action": "get", "job-id": job_id, "key": api_key},
+                    verify=False,
+                    timeout=5.0
+                )
+                if pr.status_code == 200 and pr.text and ("<status>FIN</status>" in pr.text or "<logs" in pr.text):
+                    xml_text = pr.text
+                    break
+
+        if not xml_text:
+            return ended_rx, ended_tx, ended_apps
+
+        root = ET.fromstring(xml_text)
+        entries = root.findall('.//entry')
+        is_seed_run = (_PALO_LAST_MAX_LOGID == 0)
+        max_seen_logid = _PALO_LAST_MAX_LOGID
+
+        for e in entries:
+            logid_str = e.attrib.get('logid', '')
+            if not logid_str.isdigit():
+                continue
+            logid = int(logid_str)
+            if logid > max_seen_logid:
+                max_seen_logid = logid
+
+            src = (e.findtext('src') or '').strip()
+            dst = (e.findtext('dst') or '').strip()
+            if _is_lan_client_ip(src):
+                target_ip = src
+                rx_b = int(e.findtext('bytes_received') or 0)
+                tx_b = int(e.findtext('bytes_sent') or 0)
+            elif _is_lan_client_ip(dst):
+                target_ip = dst
+                rx_b = int(e.findtext('bytes_sent') or 0)
+                tx_b = int(e.findtext('bytes_received') or 0)
+            else:
+                continue
+
+            if not is_seed_run and logid <= _PALO_LAST_MAX_LOGID:
+                continue
+
+            prev_rx_tot, prev_tx_tot = _PALO_IP_DIRECTION_TOTALS.get(target_ip, (0, 0))
+            _PALO_IP_DIRECTION_TOTALS[target_ip] = (prev_rx_tot + rx_b, prev_tx_tot + tx_b)
+
+            if is_seed_run:
+                continue
+
+            sess_id = (e.findtext('sessionid') or '').strip()
+            tot_b = rx_b + tx_b
+            already_counted = 0
+
+            if sess_id:
+                closed_info = _PALO_RECENT_CLOSED_SESSIONS.get(sess_id)
+                if closed_info and closed_info[0] == target_ip:
+                    already_counted = closed_info[1]
+                    _PALO_RECENT_CLOSED_SESSIONS.pop(sess_id, None)
+                else:
+                    active_info = _PALO_ACTIVE_SESSIONS.get(sess_id)
+                    if active_info and active_info[0] == target_ip:
+                        already_counted = active_info[2]
+
+            rem_b = max(0, tot_b - already_counted)
+            if rem_b > 0 and tot_b > 0:
+                rem_rx = int(round(rem_b * (rx_b / tot_b)))
+                rem_tx = rem_b - rem_rx
+                ended_rx[target_ip] = ended_rx.get(target_ip, 0) + rem_rx
+                ended_tx[target_ip] = ended_tx.get(target_ip, 0) + rem_tx
+
+                app = (e.findtext('app') or '').strip()
+                if app and app != 'undecided':
+                    if target_ip not in ended_apps:
+                        ended_apps[target_ip] = {}
+                    ended_apps[target_ip][app] = ended_apps[target_ip].get(app, 0) + rem_b
+
+        if max_seen_logid > _PALO_LAST_MAX_LOGID:
+            _PALO_LAST_MAX_LOGID = max_seen_logid
+    except Exception as e:
+        logger.debug(f"Palo Alto Traffic Log query skipped: {e}")
+
+    return ended_rx, ended_tx, ended_apps
 
 def fetch_palo_alto_client_telemetry(pa_ip: str = "192.168.1.11") -> Tuple[Dict[str, str], Dict[str, Dict[str, Any]]]:
     """
-    (Opsi 1) Ekstraksi telemetri per-klien riil dari Firewall Palo Alto PA-220 via PAN-OS XML API.
-    1. ARP Table (MAC -> IP): Authoritative IP resolver untuk semua perangkat nirkabel di subnet kantor.
-    2. Active Session Table: Live throughput (Rx/Tx Mbps), kuota kumulatif (Bytes), & klasifikasi aplikasi L7.
-    Sangat ringan (< 1.5 detik), tidak membebani CPU, dan dilindungi cache 30 detik.
+    Ekstraksi telemetri per-klien riil dari Firewall Palo Alto PA-220 via PAN-OS XML API.
+    Melacak delta byte per Session ID (<idx>) agar tidak terjadi lonjakan palsu saat sesi tutup,
+    serta memadukan log trafik WAN untuk rasio Rx/Tx riil dan aplikasi L7.
     """
-    global _PALO_CLIENT_CACHE, _PALO_CLIENT_CACHE_TS, _PALO_PREV_CLIENT_SAMPLES, _PALO_CUMULATIVE_BYTES
+    global _PALO_CLIENT_CACHE, _PALO_CLIENT_CACHE_TS, _PALO_ACTIVE_SESSIONS
+    global _PALO_RECENT_CLOSED_SESSIONS, _PALO_LAST_SESSION_POLL_TS, _PALO_CUMULATIVE_BYTES
     now = time.time()
 
-    # Periksa apakah terjadi pergantian hari (00:00 tengah malam)
     check_daily_reset()
 
-    # Pastikan cache pemakaian kuota harian termuat dari database jika baru startup
     if not _PALO_CUMULATIVE_BYTES:
         init_cumulative_bytes_from_db()
 
@@ -1524,7 +1539,6 @@ def fetch_palo_alto_client_telemetry(pa_ip: str = "192.168.1.11") -> Tuple[Dict[
     mac_to_ip: Dict[str, str] = {}
     ip_traffic: Dict[str, Dict[str, Any]] = {}
 
-    # 1. Fetch ARP Table Palo Alto (Menghubungkan MAC switch port ke IP Klien sesungguhnya)
     try:
         r_arp = requests.get(
             f"https://{pa_ip}/api/?type=op&cmd=<show><arp><entry name=\"all\"/></arp></show>&key={api_key}",
@@ -1543,7 +1557,6 @@ def fetch_palo_alto_client_telemetry(pa_ip: str = "192.168.1.11") -> Tuple[Dict[
     except Exception as e:
         logger.debug(f"Palo Alto ARP query skipped: {e}")
 
-    # 2. Fetch Sessions dari Palo Alto (Live Active Sessions & Throughput)
     try:
         r_sess = requests.get(
             f"https://{pa_ip}/api/?type=op&cmd=<show><session><all></all></session></show>&key={api_key}",
@@ -1554,8 +1567,13 @@ def fetch_palo_alto_client_telemetry(pa_ip: str = "192.168.1.11") -> Tuple[Dict[
             root_sess = ET.fromstring(r_sess.text)
 
             raw_client_bytes: Dict[str, int] = {}
+            active_delta_by_ip: Dict[str, int] = {}
             raw_client_sessions: Dict[str, int] = {}
             raw_client_apps: Dict[str, Dict[str, int]] = {}
+            curr_sessions: Dict[str, Tuple[str, str, int]] = {}
+
+            is_first_poll = (_PALO_LAST_SESSION_POLL_TS == 0.0)
+            dt = (now - _PALO_LAST_SESSION_POLL_TS) if not is_first_poll else 0.0
 
             for e in root_sess.findall('.//entry'):
                 src_el = e.find('source')
@@ -1564,9 +1582,9 @@ def fetch_palo_alto_client_telemetry(pa_ip: str = "192.168.1.11") -> Tuple[Dict[
                 dst = dst_el.text.strip() if (dst_el is not None and dst_el.text) else ''
 
                 target_ip = None
-                if src.startswith('192.168.') and not (src.endswith('.1') or src.endswith('.11') or src.endswith('.10') or src.endswith('.155')):
+                if _is_lan_client_ip(src):
                     target_ip = src
-                elif dst.startswith('192.168.') and not (dst.endswith('.1') or dst.endswith('.11') or dst.endswith('.10') or dst.endswith('.155')):
+                elif _is_lan_client_ip(dst):
                     target_ip = dst
 
                 if target_ip:
@@ -1574,6 +1592,10 @@ def fetch_palo_alto_client_telemetry(pa_ip: str = "192.168.1.11") -> Tuple[Dict[
                     b = int(b_el.text.strip()) if (b_el is not None and b_el.text and b_el.text.strip().isdigit()) else 0
                     app_el = e.find('application')
                     app = app_el.text.strip() if (app_el is not None and app_el.text) else ''
+                    idx_el = e.find('idx')
+                    sess_idx = idx_el.text.strip() if (idx_el is not None and idx_el.text) else ''
+                    start_el = e.find('start-time')
+                    start_time = start_el.text.strip() if (start_el is not None and start_el.text) else ''
 
                     raw_client_bytes[target_ip] = raw_client_bytes.get(target_ip, 0) + b
                     raw_client_sessions[target_ip] = raw_client_sessions.get(target_ip, 0) + 1
@@ -1582,34 +1604,61 @@ def fetch_palo_alto_client_telemetry(pa_ip: str = "192.168.1.11") -> Tuple[Dict[
                     if app and app != 'undecided':
                         raw_client_apps[target_ip][app] = raw_client_apps[target_ip].get(app, 0) + b
 
-            # Hitung throughput live & pemakaian kumulatif per client IP
-            for c_ip, total_b in raw_client_bytes.items():
-                rx_mbps = 0.0
-                tx_mbps = 0.0
-                delta = 0
+                    if sess_idx:
+                        curr_sessions[sess_idx] = (target_ip, start_time, b)
+                        if not is_first_poll:
+                            prev_sess = _PALO_ACTIVE_SESSIONS.get(sess_idx)
+                            if prev_sess and prev_sess[0] == target_ip and prev_sess[1] == start_time and b >= prev_sess[2]:
+                                sess_delta = b - prev_sess[2]
+                            else:
+                                sess_delta = b
+                            active_delta_by_ip[target_ip] = active_delta_by_ip.get(target_ip, 0) + sess_delta
 
-                # Rate Delta Calculation
-                if c_ip in _PALO_PREV_CLIENT_SAMPLES:
-                    prev_ts, prev_b = _PALO_PREV_CLIENT_SAMPLES[c_ip]
-                    dt = now - prev_ts
-                    if dt >= 0.8:
-                        delta = (total_b - prev_b) if total_b >= prev_b else total_b
-                        rate = (delta * 8.0) / (dt * 1_000_000.0)
-                        # Split rate faktual
-                        rx_mbps = round(rate * 0.85, 2)
-                        tx_mbps = round(rate * 0.15, 2)
-                        _PALO_PREV_CLIENT_SAMPLES[c_ip] = (now, total_b)
+            for old_idx, (old_ip, _, old_b) in _PALO_ACTIVE_SESSIONS.items():
+                if old_idx not in curr_sessions:
+                    _PALO_RECENT_CLOSED_SESSIONS[old_idx] = (old_ip, old_b, now)
+
+            stale_closed = [k for k, v in _PALO_RECENT_CLOSED_SESSIONS.items() if (now - v[2]) > 600.0]
+            for k in stale_closed:
+                _PALO_RECENT_CLOSED_SESSIONS.pop(k, None)
+
+            _PALO_ACTIVE_SESSIONS = curr_sessions
+            if is_first_poll or dt >= 0.8:
+                _PALO_LAST_SESSION_POLL_TS = now
+
+            ended_rx, ended_tx, ended_apps = _fetch_pa_traffic_logs(pa_ip, api_key)
+
+            all_ips = set(raw_client_bytes.keys()) | set(ended_rx.keys()) | set(ended_tx.keys())
+            for c_ip in all_ips:
+                total_b = raw_client_bytes.get(c_ip, 0)
+                active_delta = active_delta_by_ip.get(c_ip, 0)
+                e_rx = ended_rx.get(c_ip, 0)
+                e_tx = ended_tx.get(c_ip, 0)
+
+                dir_rx, dir_tx = _PALO_IP_DIRECTION_TOTALS.get(c_ip, (0, 0))
+                dir_tot = dir_rx + dir_tx
+                if dir_tot > 0:
+                    rx_ratio = dir_rx / dir_tot
+                    tx_ratio = dir_tx / dir_tot
                 else:
-                    _PALO_PREV_CLIENT_SAMPLES[c_ip] = (now, total_b)
+                    rx_ratio = 0.85
+                    tx_ratio = 0.15
+
+                delta_rx_bytes = (active_delta * rx_ratio) + e_rx
+                delta_tx_bytes = (active_delta * tx_ratio) + e_tx
+                total_delta_bytes = int(round(delta_rx_bytes + delta_tx_bytes))
+
+                if not is_first_poll and dt >= 0.8:
+                    rx_mbps = round((delta_rx_bytes * 8.0) / (dt * 1_000_000.0), 2)
+                    tx_mbps = round((delta_tx_bytes * 8.0) / (dt * 1_000_000.0), 2)
+                else:
                     rx_mbps = 0.0
                     tx_mbps = 0.0
-                    delta = 0
 
-                # Solusi 4: Gunakan Nilai Delta (ΔBytes), Bukan Total B
                 if c_ip not in _PALO_CUMULATIVE_BYTES:
-                    _PALO_CUMULATIVE_BYTES[c_ip] = total_b
+                    _PALO_CUMULATIVE_BYTES[c_ip] = total_b + e_rx + e_tx
                 else:
-                    _PALO_CUMULATIVE_BYTES[c_ip] += delta
+                    _PALO_CUMULATIVE_BYTES[c_ip] += total_delta_bytes
 
                 cum_b = _PALO_CUMULATIVE_BYTES[c_ip]
                 cum_fmt = _fmt_bytes(cum_b)
@@ -1617,8 +1666,10 @@ def fetch_palo_alto_client_telemetry(pa_ip: str = "192.168.1.11") -> Tuple[Dict[
                 rx_str = f"{rx_mbps:.1f} Mbps" if rx_mbps >= 1.0 else (f"{int(rx_mbps * 1000)} Kbps" if rx_mbps > 0 else "0 Kbps")
                 tx_str = f"{tx_mbps:.1f} Mbps" if tx_mbps >= 1.0 else (f"{int(tx_mbps * 1000)} Kbps" if tx_mbps > 0 else "0 Kbps")
 
-                # Pilih aplikasi teratas berdasarkan byte count (bukan urutan random set)
-                app_dict = raw_client_apps.get(c_ip, {})
+                app_dict = dict(raw_client_apps.get(c_ip, {}))
+                for e_app, e_app_b in ended_apps.get(c_ip, {}).items():
+                    app_dict[e_app] = app_dict.get(e_app, 0) + e_app_b
+
                 noise = ('dns-base', 'incomplete', 'unknown-udp', 'insufficient-data', 'ping')
                 clean_apps = {k: v for k, v in app_dict.items() if k not in noise}
 
@@ -1627,7 +1678,7 @@ def fetch_palo_alto_client_telemetry(pa_ip: str = "192.168.1.11") -> Tuple[Dict[
                 elif app_dict:
                     best_raw_app = max(app_dict.items(), key=lambda x: x[1])[0]
                 else:
-                    best_raw_app = 'ssl' if total_b > 0 else 'Idle'
+                    best_raw_app = 'ssl' if (total_b > 0 or cum_b > 0) else 'Idle'
 
                 top_app = _format_app_name(best_raw_app)
 
@@ -1639,7 +1690,7 @@ def fetch_palo_alto_client_telemetry(pa_ip: str = "192.168.1.11") -> Tuple[Dict[
                     "tx_fmt": tx_str,
                     "cumulative_bytes": cum_b,
                     "cumulative_fmt": cum_fmt,
-                    "sessions": raw_client_sessions.get(c_ip, 1),
+                    "sessions": raw_client_sessions.get(c_ip, 0),
                     "top_app": top_app
                 }
 
@@ -1654,7 +1705,6 @@ def fetch_palo_alto_client_telemetry(pa_ip: str = "192.168.1.11") -> Tuple[Dict[
         _PALO_CLIENT_CACHE_TS = now
 
     return mac_to_ip, ip_traffic
-
 
 def poll_port_fdb_clients_snmp(switch_ip: str, port_name: str, community: str, exclude_macs: Optional[List[str]] = None, ap_info: Optional[Dict[str, Any]] = None) -> Tuple[List[Dict[str, Any]], float, float]:
     """
@@ -1674,7 +1724,6 @@ def poll_port_fdb_clients_snmp(switch_ip: str, port_name: str, community: str, e
         port_cache_key = f"{switch_ip}_{clean_target_port}"
         target_if_idx = _PORT_INDEX_CACHE.get(port_cache_key)
 
-        # 1. Cari port index jika belum di-cache (fallback aman tanpa walk panjang)
         if not target_if_idx:
             nums = re.findall(r'\d+', clean_target_port)
             if nums:
@@ -1693,7 +1742,6 @@ def poll_port_fdb_clients_snmp(switch_ip: str, port_name: str, community: str, e
         if not target_if_idx:
             return [], 0.0, 0.0
 
-        # 2. Ambil statistik Throughput riil port PoE AP tersebut (64-bit HC Octets)
         try:
             rx_oct = snmp_get(switch_ip, [f"{OID_IF_HC_IN_OCTETS}.{target_if_idx}"], community=community, timeout=0.6, retries=0)
             tx_oct = snmp_get(switch_ip, [f"{OID_IF_HC_OUT_OCTETS}.{target_if_idx}"], community=community, timeout=0.6, retries=0)
@@ -1708,7 +1756,6 @@ def poll_port_fdb_clients_snmp(switch_ip: str, port_name: str, community: str, e
         except Exception:
             pass
 
-        # Fallback throughput dari cache telemetri switch jika delta belum menghasilkan nilai
         if port_rx_speed == 0.0 and port_tx_speed == 0.0:
             for c_k, c_v in _CACHE.items():
                 if switch_ip in c_k:
@@ -1720,7 +1767,6 @@ def poll_port_fdb_clients_snmp(switch_ip: str, port_name: str, community: str, e
                             port_tx_speed = float(cp.get("tx_mbps", 0.0))
                             break
 
-        # 3. Ambil FDB Bridge Table port switch dengan cache 60 detik (mencegah CoPP switch overload)
         fdb_entries = {}
         fdb_cached = _SWITCH_FDB_CACHE.get(switch_ip)
         if fdb_cached and (now_ts - fdb_cached[0]) < 60:
@@ -1730,7 +1776,6 @@ def poll_port_fdb_clients_snmp(switch_ip: str, port_name: str, community: str, e
             if fdb_entries:
                 _SWITCH_FDB_CACHE[switch_ip] = (now_ts, fdb_entries)
 
-        # 4. Ambil ARP Table switch & local OS dengan cache 60 detik (HANYA SWITCH & LOCAL, TANPA FIREWALL)
         mac_to_ip = {}
         arp_cached = _SWITCH_ARP_CACHE.get(switch_ip)
         if arp_cached and (now_ts - arp_cached[0]) < 60:
@@ -1763,7 +1808,6 @@ def poll_port_fdb_clients_snmp(switch_ip: str, port_name: str, community: str, e
             if mac_to_ip:
                 _SWITCH_ARP_CACHE[switch_ip] = (now_ts, mac_to_ip)
 
-        # 5. Filter MAC yang berada di port AP target
         matched_macs = []
         for oid, port_val in fdb_entries.items():
             if int(port_val) == target_if_idx:
@@ -1775,7 +1819,6 @@ def poll_port_fdb_clients_snmp(switch_ip: str, port_name: str, community: str, e
                         continue
                     matched_macs.append(mac_str)
 
-        # 6. Susun daftar client murni dari MAC & ARP switch yang terhubung pada port AP ini (diperkaya Palo Alto ARP)
         pa_mac_to_ip, _ = fetch_palo_alto_client_telemetry()
         for mac_str in matched_macs:
             client_ip = mac_to_ip.get(mac_str) or pa_mac_to_ip.get(mac_str, "-")
@@ -1796,7 +1839,6 @@ def poll_port_fdb_clients_snmp(switch_ip: str, port_name: str, community: str, e
         logger.debug(f"FDB query error ke {switch_ip}: {e}")
 
     return clients, port_rx_speed, port_tx_speed
-
 
 def save_ap_clients_to_db(ap_name: str, clients: List[Dict[str, Any]], ap_info: Dict[str, Any]):
     """Menyimpan atau meng-update (UPSERT) data telemetri klien nirkabel & kuota harian ke database PostgreSQL."""
@@ -1820,7 +1862,6 @@ def save_ap_clients_to_db(ap_name: str, clients: List[Dict[str, Any]], ap_info: 
 
             cum_b_val = int(c.get("cumulative_bytes", 0) or 0)
             if row:
-                # Jika data record berasal dari hari sebelumnya, reset pemakaian harian ke 0
                 if row.last_seen and row.last_seen.date() < today_date:
                     row.cumulative_bytes = 0
                     cum_b_val = 0
@@ -1841,7 +1882,6 @@ def save_ap_clients_to_db(ap_name: str, clients: List[Dict[str, Any]], ap_info: 
                     cum_b_val = int(row.cumulative_bytes)
                 row.cumulative_bytes = cum_b_val
                 row.cumulative_fmt = _fmt_bytes(cum_b_val) if cum_b_val > 0 else (c.get("cumulative_usage") or "< 1 MB")
-                # Pertahankan aplikasi jika sebelumnya sudah terdeteksi dan sekarang tidak ada sesi aktif
                 in_app = c.get("top_app")
                 if in_app and in_app != "Idle":
                     row.top_app = in_app
@@ -1891,7 +1931,6 @@ def save_ap_clients_to_db(ap_name: str, clients: List[Dict[str, Any]], ap_info: 
     finally:
         session.close()
 
-
 def load_ap_clients_from_db(ap_name: str) -> List[Dict[str, Any]]:
     """Membaca daftar klien nirkabel & metrik bandwidth langsung dari tabel PostgreSQL ap_client_telemetry."""
     session = db_session()
@@ -1905,7 +1944,6 @@ def load_ap_clients_from_db(ap_name: str) -> List[Dict[str, Any]]:
     finally:
         session.close()
     return clients
-
 
 def sync_all_ap_telemetry_to_db():
     """
@@ -1921,7 +1959,6 @@ def sync_all_ap_telemetry_to_db():
             get_ap_client_telemetry(ap_name, force=True)
         except Exception as e:
             logger.debug(f"Gagal sinkronisasi background AP {ap_name} ke DB: {e}")
-
 
 def get_ap_client_telemetry(ap_name: str, force: bool = False) -> Dict[str, Any]:
     """
@@ -1951,7 +1988,6 @@ def get_ap_client_telemetry(ap_name: str, force: bool = False) -> Dict[str, Any]
         }
     now_ts = time.time()
 
-    # Database profil Access Point di AGIVA Topology (Data Riil sesuai Screenshot Controller)
     ap_inventory = {
         "AP-505-L1": {
             "name": "AP-505-L1",
@@ -2039,7 +2075,6 @@ def get_ap_client_telemetry(ap_name: str, force: bool = False) -> Dict[str, Any]
         }
     }
 
-    # Aliases
     ap_inventory["AP-Aruba-HO-1"] = ap_inventory["AP-505-L1"]
     ap_inventory["AP-Aruba-HO-2"] = ap_inventory["AP-505-L2"]
     ap_inventory["AP-Aruba-HO-3"] = ap_inventory["AP-505-L3"]
@@ -2070,7 +2105,6 @@ def get_ap_client_telemetry(ap_name: str, force: bool = False) -> Dict[str, Any]
     vendor = ap_info["vendor"]
     ap_mac = ap_info.get("mac_address")
 
-    # Sinkronisasi daya konsumsi PoE riil dari telemetri port switch aktual
     if switch_ip and connected_port:
         clean_target_p = connected_port.lower().replace(" ", "").replace("(poe+)", "").replace("port", "").strip()
         for c_k, c_v in _CACHE.items():
@@ -2084,7 +2118,6 @@ def get_ap_client_telemetry(ap_name: str, force: bool = False) -> Dict[str, Any]
                             ap_info["poe_power"] = f"{poe_info.get('power_watts')} W (Live PoE)"
                         break
 
-    # 1. Jika bukan force refresh, baca data resmi langsung dari tabel PostgreSQL (ap_client_telemetry)
     if not force:
         db_clients = load_ap_clients_from_db(clean_name)
         if db_clients:
@@ -2120,7 +2153,6 @@ def get_ap_client_telemetry(ap_name: str, force: bool = False) -> Dict[str, Any]
     port_rx_speed = 0.0
     port_tx_speed = 0.0
 
-    # 1. Coba fast check ke direct AP (hanya 0.4s timeout, 0 retry)
     ap_alive, ap_uptime, ap_descr = poll_ap_hardware_snmp(target_ip, community)
     if ap_alive:
         is_alive = True
@@ -2128,14 +2160,12 @@ def get_ap_client_telemetry(ap_name: str, force: bool = False) -> Dict[str, Any]
         sys_descr = ap_descr or "Enterprise AP OS"
         clients = poll_wireless_clients_snmp(target_ip, community, vendor)
 
-    # 2. Jika Fit AP (direct SNMP tidak ada klien / ditutup pabrikan), ambil dari Switch Port PoE tempat AP tercolok
     if (not clients or not is_alive) and switch_ip and connected_port:
         sw_comm = "agiva_mon" if "huawei" in vendor.lower() else "public"
         clean_target_port = connected_port.lower().replace(" ", "").replace("(poe+)", "").replace("port", "").strip()
         port_cache_key = f"{switch_ip}_{clean_target_port}"
         target_if_idx = _PORT_INDEX_CACHE.get(port_cache_key)
 
-        # Ambil client & bandwidth port dari FDB table switch (non-intrusive)
         fdb_clients, rx_s, tx_s = poll_port_fdb_clients_snmp(switch_ip, connected_port, sw_comm, exclude_macs=[ap_mac] if ap_mac else None, ap_info=ap_info)
         if not clients:
             clients = fdb_clients
@@ -2143,7 +2173,6 @@ def get_ap_client_telemetry(ap_name: str, force: bool = False) -> Dict[str, Any]
             port_rx_speed = rx_s
             port_tx_speed = tx_s
 
-        # Jika target_if_idx ditemukan atau ada klien, AP online via PoE Port Switch
         if target_if_idx or clients:
             is_alive = True
             if not sys_uptime:
@@ -2152,7 +2181,6 @@ def get_ap_client_telemetry(ap_name: str, force: bool = False) -> Dict[str, Any]
                 sys_descr = f"Online via {ap_info.get('connected_switch')} ({connected_port}) • PoE Active"
             ap_info["snmp_status_msg"] = f"Switch Port {connected_port} Link UP & PoE Active"
         else:
-            # Fallback oper_status check jika belum ada klien
             if target_if_idx:
                 oper_res = snmp_get(switch_ip, [f"1.3.6.1.2.1.2.2.1.8.{target_if_idx}"], community=sw_comm, timeout=0.6, retries=0)
                 val = oper_res.get(f"1.3.6.1.2.1.2.2.1.8.{target_if_idx}") if oper_res else None
@@ -2175,7 +2203,6 @@ def get_ap_client_telemetry(ap_name: str, force: bool = False) -> Dict[str, Any]
         ap_info["snmp_status_msg"] = f"Port Standby on {ap_info.get('connected_switch')}"
         clients = []
 
-    # 3. Integrasi Opsi 1: Tarik Telemetri Bandwidth & Sesi Klien dari Palo Alto PA-220
     pa_mac_to_ip, pa_traffic = fetch_palo_alto_client_telemetry()
 
     enriched_clients = []
@@ -2187,14 +2214,12 @@ def get_ap_client_telemetry(ap_name: str, force: bool = False) -> Dict[str, Any]
         c_ip = c_copy.get("ip", "-")
         c_mac = c_copy.get("mac", "-")
 
-        # Resolusi fallback jika IP belum terpetakan di switch ARP
         if (not c_ip or c_ip == "-") and c_mac in pa_mac_to_ip:
             c_ip = pa_mac_to_ip[c_mac]
             c_copy["ip"] = c_ip
             v_name, dev_label, os_type = _identify_vendor_and_os(c_mac)
             c_copy["hostname"] = _resolve_hostname(c_ip, f"{v_name} ({c_mac[-5:].replace(':', '')})", mac_str=c_mac)
 
-        # Solusi 1 Opsi A: Jika klien memiliki data Rx/Tx langsung dari SNMP AP, prioritaskan data AP!
         ap_rx = c_copy.get("rx_mbps")
         ap_tx = c_copy.get("tx_mbps")
 
@@ -2216,12 +2241,10 @@ def get_ap_client_telemetry(ap_name: str, force: bool = False) -> Dict[str, Any]
         c_copy["throughput_tx"] = f"{tx_m:.1f} Mbps" if tx_m >= 1.0 else (f"{int(tx_m * 1000)} Kbps" if tx_m > 0 else "0 Kbps")
         c_copy["throughput_fmt"] = f"{c_copy['throughput_rx']}/{c_copy['throughput_tx']}"
 
-        # Solusi 4: Persistensi Kuota Kumulatif (Bytes)
         cum_b = trf.get("cumulative_bytes", 0) or c_copy.get("cumulative_bytes", 0)
         c_copy["cumulative_bytes"] = cum_b
         c_copy["cumulative_usage"] = _fmt_bytes(cum_b) if cum_b > 0 else (trf.get("cumulative_fmt") or "< 1 MB")
         
-        # Penentuan Top Application (Prioritaskan traffic aktif -> histori DB -> fallback)
         trf_app = trf.get("top_app")
         db_app = c_copy.get("top_app")
         if trf_app and trf_app != "Idle":
@@ -2243,7 +2266,6 @@ def get_ap_client_telemetry(ap_name: str, force: bool = False) -> Dict[str, Any]
     tot_tx = max(port_tx_speed, round(client_tx_total, 2))
     tot_mbps = round(tot_rx + tot_tx, 2)
 
-    # Simpan hasil telemetri AP ke tabel PostgreSQL ap_client_telemetry
     save_ap_clients_to_db(clean_name, clients, ap_info)
 
     result_payload = {

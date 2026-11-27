@@ -1,11 +1,4 @@
-/* ==========================================================================
-   PT AGIVA INDONESIA - NETWORK OPERATIONS AUTOMATION DASHBOARD
-   Design Theme matching official Agiva Corporate Branding
-   Button Gradient: Linear between #9A9993 and #E8A576
-   ========================================================================== */
-
 :root {
-    /* Corporate Dark Palette based on Agiva Brand */
     --bg-main: #0e0b18;
     --bg-header: #141024;
     --bg-card: #18142c;
@@ -17,7 +10,6 @@
     --text-secondary: #cbd5e1;
     --text-muted: #8b85a6;
 
-    /* Custom Agiva Button Gradient: Linear between #9A9993 and #E8A576 */
     --color-sand: #9A9993;
     --color-copper: #E8A576;
     --gradient-agiva: linear-gradient(135deg, #9A9993 0%, #E8A576 100%);
@@ -25,7 +17,6 @@
     --shadow-agiva: 0 4px 15px rgba(232, 165, 118, 0.3);
     --shadow-agiva-hover: 0 6px 20px rgba(232, 165, 118, 0.45);
 
-    /* Status & Severity Accents */
     --color-green: #08C58F;
     --color-red: #FF454A;
     --color-amber: #f59e0b;
@@ -56,7 +47,6 @@ body {
     overflow-x: hidden;
 }
 
-/* Custom Scrollbar */
 * {
     scrollbar-width: thin;
     scrollbar-color: rgba(232, 165, 118, 0.6) rgba(255, 255, 255, 0.04);
@@ -80,9 +70,6 @@ body {
     background: rgba(232, 165, 118, 0.9);
 }
 
-/* --------------------------------------------------------------------------
-   Top Navigation Bar (Agiva Header)
-   -------------------------------------------------------------------------- */
 .navbar {
     display: flex;
     align-items: center;
@@ -102,7 +89,6 @@ body {
     gap: 36px;
 }
 
-/* Agiva Logo matching Corporate Building Signage */
 .brand-logo {
     display: flex;
     align-items: center;
@@ -145,12 +131,6 @@ body {
     font-weight: 500;
 }
 
-/* --------------------------------------------------------------------------
-   Search Bar (Filtered by Vendor & Site)
-   -------------------------------------------------------------------------- */
-/* --------------------------------------------------------------------------
-   Pattern 3: Omni-Search / Command Palette Navbar Styling
-   -------------------------------------------------------------------------- */
 .nav-search {
     position: relative;
     width: 360px;
@@ -217,7 +197,6 @@ body {
     background: rgba(255, 255, 255, 0.15);
 }
 
-/* Omni-Search Dropdown Box */
 .search-results-dropdown {
     position: absolute;
     top: calc(100% + 8px);
@@ -434,7 +413,6 @@ body {
     color: var(--text-secondary);
 }
 
-/* Omni-Search Target Highlight Effect - Clean Copper Left Border & Clean Badge */
 @keyframes targetRowSoftFade {
     0% {
         background-color: rgba(232, 165, 118, 0.22);
@@ -470,7 +448,6 @@ tr.search-target-highlight td:first-child {
     transition: box-shadow 0.2s ease;
 }
 
-/* Telegram Command Styling (Plain text without badge box) */
 #tgCommandsTable td:first-child code {
     display: inline;
     padding: 0;
@@ -483,8 +460,6 @@ tr.search-target-highlight td:first-child {
     font-size: 13px;
     letter-spacing: normal;
 }
-
-
 
 .nav-links {
     display: flex;
@@ -656,9 +631,6 @@ tr.search-target-highlight td:first-child {
     color: var(--text-muted);
 }
 
-/* --------------------------------------------------------------------------
-   Layout Container
-   -------------------------------------------------------------------------- */
 .main-container {
     max-width: 1440px;
     margin: 0 auto;
@@ -674,9 +646,6 @@ tr.search-target-highlight td:first-child {
     gap: 24px;
 }
 
-/* --------------------------------------------------------------------------
-   KPI Summary Grid
-   -------------------------------------------------------------------------- */
 .kpi-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -780,7 +749,6 @@ tr.search-target-highlight td:first-child {
     color: var(--color-copper);
 }
 
-/* Telegram Page Layout & Dual Panel */
 .telegram-page-container .content-layout {
     display: grid;
     grid-template-columns: 1.15fr 0.85fr;
@@ -788,7 +756,6 @@ tr.search-target-highlight td:first-child {
     align-items: stretch;
 }
 
-/* Telegram Page: Commands & Logs Tables - Auto-fit without scroll */
 .table-responsive.table-no-scroll {
     overflow-x: visible;
     margin-top: 14px;
@@ -811,7 +778,6 @@ tr.search-target-highlight td:first-child {
     vertical-align: middle;
 }
 
-/* 1. Commands Cheat Sheet Table (Command Reference) */
 #tgCommandsTable th:nth-child(1),
 #tgCommandsTable td:nth-child(1) {
     white-space: nowrap;
@@ -831,7 +797,6 @@ tr.search-target-highlight td:first-child {
     font-size: 12.5px;
 }
 
-/* 2. Message Dispatch Log Table (Dispatch History) */
 #tgLogsTable th:nth-child(1),
 #tgLogsTable td:nth-child(1) {
     white-space: nowrap;
@@ -910,9 +875,6 @@ tr.search-target-highlight td:first-child {
     }
 }
 
-/* ==========================================================================
-   Standard Table Pagination Bar & Controls
-   ========================================================================== */
 .pagination-container {
     display: flex;
     justify-content: space-between;
@@ -1107,9 +1069,6 @@ tr.search-target-highlight td:first-child {
     color: var(--color-amber);
 }
 
-/* --------------------------------------------------------------------------
-   Content Layout (2-Column: Left Main, Right Sidebar)
-   -------------------------------------------------------------------------- */
 .content-layout {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 350px;
@@ -1123,9 +1082,6 @@ tr.search-target-highlight td:first-child {
     min-width: 0;
 }
 
-/* --------------------------------------------------------------------------
-   Charts Row
-   -------------------------------------------------------------------------- */
 .charts-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -1214,9 +1170,6 @@ tr.search-target-highlight td:first-child {
     width: 100%;
 }
 
-/* --------------------------------------------------------------------------
-   Table Panel (Monitored Devices & Backups)
-   -------------------------------------------------------------------------- */
 .table-panel {
     background: var(--bg-card);
     border: 1px solid var(--border-color);
@@ -1321,7 +1274,6 @@ tr.search-target-highlight td:first-child {
     background: transparent !important;
 }
 
-/* Universal Empty State for Data Tables (Matches All Systems Operational style) */
 .empty-state-row td {
     text-align: center !important;
     padding: 40px 10px !important;
@@ -1560,9 +1512,6 @@ code {
     text-align: right;
 }
 
-/* ==========================================================================
-   BUTTONS: Linear Gradient between #9A9993 and #E8A576 (Pill Shaped)
-   ========================================================================== */
 .btn-action,
 .btn-ack,
 .btn-refresh,
@@ -1604,7 +1553,6 @@ code {
     transform: translateY(0) !important;
 }
 
-/* Inline Button Feedback States */
 .btn-state-loading {
     opacity: 0.85 !important;
     cursor: wait !important;
@@ -1612,19 +1560,16 @@ code {
 }
 
 .btn-state-success {
-    /* Retain original button background - no green */
     color: #ffffff !important;
     pointer-events: none !important;
 }
 
 .btn-state-error {
-    /* Retain original button background - no red */
     color: #ffffff !important;
     pointer-events: none !important;
 }
 
 .btn-state-warning {
-    /* Retain original button background - no color change */
     color: #ffffff !important;
     pointer-events: none !important;
 }
@@ -1633,9 +1578,6 @@ code {
     text-align: center;
 }
 
-/* --------------------------------------------------------------------------
-   Right Sidebar (Active Alerts)
-   -------------------------------------------------------------------------- */
 .alerts-sidebar {
     background: var(--bg-card);
     border: 1px solid var(--border-color);
@@ -1757,9 +1699,6 @@ code {
     color: var(--text-muted);
 }
 
-/* --------------------------------------------------------------------------
-   Device Detail Page Styling
-   -------------------------------------------------------------------------- */
 .detail-container {
     display: flex;
     flex-direction: column;
@@ -1919,9 +1858,6 @@ code {
     font-family: var(--font-mono);
 }
 
-/* --------------------------------------------------------------------------
-   Switch Hardware Specs Grid
-   -------------------------------------------------------------------------- */
 .specs-panel {
     background: var(--bg-card);
     border: 1px solid var(--border-color);
@@ -1978,9 +1914,6 @@ code {
     font-weight: 600;
 }
 
-/* --------------------------------------------------------------------------
-   VLANs Compact Chips Bar (Datadog / Cisco Meraki style - Aligned Grid)
-   -------------------------------------------------------------------------- */
 .vlan-chips-container {
     background: var(--bg-card);
     border: 1px solid var(--border-color);
@@ -2124,10 +2057,6 @@ code {
     white-space: nowrap;
 }
 
-/* --------------------------------------------------------------------------
-   Resource Utilization Graphs (Aruba 6-Metric Monitor)
-   -------------------------------------------------------------------------- */
-/* Aruba Central Inspired Telemetry Architecture */
 .resource-graphs-section {
     display: flex;
     flex-direction: column;
@@ -2321,9 +2250,6 @@ code {
     white-space: nowrap;
 }
 
-/* --------------------------------------------------------------------------
-   Model Hybrid Layout: Circular Gauge (Left) + Trend Sparkline (Right)
-   -------------------------------------------------------------------------- */
 .hybrid-card-body {
     display: flex;
     align-items: center;
@@ -2413,9 +2339,6 @@ code {
     height: 64px;
 }
 
-/* --------------------------------------------------------------------------
-   AGIVA Official Color Palette Accents
-   -------------------------------------------------------------------------- */
 .text-cyan {
     color: #06b6d4 !important;
 }
@@ -2440,7 +2363,6 @@ code {
     color: var(--text-muted) !important;
 }
 
-/* Mini custom legend for twin throughput card */
 .chart-legend-custom-mini {
     display: inline-flex;
     align-items: center;
@@ -2474,9 +2396,6 @@ code {
     position: relative;
 }
 
-/* --------------------------------------------------------------------------
-   Ports Filter & Search Controls
-   -------------------------------------------------------------------------- */
 .table-controls-row {
     display: flex;
     justify-content: space-between;
@@ -2549,7 +2468,6 @@ code {
     color: var(--text-muted);
 }
 
-/* Port Badges */
 .badge-media-sfp {
     background: rgba(168, 85, 247, 0.15);
     color: #c084fc;
@@ -2709,9 +2627,6 @@ code {
     box-shadow: 0 4px 12px rgba(232, 165, 118, 0.45) !important;
 }
 
-/* --------------------------------------------------------------------------
-   Alerts & Backups Pages
-   -------------------------------------------------------------------------- */
 .alerts-page-container,
 .backups-page-container {
     display: flex;
@@ -2783,9 +2698,6 @@ code {
     font-weight: 600;
 }
 
-/* --------------------------------------------------------------------------
-   Toast Notifications (Hidden in favor of Inline Button Feedback)
-   -------------------------------------------------------------------------- */
 .toast-container {
     display: none !important;
     position: fixed;
@@ -2823,7 +2735,6 @@ code {
     }
 }
 
-/* Responsive adjustments */
 @media (max-width: 1260px) {
     .device-header-card {
         flex-direction: column;
@@ -2854,9 +2765,6 @@ code {
     }
 }
 
-/* --------------------------------------------------------------------------
-   Time-Range Selector Component (Live, 1h, 12h, 24h)
-   -------------------------------------------------------------------------- */
 .charts-header-bar {
     display: flex;
     justify-content: space-between;
@@ -2979,9 +2887,6 @@ code {
     }
 }
 
-/* --------------------------------------------------------------------------
-   Timeline Navigator (Mini-Map / Range Slider / Brush) Styles
-   -------------------------------------------------------------------------- */
 .timeline-nav-wrapper {
     display: none;
     flex-direction: column;
@@ -3118,9 +3023,6 @@ body.nav-dragging-active * {
     user-select: none !important;
 }
 
-/* --------------------------------------------------------------------------
-   Hardware Buffer Radial Ring Gauge Styles
-   -------------------------------------------------------------------------- */
 .buffer-gauges-container {
     display: flex;
     align-items: center;
@@ -3191,9 +3093,6 @@ body.nav-dragging-active * {
     background: rgba(255, 255, 255, 0.08);
 }
 
-/* --------------------------------------------------------------------------
-   Logout Button in Navigation Bar
-   -------------------------------------------------------------------------- */
 .btn-logout {
     display: inline-flex;
     align-items: center;
@@ -3217,9 +3116,6 @@ body.nav-dragging-active * {
     transform: translateY(-1px);
 }
 
-/* --------------------------------------------------------------------------
-   Super Admin Login Page Styles (Corporate Dark Aesthetic)
-   -------------------------------------------------------------------------- */
 .login-body {
     min-height: 100vh;
     display: flex;
@@ -3231,7 +3127,6 @@ body.nav-dragging-active * {
     padding: 24px;
 }
 
-/* High-tech Background Ambient Glows */
 .login-glow {
     position: absolute;
     border-radius: 50%;
@@ -3349,7 +3244,6 @@ body.nav-dragging-active * {
     padding: 0 10px;
 }
 
-/* Alert Notifications */
 .login-alert {
     display: flex;
     align-items: center;
@@ -3392,7 +3286,6 @@ body.nav-dragging-active * {
     color: #7dd3fc;
 }
 
-/* Form Controls */
 .login-form .form-group {
     margin-bottom: 18px;
 }
@@ -3464,7 +3357,6 @@ body.nav-dragging-active * {
     color: var(--text-primary);
 }
 
-/* Credentials Hint Box */
 .login-hint-box {
     background: rgba(34, 28, 61, 0.6);
     border: 1px dashed var(--border-color-light);
@@ -3519,7 +3411,6 @@ body.nav-dragging-active * {
     color: #141024;
 }
 
-/* Login Submit Button */
 .btn-login {
     width: 100%;
     height: 46px;
@@ -3548,7 +3439,6 @@ body.nav-dragging-active * {
     transform: translateY(0);
 }
 
-/* Login Footer */
 .login-footer {
     margin-top: 24px;
     padding-top: 18px;
@@ -3570,9 +3460,6 @@ body.nav-dragging-active * {
     font-size: 11px;
 }
 
-/* ==========================================================================
-   Two-Tier Search & In-Table Filtering Styles
-   ========================================================================== */
 .table-search-box {
     position: relative;
     display: inline-flex;
@@ -3682,10 +3569,6 @@ body.nav-dragging-active * {
     display: none !important;
 }
 
-
-/* ==========================================================================
-   WAN Link / ISP Biznet (ethernet1/3) Monitoring Banner & Cards
-   ========================================================================== */
 .wan-banner-section {
     margin-top: 18px;
     margin-bottom: 22px;
@@ -3703,7 +3586,6 @@ body.nav-dragging-active * {
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
 }
 
-/* Left: Info Block */
 .wan-info-block {
     display: flex;
     align-items: center;
@@ -3794,7 +3676,6 @@ body.nav-dragging-active * {
     padding: 0;
 }
 
-/* Center: Metrics Grid (Compact layout) */
 .wan-metrics-grid {
     display: grid;
     grid-template-columns: 175px 175px;
@@ -3873,7 +3754,6 @@ body.nav-dragging-active * {
     background: linear-gradient(90deg, #f97316, #fb923c);
 }
 
-/* Combined Bandwidth Utilization below both metrics (prominent & readable) */
 .wan-util-combined-row {
     grid-column: 1 / -1;
     display: flex;
@@ -3916,7 +3796,6 @@ body.nav-dragging-active * {
     font-family: inherit !important;
 }
 
-/* Right: Quality Block (Right-aligned numbers with properly spaced labels) */
 .wan-quality-block {
     display: flex;
     flex-direction: column;
@@ -3995,13 +3874,13 @@ body.nav-dragging-active * {
 .ping-num,
 .ping-val {
     color: #ffffff !important;
-    font-family: inherit !important; /* Compact font matching IP typography ('Inter', sans-serif) */
+    font-family: inherit !important;
     font-weight: 600;
     font-size: 0.78rem;
 }
 
 .ping-unit {
-    color: #ffffff !important; /* Standard white typography */
+    color: #ffffff !important;
     font-family: inherit;
     font-size: 0.76rem;
     font-weight: 500;
@@ -4020,7 +3899,6 @@ body.nav-dragging-active * {
     font-weight: 500;
 }
 
-/* WAN Card Actions (Speedtest & See Log) */
 .wan-footer-row {
     display: flex;
     flex-direction: column;
@@ -4101,7 +3979,6 @@ body.nav-dragging-active * {
     color: #ffffff !important;
 }
 
-/* Modal Overlay & Base System */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -4191,7 +4068,6 @@ body.nav-dragging-active * {
     color: #ffffff;
 }
 
-/* Modal: WAN 24-Hour Log Details */
 .wan-log-modal-card {
     max-width: 1040px;
     width: 96%;
@@ -4421,7 +4297,6 @@ body.nav-dragging-active * {
     border: 1px solid rgba(239, 68, 68, 0.35);
 }
 
-/* Responsive adjustments */
 @media (max-width: 1024px) {
     .wan-card {
         grid-template-columns: 1fr;
@@ -4448,10 +4323,6 @@ body.nav-dragging-active * {
     }
 }
 
-
-/* ==========================================================================
-   Modal: WAN Speedtest Real-Time Result Card
-   ========================================================================== */
 .wan-speedtest-modal-card {
     max-width: 600px;
     width: 95%;
@@ -4669,9 +4540,6 @@ body.nav-dragging-active * {
     margin: 0 auto;
 }
 
-/* ==========================================================================
-   Top 10 Client Monitoring Panel (Dashboard index.html)
-   ========================================================================== */
 .client-tab-btn {
     padding: 6px 14px;
     font-size: 12px;

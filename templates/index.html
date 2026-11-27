@@ -5,19 +5,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AGIVA - Network Monitoring Dashboard</title>
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
         rel="stylesheet">
-    <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
     <link rel="stylesheet" href="/static/css/style.css?v=16.4">
 </head>
 
 <body>
-    <!-- Top Navigation Bar -->
     <header class="navbar">
         <div class="nav-left">
             <a href="/" class="brand-logo">
@@ -68,11 +65,9 @@
         </div>
     </header>
 
-    <!-- Main Container -->
     <main class="main-container">
         <div class="dashboard-wrapper">
 
-            <!-- 1. KPI Summary Cards Row -->
             <section class="kpi-grid">
                 <div class="kpi-card card-total">
                     <div class="kpi-info">
@@ -136,10 +131,8 @@
                 </div>
             </section>
 
-            <!-- 1b. WAN Link / ISP Biznet (ethernet1/3) Monitoring Banner Card -->
             <section class="wan-banner-section" id="wanBannerSection">
                 <div class="wan-card" id="wanCard">
-                    <!-- Left: Provider & Interface Info -->
                     <div class="wan-info-block">
                         <div class="wan-title-meta">
                             <div class="wan-tag-row">
@@ -161,7 +154,6 @@
                         </div>
                     </div>
 
-                    <!-- Center: Bandwidth / Realtime Throughput & Combined Utilization -->
                     <div class="wan-metrics-grid">
                         <div class="wan-metric-cell">
                             <span class="wan-metric-lbl">Download (Ingress)</span>
@@ -189,7 +181,6 @@
                             </div>
                         </div>
 
-                        <!-- Combined Bandwidth Utilization Row across both metrics -->
                         <div class="wan-util-combined-row">
                             <span class="wan-util-combined-lbl">Bandwidth Utilization:</span>
                             <strong class="wan-util-combined-val" id="wanUtilCombinedVal">{{ wan.utilization_pct if wan else '
@@ -201,7 +192,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Right: Quality Indicators, Double Ping & Actions -->
                                 <div class="wan-quality-block">
                                     <div class="wan-ping-grid">
                                         <div class="wan-ping-item">
@@ -241,16 +231,14 @@
                                         <span class="wan-sync-time">Last Polled: <span id="wanLastSync">{{ wan.last_updated if wan else '-' }}</span></span>
                                         <div class="wan-actions-row">
                                             <button type="button" id="btnWanSpeedtest"
-                                                class="btn-wan-action btn-speedtest"
-                                                title="Execute Real-Time Speedtest Now">
+                                                class="btn-wan-action btn-speedtest">
                                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                                     stroke-width="2.2" class="btn-icon">
                                                     <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
                                                 </svg>
                                                 <span class="btn-wan-text">Speedtest</span>
                                             </button>
-                                            <button type="button" id="btnWanSeeLog" class="btn-wan-action btn-seelog"
-                                                title="View Biznet 24-Hour Log History">
+                                            <button type="button" id="btnWanSeeLog" class="btn-wan-action btn-seelog">
                                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                                     stroke-width="2" class="btn-icon">
                                                     <path
@@ -268,11 +256,8 @@
                             </div>
             </section>
 
-            <!-- 2. Main Analytics & Alerts Grid -->
             <div class="content-layout">
-                <!-- Left Main Column (Charts + Device Table) -->
                 <div class="main-column">
-                    <!-- Charts Header Bar with Time-Range Selector -->
                     <div class="charts-header-bar">
                         <div class="charts-header-info">
                             <span class="charts-header-badge">Network Performance</span>
@@ -292,9 +277,7 @@
                         </div>
                     </div>
 
-                    <!-- Charts Section -->
                     <div class="charts-row">
-                        <!-- Chart 1: Real-time CPU & Memory -->
                         <div class="chart-panel">
                             <div class="panel-header">
                                 <div>
@@ -314,7 +297,6 @@
                             <div id="cpuMemTimelineNav" class="timeline-nav-wrapper"></div>
                         </div>
 
-                        <!-- Chart 2: Network Traffic (Mbps) -->
                         <div class="chart-panel">
                             <div class="panel-header">
                                 <div>
@@ -332,8 +314,6 @@
                             <div id="trafficTimelineNav" class="timeline-nav-wrapper"></div>
                         </div>
                     </div>
-
-                    <!-- Monitored Devices Table Panel -->
 
                     <div class="table-panel" id="monitored-devices">
                         <div class="panel-header table-header-flex" style="flex-wrap: wrap; gap: 12px;">
@@ -437,7 +417,6 @@
                     </div>
                 </div>
 
-                <!-- Right Column: Alerts Sidebar -->
                 <aside class="alerts-sidebar">
                     <div class="panel-header alerts-sidebar-header">
                         <div>
@@ -499,7 +478,6 @@
                                             </aside>
                         </div>
 
-                        <!-- Top 10 Client Monitoring Table Panel (Full Width - Mentok Sejajar dengan Garis Kanan Alerts Sidebar) -->
                         <div class="table-panel" id="top-clients-panel" style="margin-top: 28px;">
                             <div class="panel-header table-header-flex" style="flex-wrap: wrap; gap: 12px;">
                                 <div>
@@ -618,7 +596,6 @@
                         </div>
     </main>
 
-    <!-- Modal: Biznet WAN 24-Hour Logs -->
     <div id="wanLogModal" class="modal-overlay" style="display: none;">
         <div class="modal-card wan-log-modal-card">
             <div class="modal-header" style="border-bottom: none;">
@@ -695,7 +672,6 @@
         </div>
     </div>
 
-    <!-- Modal: Biznet WAN Speedtest Real-Time Result -->
     <div id="wanSpeedtestModal" class="modal-overlay" style="display: none;">
         <div class="modal-card wan-speedtest-modal-card">
             <div class="modal-header">
@@ -713,7 +689,6 @@
             </div>
 
             <div class="modal-body wan-speedtest-body">
-                <!-- Testing / Running State -->
                 <div id="speedtestLoadingState" class="speedtest-state-box" style="display: none;">
                     <div class="speedtest-gauge-wrap">
                         <div class="speedtest-spinner"></div>
@@ -722,10 +697,8 @@
                     </div>
                 </div>
 
-                <!-- Result Cards State -->
                 <div id="speedtestResultState" class="speedtest-state-box">
                     <div class="speedtest-results-grid">
-                        <!-- Download Card -->
                         <div class="speedtest-res-card res-dl">
                             <div class="res-card-top">
                                 <span class="res-lbl">Download Speed</span>
@@ -739,7 +712,6 @@
                             </div>
                         </div>
 
-                        <!-- Upload Card -->
                         <div class="speedtest-res-card res-ul">
                             <div class="res-card-top">
                                 <span class="res-lbl">Upload Speed</span>
@@ -754,7 +726,6 @@
                         </div>
                     </div>
 
-                    <!-- Latency & Ping Quality Grid -->
                     <div class="speedtest-metrics-grid">
                         <div class="st-metric-item">
                             <span class="st-m-lbl">Ping Internet (1.1.1.1):</span>
@@ -801,11 +772,10 @@
         </div>
     </div>
 
-    <!-- Toast Notification Container -->
     <div id="toastContainer" class="toast-container"></div>
 
-    <!-- Live Clock Script -->
     <script>
+        // Update the live WIB clock display in the navbar.
         function updateClock() {
             const now = new Date();
             const timeStr = now.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' WIB';
@@ -815,7 +785,6 @@
         setInterval(updateClock, 1000);
         updateClock();
     </script>
-    <!-- Initial Real Chart Data from Database -->
     <script id="initial-chart-data"
         type="application/json">{% if initial_chart_history %}{{ initial_chart_history | tojson }}{% else %}{}{% endif %}</script>
     <script id="initial-wan-summary"
@@ -842,7 +811,6 @@
             window.INITIAL_TOP_CLIENTS = {};
         }
     </script>
-    <!-- Relative JS -->
     <script src="/static/js/timeline_navigator.js?v=1.1"></script>
     <script src="/static/js/dashboard.js?v=7.2"></script>
     <script src="/static/js/global_nav.js?v=4.9"></script>

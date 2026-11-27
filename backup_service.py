@@ -1,15 +1,3 @@
-"""
-AGIVA NOC - Network Backup & Log Archiving Service
-Mendukung pencadangan multi-vendor:
-- Palo Alto PA-220 (System, Config, Traffic, Threat)
-- Aruba 2930F (System, Config, Traffic, Threat)
-- Huawei S5735 (System, Config, Traffic, Threat)
-
-Format Penyimpanan:
-/backups/{site}/{device_name}/{YYYY-MM-DD_HHmmss}_{category.lower()}.txt
-Mendukung Initial Pull & Point-in-Time Audit Trail Logging (Opsi 2).
-"""
-
 import os
 import re
 import json
@@ -30,12 +18,14 @@ BACKUP_BASE_DIR = os.path.join(os.getcwd(), "backups")
 CHECKPOINT_FILE = os.path.join(BACKUP_BASE_DIR, ".checkpoint.json")
 
 def get_now_wib():
+    """Mengembalikan waktu saat ini dalam zona waktu Asia/Jakarta (WIB)."""
     try:
         return datetime.now(ZoneInfo("Asia/Jakarta"))
     except Exception:
         return datetime.now()
 
 def load_checkpoints() -> dict:
+    """Memuat data checkpoint backup terakhir dari file JSON."""
     if os.path.exists(CHECKPOINT_FILE):
         try:
             with open(CHECKPOINT_FILE, "r", encoding="utf-8") as f:
@@ -45,6 +35,7 @@ def load_checkpoints() -> dict:
     return {}
 
 def save_checkpoint(device_name: str, category: str, checkpoint_val: str):
+    """Menyimpan nilai checkpoint backup terbaru untuk perangkat dan kategori tertentu."""
     checkpoints = load_checkpoints()
     key = f"{device_name}_{category}"
     checkpoints[key] = checkpoint_val
@@ -83,14 +74,13 @@ def normalize_site_name(site: str) -> str:
     return re.sub(r'_+', '_', clean).strip('_')
 
 def format_file_size(size_bytes: int) -> str:
+    """Memformat ukuran file dari byte ke satuan B, KB, atau MB."""
     if size_bytes < 1024:
         return f"{size_bytes} B"
     elif size_bytes < 1024 * 1024:
         return f"{round(size_bytes / 1024.0, 1)} KB"
     else:
         return f"{round(size_bytes / (1024.0 * 1024.0), 2)} MB"
-
-# ==================== VENDOR BACKUP EXECUTORS ====================
 
 def fetch_aruba_log_or_config(ip: str, user: str, pwd: str, category: str, *args, **kwargs) -> str:
     """Ekstraksi raw snapshot log/config Aruba 2930F via SSH Netmiko/Paramiko (Anti-Paging / no page)."""
@@ -106,13 +96,11 @@ def fetch_aruba_log_or_config(ip: str, user: str, pwd: str, category: str, *args
     else:
         cmd = "show running-config"
     
-    # Kandidat user: prioritas user yang diset, lalu 'manager' (default Aruba/HP), lalu 'admin'
     user_candidates = []
     for u in [user, "manager", "admin"]:
         if u and u not in user_candidates:
             user_candidates.append(u)
 
-    # Kandidat password: password dari env, password kosong, dan variasi umum
     pw_candidates = []
     for p in [pwd, "", "admin", "admin123", "P@ssw0rd"]:
         if p is not None and p not in pw_candidates:
@@ -121,7 +109,6 @@ def fetch_aruba_log_or_config(ip: str, user: str, pwd: str, category: str, *args
     last_err = None
     for cand_u in user_candidates:
         for cand_pw in pw_candidates:
-            # 1. Coba via Netmiko dengan paging disabled ('no page') dan regex fleksibel r"#"
             try:
                 device_params = {
                     'device_type': 'aruba_osswitch',
@@ -132,7 +119,6 @@ def fetch_aruba_log_or_config(ip: str, user: str, pwd: str, category: str, *args
                     'fast_cli': False
                 }
                 with ConnectHandler(**device_params) as net_connect:
-                    # Nonaktifkan paging agar log panjang tidak berhenti di '-- MORE --'
                     try:
                         net_connect.send_command("no page", expect_string=r"#", read_timeout=5)
                     except Exception:
@@ -145,7 +131,6 @@ def fetch_aruba_log_or_config(ip: str, user: str, pwd: str, category: str, *args
             except Exception as e_nm:
                 last_err = e_nm
 
-            # 2. Fallback via Paramiko Shell murni (paling handal untuk output sangat panjang)
             try:
                 client = paramiko.SSHClient()
                 client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -153,7 +138,6 @@ def fetch_aruba_log_or_config(ip: str, user: str, pwd: str, category: str, *args
                 
                 shell = client.invoke_shell()
                 time.sleep(0.5)
-                # Kirim Enter & no page untuk mematikan pagination
                 shell.send("\nno page\n")
                 time.sleep(0.6)
                 if shell.recv_ready():
@@ -182,7 +166,6 @@ def fetch_aruba_log_or_config(ip: str, user: str, pwd: str, category: str, *args
                 last_err = e_pm
                 continue
 
-    # 3. Fallback via Aruba REST API (port 80 HTTP) jika SSH gagal
     try:
         logger.info("SSH Aruba gagal atau timeout, mencoba fallback via Aruba REST API...")
         if cat_lower == "config":
@@ -223,7 +206,6 @@ def fetch_huawei_log_or_config(ip: str, user: str, pwd: str, category: str, *arg
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         client.connect(ip, port=22, username=user, password=pwd, timeout=8)
         
-        # Jalankan command dengan paging disabled agar tidak terpotong
         shell = client.invoke_shell()
         time.sleep(0.4)
         shell.send("screen-length 0 temporary\n")
@@ -239,7 +221,6 @@ def fetch_huawei_log_or_config(ip: str, user: str, pwd: str, category: str, *arg
         client.close()
         
         if output.strip():
-            # Bersihkan banner login VTY, echo command, dan prompt terminal Huawei
             cmd_pattern = re.compile(rf'<[^>]+>\s*{re.escape(cmd)}', re.IGNORECASE)
             match = cmd_pattern.search(output)
             if match:
@@ -272,7 +253,6 @@ def fetch_palo_alto_log_or_config(ip: str, user: str, pwd: str, category: str, *
     cat_lower = category.lower()
 
     if cat_lower == "config":
-        # Ambil running configuration lengkap
         try:
             r = requests.get(f"https://{ip}/api/?type=config&action=show&key={api_key}", verify=False, timeout=12)
             if r.status_code == 200 and r.text.strip():
@@ -280,12 +260,10 @@ def fetch_palo_alto_log_or_config(ip: str, user: str, pwd: str, category: str, *
         except Exception:
             pass
 
-    # Kategori log: system, config, traffic, threat (500 log terbaru saat ini)
     try:
         url = f"https://{ip}/api/?type=log&log-type={cat_lower}&key={api_key}&nlogs=500"
         r = requests.get(url, verify=False, timeout=15)
         if r.status_code == 200 and r.text:
-            # Jika PAN-OS mengembalikan asynchronous query job (<job>123</job>)
             job_match = re.search(r'<job>(\d+)</job>', r.text)
             if job_match:
                 job_id = job_match.group(1)
@@ -302,7 +280,6 @@ def fetch_palo_alto_log_or_config(ip: str, user: str, pwd: str, category: str, *
     except Exception as e:
         logger.warning(f"PAN-OS XML API gagal, mencoba fallback SSH: {e}")
 
-    # Fallback SSH jika API tidak merespons
     try:
         device_params = {
             'device_type': 'paloalto_panos',
@@ -319,8 +296,6 @@ def fetch_palo_alto_log_or_config(ip: str, user: str, pwd: str, category: str, *
     except Exception as e:
         raise Exception(f"Palo Alto connection failed (API & SSH): {e}")
 
-# ==================== MAIN BACKUP CONTROLLER ====================
-
 def run_single_backup(device: Device, category: str, trigger_by: str = "Scheduler (02:00 WIB)", session=None) -> dict:
     """
     Mengeksekusi pencadangan 1 perangkat untuk 1 kategori spesifik (Raw Snapshot Murni).
@@ -334,11 +309,9 @@ def run_single_backup(device: Device, category: str, trigger_by: str = "Schedule
     vendor_clean = device.vendor.lower() if device.vendor else ""
     ip = device.ip_address
 
-    # Direktori tujuan: /backups/{site}/{device_name}/
     target_dir = os.path.join(BACKUP_BASE_DIR, site_clean, dev_name)
     os.makedirs(target_dir, exist_ok=True)
 
-    # Nama file unik berbasis timestamp detik: {YYYY-MM-DD_HHmmss}_{category.lower()}.txt
     file_name = f"{time_str}_{category.lower()}.txt"
     abs_file_path = os.path.join(target_dir, file_name)
     rel_file_path = f"/backups/{site_clean}/{dev_name}/{file_name}".replace("\\", "/")
@@ -366,7 +339,6 @@ def run_single_backup(device: Device, category: str, trigger_by: str = "Schedule
         error_msg = str(e)
         content = f"// BACKUP ERROR [{now.strftime('%Y-%m-%d %H:%M:%S WIB')}]\n// Device: {dev_name} ({ip})\n// Category: {category}\n// Error: {error_msg}\n"
 
-    # Penulisan berkas mandiri (Pure Raw Snapshot)
     header_info = (
         f"{'='*70}\n"
         f"AGIVA NOC RAW SNAPSHOT [{category.upper()}]\n"
@@ -389,10 +361,8 @@ def run_single_backup(device: Device, category: str, trigger_by: str = "Schedule
         file_size_str = "0 B"
         status = "FAILED"
 
-    # Rentang data: Snapshot waktu eksekusi saat itu
     data_range = f"Snapshot: {now.strftime('%d/%m/%Y %H:%M:%S WIB')}"
 
-    # Catat riwayat ke Database sebagai baris baru (Audit Trail Murni)
     close_session_at_end = False
     if session is None:
         session = db_session()
@@ -453,7 +423,6 @@ def run_device_backup(device_name_query: str, category_filter: str = None, trigg
     try:
         dev = session.query(Device).filter(Device.name.ilike(f"%{device_name_query.strip()}%")).first()
         if not dev:
-            # Fallback cari berdasarkan IP
             dev = session.query(Device).filter(Device.ip_address == device_name_query.strip()).first()
         if not dev:
             return {
@@ -516,7 +485,6 @@ def get_backup_content(backup_id: int) -> dict:
         if not b:
             return {"success": False, "error": "Backup data not found."}
 
-        # Convert /backups/... relative path to absolute local filesystem path
         clean_path = b.file_path.strip("/\\")
         parts = clean_path.split("/")
         if parts and parts[0] == "backups":
@@ -528,7 +496,6 @@ def get_backup_content(backup_id: int) -> dict:
         category = getattr(b, "category", "System")
 
         if not os.path.exists(abs_path):
-            # Cek apakah ada berkas arsip yang sudah tersimpan di direktori perangkat
             dev_dir = os.path.join(BACKUP_BASE_DIR, site_clean, dev_name)
             if os.path.exists(dev_dir):
                 files = [f for f in os.listdir(dev_dir) if f.endswith(".txt")]
@@ -593,13 +560,11 @@ def cleanup_old_backup_history(retention_days: int = None) -> dict:
     skipped_safety_net = 0
 
     try:
-        # 1. Cari riwayat backup yang tanggalnya lebih lama dari cutoff_date
         old_backups = session.query(BackupHistory).filter(BackupHistory.timestamp < cutoff_date).all()
         if not old_backups:
             logger.info(f"[Housekeeping] Retensi data backup bersih. Tidak ada data backup/log audit yang berumur > {retention_days} hari.")
             return {"deleted_db": 0, "deleted_files": 0, "skipped_safety_net": 0}
 
-        # 2. Identifikasi backup 'Config' terbaru untuk tiap perangkat (Safety Net Disaster Recovery)
         device_ids_with_old_config = {
             b.device_id for b in old_backups if (b.category or "").strip().lower() == "config"
         }
@@ -617,11 +582,9 @@ def cleanup_old_backup_history(retention_days: int = None) -> dict:
             if latest_cfg:
                 latest_config_backup_ids.add(latest_cfg[0])
 
-        # 3. Iterasi dan proses pembersihan data & berkas fisik
         for b in old_backups:
             cat_lower = (b.category or "").strip().lower()
 
-            # Pengecekan Safety Net: Lindungi salinan konfigurasi terakhir per perangkat
             if cat_lower == "config" and b.backup_id in latest_config_backup_ids:
                 dev_name = b.device.name if b.device else f"Device #{b.device_id}"
                 logger.info(
@@ -631,7 +594,6 @@ def cleanup_old_backup_history(retention_days: int = None) -> dict:
                 skipped_safety_net += 1
                 continue
 
-            # Hapus berkas fisik .txt di disk lokal server jika ada
             if b.file_path:
                 clean_path = b.file_path.replace("\\", "/").strip("/")
                 parts = clean_path.split("/")
@@ -666,5 +628,4 @@ def cleanup_old_backup_history(retention_days: int = None) -> dict:
         "deleted_files": deleted_files_count,
         "skipped_safety_net": skipped_safety_net
     }
-
 

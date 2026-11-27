@@ -1,10 +1,3 @@
-/**
- * Dashboard JavaScript - PT Agiva Indonesia Network Automation
- * Supports:
- * 1. Offline Mode with localStorage & fallback cache (when app.py backend is offline)
- * 2. Online http:// server mode (polls /api/status live JSON endpoint)
- */
-
 let cpuMemChart = null;
 let trafficChart = null;
 let cpuMemTimelineNav = null;
@@ -18,14 +11,12 @@ const MAX_CHART_POINTS = 18;
 
 const STORAGE_KEYS = {
     DASHBOARD_DATA: 'agiva_dashboard_latest_data',
-    CHART_PREFIX: 'agiva_chart_history_', // agiva_chart_history_live, 1h, 12h, 24h
-    WAN_PREFIX: 'agiva_wan_history_',     // agiva_wan_history_live, 1h, 12h, 24h
+    CHART_PREFIX: 'agiva_chart_history_',
+    WAN_PREFIX: 'agiva_wan_history_',
     LAST_UPDATED: 'agiva_dashboard_last_updated'
 };
 
-/* --------------------------------------------------------------------------
-   Local Storage & Offline Data Management
-   -------------------------------------------------------------------------- */
+// Save latest dashboard state and chart caches to localStorage.
 function saveDashboardDataToStorage(data) {
     if (!data) return;
     try {
@@ -52,6 +43,7 @@ function saveDashboardDataToStorage(data) {
     }
 }
 
+// Save WAN chart history for a time range to localStorage.
 function saveWanHistoryToStorage(range, history) {
     if (!history || !history.labels || history.labels.length === 0) return;
     try {
@@ -61,6 +53,7 @@ function saveWanHistoryToStorage(range, history) {
     }
 }
 
+// Load cached WAN chart history for a time range from localStorage.
 function loadWanHistoryFromStorage(range) {
     try {
         const raw = localStorage.getItem(STORAGE_KEYS.WAN_PREFIX + range);
@@ -73,6 +66,7 @@ function loadWanHistoryFromStorage(range) {
     return null;
 }
 
+// Save aggregated chart history for a time range to localStorage.
 function saveChartHistoryToStorage(range, history) {
     if (!history || !history.labels || history.labels.length === 0) return;
     try {
@@ -82,6 +76,7 @@ function saveChartHistoryToStorage(range, history) {
     }
 }
 
+// Load latest cached dashboard payload from localStorage.
 function loadDashboardDataFromStorage() {
     try {
         const raw = localStorage.getItem(STORAGE_KEYS.DASHBOARD_DATA);
@@ -92,12 +87,12 @@ function loadDashboardDataFromStorage() {
     return null;
 }
 
+// Load cached chart history for a time range from localStorage.
 function loadChartHistoryFromStorage(range) {
     try {
         const raw = localStorage.getItem(STORAGE_KEYS.CHART_PREFIX + range);
         if (raw) return JSON.parse(raw);
 
-        // Fallback to 'live' if requested range not found
         const liveRaw = localStorage.getItem(STORAGE_KEYS.CHART_PREFIX + 'live');
         if (liveRaw) return JSON.parse(liveRaw);
     } catch (e) {
@@ -106,6 +101,7 @@ function loadChartHistoryFromStorage(range) {
     return null;
 }
 
+// Prefetch historical chart ranges (1h, 12h, 24h) into localStorage.
 async function prefetchHistoricalRanges() {
     if (isPrefetchingRanges) return;
     isPrefetchingRanges = true;
@@ -124,12 +120,12 @@ async function prefetchHistoricalRanges() {
                     }
                 }
             } catch (e) {
-                // Ignore silent prefetch error
             }
         }
     }
 }
 
+// Unregister stale service workers and clear browser caches.
 function cleanupServiceWorker() {
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistrations().then(registrations => {
@@ -143,6 +139,7 @@ function cleanupServiceWorker() {
     }
 }
 
+// Restore dashboard KPIs and table from cache when initial DOM is empty.
 function restoreDashboardFromStorageIfEmpty() {
     const cachedData = loadDashboardDataFromStorage();
     if (!cachedData) return;
@@ -162,42 +159,32 @@ document.addEventListener('DOMContentLoaded', () => {
     setupTableFilters();
     setupWanActions();
 
-    // Restore table data and KPIs from cache if not yet populated
     restoreDashboardFromStorageIfEmpty();
 
-    // Clear service worker so browser displays standard disconnected screen when app.py terminates
     cleanupServiceWorker();
 
-    // Poll immediately on page load
     pollRealtimeStatus();
 
-    // Polling interval (every 5 seconds)
     setInterval(pollRealtimeStatus, 5000);
 
-    // Auto-refresh Top 10 client metrics every 10 seconds
     setInterval(() => fetchTopClients(true), 10000);
 });
 
-/* --------------------------------------------------------------------------
-   Chart.js Initialization
-   -------------------------------------------------------------------------- */
+// Initialize Chart.js instances and initial dashboard data.
 function initCharts() {
     let initData = window.INITIAL_CHART_DATA || { labels: [], cpu: [], mem: [], ingress: [], egress: [] };
 
-    // Validate whether initial data contains valid datapoints
     const hasValidInitialData = initData && initData.labels && initData.labels.length > 1;
 
     if (hasValidInitialData) {
         saveChartHistoryToStorage('live', initData);
     } else {
-        // Retrieve latest chart data from localStorage or fallback
         const cachedChart = loadChartHistoryFromStorage('live');
         if (cachedChart && cachedChart.labels && cachedChart.labels.length > 0) {
             initData = cachedChart;
         }
     }
 
-    // 1. CPU & Memory Chart
     const ctxCpuMem = document.getElementById('cpuMemChart');
     if (ctxCpuMem) {
         const gradientCpu = ctxCpuMem.getContext('2d').createLinearGradient(0, 0, 0, 220);
@@ -248,7 +235,6 @@ function initCharts() {
         });
     }
 
-    // 2. Network Traffic Chart
     const ctxTraffic = document.getElementById('trafficChart');
     if (ctxTraffic) {
         const gradientCyan = ctxTraffic.getContext('2d').createLinearGradient(0, 0, 0, 220);
@@ -259,7 +245,6 @@ function initCharts() {
         gradientOrange.addColorStop(0, 'rgba(249, 115, 22, 0.25)');
         gradientOrange.addColorStop(1, 'rgba(249, 115, 22, 0.0)');
 
-        // Calculate dynamic scale BEFORE creating new Chart to prevent visual glitches during refresh
         const allInitTrf = [...(initData.ingress || []), ...(initData.egress || [])];
         const maxInitTrf = allInitTrf.length > 0 ? Math.max(...allInitTrf) : 0;
         let initialTrfMax = 100;
@@ -300,7 +285,6 @@ function initCharts() {
         });
     }
 
-    // Apply initial data immediately with dynamic scale identical to device_detail.js
     if (initData && (initData.labels || []).length > 0) {
         applyChartHistory(initData);
     }
@@ -310,6 +294,7 @@ function initCharts() {
     }
 }
 
+// Build shared Chart.js configuration options for dashboard line charts.
 function getCommonChartOptions(unit, minVal = 0, initialMax = 50) {
     return {
         responsive: true,
@@ -358,9 +343,7 @@ function getCommonChartOptions(unit, minVal = 0, initialMax = 50) {
     };
 }
 
-/* --------------------------------------------------------------------------
-   Time-Range Selector Logic & Chart History Management
-   -------------------------------------------------------------------------- */
+// Bind click handlers for dashboard time-range selector buttons.
 function initTimeRangeSelector() {
     const container = document.getElementById('dashboardTimeRange');
     if (!container) return;
@@ -374,7 +357,6 @@ function initTimeRangeSelector() {
             buttons.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
 
-            // Immediately render from cache for instant transitions without blanks when offline
             const cachedChart = loadChartHistoryFromStorage(range);
             if (cachedChart && cachedChart.labels && cachedChart.labels.length > 0) {
                 applyChartHistory(cachedChart);
@@ -385,6 +367,7 @@ function initTimeRangeSelector() {
     });
 }
 
+// Apply chart history data and configure timeline navigators per range mode.
 function applyChartHistory(history) {
     if (!history) return;
     lastDashboardHistory = history;
@@ -392,7 +375,6 @@ function applyChartHistory(history) {
     const navCpuEl = document.getElementById('cpuMemTimelineNav');
     const navTrfEl = document.getElementById('trafficTimelineNav');
 
-    // If live mode: hide navigator, render all live data
     if (currentDashboardRange === 'live') {
         if (navCpuEl) navCpuEl.style.display = 'none';
         if (navTrfEl) navTrfEl.style.display = 'none';
@@ -400,7 +382,6 @@ function applyChartHistory(history) {
         return;
     }
 
-    // Mode histori: 1h, 12h, 24h -> Inisialisasi Timeline Navigator Slider
     if (!cpuMemTimelineNav && typeof TimelineNavigator !== 'undefined') {
         cpuMemTimelineNav = new TimelineNavigator({
             containerId: 'cpuMemTimelineNav',
@@ -410,7 +391,6 @@ function applyChartHistory(history) {
             onWindowChange: (startIdx, endIdx) => {
                 if (lastDashboardHistory) {
                     renderDashboardChartsSlice(lastDashboardHistory, startIdx, endIdx);
-                    // Synchronize with traffic slider
                     if (trafficTimelineNav && !trafficTimelineNav.isDragging) {
                         trafficTimelineNav.updateWindowDOM(cpuMemTimelineNav.startFrac, cpuMemTimelineNav.endFrac);
                     }
@@ -428,7 +408,6 @@ function applyChartHistory(history) {
             onWindowChange: (startIdx, endIdx) => {
                 if (lastDashboardHistory) {
                     renderDashboardChartsSlice(lastDashboardHistory, startIdx, endIdx);
-                    // Synchronize with cpu/mem slider
                     if (cpuMemTimelineNav && !cpuMemTimelineNav.isDragging) {
                         cpuMemTimelineNav.updateWindowDOM(trafficTimelineNav.startFrac, trafficTimelineNav.endFrac);
                     }
@@ -449,6 +428,7 @@ function applyChartHistory(history) {
     }
 }
 
+// Render sliced CPU/Memory and Traffic chart datasets with dynamic Y-axis scaling.
 function renderDashboardChartsSlice(history, startIdx, endIdx) {
     const allLabels = history.labels || [];
     if (allLabels.length === 0) return;
@@ -463,12 +443,9 @@ function renderDashboardChartsSlice(history, startIdx, endIdx) {
     const outVals = (history.egress || []).slice(s, e + 1);
 
     const visibleCount = labels.length;
-    // Adaptive datapoints: when zoom in <= 45 points, render clear circular points (pointRadius: 3).
-    // In full range > 85 points, points are disabled for clean and thin lines.
     const dynamicPointRadius = visibleCount <= 45 ? 3 : (visibleCount <= 85 ? 1.5 : 0);
     const hoverPointRadius = dynamicPointRadius > 0 ? dynamicPointRadius + 3 : 5;
 
-    // 1. CPU & Memory Chart (Default 100%, Dynamic if > 100%)
     if (cpuMemChart) {
         cpuMemChart.data.labels = labels;
         cpuMemChart.data.datasets[0].data = cpuVals;
@@ -492,7 +469,6 @@ function renderDashboardChartsSlice(history, startIdx, endIdx) {
         cpuMemChart.update('none');
     }
 
-    // 2. Network Interface Traffic Chart (Default 100 Mbps, Dynamic if > 100 Mbps)
     if (trafficChart) {
         trafficChart.data.labels = labels;
         trafficChart.data.datasets[0].data = inVals;
@@ -517,9 +493,7 @@ function renderDashboardChartsSlice(history, startIdx, endIdx) {
     }
 }
 
-/* --------------------------------------------------------------------------
-   Real-Time Polling & Connection Health
-   -------------------------------------------------------------------------- */
+// Poll /api/status for live dashboard metrics, WAN status, and alerts.
 async function pollRealtimeStatus() {
     const indicator = document.querySelector('.status-indicator');
     const statusText = indicator ? indicator.querySelector('.status-text') : null;
@@ -537,11 +511,11 @@ async function pollRealtimeStatus() {
         saveDashboardDataToStorage(data);
         setTimeout(prefetchHistoricalRanges, 1500);
     } catch (error) {
-        // Backend server offline/down: apply latest saved data & charts
         handleServerDisconnected(indicator, statusText);
     }
 }
 
+// Update connection status indicator to live polling state.
 function handleServerConnected(indicator, statusText) {
     if (indicator) {
         indicator.classList.remove('is-offline');
@@ -552,6 +526,7 @@ function handleServerConnected(indicator, statusText) {
     }
 }
 
+// Update connection status indicator to stopped state and load cached data.
 function handleServerDisconnected(indicator, statusText) {
     if (indicator) {
         indicator.classList.add('is-offline');
@@ -561,7 +536,6 @@ function handleServerDisconnected(indicator, statusText) {
         statusText.textContent = 'POLLING STOPPED';
     }
 
-    // Retrieve latest data and charts from local cache
     const cachedData = loadDashboardDataFromStorage();
     const cachedChart = loadChartHistoryFromStorage(currentDashboardRange);
 
@@ -574,6 +548,7 @@ function handleServerDisconnected(indicator, statusText) {
     }
 }
 
+// Append a new data point to a Chart.js instance within max point limit.
 function pushChartData(chart, label, values) {
     if (!chart) return;
     chart.data.labels.push(label);
@@ -599,6 +574,7 @@ function pushChartData(chart, label, values) {
     chart.update('none');
 }
 
+// Update KPIs, WAN card, charts, device table, and alerts stream from API data.
 function updateDashboardView(data) {
     if (data.summary) {
         const kpiTot = document.getElementById('kpiTotal');
@@ -611,7 +587,6 @@ function updateDashboardView(data) {
         if (kpiOff) kpiOff.textContent = data.summary.devices_offline;
         if (kpiAlt) kpiAlt.textContent = data.summary.active_alerts;
 
-        // Update filter badge counts
         const filterAll = document.querySelector('.badge-filter[data-filter="all"]');
         const filterUp = document.querySelector('.badge-filter[data-filter="UP"]');
         const filterDown = document.querySelector('.badge-filter[data-filter="DOWN"]');
@@ -625,24 +600,22 @@ function updateDashboardView(data) {
     }
 
     if (data.metrics) {
-        // Apply complete real historical data directly from database (matching device_detail.js)
         if (data.history) {
             applyChartHistory(data.history);
         }
         isRangeJustChanged = false;
     }
 
-    // Dynamic real-time update of monitored devices table
     if (data.devices && data.devices.length > 0) {
         renderDeviceTable(data.devices);
     }
 
-    // Dynamic real-time update of active alerts stream
     if (data.alerts !== undefined) {
         renderAlertsStream(data.alerts);
     }
 }
 
+// Update the Biznet WAN banner card with latest throughput and ping metrics.
 function updateWanCard(wan) {
     if (!wan) return;
     const dlEl = document.getElementById('wanDownloadVal');
@@ -675,7 +648,6 @@ function updateWanCard(wan) {
     if (dlProg) dlProg.style.width = `${Math.min(100, Math.max(0, dlUtilPct))}%`;
     if (ulProg) ulProg.style.width = `${Math.min(100, Math.max(0, ulUtilPct))}%`;
 
-    // Combined Utilization Row below Download & Upload
     const utilCombinedVal = document.getElementById('wanUtilCombinedVal');
     const capValCombined = document.getElementById('wanCapValCombined');
     if (utilCombinedVal) utilCombinedVal.textContent = `${utilPct}%`;
@@ -688,7 +660,7 @@ function updateWanCard(wan) {
         const rxErr = wan.rx_errors !== undefined ? wan.rx_errors : 0;
         const txErr = wan.tx_errors !== undefined ? wan.tx_errors : 0;
         errEl.textContent = `${rxErr} / ${txErr}`;
-        errEl.style.color = ''; // Keep white via CSS (.ping-num)
+        errEl.style.color = '';
     }
     if (lastSync && wan.last_updated) lastSync.textContent = wan.last_updated;
 
@@ -701,7 +673,7 @@ function updateWanCard(wan) {
 
     const isUp = wan.status === 'UP';
     if (statusText) {
-        statusText.textContent = wan.status || 'UP'; // Exclude '(1 Gbps)' text
+        statusText.textContent = wan.status || 'UP';
     }
     if (statusDot) {
         statusDot.className = `live-dot dot-${isUp ? 'green' : 'red'}`;
@@ -711,12 +683,10 @@ function updateWanCard(wan) {
     }
 }
 
-/* --------------------------------------------------------------------------
-   WAN Actions (Speedtest Real-Time & 24-Hour Polling Logs Modal)
-   -------------------------------------------------------------------------- */
 let currentWanLogs = [];
 let currentWanLogFilter = 'all';
 
+// Bind event listeners for WAN speedtest and 24-hour log modals.
 function setupWanActions() {
     const btnSpeedtest = document.getElementById('btnWanSpeedtest');
     const btnSeeLog = document.getElementById('btnWanSeeLog');
@@ -726,7 +696,6 @@ function setupWanActions() {
     const btnRefreshLog = document.getElementById('btnWanLogRefresh');
     const btnExportLog = document.getElementById('btnWanLogExport');
 
-    // Speedtest Modal elements
     const modalSt = document.getElementById('wanSpeedtestModal');
     const btnCloseSt = document.getElementById('btnWanSpeedtestClose');
     const btnCloseStFooter = document.getElementById('btnWanSpeedtestCloseFooter');
@@ -785,7 +754,6 @@ function setupWanActions() {
         btnExportLog.addEventListener('click', exportWanLogsToCsv);
     }
 
-    // Modal filter buttons
     const filterBtns = document.querySelectorAll('.wan-filter-btn');
     filterBtns.forEach(btn => {
         btn.addEventListener('click', () => {
@@ -797,6 +765,7 @@ function setupWanActions() {
     });
 }
 
+// Execute on-demand WAN speedtest and render results in the speedtest modal.
 async function handleWanSpeedtest() {
     const modal = document.getElementById('wanSpeedtestModal');
     const loadingState = document.getElementById('speedtestLoadingState');
@@ -870,11 +839,6 @@ async function handleWanSpeedtest() {
                 stTs.textContent = cleanTime;
             }
 
-            // NOC Architecture: Do not overwrite main dashboard KPI cards!
-            // Dashboard cards display active internal utilization metrics.
-            // Speedtest modal specifically measures peak physical bandwidth capacity.
-
-            // Hide loading, show results
             if (loadingState) loadingState.style.display = 'none';
             if (resultState) resultState.style.display = 'block';
         } else {
@@ -891,6 +855,7 @@ async function handleWanSpeedtest() {
     }
 }
 
+// Close the WAN speedtest modal and restore page scrolling.
 function closeWanSpeedtestModal() {
     const modal = document.getElementById('wanSpeedtestModal');
     if (!modal) return;
@@ -898,6 +863,7 @@ function closeWanSpeedtestModal() {
     document.body.style.overflow = '';
 }
 
+// Open the 24-hour WAN polling log modal and fetch logs.
 function openWanLogModal() {
     const modal = document.getElementById('wanLogModal');
     if (!modal) return;
@@ -906,6 +872,7 @@ function openWanLogModal() {
     fetchWanLogs();
 }
 
+// Close the 24-hour WAN polling log modal and restore page scrolling.
 function closeWanLogModal() {
     const modal = document.getElementById('wanLogModal');
     if (!modal) return;
@@ -913,6 +880,7 @@ function closeWanLogModal() {
     document.body.style.overflow = '';
 }
 
+// Fetch 24-hour WAN polling logs from /api/wan/logs and render the table.
 async function fetchWanLogs(silent = false) {
     const tbody = document.getElementById('wanLogTableBody');
     if (!silent && tbody) {
@@ -947,6 +915,7 @@ async function fetchWanLogs(silent = false) {
     }
 }
 
+// Update filter counts (All, UP, Issue) in the WAN log modal.
 function updateWanLogCounts() {
     const countAllEl = document.getElementById('wanLogCountAll');
     const countUpEl = document.getElementById('wanLogCountUp');
@@ -961,6 +930,7 @@ function updateWanLogCounts() {
     if (countIssueEl) countIssueEl.textContent = issueCount;
 }
 
+// Render filtered WAN polling log rows inside the log modal table.
 function renderWanLogTableRows() {
     const tbody = document.getElementById('wanLogTableBody');
     if (!tbody) return;
@@ -1005,6 +975,7 @@ function renderWanLogTableRows() {
     tbody.innerHTML = rowsHtml;
 }
 
+// Export loaded WAN polling logs as a downloadable CSV file.
 function exportWanLogsToCsv() {
     if (!currentWanLogs || currentWanLogs.length === 0) {
         alert('No log data available to export.');
@@ -1045,11 +1016,11 @@ function exportWanLogsToCsv() {
     document.body.removeChild(link);
 }
 
+// Render monitored devices table rows sorted by device ID.
 function renderDeviceTable(devices) {
     const tbody = document.getElementById('deviceTableBody');
     if (!tbody) return;
 
-    // Permanent sort order by device_id (1, 2, 3) to prevent row jumping
     devices.sort((a, b) => a.id - b.id);
 
     let html = '';
@@ -1105,6 +1076,7 @@ function renderDeviceTable(devices) {
     applyTableFilters();
 }
 
+// Render active alerts sidebar cards or empty operational state.
 function renderAlertsStream(alerts) {
     const stream = document.getElementById('alertsStream');
     if (!stream) return;
@@ -1161,14 +1133,7 @@ function renderAlertsStream(alerts) {
     stream.innerHTML = html;
 }
 
-/* --------------------------------------------------------------------------
-   SOP PT AGIVA: Alert Acknowledge (ACK) via Web is strictly disabled.
-   Acknowledge must ONLY be performed by authorized engineers via Telegram Bot: /ack <alert_id>
-   -------------------------------------------------------------------------- */
-
-/* --------------------------------------------------------------------------
-   Table & Search Filters
-   -------------------------------------------------------------------------- */
+// Extract current monitored device metadata from DOM table rows.
 function getDevicesList() {
     const rows = document.querySelectorAll('#deviceTableBody .device-row');
     const list = [];
@@ -1185,6 +1150,7 @@ function getDevicesList() {
     return list;
 }
 
+// Filter devices by vendor or site and render search dropdown results.
 function updateSearchDropdown(query) {
     const dropdown = document.getElementById('searchResultsDropdown');
     const clearBtn = document.getElementById('clearSearchBtn');
@@ -1201,7 +1167,6 @@ function updateSearchDropdown(query) {
     }
 
     const devices = getDevicesList();
-    // Dedicated filter by Vendor Name or Site
     const matches = devices.filter(d =>
         (d.vendor && d.vendor.toLowerCase().includes(query)) ||
         (d.site && d.site.toLowerCase().includes(query))
@@ -1213,7 +1178,6 @@ function updateSearchDropdown(query) {
             const vendorClass = (dev.vendor || '').toLowerCase().replace(/\s+/g, '-');
             const vendorInitial = (dev.vendor || 'D')[0].toUpperCase();
 
-            // UP or DOWN status omitted in search bar dropdown
             itemsHtml += `
             <li class="search-dropdown-item" onclick="window.location.href='/device/${dev.id}'">
                 <div class="search-item-info">
@@ -1253,6 +1217,7 @@ function updateSearchDropdown(query) {
     }
 }
 
+// Smoothly scroll to the monitored devices table section.
 function scrollToDevicesTable() {
     const dropdown = document.getElementById('searchResultsDropdown');
     if (dropdown) dropdown.style.display = 'none';
@@ -1264,6 +1229,7 @@ function scrollToDevicesTable() {
 
 let currentDeviceSearch = '';
 
+// Filter monitored device rows by status tab and search query.
 function applyTableFilters() {
     const activeFilterBtn = document.querySelector('.badge-filter.active');
     const statusFilter = activeFilterBtn ? activeFilterBtn.getAttribute('data-filter') : 'all';
@@ -1299,7 +1265,6 @@ function applyTableFilters() {
         }
     });
 
-    // Handle empty state feedback in table
     const tbody = document.getElementById('deviceTableBody');
     let emptyRow = document.getElementById('noResultsRow');
     if (visibleCount === 0 && rows.length > 0) {
@@ -1325,6 +1290,7 @@ function applyTableFilters() {
     }
 }
 
+// Escape HTML special characters to prevent XSS.
 function escapeHtml(str) {
     if (!str) return '';
     return str.replace(/[&<>'"]/g,
@@ -1332,6 +1298,7 @@ function escapeHtml(str) {
     );
 }
 
+// Bind click handlers for device table status filter badges.
 function setupTableFilters() {
     const filterButtons = document.querySelectorAll('#monitored-devices .badge-filter');
     filterButtons.forEach(btn => {
@@ -1347,12 +1314,10 @@ function setupTableFilters() {
     }
 }
 
-/* --------------------------------------------------------------------------
-   Top 10 Client Monitoring (All Sites, Head Office, Agiva Corner)
-   -------------------------------------------------------------------------- */
 let currentClientTab = 'all';
 let topClientsData = window.INITIAL_TOP_CLIENTS || null;
 
+// Switch Top 10 wireless client tab by site (all, ho, corner).
 function switchClientTab(site) {
     currentClientTab = site;
     const tabBtns = document.querySelectorAll('.client-tab-btn');
@@ -1371,6 +1336,7 @@ function switchClientTab(site) {
     }
 }
 
+// Render Top 10 wireless client rows in the dashboard table.
 function renderTopClientsTable(clients) {
     const tbody = document.getElementById('topClientsTableBody');
     if (!tbody) return;
@@ -1442,6 +1408,7 @@ function renderTopClientsTable(clients) {
     }).join('');
 }
 
+// Fetch Top 10 wireless client telemetry from /api/clients/top10.
 async function fetchTopClients(silent = false) {
     try {
         const res = await fetch('/api/clients/top10', { cache: 'no-store' });
@@ -1461,12 +1428,6 @@ async function fetchTopClients(silent = false) {
 window.switchClientTab = switchClientTab;
 window.refreshTopClients = () => fetchTopClients(false);
 
-
-
-
-/* --------------------------------------------------------------------------
-   Toast Notifications (Disabled in favor of Inline Button Feedback)
-   -------------------------------------------------------------------------- */
+// No-op placeholder for toast notifications.
 function showToast(message, type = 'success') {
-    // Disabled in favor of Inline Button Feedback
 }
